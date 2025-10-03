@@ -110,5 +110,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <button type="submit">Cadastrar</button>
   </form>
+    <a href="lista.php">Voltar</a>
+
 </body>
 </html>

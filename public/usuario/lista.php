@@ -19,7 +19,8 @@ $result = $conn->query($sql);
 </head>
 <body>
   <h1>Usuários Cadastrados</h1>
-  <a href="cadastro_usuario.php">➕ Cadastrar novo usuário</a>
+  <a href="../index.php">inicio</a>
+  <a href="cadastro.php">Cadastrar novo usuário</a>
   <br><br>
 
   <table>
