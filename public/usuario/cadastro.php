@@ -1,5 +1,5 @@
 <?php
-include "/../../BD/conexao.php";
+include("../../BD/conexao.php");
 
 function cadastrarUsuario($conn, $dados) {
     $sql = "INSERT INTO usuario (
