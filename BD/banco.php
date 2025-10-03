@@ -8,8 +8,9 @@ default collate utf8mb4_unicode_ci;
 
 create table cargo (
 id_cargo int auto_increment primary key,
-nome_cargo varchar(100) not null
+nome_cargo varchar(100) not null,
 salario_bruto decimal(10, 2) not null,
+nivel int not null
 );
 
 create table usuario(
