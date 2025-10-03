@@ -16,7 +16,7 @@ if(!isset($_SESSION)) {
         <h1>Sistema de RH</h1>
             <nav>
                 <a href="usuario/cadastro.php">cadastrar</a>
-                <a href="usuario/lista.php">Indefinido</a>
+                <a href="usuario/lista.php">listagem</a>
                 <a href="usuario/deletar.php"></a>
                 <a href="logout.php">Sair</a>
             </nav>
