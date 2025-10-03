@@ -1,8 +1,8 @@
 <?php
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
+session_start();
+if(!isset($_SESSION)) {
+    header("Location: login.php");
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -15,11 +15,10 @@ if (session_status() == PHP_SESSION_NONE) {
     <header>
         <h1>Sistema de RH</h1>
             <nav>
-                <a href="#">Indefinido</a>
-                <a href="#">Indefinido</a>
-                <!--php if (isset($_SESSION['usuario_id'])): ?-->
-                    <a href="logout.php">Sair</a>
-                <!--php endif; ?--> 
+                <a href="usuario/cadastro.php">cadastrar</a>
+                <a href="usuario/lista.php">Indefinido</a>
+                <a href="usuario/deletar.php"></a>
+                <a href="logout.php">Sair</a>
             </nav>
         </div>
     </header>

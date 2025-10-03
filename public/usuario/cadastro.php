@@ -56,8 +56,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         "data_admissao"  => $_POST['data_admissao'],
         "conta_ativa"    => 1
     ];
-
     cadastrarUsuario($conn, $dados);
+    header("Location: ../index.php");
 }
 ?>
 
