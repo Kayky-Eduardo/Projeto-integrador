@@ -13,7 +13,7 @@ $stmt->bind_param("i", $id);
 //Executa a consulta e verifica se foi bem-sucedida
 if ($stmt->execute()) {
     if ($stmt->affected_rows > 0) {
-        header("Location: ../../public/usuario/deletar.php");
+        header("Location: ../../public/usuario/lista.php");
     } else {
         echo json_encode(['success' => false, 'message' => 'Nenhum cadastro encontrado com o ID fornecido.']);
     }

@@ -16,11 +16,12 @@ $result = $conn->query($sql);
 <head>
   <meta charset="UTF-8">
   <title>Lista de Usuários</title>
+  <link rel="stylesheet" href="../../assets/estilo.css">
 </head>
 <body>
   <h1>Usuários Cadastrados</h1>
-  <a href="../index.php">inicio</a>
-  <a href="cadastro.php">Cadastrar novo usuário</a>
+  <a href="../index.php">home</a>
+  <a href="cadastro.php">Cadastro</a>
   <br><br>
 
   <table>
@@ -54,6 +55,12 @@ $result = $conn->query($sql);
             echo "<td>".$row["assiduidade"]."%</td>";
             echo "<td>".$row["data_admissao"]."</td>";
             echo "<td>".($row["conta_ativa"] ? "<span class='ativo'>Ativo</span>" : "<span class='inativo'>Inativo</span>")."</td>";
+            echo '<td>
+              <form action="../../api/deletar/deletar_usuario.php" method="POST" onsubmit="return confirm(\'Tem certeza que deseja deletar?\');">
+                <input type="hidden" name="id_usuario" value="'. $row['id_usuario'] . '">
+                <button type="submit">Deletar</button>
+              </form>
+            </td>';
             echo "</tr>";
         }
     } else {
