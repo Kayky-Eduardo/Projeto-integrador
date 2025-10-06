@@ -57,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         "conta_ativa"    => 1
     ];
     cadastrarUsuario($conn, $dados);
-    header("Location: ../index.php");
+    header("Location: lista.php");
 }
 ?>
 
@@ -66,6 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
   <meta charset="UTF-8">
   <title>Cadastro de Usuário</title>
+  <link rel="stylesheet" href="../../assets/estilo.css">
 </head>
 <body>
   <h1>Cadastro de Usuário</h1>

@@ -10,16 +10,12 @@ if(!isset($_SESSION)) {
 <head>
     <meta charset="UTF-8">
     <title>RH</title>
+    <link rel="stylesheet" href="../../assets/estilo.css">
 </head>
 <body>
     <header>
-        <h1>Sistema de RH</h1>
-            <nav>
-                <a href="usuario/lista.php">listagem</a>
-                <a href="usuario/deletar.php">deletar</a>
-                <a href="logout.php">Sair</a>
-            </nav>
-        </div>
+        <?php include("../include/navbar.php");?>
+        <h1>Sistema de RH</h1>        
     </header>
 
 
