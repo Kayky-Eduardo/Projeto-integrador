@@ -6,11 +6,11 @@ $sql = (
 default character set utf8mb4
 default collate utf8mb4_unicode_ci;
 
+
 create table cargo (
 id_cargo int auto_increment primary key,
 nome_cargo varchar(100) not null,
-salario_bruto decimal(10, 2) not null,
-nivel int not null
+salario_bruto decimal(10, 2) not null
 );
 
 create table usuario(
@@ -19,9 +19,9 @@ nome_usuario varchar(100) not null,
 cpf_usuario char(11) not null unique,
 rg_usuario char(11) not null unique,
 genero enum('Masculino', 'Feminino', 'Outro', 'Não Declarado'),
-email_usuario varchar(100) not null,
+email_usuario varchar(100) not null unique,
 senha_usuario varchar(255) not null,
-telefone char(20),
+telefone varchar(15),
 cep char(8) not null,
 id_cargo int,
 assiduidade float not null,
@@ -37,8 +37,8 @@ id_usuario int not null,
 inicio_ponto datetime not null,
 inicio_almoco time not null,
 fim_almoco time not null,
-fim_ponto datetime not null,
-foreign key (id_usuario) references usuario(id_usuario)
+fim_ponto datetime not null, 
+foreign key (id_usuario) references usuario(id_usuario) ON DELETE CASCADE
 );
 
 create table dados_bancarios (
@@ -48,7 +48,7 @@ agencia char(6) not null,
 numero_conta char(12) not null,
 nome_titular varchar(100) not null,
 chave_pix varchar(100),
-foreign key (id_usuario) references usuario(id_usuario) on delete cascade
+foreign key (id_usuario) references usuario(id_usuario) ON DELETE CASCADE
 );
 
 create table pagamento (
@@ -58,7 +58,7 @@ data_pagamento datetime not null,
 descontos decimal(10, 2),
 adicionais decimal(10, 2),
 salario_liquido decimal(10, 2),
-foreign key (id_usuario) references usuario(id_usuario)
+foreign key (id_usuario) references usuario(id_usuario) ON DELETE CASCADE
 );
 
 create table horas (
@@ -69,8 +69,13 @@ dia_he int,
 noite_he int,
 noite_hf int,
 dia_hf int,
-foreign key (id_usuario) references usuario(id_usuario)
-);");
+foreign key (id_usuario) references usuario(id_usuario) ON DELETE CASCADE
+);
+
+insert into cargo (nome_cargo, salario_bruto, nivel)
+values (“adm”', 10, 1);
+
+");
 $conn->query($sql);
 
 ?>

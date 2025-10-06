@@ -28,22 +28,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $email = $_POST['email'];
         $senha = $_POST['senha'];
         $stmt = $conn->prepare("
-        SELECT usuario.*, cargo.nome_cargo, cargo.nivel
+        SELECT usuario.*, cargo.nome_cargo, cargo.nivel, usuario.senha_usuario
         FROM usuario
         JOIN cargo ON usuario.id_cargo = cargo.id_cargo
-        WHERE usuario.email_usuario = ? and usuario.senha_usuario = ?
+        WHERE usuario.email_usuario = ?
         ");
-        $stmt->bind_param("ss", $email, $senha);
+        $stmt->bind_param("s", $email);
         $stmt->execute() or die("Falha ao executar o código SQL: " . $stmt->error);
         $result = $stmt->get_result();
         if($result->num_rows == 1) {
-            $user = $result->fetch_assoc();
-            if(!isset($_SESSION)) {
-                session_start();
-                $_SESSION['nivel'] = $usuario['cargo.nivel'];
-                $_SESSION['id_usuario'] = $usuario['id_usuario'];
-                $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
-                header("Location: index.php");
+            $usuario = $result->fetch_assoc();
+            $hash = $usuario['senha_usuario'];
+            if (password_verify($senha, $hash)) {
+                if(!isset($_SESSION)) {
+                    session_start();
+                    $_SESSION['nivel'] = $usuario['cargo.nivel'];
+                    $_SESSION['id_usuario'] = $usuario['id_usuario'];
+                    $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
+                    header("Location: index.php");
+                }    
             }
         } else {
             echo "Falha ao tentar logar! Verifique se o email ou senha estão digitados de forma correta";
