@@ -56,11 +56,19 @@ $result = $conn->query($sql);
             echo "<td>".$row["data_admissao"]."</td>";
             echo "<td>".($row["conta_ativa"] ? "<span class='ativo'>Ativo</span>" : "<span class='inativo'>Inativo</span>")."</td>";
             echo '<td>
+                <form action="editar.php" method="GET">
+                    <form action="editar.php" method="GET">
+                    <input type="hidden" name="id" value="'. $row['id_usuario'] . '">
+                    <button type="submit">Editar</button>
+                </form>
+                  </td>';
+            echo '<td>
               <form action="../../api/deletar/deletar_usuario.php" method="POST" onsubmit="return confirm(\'Tem certeza que deseja deletar?\');">
                 <input type="hidden" name="id_usuario" value="'. $row['id_usuario'] . '">
                 <button type="submit">Deletar</button>
               </form>
             </td>';
+            
             echo "</tr>";
         }
     } else {
