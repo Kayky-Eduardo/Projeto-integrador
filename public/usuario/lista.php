@@ -1,4 +1,5 @@
 <?php
+session_start();
 if(!isset($_SESSION['id_usuario'])) {
     header("Location: logout.php");
 }
@@ -65,7 +66,7 @@ $result = $conn->query($sql);
                 </form>
                   </td>';
             echo '<td>
-              <form action="/deletar_usuario.php" method="POST" onsubmit="return confirm(\'Tem certeza que deseja deletar?\');">
+              <form action="deletar_usuario.php" method="POST" onsubmit="return confirm(\'Tem certeza que deseja deletar?\');">
                 <input type="hidden" name="id_usuario" value="'. $row['id_usuario'] . '">
                 <button type="submit">Deletar</button>
               </form>

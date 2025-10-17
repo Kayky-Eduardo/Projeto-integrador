@@ -39,15 +39,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $result = $stmt->get_result();
         if($result->num_rows == 1) {
             $usuario = $result->fetch_assoc();
-            $hash = $usuario['senha_usuario'];
-            if (password_verify($senha, $hash)) {
+            $senha_banco = $usuario['senha_usuario'];
+            if (password_verify($senha, $senha_banco) || $senha === $senha_banco) {
                 if(!isset($_SESSION)) {
                     session_start();
                     $_SESSION['nivel'] = $usuario['nivel'];
                     $_SESSION['id_usuario'] = $usuario['id_usuario'];
                     $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
+
+                    if ($senhaDigitada === $senhaNoBanco) {
+                        $novoHash = password_hash($senhaDigitada, PASSWORD_DEFAULT);
+
+                        $update = $conn->prepare("UPDATE usuario SET senha_usuario = ? WHERE id_usuario = ?");
+                        $update->bind_param("si", $novoHash, $usuario['id_usuario']);
+                        $update->execute();
+                    }
                     header("Location: index.php");
-                }    
+                }
+            } else {
+                echo "Falha ao tentar logar! Verifique se o email ou senha estão digitados de forma correta";
             }
         } else {
             echo "Falha ao tentar logar! Verifique se o email ou senha estão digitados de forma correta";
