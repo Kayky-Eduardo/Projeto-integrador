@@ -1,4 +1,8 @@
 <?php
+if(!isset($_SESSION['id_usuario'])) {
+    header("Location: logout.php");
+}
+
 include("../../BD/conexao.php");
 
 // Buscar cargos existentes

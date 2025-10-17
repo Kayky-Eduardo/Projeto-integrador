@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (password_verify($senha, $hash)) {
                 if(!isset($_SESSION)) {
                     session_start();
-                    $_SESSION['nivel'] = $usuario['cargo.nivel'];
+                    $_SESSION['nivel'] = $usuario['nivel'];
                     $_SESSION['id_usuario'] = $usuario['id_usuario'];
                     $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
                     header("Location: index.php");

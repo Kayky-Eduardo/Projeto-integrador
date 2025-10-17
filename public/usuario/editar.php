@@ -1,4 +1,7 @@
 <?php
+if(!isset($_SESSION['id_usuario'])) {
+    header("Location: logout.php");
+}
 include "../../BD/conexao.php";
 
 // Verifica se foi passado o ID do usuário via GET

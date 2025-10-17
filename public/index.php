@@ -1,7 +1,7 @@
 <?php
 session_start();
-if(!isset($_SESSION)) {
-    header("Location: login.php");
+if(!isset($_SESSION['id_usuario'])) {
+    header("Location: logout.php");
 }
 ?>
 
@@ -10,7 +10,7 @@ if(!isset($_SESSION)) {
 <head>
     <meta charset="UTF-8">
     <title>RH</title>
-    <link rel="stylesheet" href="../../assets/estilo.css">
+    <link rel="stylesheet" href="../assets/estilo.css">
 </head>
 <body>
     <header>
