@@ -47,11 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $_SESSION['id_usuario'] = $usuario['id_usuario'];
                     $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
 
-                    if ($senhaDigitada === $senhaNoBanco) {
-                        $novoHash = password_hash($senhaDigitada, PASSWORD_DEFAULT);
+                    if ($senha === $senha_banco) {
+                        $novo_hash = password_hash($senha, PASSWORD_DEFAULT);
 
                         $update = $conn->prepare("UPDATE usuario SET senha_usuario = ? WHERE id_usuario = ?");
-                        $update->bind_param("si", $novoHash, $usuario['id_usuario']);
+                        $update->bind_param("si", $novo_hash, $usuario['id_usuario']);
                         $update->execute();
                     }
                     header("Location: index.php");
