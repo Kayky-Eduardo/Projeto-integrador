@@ -12,4 +12,6 @@ if ($conn->connect_error) {
     die("Erro na conexão: " . $conn->connect_error);
 }
 
+$redis = new Redis();
+$redis->connect('127.0.0.1', 6379);
 ?>

@@ -43,6 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (password_verify($senha, $senha_banco) || $senha === $senha_banco) {
                 if(!isset($_SESSION)) {
                     session_start();
+                    ini_set('session.save_handler', 'redis');
+                    ini_set('session.save_path', 'tcp://127.0.0.1:6379');
                     $_SESSION['nivel'] = $usuario['nivel'];
                     $_SESSION['id_usuario'] = $usuario['id_usuario'];
                     $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
