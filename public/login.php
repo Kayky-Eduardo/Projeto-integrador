@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     }
                     // não é definitivo, lembrar das dependencias
                     // como cuidar do hash e etc.
-                    $update_login = $conn -> prepare("
+                    $update_login = $conn->prepare("
                     INSERT INTO login (email_login, id_usuario, id_cargo) VALUES
                     (?, ?, ?)
                     ");

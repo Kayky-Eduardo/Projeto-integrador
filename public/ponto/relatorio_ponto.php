@@ -16,25 +16,35 @@ verificar_login($conn);
 </body>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
-      google.charts.load("current", {packages:["corechart"]});
-      google.charts.setOnLoadCallback(drawChart);
-      function drawChart() {
-        var data = google.visualization.arrayToDataTable([
-          ['Task', 'Hours per Day'],
-          ['Work',     11],
-          ['Eat',      2],
-          ['Commute',  2],
-          ['Watch TV', 2],
-          ['Sleep',    7]
-        ]);
+        // Validar mais tarde
+        async function carregar_dados() {
+            const valoresJSON = await fetch('/api/api_relatorio_ponto.php');
 
-        var options = {
-          title: 'My Daily Activities',
-          is3D: true,
-        };
+            const valores = await valoresJSON.json();
+            console.log(valores[0]);
+        }
+        carregar_dados();
+        google.charts.load("current", {packages:["corechart"]});
+        google.charts.setOnLoadCallback(drawChart);
+        function drawChart() {
+            var data = google.visualization.arrayToDataTable([
+            ['Task', 'Hours per Day'],
+            ['Presentes', 11],
+            ['Eat',      2],
+            ['Commute',  2],
+            ['Watch TV', 2],
+            ['Sleep',    7]
+            ]);
 
-        var chart = new google.visualization.PieChart(document.getElementById('piechart_3d'));
-        chart.draw(data, options);
-      }
+            var options = {
+            title: 'My Daily Activities',
+            is3D: true,
+            };
+
+            var chart = new google.visualization.PieChart(document.getElementById('piechart_3d'));
+            chart.draw(data, options);
+        }
+        
+      
     </script>
 </html>

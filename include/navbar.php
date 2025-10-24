@@ -9,6 +9,7 @@ switch ($_SESSION['nivel']) {
         <nav>
             <a href="usuario/lista.php">Usuario</a>
             <a href="ponto/relatorio_ponto.php">Ponto</a>
+            <a href="/online.php">Relatórios</a>
             <a href="logout.php">Sair</a>
         </nav>
         ';
