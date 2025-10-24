@@ -1,9 +1,8 @@
 <?php
 session_start();
-if(!isset($_SESSION['id_usuario'])) {
-    header("Location: logout.php");
-}
-include "../../BD/conexao.php";
+include(__DIR__ . "/../../BD/conexao.php");
+require "../../include/verificacao.php";
+verificar_login($conn);
 
 // Verifica se foi passado o ID do usuário via GET
 if (isset($_GET['id'])) {
