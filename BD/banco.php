@@ -10,8 +10,7 @@ default collate utf8mb4_unicode_ci;
 create table cargo (
 id_cargo int auto_increment primary key,
 nome_cargo varchar(100) not null,
-salario_bruto decimal(10, 2) not null,
-nivel int not null
+salario_bruto decimal(10, 2) not null
 );
 
 create table usuario(
@@ -74,7 +73,7 @@ foreign key (id_usuario) references usuario(id_usuario) ON DELETE CASCADE
 );
 
 insert into cargo (nome_cargo, salario_bruto, nivel)
-values (“adm”, 10, 1);
+values (“adm”', 10, 1);
 
 ");
 $conn->query($sql);

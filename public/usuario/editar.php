@@ -138,7 +138,6 @@ if (isset($_POST['editar_usuario'])) {
     <input type="date" name="data_admissao" value="<?= htmlspecialchars($usuario['data_admissao']) ?>" required><br><br>
 
     <button type="submit" name="editar_usuario">Salvar</button>
-    <button><a href="lista.php">Voltar</a></button>
   </form>
 </body>
 </html>
