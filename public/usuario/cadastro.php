@@ -1,7 +1,9 @@
 <?php
 include("../../BD/conexao.php");
 
+// =============================
 // Buscar cargos existentes
+// =============================
 $cargos = [];
 $result = $conn->query("SELECT id_cargo, nome_cargo FROM cargo ORDER BY nome_cargo ASC");
 if ($result && $result->num_rows > 0) {
@@ -22,13 +24,12 @@ function validarDados($dados, $conn)
         $erros[] = "Campo 'Nome' está vazio.";
     }
 
-    // CPF
+    // CPF (apenas números)
     if (empty($dados['cpf_usuario'])) {
         $erros[] = "Campo 'CPF' está vazio.";
-    } elseif (!preg_match('/^\d{3}\.\d{3}\.\d{3}-\d{2}$/', $dados['cpf_usuario'])) {
-        $erros[] = "Campo 'CPF' está preenchido de forma incorreta (use o formato xxx.xxx.xxx-xx).";
+    } elseif (!preg_match('/^\d{11}$/', $dados['cpf_usuario'])) {
+        $erros[] = "Campo 'CPF' inválido. Digite 11 números.";
     } else {
-        // CPF único
         $stmt = $conn->prepare("SELECT id_usuario FROM usuario WHERE cpf_usuario = ?");
         $stmt->bind_param("s", $dados['cpf_usuario']);
         $stmt->execute();
@@ -39,13 +40,12 @@ function validarDados($dados, $conn)
         $stmt->close();
     }
 
-    // RG
+    // RG (apenas números)
     if (empty($dados['rg_usuario'])) {
         $erros[] = "Campo 'RG' está vazio.";
-    } elseif (!preg_match('/^\d{2}\.\d{3}\.\d{3}-\d{1}$/', $dados['rg_usuario'])) {
-        $erros[] = "Campo 'RG' inválido (use o formato xx.xxx.xxx-x).";
+    } elseif (!preg_match('/^\d{9}$/', $dados['rg_usuario'])) {
+        $erros[] = "Campo 'RG' inválido. Digite 9 números.";
     } else {
-        // RG único
         $stmt = $conn->prepare("SELECT id_usuario FROM usuario WHERE rg_usuario = ?");
         $stmt->bind_param("s", $dados['rg_usuario']);
         $stmt->execute();
@@ -67,7 +67,6 @@ function validarDados($dados, $conn)
     } elseif (!filter_var($dados['email_usuario'], FILTER_VALIDATE_EMAIL)) {
         $erros[] = "Campo 'Email' está preenchido de forma incorreta.";
     } else {
-        // Email único
         $stmt = $conn->prepare("SELECT id_usuario FROM usuario WHERE email_usuario = ?");
         $stmt->bind_param("s", $dados['email_usuario']);
         $stmt->execute();
@@ -85,13 +84,12 @@ function validarDados($dados, $conn)
         $erros[] = "A senha deve ter no mínimo 6 caracteres.";
     }
 
-    // Telefone
+    // Telefone (apenas números)
     if (empty($dados['telefone'])) {
         $erros[] = "Campo 'Telefone' está vazio.";
-    } elseif (!preg_match('/^\(\d{2}\) \d{5}-\d{4}$/', $dados['telefone'])) {
-        $erros[] = "Campo 'Telefone' inválido (use o formato (xx) xxxxx-xxxx).";
+    } elseif (!preg_match('/^\d{11}$/', $dados['telefone'])) {
+        $erros[] = "Campo 'Telefone' inválido. Use DDD + número (11 dígitos).";
     } else {
-        // Telefone único
         $stmt = $conn->prepare("SELECT id_usuario FROM usuario WHERE telefone = ?");
         $stmt->bind_param("s", $dados['telefone']);
         $stmt->execute();
@@ -102,11 +100,11 @@ function validarDados($dados, $conn)
         $stmt->close();
     }
 
-    // CEP
+    // CEP (apenas números)
     if (empty($dados['cep'])) {
         $erros[] = "Campo 'CEP' está vazio.";
-    } elseif (!preg_match('/^\d{5}-\d{3}$/', $dados['cep'])) {
-        $erros[] = "Campo 'CEP' inválido (use o formato xxxxx-xxx).";
+    } elseif (!preg_match('/^\d{8}$/', $dados['cep'])) {
+        $erros[] = "Campo 'CEP' inválido. Digite 8 números.";
     }
 
     // Cargo
@@ -167,15 +165,16 @@ function cadastrarUsuario($conn, $dados)
 // =============================
 $erros = [];
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Limpeza dos dados (remove máscaras)
     $dados = [
-        "nome_usuario"   => $_POST['nome_usuario'] ?? '',
-        "cpf_usuario"    => $_POST['cpf_usuario'] ?? '',
-        "rg_usuario"     => $_POST['rg_usuario'] ?? '',
+        "nome_usuario"   => trim($_POST['nome_usuario'] ?? ''),
+        "cpf_usuario"    => preg_replace('/\D/', '', $_POST['cpf_usuario'] ?? ''),
+        "rg_usuario"     => preg_replace('/\D/', '', $_POST['rg_usuario'] ?? ''),
         "genero"         => $_POST['genero'] ?? '',
-        "email_usuario"  => $_POST['email_usuario'] ?? '',
+        "email_usuario"  => trim($_POST['email_usuario'] ?? ''),
         "senha_usuario"  => $_POST['senha_usuario'] ?? '',
-        "telefone"       => $_POST['telefone'] ?? '',
-        "cep"            => $_POST['cep'] ?? '',
+        "telefone"       => preg_replace('/\D/', '', $_POST['telefone'] ?? ''),
+        "cep"            => preg_replace('/\D/', '', $_POST['cep'] ?? ''),
         "id_cargo"       => (int)($_POST['id_cargo'] ?? 0),
         "assiduidade"    => (float)($_POST['assiduidade'] ?? 0),
         "data_admissao"  => $_POST['data_admissao'] ?? '',
@@ -195,16 +194,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $checkCargo->close();
 
     if (empty($erros)) {
-        if (cadastrarUsuario($conn, $dados)) {
-            header("Location: lista.php");
-            exit();
-        } else {
-            echo "<p style='color:red;'>Erro ao cadastrar o usuário.</p>";
+        try {
+            if (cadastrarUsuario($conn, $dados)) {
+                header("Location: lista.php");
+                exit();
+            } else {
+                echo "<p style='color:red;'>Erro ao cadastrar o usuário.</p>";
+            }
+        } catch (mysqli_sql_exception $e) {
+            if (str_contains($e->getMessage(), 'Duplicate entry')) {
+                echo "<p style='color:red;'>Erro: já existe um registro com os mesmos dados únicos (CPF, RG, Email ou Telefone).</p>";
+            } else {
+                echo "<p style='color:red;'>Erro inesperado: {$e->getMessage()}</p>";
+            }
         }
     }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -228,7 +234,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     ?>
 
-    <!-- Formulário -->
     <form action="" method="POST">
         <label>Nome:</label><br>
         <input type="text" name="nome_usuario" value="<?= $_POST['nome_usuario'] ?? '' ?>" required><br><br>
@@ -282,7 +287,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <br>
     <a href="lista.php">Voltar</a>
 
-    <!-- Máscaras automáticas com JS Puro -->
+    <!-- Máscaras automáticas com JS -->
     <script src="https://unpkg.com/imask"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
