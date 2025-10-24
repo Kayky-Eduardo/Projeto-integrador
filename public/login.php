@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
                     $verificacao_logado = $conn->prepare("
                     SELECT id_login FROM login
-                    WHERE id_usuario = ? AND data_fim IS NULL
+                    WHERE id_usuario = ? AND (data_fim IS NULL OR data_fim = '')
                     LIMIT 1
                     ");
                     $verificacao_logado->bind_param("i", $usuario['id_usuario']);
@@ -41,13 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     // não é definitivo, lembrar das dependencias
                     // como cuidar do hash e etc.
                     $update_login = $conn -> prepare("
-                    INSERT INTO login (email_login, senha, id_usuario, id_cargo) VALUES
-                    (?, ?, ?, ?)
+                    INSERT INTO login (email_login, id_usuario, id_cargo) VALUES
+                    (?, ?, ?)
                     ");
-                    $novo_hash_login = password_hash($senha, PASSWORD_DEFAULT);
                     $update_login->bind_param(
-                        'ssii', $usuario['email_usuario'], $novo_hash_login,
-                        $usuario['id_usuario'], $usuario['id_cargo']
+                        'sii', $usuario['email_usuario'], $usuario['id_usuario'], $usuario['id_cargo']
                     );
                     $update_login->execute();
                     $_SESSION['id_login'] = $update_login->insert_id;
@@ -61,7 +59,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $update->close();
                         $conn->close();
                     }
-                    $conn->close();
                     header("Location: index.php");
             } else {
                 echo "Falha ao tentar logar! Verifique se o email ou senha estão digitados de forma correta";
