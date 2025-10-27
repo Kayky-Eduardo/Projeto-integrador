@@ -12,7 +12,9 @@ verificar_login($conn);
     <title>Relatório ponto</title>
 </head>
 <body>
-    <div id="piechart_3d" style="width: 900px; height: 500px;"></div>
+    <div>
+        <div id="piechart_3d" style="width: 900px; height: 500px;"></div>
+    </div>
 </body>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
@@ -26,7 +28,7 @@ verificar_login($conn);
                 ['Task', 'Hours per Day'],
                 ['Presentes', valores[0]],
                 ['Ausentes',  valores[1]],
-                ['Almoço',  2],
+                ['Almoço', valores[2]], // verificar depois se fica vazio porque não tem ninguem em almoço ou deu bug
                 ['Pausa', 2],
                 ['Horário concluido',    7]
             ]);
