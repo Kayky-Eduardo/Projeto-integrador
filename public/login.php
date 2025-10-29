@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         } else {
             echo "Falha ao tentar logar! Verifique se o email ou senha estão digitados de forma correta<br>";
-            echo "<a href='recuperar-senha.php'>Recuperar Senha</a>";
+            echo "<a href='recuperar_senha.php'>Recuperar Senha</a>";
         }
     }
 }
