@@ -2,7 +2,7 @@
 // Configurações da conexão
 $host = "localhost";    // Servidor do banco
 $user = "root";         // Usuário (padrão do xampp)
-$pass = "102030";             // Senha (vazia no xampp por padrão)
+$pass = "";             // Senha (vazia no xampp por padrão)
 $db = "pi_0392";   // nome do banco
 
 // cria a conexão
@@ -12,4 +12,6 @@ if ($conn->connect_error) {
     die("Erro na conexão: " . $conn->connect_error);
 }
 
+// $redis = new Redis();
+// $redis->connect('127.0.0.1', 6379);
 ?>

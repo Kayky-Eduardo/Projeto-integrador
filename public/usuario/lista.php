@@ -1,5 +1,8 @@
 <?php
+session_start();
 include(__DIR__ . "/../../BD/conexao.php");
+require "../../include/verificacao.php";
+verificar_login($conn);
 
 // Consulta todos os usuários
 $sql = "SELECT u.id_usuario, u.nome_usuario, u.cpf_usuario, u.rg_usuario, u.genero,
@@ -57,13 +60,12 @@ $result = $conn->query($sql);
             echo "<td>".($row["conta_ativa"] ? "<span class='ativo'>Ativo</span>" : "<span class='inativo'>Inativo</span>")."</td>";
             echo '<td>
                 <form action="editar.php" method="GET">
-                    <form action="editar.php" method="GET">
                     <input type="hidden" name="id" value="'. $row['id_usuario'] . '">
                     <button type="submit">Editar</button>
                 </form>
                   </td>';
             echo '<td>
-              <form action="../../api/deletar/deletar_usuario.php" method="POST" onsubmit="return confirm(\'Tem certeza que deseja deletar?\');">
+              <form action="deletar_usuario.php" method="POST" onsubmit="return confirm(\'Tem certeza que deseja deletar?\');">
                 <input type="hidden" name="id_usuario" value="'. $row['id_usuario'] . '">
                 <button type="submit">Deletar</button>
               </form>
