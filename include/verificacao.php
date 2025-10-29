@@ -27,4 +27,13 @@ function verificar_login($conn) {
         exit;
     }
 }
+
+// quando o sistema estiver mais bem definido, irei seguir esta ordem de whitelist
+// onde cada nivel possui uma whitelist diferente.
+// function verificar_nivel($nivel) {
+//     $entrada = null;
+//     if ($nivel >= 4) {
+//         $entrada = ['relatorio', '']
+//     }
+// }
 ?>
