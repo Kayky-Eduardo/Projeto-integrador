@@ -1,6 +1,8 @@
 <?php
-include("../../BD/conexao.php");
-
+session_start();
+include(__DIR__ . "/../../BD/conexao.php");
+require "../../include/verificacao.php";
+verificar_login($conn);
 // Buscar cargos existentes
 $cargos = [];
 $result = $conn->query("SELECT id_cargo, nome_cargo FROM cargo ORDER BY nome_cargo ASC");

@@ -1,5 +1,8 @@
 <?php
+session_start();
 include(__DIR__ . "/../../BD/conexao.php");
+require "../../include/verificacao.php";
+verificar_login($conn);
 
 // Consulta todos os usuários
 $sql = "SELECT u.id_usuario, u.nome_usuario, u.cpf_usuario, u.rg_usuario, u.genero,

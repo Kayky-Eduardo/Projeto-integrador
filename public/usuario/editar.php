@@ -1,5 +1,8 @@
 <?php
-include "../../BD/conexao.php";
+session_start();
+include(__DIR__ . "/../../BD/conexao.php");
+require "../../include/verificacao.php";
+verificar_login($conn);
 
 // Verifica se foi passado o ID do usuário via GET
 if (isset($_GET['id'])) {
