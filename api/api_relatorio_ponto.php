@@ -2,15 +2,19 @@
 include(__DIR__ . "/../BD/conexao.php");
 header("Content-Type: application/json");
 
+
+// realizando as pesquisas do status do funcionário
+// no banco de dados
 $pesquisa_trabalhando = $conn->prepare("
-    SELECT COUNT(*) AS total
+    SELECT COUNT(*) AS total_trabalhando
     FROM ponto
     WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NULL OR fim_ponto = '' or fim_ponto = '00000-00-00 00:00:00')"
 );
+
 $pesquisa_trabalhando->execute();
 $result = $pesquisa_trabalhando->get_result();
 if ($linha = $result->fetch_assoc()) {
-    $numero_presente = $linha['total'];
+    $numero_presente = $linha['total_trabalhando'];
 } else {
     $numero_presente = 0;
 }
@@ -27,12 +31,20 @@ if ($linha = $result->fetch_assoc()) {
     $numero_ausentes = 0;
 }
 
-// $pesquisa_pausa = $conn->excute("
-//     SELECT * FROM ponto WHERE inicio_almoco IS NOT NULL AND (fim_almoco IS NULL OR fim_almoco = '');
-// ");
-// $pesquisa_pausa->get_result();
-// $numero_em_pausa =  $pesquisa_pausa->num_rows; 
+$pesquisa_pausa = $conn->prepare("
+    SELECT COUNT(*) AS total_pausa
+    FROM ponto
+    WHERE inicio_almoco IS NOT NULL AND (fim_almoco IS NULL OR fim_almoco = '');
+");
+$pesquisa_pausa->execute();
+$result = $pesquisa_pausa->get_result();
+if ($linha = $result->fetch_assoc()) {
+    $numero_pausa = (int)$linha['total_pausa'] - (int)$numero_presente;
+} else {
+    $numero_pausa = 0;
+}
 
-$valores = [$numero_presente, $numero_ausentes]; // $numero_em_pausa];
+// entregando uma array com os valores da pesquisas
+$valores = [$numero_presente, $numero_ausentes, $numero_pausa];
 echo json_encode($valores);
 ?>
