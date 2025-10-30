@@ -64,7 +64,7 @@ verificar_login($conn);
                     async function exibir_tipo(tipo) {
                         const resultado_relatorio = document.getElementById('resultado-caixa-grafico')
                         const resposta_api = await fetch(`../../api/api_relatorio_ponto.php?acao=${tipo}`);
-                        const resposta = resposta_api.json();
+                        const resposta = await resposta_api.json();
                         // continuar
                         resposta.forEach(r => {
                             const p = document.createElement('p');
@@ -76,8 +76,8 @@ verificar_login($conn);
                             `;
                             resultado_relatorio.appendChild(p);
                         });
-                        exibir_tipo(tipo);
                     }
+                    exibir_tipo(tipo);
                 }
             })
             
