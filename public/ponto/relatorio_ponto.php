@@ -12,8 +12,11 @@ verificar_login($conn);
     <title>Relatório ponto</title>
 </head>
 <body>
-    <div>
+    <div class="caixa-grafico">
         <div id="piechart_3d" style="width: 900px; height: 500px;"></div>
+    </div>
+    <div class="resultado-caixa-grafico">
+
     </div>
 </body>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -24,16 +27,16 @@ verificar_login($conn);
             const valoresJSON = await fetch('../../api/api_relatorio_ponto.php');
             const valores = await valoresJSON.json();
             
+            // se algum campo ficar vazio é porque o resultado do campo é igual 0
             dadosDoGrafico = google.visualization.arrayToDataTable([
                 ['Task', 'Hours per Day'],
                 ['Presentes', valores[0]],
-                ['Ausentes',  valores[1]],
+                ['Ausentes',  valores[1]], 
                 ['Almoço', valores[2]], // verificar depois se fica vazio porque não tem ninguem em almoço ou deu bug
-                ['Pausa', 2],
-                ['Horário concluido',    7]
+                ['Horário concluido', valores[3]],
+                ['Pausa', 2]
             ]);
             drawChart();
-            
         }
         google.charts.load("current", {packages:["corechart"]});
         google.charts.setOnLoadCallback(carregar_dados);
@@ -41,16 +44,33 @@ verificar_login($conn);
             if (!dadosDoGrafico) {
                 return
             }
-
             var options = {
-            title: 'My Daily Activities',
+            title: 'Status Operador',
             pieHole: 0.4,
             };
-
             var chart = new google.visualization.PieChart(document.getElementById('piechart_3d'));
+            // event listener
+            google.visualization.events.addListener(chart, 'select', () => {
+                // pegando qual grafico foi clidado
+                // retorna array
+                const selecionado = chart.getSelection();
+                
+                if (selecionado.length > 0) {
+                    // para o Pie Chart, o item selecionado é sempre uma linha (row).
+                    // cada fatia é uma row
+                    const itemSelecionado = selecionado[0];
+                    const indiceLinha = itemSelecionado.row;
+
+                    // pegando o nome do campo e valor atrelado
+                    const tipo = dadosDoGrafico.getValue(indiceLinha, 0);
+                    const valor = dadosDoGrafico.getValue(indiceLinha, 1);
+
+                    console.log(`Tipo: ${tipo} | Valor: ${valor}`);
+                }
+            })
+            
             chart.draw(dadosDoGrafico, options);
-        }
         
-      
+        }
     </script>
 </html>
