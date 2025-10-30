@@ -54,12 +54,15 @@ function dados_grafico ($conn) {
         WHERE inicio_ponto IS NOT NULL AND fim_ponto IS NOT NULL;
     ");
     $pesquisa_horario_completo->execute();
+
     $result = $pesquisa_horario_completo->get_result();
+
     if ($linha = $result->fetch_assoc()) {
         $numero_horario_completo = (int)$linha['total_completo'];
     } else {
         $numero_horario_completo = 0;
     }
+    
     // entregando uma array com os valores da pesquisas
     $valores = [
         $numero_presente, $numero_ausentes,
@@ -68,40 +71,76 @@ function dados_grafico ($conn) {
     return $valores;
 }
 
+// realizando o filtro para trazer as informações
 function filtrar($conn, $tipo) {
     if($tipo == 'presente') {
-        $filtro_presente = $conn->query("
-            select
+        $filtro_presente = $conn->prepare("
+            select usuario.email_usuario, ponto.*
+            from ponto join usuario on ponto.id_usuario = usuario.id_usuario
+            WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NULL);
         ");
+        $filtro_presente->execute();
+        $result = $filtro_presente->get_result();
+        while($linha = $result->fetch_assoc()){
+            $presentes[] = $linha;
+        }
+        return $presentes;
     }
 
     if($tipo == 'ausentes') {
-        
+        $filtro_ausente = $conn->prepare("
+        select usuario.email_usuario, ponto.*
+        from ponto join usuario on ponto.id_usuario = usuario.id_usuario
+        WHERE inicio_ponto IS NULL
+        ");
+        $filtro_ausente->execute();
+        $result = $filtro_ausente->get_result();
+        while($linha = $result->fetch_assoc()){
+            $ausentes[] = $linha;
+        }
+        return $ausentes;
     }
     if($tipo == 'pausa') {
-        
+        $filtro_pausa = $conn->prepare("
+        select usuario.email_usuario, ponto.*
+        from ponto join usuario on ponto.id_usuario = usuario.id_usuario
+        WHERE inicio_almoco IS NOT NULL AND (fim_almoco IS NULL or fim_almoco = '' or fim_almoco = '00:00:00')
+        ");
+        $filtro_pausa->execute();
+        $result = $filtro_pausa->get_result();
+        if ($result->num_rows > 0) {
+            while($linha = $result->fetch_assoc()){
+                $pausas[] = $linha;
+            }
+        } else {
+            echo "cheguei aqui";
+        }
+        return $pausas;
     }
-    if($tipo == 'horario_completo') {
-        
+    if($tipo == 'horario') {
+       $filtro_horario_completo = $conn->prepare("
+        select usuario.email_usuario, ponto.*
+        from ponto join usuario on ponto.id_usuario = usuario.id_usuario
+        WHERE inicio_ponto IS NOT NULL AND fim_ponto IS NOT NULL;
+    ");
+    $filtro_horario_completo->execute();
+    $result = $filtro_horario_completo->get_result();
+    while($linha = $result->fetch_assoc()){
+        $horario_completo[] = $linha;
+    }
+    return $horario_completo; 
+    }
 }
 
-}
 // pegando o tipo e entregando o resultado
 $acao = $_GET['acao'] ?? null;
 $input = json_decode(file_get_contents('php://input'), true);
+$white_list = ['ausentes', 'pausa', 'horario', 'presente'];
 
-if($acao == 'presente') {
-
-}
-
-if($acao == 'ausentes') {
-    
-}
-if($acao == 'pausa') {
-    
-}
-if($acao == 'horario_completo') {
-    
+if (in_array($acao, $white_list)) {
+    if($acao != null) {
+        echo json_encode(filtrar($conn, $acao));
+    }
 }
 
 // padrão entregar dados

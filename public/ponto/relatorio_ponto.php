@@ -15,7 +15,7 @@ verificar_login($conn);
     <div class="caixa-grafico">
         <div id="piechart_3d" style="width: 900px; height: 500px;"></div>
     </div>
-    <div class="resultado-caixa-grafico">
+    <div id="resultado-caixa-grafico">
 
     </div>
 </body>
@@ -32,9 +32,8 @@ verificar_login($conn);
                 ['Task', 'Hours per Day'],
                 ['Presentes', valores[0]],
                 ['Ausentes',  valores[1]], 
-                ['Almoço', valores[2]], // verificar depois se fica vazio porque não tem ninguem em almoço ou deu bug
-                ['Horário concluido', valores[3]],
-                ['Pausa', 2]
+                ['Pausa', valores[2]],
+                ['Horario', valores[3]]
             ]);
             drawChart();
         }
@@ -56,21 +55,33 @@ verificar_login($conn);
                 const selecionado = chart.getSelection();
                 
                 if (selecionado.length > 0) {
-                    // para o Pie Chart, o item selecionado é sempre uma linha (row).
+                    // o item selecionado é sempre uma linha (row).
                     // cada fatia é uma row
                     const itemSelecionado = selecionado[0];
                     const indiceLinha = itemSelecionado.row;
-
                     // pegando o nome do campo e valor atrelado
                     const tipo = dadosDoGrafico.getValue(indiceLinha, 0);
-                    const valor = dadosDoGrafico.getValue(indiceLinha, 1);
-
-                    console.log(`Tipo: ${tipo} | Valor: ${valor}`);
+                    async function exibir_tipo(tipo) {
+                        const resultado_relatorio = document.getElementById('resultado-caixa-grafico')
+                        const resposta_api = await fetch(`../../api/api_relatorio_ponto.php?acao=${tipo}`);
+                        const resposta = resposta_api.json();
+                        // continuar
+                        resposta.forEach(r => {
+                            const p = document.createElement('p');
+                            p.innerHTML = `
+                            ${r.id_ponto}
+                            ${r.email_usuario}
+                            ${r.inicio_ponto}
+                            ${r.data_ponto}
+                            `;
+                            resultado_relatorio.appendChild(p);
+                        });
+                        exibir_tipo(tipo);
+                    }
                 }
             })
             
             chart.draw(dadosDoGrafico, options);
-        
         }
     </script>
 </html>
