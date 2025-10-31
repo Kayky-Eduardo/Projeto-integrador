@@ -9,7 +9,7 @@ function dados_grafico ($conn) {
     $pesquisa_trabalhando = $conn->prepare("
         SELECT COUNT(*) AS total_trabalhando
         FROM ponto
-        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NULL)"
+        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NULL OR fim_ponto = '00:00:00')"
     );
     
     $pesquisa_trabalhando->execute();
@@ -51,7 +51,7 @@ function dados_grafico ($conn) {
     $pesquisa_horario_completo = $conn->prepare("
         SELECT COUNT(*) AS total_completo
         FROM ponto
-        WHERE inicio_ponto IS NOT NULL AND fim_ponto IS NOT NULL;
+        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NOT NULL AND fim_ponto != '00:00:00');
     ");
     $pesquisa_horario_completo->execute();
 
@@ -73,11 +73,12 @@ function dados_grafico ($conn) {
 
 // realizando o filtro para trazer as informações
 function filtrar($conn, $tipo) {
-    if($tipo == 'presente') {
+    if($tipo == 'presentes') {
+        $presentes = [];
         $filtro_presente = $conn->prepare("
             select usuario.email_usuario, ponto.*
             from ponto join usuario on ponto.id_usuario = usuario.id_usuario
-            WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NULL);
+            WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NULL or fim_ponto = '00:00:00');
         ");
         $filtro_presente->execute();
         $result = $filtro_presente->get_result();
@@ -88,10 +89,12 @@ function filtrar($conn, $tipo) {
     }
 
     if($tipo == 'ausentes') {
+        $ausentes = [];
         $filtro_ausente = $conn->prepare("
-        select usuario.email_usuario, ponto.*
-        from ponto join usuario on ponto.id_usuario = usuario.id_usuario
-        WHERE inicio_ponto IS NULL
+        select usuario.email_usuario, usuario.id_usuario
+        from usuario
+        left join ponto on usuario.id_usuario = ponto.id_usuario
+        where ponto.id_ponto is null or ponto.inicio_ponto = '00:00:00'
         ");
         $filtro_ausente->execute();
         $result = $filtro_ausente->get_result();
@@ -101,6 +104,7 @@ function filtrar($conn, $tipo) {
         return $ausentes;
     }
     if($tipo == 'pausa') {
+        $pausas = [];
         $filtro_pausa = $conn->prepare("
         select usuario.email_usuario, ponto.*
         from ponto join usuario on ponto.id_usuario = usuario.id_usuario
@@ -108,26 +112,25 @@ function filtrar($conn, $tipo) {
         ");
         $filtro_pausa->execute();
         $result = $filtro_pausa->get_result();
-        if ($result->num_rows > 0) {
-            while($linha = $result->fetch_assoc()){
-                $pausas[] = $linha;
-            }
-        } else {
-            echo "cheguei aqui";
+        while($linha = $result->fetch_assoc()){
+            $pausas[] = $linha;
         }
         return $pausas;
     }
     if($tipo == 'horario') {
-       $filtro_horario_completo = $conn->prepare("
+        $horario_completo = [];
+        $filtro_horario_completo = $conn->prepare("
         select usuario.email_usuario, ponto.*
         from ponto join usuario on ponto.id_usuario = usuario.id_usuario
-        WHERE inicio_ponto IS NOT NULL AND fim_ponto IS NOT NULL;
+        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NOT NULL AND fim_ponto != '00:00:00');
     ");
     $filtro_horario_completo->execute();
     $result = $filtro_horario_completo->get_result();
+    
     while($linha = $result->fetch_assoc()){
         $horario_completo[] = $linha;
     }
+
     return $horario_completo; 
     }
 }
@@ -135,14 +138,19 @@ function filtrar($conn, $tipo) {
 // pegando o tipo e entregando o resultado
 $acao = $_GET['acao'] ?? null;
 $input = json_decode(file_get_contents('php://input'), true);
-$white_list = ['ausentes', 'pausa', 'horario', 'presente'];
+$white_list = ['ausentes', 'pausa', 'horario', 'presentes'];
 
-if (in_array($acao, $white_list)) {
-    if($acao != null) {
-        echo json_encode(filtrar($conn, $acao));
+if ($acao) {
+    $acao_formatada = strtolower($acao);
+    if (in_array($acao_formatada, $white_list)) {
+        if($acao != null) {
+            echo json_encode(filtrar($conn, $acao_formatada));
+            exit;
+        }
     }
 }
 
 // padrão entregar dados
 echo json_encode(dados_grafico($conn));
+exit;
 ?>

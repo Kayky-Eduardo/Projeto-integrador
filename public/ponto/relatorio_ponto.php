@@ -10,13 +10,26 @@ verificar_login($conn);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório ponto</title>
+    <link rel="stylesheet" href="../../assets/estilo.css">
 </head>
 <body>
     <div class="caixa-grafico">
         <div id="piechart_3d" style="width: 900px; height: 500px;"></div>
     </div>
     <div id="resultado-caixa-grafico">
+        <table>
+            <thead>
+                <th>ID ponto</th>
+                <th>Email</th>
+                <th>Entrada</th>
+                <th>Almoço(entrada - saida)</th>
+                <th>Saida</th>
+                <th>Data</th>
+            </thead>
+            <tbody id="resposta-tbody">
 
+            </tbody>
+        </table>
     </div>
 </body>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -62,20 +75,30 @@ verificar_login($conn);
                     // pegando o nome do campo e valor atrelado
                     const tipo = dadosDoGrafico.getValue(indiceLinha, 0);
                     async function exibir_tipo(tipo) {
-                        const resultado_relatorio = document.getElementById('resultado-caixa-grafico')
+                        const resultado_relatorio = document.getElementById('resposta-tbody')
                         const resposta_api = await fetch(`../../api/api_relatorio_ponto.php?acao=${tipo}`);
                         const resposta = await resposta_api.json();
-                        // continuar
-                        resposta.forEach(r => {
-                            const p = document.createElement('p');
-                            p.innerHTML = `
-                            ${r.id_ponto}
-                            ${r.email_usuario}
-                            ${r.inicio_ponto}
-                            ${r.data_ponto}
-                            `;
-                            resultado_relatorio.appendChild(p);
-                        });
+                        
+                        resultado_relatorio.innerHTML = "";
+
+                            resposta.forEach(r => {
+                                let id = r.id_ponto ?? '-';
+                                let entrada = r.inicio_ponto ?? '-';
+                                let almoco_entrada = r.inicio_almoco ?? '-';
+                                let almoco_saida = r.fim_almoco ?? '';
+                                let saida = r.fim_ponto ?? '-';
+                                let data =r.data_ponto ?? '-';
+                                const tr = document.createElement("tr");
+                                tr.innerHTML = `
+                                <td>${id}</td>
+                                <td>${r.email_usuario}</td>
+                                <td>${entrada}</td>
+                                <td>${almoco_entrada} - ${almoco_saida}</td>
+                                <td>${saida}</td>
+                                <td>${data}</td>
+                                `;
+                                resultado_relatorio.appendChild(tr);
+                            }); 
                     }
                     exibir_tipo(tipo);
                 }
