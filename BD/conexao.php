@@ -2,7 +2,7 @@
 // Configurações da conexão
 $host = "localhost";    // Servidor do banco
 $user = "root";         // Usuário (padrão do xampp)
-$pass = "102030";             // Senha (vazia no xampp por padrão)
+$pass = "";             // Senha (vazia no xampp por padrão)
 $db = "pi_0392";   // nome do banco
 
 // cria a conexão
