@@ -13,9 +13,15 @@ verificar_login($conn);
     <link rel="stylesheet" href="../../assets/estilo.css">
 </head>
 <body>
+    <dialog>
+        <div class="filtrar-relatorio-grafico">
+            <input type="date" id="data-filtro-relatorio-grafico">
+        </div>
+    </dialog>
     <div class="caixa-grafico">
         <div id="piechart_3d" style="width: 900px; height: 500px;"></div>
     </div>
+    <!-- Tacar esta parte na direita do grafico -->
     <div id="resultado-caixa-grafico">
         <table>
             <thead>
@@ -27,9 +33,11 @@ verificar_login($conn);
                 <th>Data</th>
             </thead>
             <tbody id="resposta-tbody">
-
             </tbody>
         </table>
+    <!-- Perfil de usuario geral(com filtro), porém irei fazer um para o profissional ver o próprio -->
+        <hr>
+        <h3>Perfil de usuario(ADM)</h3>
     </div>
 </body>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -75,35 +83,43 @@ verificar_login($conn);
                     // pegando o nome do campo e valor atrelado
                     const tipo = dadosDoGrafico.getValue(indiceLinha, 0);
                     async function exibir_tipo(tipo) {
+                        // pegando a tabela
                         const resultado_relatorio = document.getElementById('resposta-tbody')
+                        
+                        // esperando a resposta em json da api
                         const resposta_api = await fetch(`../../api/api_relatorio_ponto.php?acao=${tipo}`);
+                        
+                        // transformando a array em json para array normal
                         const resposta = await resposta_api.json();
                         
+                        // esvaziando a tabela
                         resultado_relatorio.innerHTML = "";
 
-                            resposta.forEach(r => {
-                                let id = r.id_ponto ?? '-';
-                                let entrada = r.inicio_ponto ?? '-';
-                                let almoco_entrada = r.inicio_almoco ?? '-';
-                                let almoco_saida = r.fim_almoco ?? '';
-                                let saida = r.fim_ponto ?? '-';
-                                let data =r.data_ponto ?? '-';
-                                const tr = document.createElement("tr");
-                                tr.innerHTML = `
+                        // exibindo o resultado
+                        resposta.forEach(r => {
+                            let id = r.id_ponto ?? '-';
+                            let entrada = r.inicio_ponto ?? '-';
+                            let almoco_entrada = r.inicio_almoco ?? '-';
+                            let almoco_saida = r.fim_almoco ?? '';
+                            let saida = r.fim_ponto ?? '-';
+                            let data =r.data_ponto ?? '-';
+
+                            const tr = document.createElement("tr");
+                            
+                            tr.innerHTML = `
                                 <td>${id}</td>
                                 <td>${r.email_usuario}</td>
                                 <td>${entrada}</td>
                                 <td>${almoco_entrada} - ${almoco_saida}</td>
                                 <td>${saida}</td>
                                 <td>${data}</td>
-                                `;
-                                resultado_relatorio.appendChild(tr);
+                            `;
+                            resultado_relatorio.appendChild(tr);
                             }); 
                     }
                     exibir_tipo(tipo);
                 }
             })
-            
             chart.draw(dadosDoGrafico, options);
         }
     </script>
