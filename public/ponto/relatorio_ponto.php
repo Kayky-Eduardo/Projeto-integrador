@@ -13,6 +13,7 @@ verificar_login($conn);
     <link rel="stylesheet" href="../../assets/estilo.css">
 </head>
 <body>
+    <a href="registro_ponto.php">Registrar Ponto</a>
     <dialog>
         <div class="filtrar-relatorio-grafico">
             <input type="date" id="data-filtro-relatorio-grafico">
