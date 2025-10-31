@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
                     $verificacao_logado = $conn->prepare("
                     SELECT id_login FROM login
-                    WHERE id_usuario = ? AND (data_fim IS NULL OR data_fim = '')
+                    WHERE id_usuario = ? AND data_fim IS NULL
                     LIMIT 1
                     ");
                     $verificacao_logado->bind_param("i", $usuario['id_usuario']);

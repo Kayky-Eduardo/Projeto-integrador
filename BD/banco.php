@@ -36,10 +36,26 @@ create table ponto (
 id_ponto int auto_increment primary key,
 id_usuario int not null,
 inicio_ponto datetime not null,
+fim_ponto datetime not null,
 inicio_almoco time not null,
 fim_almoco time not null,
-fim_ponto datetime not null, 
 foreign key (id_usuario) references usuario(id_usuario) ON DELETE CASCADE
+);
+
+CREATE TABLE ponto (
+    id_ponto INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    data_ponto DATE NOT NULL, 
+    hora_entrada TIME DEFAULT NULL,
+    hora_saida TIME DEFAULT NULL,
+    hora_almoco_saida TIME DEFAULT NULL,
+    hora_almoco_retorno TIME DEFAULT NULL,
+    observacao TEXT,
+    status ENUM('pendente', 'aprovado', 'rejeitado') DEFAULT 'pendente',
+    aprovado_por INT DEFAULT NULL,
+    data_aprovacao DATETIME DEFAULT NULL,
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (aprovado_por) REFERENCES usuario(id_usuario)
 );
 
 create table dados_bancarios (
