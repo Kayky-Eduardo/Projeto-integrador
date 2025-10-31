@@ -1,6 +1,6 @@
 <?php
-include("../../BD/conexao.php");
-include("ponto_funcoes.php");
+include_once("../../BD/conexao.php");
+include_once("ponto_funcoes.php");
 
 $status = $_GET['status'] ?? '';
 $result = listarPontos($conn, $status);

@@ -1,6 +1,6 @@
 <?php
-include("../../BD/conexao.php");
-include("ponto_funcoes.php");
+include_once("../../BD/conexao.php");
+include_once("ponto_funcoes.php");
 
 $id = $_GET['id'] ?? 0;
 $ponto = buscarPonto($conn, $id);
