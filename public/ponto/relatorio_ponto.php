@@ -21,6 +21,15 @@ verificar_login($conn);
     <div class="caixa-grafico">
         <div id="piechart_3d" style="width: 900px; height: 500px;"></div>
     </div>
+
+    <select name="select-filtro" id="select-filtro" multiple>
+        <option value="filtro-nome">Nome</option>
+        <option value="filtro-entrada">Entrada</option>
+        <option value="filtro-entrada-almoco">Entrada almoço</option>
+        <option value="filtro-saida-almoco">Saida almoço</option>
+        <option value="filtro-saida">Saida</option>
+        <option value="filtro-data">Data</option>
+    </select>
     <!-- Tacar esta parte na direita do grafico -->
     <div id="resultado-caixa-grafico">
         <table>
@@ -47,16 +56,28 @@ verificar_login($conn);
         async function carregar_dados() {
             const valoresJSON = await fetch('../../api/api_relatorio_ponto.php');
             const valores = await valoresJSON.json();
-            
-            // se algum campo ficar vazio é porque o resultado do campo é igual 0
+            let contador = 0;
+            for (let i=0; i<valores.length; i++) {
+                if (valores[i] == 0) {
+                    contador++;
+                }
+            }
+            if (contador == 4) {
             dadosDoGrafico = google.visualization.arrayToDataTable([
                 ['Task', 'Hours per Day'],
-                ['Presentes', valores[0]],
-                ['Ausentes',  valores[1]], 
-                ['Pausa', valores[2]],
-                ['Horario', valores[3]]
-            ]);
-            drawChart();
+                ['Sem pontos', 1],
+            ]);    
+            } else {
+                // se algum campo ficar vazio é porque o resultado do campo é igual 0
+                dadosDoGrafico = google.visualization.arrayToDataTable([
+                    ['Task', 'Hours per Day'],
+                    ['Presentes', valores[0]],
+                    ['Ausentes',  valores[1]], 
+                    ['Pausa', valores[2]],
+                    ['Horario', valores[3]]
+                ]);
+                drawChart();
+            }
         }
         google.charts.load("current", {packages:["corechart"]});
         google.charts.setOnLoadCallback(carregar_dados);
@@ -98,10 +119,10 @@ verificar_login($conn);
                         // exibindo o resultado
                         resposta.forEach(r => {
                             let id = r.id_ponto ?? '-';
-                            let entrada = r.inicio_ponto ?? '-';
-                            let almoco_entrada = r.inicio_almoco ?? '-';
-                            let almoco_saida = r.fim_almoco ?? '';
-                            let saida = r.fim_ponto ?? '-';
+                            let entrada = r.hora_entrada ?? '-';
+                            let almoco_entrada = r.hora_almoco_saida ?? '-';
+                            let almoco_saida = r.hora_almoco_retorno ?? '';
+                            let saida = r.hora_saida ?? '-';
                             let data =r.data_ponto ?? '-';
 
                             const tr = document.createElement("tr");

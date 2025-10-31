@@ -9,7 +9,7 @@ function dados_grafico ($conn) {
     $pesquisa_trabalhando = $conn->prepare("
         SELECT COUNT(*) AS total_trabalhando
         FROM ponto
-        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NULL OR fim_ponto = '00:00:00')"
+        WHERE hora_entrada IS NOT NULL AND (hora_saida IS NULL OR hora_saida = '00:00:00')"
     );
     
     $pesquisa_trabalhando->execute();
@@ -37,7 +37,7 @@ function dados_grafico ($conn) {
     $pesquisa_pausa = $conn->prepare("
         SELECT COUNT(*) AS total_pausa
         FROM ponto
-        WHERE inicio_almoco IS NOT NULL AND (fim_almoco IS NULL or fim_almoco = '' or fim_almoco = '00:00:00');
+        WHERE hora_almoco_saida IS NOT NULL AND (hora_almoco_retorno IS NULL or hora_almoco_retorno = '' or hora_almoco_retorno = '00:00:00');
     ");
     $pesquisa_pausa->execute();
     $result = $pesquisa_pausa->get_result();
@@ -51,7 +51,7 @@ function dados_grafico ($conn) {
     $pesquisa_horario_completo = $conn->prepare("
         SELECT COUNT(*) AS total_completo
         FROM ponto
-        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NOT NULL AND fim_ponto != '00:00:00');
+        WHERE hora_entrada IS NOT NULL AND (hora_saida IS NOT NULL AND hora_saida != '00:00:00');
     ");
     $pesquisa_horario_completo->execute();
 
@@ -78,7 +78,7 @@ function filtrar($conn, $tipo) {
         $filtro_presente = $conn->prepare("
             select usuario.email_usuario, ponto.*
             from ponto join usuario on ponto.id_usuario = usuario.id_usuario
-            WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NULL or fim_ponto = '00:00:00');
+            WHERE hora_entrada IS NOT NULL AND (hora_saida IS NULL or hora_saida = '00:00:00');
         ");
         $filtro_presente->execute();
         $result = $filtro_presente->get_result();
@@ -94,7 +94,7 @@ function filtrar($conn, $tipo) {
         select usuario.email_usuario, usuario.id_usuario
         from usuario
         left join ponto on usuario.id_usuario = ponto.id_usuario
-        where ponto.id_ponto is null or ponto.inicio_ponto = '00:00:00'
+        where ponto.id_ponto is null or ponto.hora_entrada = '00:00:00'
         ");
         $filtro_ausente->execute();
         $result = $filtro_ausente->get_result();
@@ -108,7 +108,7 @@ function filtrar($conn, $tipo) {
         $filtro_pausa = $conn->prepare("
         select usuario.email_usuario, ponto.*
         from ponto join usuario on ponto.id_usuario = usuario.id_usuario
-        WHERE inicio_almoco IS NOT NULL AND (fim_almoco IS NULL or fim_almoco = '' or fim_almoco = '00:00:00')
+        WHERE hora_almoco_saida IS NOT NULL AND (hora_almoco_retorno IS NULL or hora_almoco_retorno = '' or hora_almoco_retorno = '00:00:00')
         ");
         $filtro_pausa->execute();
         $result = $filtro_pausa->get_result();
@@ -122,7 +122,7 @@ function filtrar($conn, $tipo) {
         $filtro_horario_completo = $conn->prepare("
         select usuario.email_usuario, ponto.*
         from ponto join usuario on ponto.id_usuario = usuario.id_usuario
-        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NOT NULL AND fim_ponto != '00:00:00');
+        WHERE hora_entrada IS NOT NULL AND (hora_saida IS NOT NULL AND hora_saida != '00:00:00');
     ");
     $filtro_horario_completo->execute();
     $result = $filtro_horario_completo->get_result();
