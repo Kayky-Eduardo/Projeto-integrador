@@ -22,14 +22,14 @@ verificar_login($conn);
         <div id="piechart_3d" style="width: 900px; height: 500px;"></div>
     </div>
 
-    <select name="select-filtro" id="select-filtro" multiple>
+    <!-- <select name="select-filtro" id="select-filtro" multiple>
         <option value="filtro-nome">Nome</option>
         <option value="filtro-entrada">Entrada</option>
         <option value="filtro-entrada-almoco">Entrada almoço</option>
         <option value="filtro-saida-almoco">Saida almoço</option>
         <option value="filtro-saida">Saida</option>
         <option value="filtro-data">Data</option>
-    </select>
+    </select> -->
     <!-- Tacar esta parte na direita do grafico -->
     <div id="resultado-caixa-grafico">
         <table>
@@ -81,6 +81,9 @@ verificar_login($conn);
         }
         google.charts.load("current", {packages:["corechart"]});
         google.charts.setOnLoadCallback(carregar_dados);
+
+        // função para dar forma ao gráfico.
+        // fiz uma gambiarra para exibir os resultado na tabela
         function drawChart() {
             if (!dadosDoGrafico) {
                 return
@@ -103,6 +106,7 @@ verificar_login($conn);
                     const indiceLinha = itemSelecionado.row;
                     // pegando o nome do campo e valor atrelado
                     const tipo = dadosDoGrafico.getValue(indiceLinha, 0);
+                    
                     async function exibir_tipo(tipo) {
                         // pegando a tabela
                         const resultado_relatorio = document.getElementById('resposta-tbody')
