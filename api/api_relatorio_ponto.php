@@ -161,26 +161,47 @@ function coleta_usuarios($conn) {
 }
 
 
-// fazer o SUM de todos as horas extras independente de tipo de turno
-// select sum(minutos) as totalhorasextras from horas_extras where id_usuario = 1;
+// fazer o SUM de todos as horas extras independente de tipo de turno por enquanto
 function filtrar_usuario($conn, $id_usuario) {
     $coleta_usuario = $conn->prepare("
-    SELECT * FROM horas_extras
-    WHERE id_usuario = ?
+    SELECT sum(minutos) as total_extra
+    FROM horas_extras WHERE id_usuario = ?;
     ");
     $coleta_usuario->bind_param("i", $id_usuario);
     $coleta_usuario->execute();
+    
     $result = $coleta_usuario->get_result();
+    $linha = $result->fetch_assoc();
+
+    return $linha['total_extra'] ?? 0;
+}
+
+function relatorio_ponto_filtrado($conn, $id_usuario) {
+    $coleta_usuario_tabela = $conn->prepare("
+        SELECT id_login, email_login, data_inicio, data_fim,
+        TIMESTAMPDIFF(MINUTE, data_inicio, data_fim) AS tempo_logado
+        FROM login
+        WHERE MONTH(data_inicio) = MONTH(CURDATE())
+        AND id_usuario = ?;
+    ");
+    $coleta_usuario_tabela->bind_param("i", $id_usuario);
+    $coleta_usuario_tabela->execute();
+    
+    $result = $coleta_usuario_tabela->get_result();
     while($linha = $result->fetch_assoc()) {
-        $usuarios[] = $linha;
+        $usuario[] = $linha;
     }
-    return $usuarios;
+    return $usuario;
 }
 // pegando o tipo e entregando o resultado
 $acao = $_GET['acao'] ?? null;
 $input = json_decode(file_get_contents('php://input'), true);
-$white_list = ['ausentes', 'pausa', 'horario', 'presentes'];
 
+$white_list = [
+    'ausentes', 'pausa', 'horario',
+    'presentes', 'usuarios', 'filtrar_usuario',
+    'filtrar_tabela_hora'
+];
 
 if ($acao) {
     $acao_formatada = strtolower($acao);
@@ -190,19 +211,17 @@ if ($acao) {
             echo json_encode(coleta_usuarios($conn));
             exit;
         } else if ($acao_formatada === 'filtrar_usuario') {
-            echo json_encode(filtrar_usuario($conn, $input['id_usuario']));
+            echo json_encode(filtrar_usuario($conn, $input['id_usuario'] ?? 0));
+            exit;
+        } else if ($acao_formatada === 'filtrar_tabela_hora') {
+            echo json_encode(relatorio_ponto_filtrado($conn, $input['id_usuario']));
+            exit;
         } else {
             echo json_encode(filtrar($conn, $acao_formatada));
             exit;
         }
     }
 }
-
-if ($acao == "usuarios") {
-    echo json_encode(coleta_usuarios($conn));
-    exit;
-}
-
 // padrão entregar dados
 echo json_encode(dados_grafico($conn));
 exit;

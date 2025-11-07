@@ -44,6 +44,14 @@ verificar_login($conn);
                 <th>Data</th>
             </thead>
             <tbody id="resposta-tbody">
+                <tr>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>
             </tbody>
         </table>
     <!-- Perfil de usuario geral(com filtro), porém irei fazer um para o profissional ver o próprio -->
@@ -54,6 +62,28 @@ verificar_login($conn);
         o nome do usuário
          -->
         <select id="filtro-usuarios">Usuarios</select>
+        <!-- ficar embaixo do filtro -->
+        <div>
+            <table>
+                <thead>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Inicio</th>
+                    <th>Saida</th>
+                    <th>Tempo logado</th>
+                </thead>
+                <tbody id="filtro-usuarios-tabela">
+                    <tr>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="exibicao-hora-extra">exibicao aqui</div>
     </div>
     <?php ?>
 </body>
@@ -159,30 +189,93 @@ verificar_login($conn);
         // coleta de dados horas extras usando o filtro para id_usuario
         const select = document.getElementById("filtro-usuarios");
         
+        async function filtrar_tabela_hora(id_usuario) {
+            const exibicao_tabela_hora = document.getElementById("filtro-usuarios-tabela");
+
+                    const response = await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_tabela_hora", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({id_usuario})
+                });
+
+                const tabela_hora = await response.json();
+                exibicao_tabela_hora.innerHTML = "";
+
+                if(tabela_hora.length === 0){
+                    exibicao_tabela_hora.innerHTML = `<tr><td colspan="5">Nenhum registro encontrado</td></tr>`;
+                    return;
+                }
+
+                tabela_hora.forEach(h => {
+                    let id_login = h.id_login ?? '-';
+                    let email_login = h.email_login ?? '-';
+                    let entrada = h.data_inicio ?? '-';                
+                    let saida = h.data_fim ?? '-';
+                    let tempo = h.tempo_logado ?? '-';
+
+                    if(tempo !== '-') {
+                        const hora = Math.floor(tempo / 60);
+                        const minutos = tempo % 60;
+                        tempo = hora > 0 ? `${hora}h ${minutos}min` : `${minutos}min`;
+                    }
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${id_login}</td>
+                        <td>${email_login}</td>
+                        <td>${entrada}</td>
+                        <td>${saida}</td>
+                        <td>${tempo}</td>
+                    `;
+                    exibicao_tabela_hora.appendChild(tr);
+                });
+        }
+
         async function exibicao_usuarios() {
             select.innerHTML = `<option value="">Selecione um usuario</option>`
             const coleta_usuarios = await fetch("../../api/api_relatorio_ponto.php?acao=usuarios");
             const resposta_usuarios = await coleta_usuarios.json();
             // console.log(resposta_usuarios);
             resposta_usuarios.forEach(u => {
-                console.log(u.nome_usuario);
                 const tag_option = document.createElement("option");
                 tag_option.value = u.id_usuario;
                 tag_option.textContent = u.nome_usuario;
                 select.appendChild(tag_option);
             })
         }
-        // async function coleta_hora_extra() {
-        //     select.innerHTML = "";
 
-        //     // const coleta_hora_extra = await fetch("../../api/api_relatorio_perfil_usuario?acao=filtrar_usuario", {
-        //     //     method: "POST",
-        //     //     headers: {"Content-Type": "application/json"},
-        //     //     body: JSON.stringify({id_usuario})
-        //     // })
+        select.addEventListener("change", async function() {
+            const exibicao_hora_extra = document.getElementById("exibicao-hora-extra");
+            const tag_h1_hora_extra = document.createElement("h1")
+            const tag_h2_hora_extra = document.createElement("h2")
+         
+            exibicao_hora_extra.textContent = "";
 
-        //     // const resposta_hora_extra = await coleta_hora_extra.json();
-        // }
+            let id_usuario = this.value;
+         
+            const coleta_hora_extra = await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_usuario", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({id_usuario})
+            })
+            const resposta_hora_extra = await coleta_hora_extra.json();
+            let tipo_tempo = "Minutos";
+            let hora = resposta_hora_extra;
+            let min = 0;
+            tag_h1_hora_extra.textContent = "Hora Extra";
+            
+            if (resposta_hora_extra >= 60) {
+                hora = Math.floor(resposta_hora_extra / 60);
+                min = resposta_hora_extra % 60;
+                tipo_tempo = "";
+            }
+            
+            tag_h2_hora_extra.textContent = `${hora}:${min.toString().padStart(2,'0')} ${tipo_tempo}`;
+
+            exibicao_hora_extra.appendChild(tag_h1_hora_extra);
+            exibicao_hora_extra.appendChild(tag_h2_hora_extra);
+            filtrar_tabela_hora(id_usuario)
+        })
         exibicao_usuarios();
     </script>
 </html>
