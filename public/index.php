@@ -1,8 +1,5 @@
 <?php
 session_start();
-// if(!isset($_SESSION['id_usuario'])) {
-//     header("Location: logout.php");
-// }
 include(__DIR__ . "/../BD/conexao.php");
 require "../include/verificacao.php";
 verificar_login($conn);
