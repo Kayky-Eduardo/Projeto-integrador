@@ -3,6 +3,8 @@ session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -47,11 +49,17 @@ verificar_login($conn);
     <!-- Perfil de usuario geral(com filtro), porém irei fazer um para o profissional ver o próprio -->
         <hr>
         <h3>Perfil de usuario(ADM)</h3>
+        <!--
+        select para mostrar os usuarios, o valor das options vai ser o id, e para o usuario vai aparecer
+        o nome do usuário
+         -->
+        <select id="filtro-usuarios">Usuarios</select>
     </div>
+    <?php ?>
 </body>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-        // Validar mais tarde
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    // Validar mais tarde
         let dadosDoGrafico = null;
         async function carregar_dados() {
             const valoresJSON = await fetch('../../api/api_relatorio_ponto.php');
@@ -147,5 +155,33 @@ verificar_login($conn);
             })
             chart.draw(dadosDoGrafico, options);
         }
+
+        // coleta de dados horas extras usando o filtro para id_usuario
+        const select = document.getElementById("filtro-usuarios");
+        
+        async function exibicao_usuarios() {
+            const tag_option = document.createElement("option");
+
+            const coleta_usuarios = await fetch("../../api/api_relatorio_ponto.php?acao=usuarios");
+            const resposta_usuarios = await coleta_usuarios.json();
+            // console.log(resposta_usuarios);
+            resposta_usuarios.forEach(u => {
+            tag_option.value = u.id_usuario;
+            tag_option.innerHTML = u.nome_usuario;
+            select.appendChild(tag_option);
+            })
+        }
+        // async function coleta_hora_extra() {
+        //     select.innerHTML = "";
+
+        //     // const coleta_hora_extra = await fetch("../../api/api_relatorio_perfil_usuario?acao=filtrar_usuario", {
+        //     //     method: "POST",
+        //     //     headers: {"Content-Type": "application/json"},
+        //     //     body: JSON.stringify({id_usuario})
+        //     // })
+
+        //     // const resposta_hora_extra = await coleta_hora_extra.json();
+        // }
+        exibicao_usuarios();
     </script>
 </html>

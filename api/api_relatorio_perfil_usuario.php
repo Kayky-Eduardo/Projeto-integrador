@@ -2,7 +2,7 @@
 include(__DIR__ . "/../BD/conexao.php");
 header("Content-Type: application/json");
 
-$idUsuario = 3;
+$idUsuario = 0;
 $jornadaMinutos = 8 * 60;
 $inicioNoturno = strtotime("22:00:00");
 $fimNoturno = strtotime("05:00:00");

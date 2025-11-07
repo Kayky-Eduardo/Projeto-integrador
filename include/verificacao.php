@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 function verificar_login($conn) {
     if (!isset($_SESSION['id_login']) || !isset($_SESSION['id_usuario'])) {
-        header("Location: public/logout.php");
+        header("Location: logout.php");
         exit;
     }
     $stmt = $conn->prepare("
@@ -17,13 +17,13 @@ function verificar_login($conn) {
     $stmt->execute();
     $result = $stmt->get_result();
     if ($result->num_rows === 0) {
-        header("Location: public/logout.php");
+        header("Location: logout.php");
         exit;
     }
 
     $row = $result->fetch_assoc();
     if (!is_null($row['data_fim'])) {
-        header("Location: public/logout.php");
+        header("Location: logout.php");
         exit;
     }
 }

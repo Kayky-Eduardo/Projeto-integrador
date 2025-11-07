@@ -9,7 +9,8 @@ function dados_grafico ($conn) {
     $pesquisa_trabalhando = $conn->prepare("
         SELECT COUNT(*) AS total_trabalhando
         FROM ponto
-        WHERE hora_entrada IS NOT NULL AND (hora_saida IS NULL OR hora_saida = '00:00:00')"
+        WHERE hora_entrada IS NOT NULL AND (hora_saida IS NULL OR hora_saida = '00:00:00')
+        AND data_ponto = CURDATE()"
     );
     
     $pesquisa_trabalhando->execute();
@@ -23,6 +24,7 @@ function dados_grafico ($conn) {
     $pesquisa_ausentes = $conn->prepare("
         SELECT COUNT(*) AS total_usuarios
         FROM usuario
+        
     ");
     $pesquisa_ausentes->execute();
     $result = $pesquisa_ausentes->get_result();
@@ -37,7 +39,8 @@ function dados_grafico ($conn) {
     $pesquisa_pausa = $conn->prepare("
         SELECT COUNT(*) AS total_pausa
         FROM ponto
-        WHERE hora_almoco_saida IS NOT NULL AND (hora_almoco_retorno IS NULL or hora_almoco_retorno = '' or hora_almoco_retorno = '00:00:00');
+        WHERE hora_almoco_saida IS NOT NULL AND (hora_almoco_retorno IS NULL or hora_almoco_retorno = '' or hora_almoco_retorno = '00:00:00')
+        AND data_ponto = CURDATE()
     ");
     $pesquisa_pausa->execute();
     $result = $pesquisa_pausa->get_result();
@@ -51,7 +54,9 @@ function dados_grafico ($conn) {
     $pesquisa_horario_completo = $conn->prepare("
         SELECT COUNT(*) AS total_completo
         FROM ponto
-        WHERE hora_entrada IS NOT NULL AND (hora_saida IS NOT NULL AND hora_saida != '00:00:00');
+        WHERE hora_entrada IS NOT NULL AND (hora_saida IS NOT NULL AND hora_saida != '00:00:00')
+        AND data_ponto = CURDATE()
+        ;
     ");
     $pesquisa_horario_completo->execute();
 
@@ -78,7 +83,8 @@ function filtrar($conn, $tipo) {
         $filtro_presente = $conn->prepare("
             select usuario.email_usuario, ponto.*
             from ponto join usuario on ponto.id_usuario = usuario.id_usuario
-            WHERE hora_entrada IS NOT NULL AND (hora_saida IS NULL or hora_saida = '00:00:00');
+            WHERE hora_entrada IS NOT NULL AND (hora_saida IS NULL or hora_saida = '00:00:00')
+            AND data_ponto = CURDATE();
         ");
         $filtro_presente->execute();
         $result = $filtro_presente->get_result();
@@ -108,7 +114,8 @@ function filtrar($conn, $tipo) {
         $filtro_pausa = $conn->prepare("
         select usuario.email_usuario, ponto.*
         from ponto join usuario on ponto.id_usuario = usuario.id_usuario
-        WHERE hora_almoco_saida IS NOT NULL AND (hora_almoco_retorno IS NULL or hora_almoco_retorno = '' or hora_almoco_retorno = '00:00:00')
+        WHERE hora_almoco_saida IS NOT NULL AND (hora_almoco_retorno IS NULL or hora_almoco_retorno = ''
+        or hora_almoco_retorno = '00:00:00') AND ponto.data_ponto = CURDATE()
         ");
         $filtro_pausa->execute();
         $result = $filtro_pausa->get_result();
@@ -122,7 +129,9 @@ function filtrar($conn, $tipo) {
         $filtro_horario_completo = $conn->prepare("
         select usuario.email_usuario, ponto.*
         from ponto join usuario on ponto.id_usuario = usuario.id_usuario
-        WHERE hora_entrada IS NOT NULL AND (hora_saida IS NOT NULL AND hora_saida != '00:00:00');
+        WHERE hora_entrada IS NOT NULL AND (hora_saida IS NOT NULL AND hora_saida != '00:00:00')
+        AND ponto.data_ponto = CURDATE()
+        ;
     ");
     $filtro_horario_completo->execute();
     $result = $filtro_horario_completo->get_result();
@@ -133,6 +142,22 @@ function filtrar($conn, $tipo) {
 
     return $horario_completo; 
     }
+}
+
+function coleta_usuarios($conn) {
+    $coleta_usuario = $conn->prepare("
+    SELECT id_usuario, nome_usuario
+    FROM usuario
+    WHERE conta_ativa = 1;
+    ");
+    
+    $coleta_usuario->execute();
+    $result = $coleta_usuario->get_result();
+
+    while($linha = $result->fetch_assoc()) {
+        $usuarios[] = $linha;
+    }
+    return $usuarios;
 }
 
 // pegando o tipo e entregando o resultado
@@ -148,6 +173,9 @@ if ($acao) {
             exit;
         }
     }
+} else if ($acao == "usuarios") {
+    echo json_encode(coleta_usuarios($conn));
+    exit;
 }
 
 // padrão entregar dados
