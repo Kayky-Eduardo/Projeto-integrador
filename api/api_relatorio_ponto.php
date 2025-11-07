@@ -160,20 +160,44 @@ function coleta_usuarios($conn) {
     return $usuarios;
 }
 
+
+// fazer o SUM de todos as horas extras independente de tipo de turno
+function filtrar_usuario($conn, $id_usuario) {
+    $coleta_usuario = $conn->prepare("
+    SELECT * FROM horas_extras
+    WHERE id_usuario = ?
+    ");
+    $coleta_usuario->bind_param("i", $id_usuario);
+    $coleta_usuario->execute();
+    $result = $coleta_usuario->get_result();
+    while($linha = $result->fetch_assoc()) {
+        $usuarios[] = $linha;
+    }
+    return $usuarios;
+}
 // pegando o tipo e entregando o resultado
 $acao = $_GET['acao'] ?? null;
 $input = json_decode(file_get_contents('php://input'), true);
 $white_list = ['ausentes', 'pausa', 'horario', 'presentes'];
 
+
 if ($acao) {
     $acao_formatada = strtolower($acao);
+
     if (in_array($acao_formatada, $white_list)) {
-        if($acao != null) {
+        if ($acao_formatada === 'usuarios') {
+            echo json_encode(coleta_usuarios($conn));
+            exit;
+        } else if ($acao_formatada === 'filtrar_usuario') {
+            echo json_encode(filtrar_usuario($conn, $input['id_usuario']));
+        } else {
             echo json_encode(filtrar($conn, $acao_formatada));
             exit;
         }
     }
-} else if ($acao == "usuarios") {
+}
+
+if ($acao == "usuarios") {
     echo json_encode(coleta_usuarios($conn));
     exit;
 }

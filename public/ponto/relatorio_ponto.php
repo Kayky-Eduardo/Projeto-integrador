@@ -160,15 +160,16 @@ verificar_login($conn);
         const select = document.getElementById("filtro-usuarios");
         
         async function exibicao_usuarios() {
-            const tag_option = document.createElement("option");
-
+            select.innerHTML = `<option value="">Selecione um usuario</option>`
             const coleta_usuarios = await fetch("../../api/api_relatorio_ponto.php?acao=usuarios");
             const resposta_usuarios = await coleta_usuarios.json();
             // console.log(resposta_usuarios);
             resposta_usuarios.forEach(u => {
-            tag_option.value = u.id_usuario;
-            tag_option.innerHTML = u.nome_usuario;
-            select.appendChild(tag_option);
+                console.log(u.nome_usuario);
+                const tag_option = document.createElement("option");
+                tag_option.value = u.id_usuario;
+                tag_option.textContent = u.nome_usuario;
+                select.appendChild(tag_option);
             })
         }
         // async function coleta_hora_extra() {
