@@ -259,7 +259,6 @@ verificar_login($conn);
                 body: JSON.stringify({id_usuario})
             })
             const resposta_hora_extra = await coleta_hora_extra.json();
-            let tipo_tempo = "Minutos";
             let hora = resposta_hora_extra;
             let min = 0;
             tag_h1_hora_extra.textContent = "Hora Extra";
@@ -267,10 +266,9 @@ verificar_login($conn);
             if (resposta_hora_extra >= 60) {
                 hora = Math.floor(resposta_hora_extra / 60);
                 min = resposta_hora_extra % 60;
-                tipo_tempo = "";
             }
             
-            tag_h2_hora_extra.textContent = `${hora}:${min.toString().padStart(2,'0')} ${tipo_tempo}`;
+            tag_h2_hora_extra.textContent = `${hora} horas e ${min.toString().padStart(2,'0')} minutos`;
 
             exibicao_hora_extra.appendChild(tag_h1_hora_extra);
             exibicao_hora_extra.appendChild(tag_h2_hora_extra);
