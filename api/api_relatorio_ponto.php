@@ -162,6 +162,7 @@ function coleta_usuarios($conn) {
 
 
 // fazer o SUM de todos as horas extras independente de tipo de turno
+// select sum(minutos) as totalhorasextras from horas_extras where id_usuario = 1;
 function filtrar_usuario($conn, $id_usuario) {
     $coleta_usuario = $conn->prepare("
     SELECT * FROM horas_extras
