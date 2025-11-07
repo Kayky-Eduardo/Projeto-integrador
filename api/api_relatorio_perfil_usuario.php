@@ -2,53 +2,89 @@
 include(__DIR__ . "/../BD/conexao.php");
 header("Content-Type: application/json");
 
+$idUsuario = 3;
+$jornadaMinutos = 8 * 60;
+$inicioNoturno = strtotime("22:00:00");
+$fimNoturno = strtotime("05:00:00");
 
-// exemplo do que pensei(para lembrar mas tarde),
-// basicamente, estou pegando estes dados da tabela com um usuario em mente.
-// vou pensar o que fazer com o hora almoço, é possível fazer também o filtro no where
-// de: AND status = "aprovado"; por exemplo.
-// muitas possibilidades. 
-// select 
-// id_ponto,
-// id_usuario,
-// data_ponto,
-// hora_entrada,
-// hora_saida,
-// hora_almoco_saida,
-// hora_almoco_retorno
-// from ponto
-// where id_usuario = 3 AND hora_entrada is not null AND hora_saida is not null;
+function verificar_feriado($conn, $data) {
+    $stmt = $conn->prepare("SELECT 1 FROM feriados WHERE data = ?");
+    $stmt->bind_param("s", $data);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    return $res->num_rows > 0;
+}
 
-$dados_inteiros = $conn->prepare("
-SELECT id_ponto, id_usuario, data_ponto, hora_entrada, hora_saida,
-hora_almoco_saida, hora_almoco_retorno
+$stmt = $conn->prepare("
+SELECT id_ponto, id_usuario, data_ponto, hora_entrada, hora_saida
 FROM ponto
-WHERE id_usuario = 3 AND hora_entrada is not null AND hora_saida is not null
+WHERE id_usuario = ? 
+AND hora_entrada IS NOT NULL 
+AND hora_saida IS NOT NULL
 ");
-$dados_inteiros->execute();
-$result = $dados_inteiros->get_result();
-if ($linha = $result->fetch_assoc()) {
+$stmt->bind_param("i", $idUsuario);
+$stmt->execute();
+$result = $stmt->get_result();
+
+while ($linha = $result->fetch_assoc()) {
     $entrada = strtotime($linha['hora_entrada']);
     $saida = strtotime($linha['hora_saida']);
-    $noite = strtotime("18:00:00");
-}
-$diferença = $saida - $entrada;
+    $dataPonto = $linha['data_ponto'];
 
-$minutos = $diferença / 60;
-$jornada = 8 * 60;
-$horas = ($diferença / 3600);
-
-if($minutos > $jornada) {
-    if ($saida > $noite) {
-        $hora_extra_noite = $minutos - $jornada;
-        
+    if ($saida <= $entrada) {
+        continue;
     }
-    $horaExtra = $minutos - $jornada;
-    echo "tempo extra: " . number_format($horaExtra, 0, '.', '') . "\n";
-}
 
-// para exibição
-// se não tiver 2 números, adiciona um 0 no pad selecionado
-$horas = str_pad($horas, 2, "0", STR_PAD_LEFT);
-$minutos = str_pad($minutos, 2, "0", STR_PAD_LEFT);
-?>
+    // duração total
+    $duracaoTotal = ($saida - $entrada) / 60;
+
+    if ($duracaoTotal <= $jornadaMinutos) {
+        continue;
+    }
+
+    // minutos de hora extra
+    $minutosExtra = $duracaoTotal - $jornadaMinutos;
+
+    // Definir feriado
+    $feriado = verificar_feriado($conn, $dataPonto);
+    $tipoBase = $feriado ? 'hf' : 'he';
+
+    // Calcular frações diurna e noturna
+    // 86400 é a mesma coisa que um dia
+    $noiteIni = strtotime("22:00:00");
+    $noiteFim = strtotime("05:00:00") + 86400; // 5h do dia seguinte
+    $entradaAbsoluta = $entrada;
+    $saidaAbsoluta = $saida < $entrada ? $saida + 86400 : $saida;
+
+    // Interseções com o período noturno
+    $inicio = max($entradaAbsoluta, $noiteIni);
+    $fim = min($saidaAbsoluta, $noiteFim);
+    $duracaoNoturna = max(0, ($fim - $inicio) / 60);
+
+    if ($duracaoNoturna > $minutosExtra) {
+        $duracaoNoturna = $minutosExtra; // segurança: não exceder total
+    }
+
+    $duracaoDiurna = $minutosExtra - $duracaoNoturna;
+
+    // Inserções: separa hora extra diurna e noturna
+    if ($duracaoDiurna > 0) {
+        $tipo = "dia_$tipoBase";
+        $ins = $conn->prepare("
+            INSERT INTO horas_extras (id_usuario, data, tipo, minutos)
+            VALUES (?, ?, ?, ?)
+        ");
+        $ins->bind_param("issi", $linha['id_usuario'], $dataPonto, $tipo, $duracaoDiurna);
+        $ins->execute();
+    }
+
+    if ($duracaoNoturna > 0) {
+        $tipo = "noite_$tipoBase";
+        $ins = $conn->prepare("
+            INSERT INTO horas_extras (id_usuario, data, tipo, minutos)
+            VALUES (?, ?, ?, ?)
+        ");
+        $ins->bind_param("issi", $linha['id_usuario'], $dataPonto, $tipo, $duracaoNoturna);
+        $ins->execute();
+    }
+}
