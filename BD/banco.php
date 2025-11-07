@@ -89,6 +89,26 @@ dia_hf int,
 foreign key (id_usuario) references usuario(id_usuario) ON DELETE CASCADE
 );
 
+CREATE TABLE pausa_config (
+    id_config INT AUTO_INCREMENT PRIMARY KEY,
+    tempo_min INT DEFAULT 5,   -- em minutos
+    tempo_max INT DEFAULT 15,  -- em minutos
+    saida_automatica BOOLEAN DEFAULT 0
+);
+
+
+CREATE TABLE pausa (
+    id_pausa INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    id_ponto INT DEFAULT NULL, 
+    inicio DATETIME NOT NULL,
+    fim DATETIME DEFAULT NULL,
+    status ENUM('ativa', 'encerrada') DEFAULT 'ativa',
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (id_ponto) REFERENCES ponto(id_ponto) ON DELETE CASCADE
+);
+
+
 insert into cargo (nome_cargo, salario_bruto, nivel)
 values (“adm”, 10, 1);
 
