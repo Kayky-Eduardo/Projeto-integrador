@@ -5,6 +5,15 @@ if (session_status() === PHP_SESSION_NONE) {
 // função para verificar se o login do usuário é válido
 
 function verificar_login($conn) {
+    // $path_corrigido = ["Projeto-Integrador", "public", "logout.php"];
+    
+    // if (count($path) < count($path_corrigido)) {
+    //     for($i = 0; $i < count($path); $i++) {
+    //         $correcao = '../' * count($path_corrigido);
+
+    //     };
+    // }
+
     if (!isset($_SESSION['id_login']) || !isset($_SESSION['id_usuario'])) {
         header("Location: logout.php");
         exit;
@@ -17,13 +26,13 @@ function verificar_login($conn) {
     $stmt->execute();
     $result = $stmt->get_result();
     if ($result->num_rows === 0) {
-        header("Location: logout.php");
+        header("Location: /Projeto-integrador/public/logout.php");
         exit;
     }
 
     $row = $result->fetch_assoc();
     if (!is_null($row['data_fim'])) {
-        header("Location: logout.php");
+        header("Location: /Projeto-integrador/public/logout.php");
         exit;
     }
 }
