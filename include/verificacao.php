@@ -35,16 +35,23 @@ function verificar_login($conn) {
 // se tempo logado > $_GLOBAL['hora_max_extra'];
 // executa o script abaixo
 function verificar_tempo_logado($conn) {
-    $verificacao = $conn->query("
-        
+    $verificacao_tempo = $conn->query("
+        SELECT TIMESTAMPDIFF(MINUTE, data_inicio, CURRENT_TIMESTAMP) AS minutos_passados
+        FROM login
+        WHERE data_fim is null;
     ");
-    /*
-    UPDATE login
-    SET data_fim = NOW()
-    WHERE 
-    AND TIMESTAMPDIFF(MINUTE, data_inicio, NOW())
-    AND data_fim IS NULL;
-    */
+    $result = $verificacao_tempo->get_result();
 
+    $linha = $result->fetch_row();
+
+    $tempo_logado = $linha[0];
+
+    // teste
+    if ($tempo_logado > 480) {
+        header("Location: /Projeto-integrador/public/logout.php");
+        exit;
+    }
+    // se a verificacao retornar acima do tempo maximo estimado
+    // ele seta a data_fim e então a verificação acima vai derrubar o login
 }
 ?>
