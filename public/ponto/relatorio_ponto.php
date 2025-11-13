@@ -3,8 +3,6 @@ session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
-
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,16 +21,6 @@ verificar_login($conn);
     <div class="caixa-grafico">
         <div id="piechart_3d" style="width: 900px; height: 500px;"></div>
     </div>
-
-    <!-- <select name="select-filtro" id="select-filtro" multiple>
-        <option value="filtro-nome">Nome</option>
-        <option value="filtro-entrada">Entrada</option>
-        <option value="filtro-entrada-almoco">Entrada almoço</option>
-        <option value="filtro-saida-almoco">Saida almoço</option>
-        <option value="filtro-saida">Saida</option>
-        <option value="filtro-data">Data</option>
-    </select> -->
-    <!-- Tacar esta parte na direita do grafico -->
     <div id="resultado-caixa-grafico">
         <table>
             <thead>

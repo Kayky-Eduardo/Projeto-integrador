@@ -5,14 +5,6 @@ if (session_status() === PHP_SESSION_NONE) {
 // função para verificar se o login do usuário é válido
 
 function verificar_login($conn) {
-    // $path_corrigido = ["Projeto-Integrador", "public", "logout.php"];
-    
-    // if (count($path) < count($path_corrigido)) {
-    //     for($i = 0; $i < count($path); $i++) {
-    //         $correcao = '../' * count($path_corrigido);
-
-    //     };
-    // }
 
     if (!isset($_SESSION['id_login']) || !isset($_SESSION['id_usuario'])) {
         header("Location: logout.php");
@@ -37,12 +29,22 @@ function verificar_login($conn) {
     }
 }
 
-// quando o sistema estiver mais bem definido, irei seguir esta ordem de whitelist
-// onde cada nivel possui uma whitelist diferente.
-// function verificar_nivel($nivel) {
-//     $entrada = null;
-//     if ($nivel >= 4) {
-//         $entrada = ['relatorio', '']
-//     }
-// }
+
+// pensei em fazer algo do tipo
+// sql => tempo_logado = TIMESTAMPDIFF(MINUTE, data_inicio, agora)
+// se tempo logado > $_GLOBAL['hora_max_extra'];
+// executa o script abaixo
+function verificar_tempo_logado($conn) {
+    $verificacao = $conn->query("
+        
+    ");
+    /*
+    UPDATE login
+    SET data_fim = NOW()
+    WHERE 
+    AND TIMESTAMPDIFF(MINUTE, data_inicio, NOW())
+    AND data_fim IS NULL;
+    */
+
+}
 ?>
