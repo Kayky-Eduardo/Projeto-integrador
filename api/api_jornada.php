@@ -51,19 +51,19 @@ if ($method === 'GET') {
         exit;
     }
     
-    try {
-        $sucesso = atualizarAssiduidade($conn, $usuarioId, $percentual);
+    // try {
+    //     $sucesso = atualizarAssiduidade($conn, $usuarioId, $percentual);
         
-        echo json_encode([
-            'sucesso' => $sucesso,
-            'mensagem' => $sucesso ? 'Assiduidade atualizada com sucesso' : 'Erro ao atualizar'
-        ]);
-    } catch (Exception $e) {
-        echo json_encode([
-            'sucesso' => false,
-            'mensagem' => 'Erro: ' . $e->getMessage()
-        ]);
-    }
+    //     echo json_encode([
+    //         'sucesso' => $sucesso,
+    //         'mensagem' => $sucesso ? 'Assiduidade atualizada com sucesso' : 'Erro ao atualizar'
+    //     ]);
+    // } catch (Exception $e) {
+    //     echo json_encode([
+    //         'sucesso' => false,
+    //         'mensagem' => 'Erro: ' . $e->getMessage()
+    //     ]);
+    // }
     
 } else {
     echo json_encode([

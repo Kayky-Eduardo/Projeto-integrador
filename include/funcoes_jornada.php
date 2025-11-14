@@ -185,10 +185,7 @@ function verificarJornada($conn, $usuarioId, $dataInicio, $dataFim) {
     
     return [
         'usuario_id' => $usuarioId,
-        'periodo' => [
-            'inicio' => $dataInicio,
-            'fim' => $dataFim
-        ],
+        'periodo' => ['inicio' => $dataInicio, 'fim' => $dataFim],
         'horas_trabalhadas' => $trabalhadas['total_horas'],
         'horas_esperadas' => $esperadas['total_horas'],
         'diferenca' => round($diferenca, 2),
