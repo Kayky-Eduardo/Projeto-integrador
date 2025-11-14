@@ -81,10 +81,12 @@ function filtrar($conn, $tipo) {
     if($tipo == 'presentes') {
         $presentes = [];
         $filtro_presente = $conn->prepare("
-            select usuario.email_usuario, ponto.*
-            from ponto join usuario on ponto.id_usuario = usuario.id_usuario
-            WHERE hora_entrada IS NOT NULL AND (hora_saida IS NULL or hora_saida = '00:00:00')
-            AND data_ponto = CURDATE();
+        SELECT
+            usuario.email_usuario, ponto.*,
+            TIMESTAMPDIFF(MINUTE, hora_entrada, NOW()) AS tempo_logado
+        FROM ponto JOIN usuario ON ponto.id_usuario = usuario.id_usuario
+        WHERE hora_entrada IS NOT NULL AND (hora_saida IS NULL or hora_saida = '00:00:00')
+        AND data_ponto = CURDATE();
         ");
         $filtro_presente->execute();
         $result = $filtro_presente->get_result();
@@ -97,7 +99,9 @@ function filtrar($conn, $tipo) {
     if($tipo == 'ausentes') {
         $ausentes = [];
         $filtro_ausente = $conn->prepare("
-        select usuario.email_usuario, usuario.id_usuario
+        select 
+            usuario.email_usuario, usuario.id_usuario,
+            IFNULL(TIMESTAMPDIFF(MINUTE, hora_entrada, NOW()), 0) AS tempo_logado 
         from usuario
         left join ponto on usuario.id_usuario = ponto.id_usuario
         where ponto.id_ponto is null or ponto.hora_entrada = '00:00:00'
@@ -127,8 +131,10 @@ function filtrar($conn, $tipo) {
     if($tipo == 'horario') {
         $horario_completo = [];
         $filtro_horario_completo = $conn->prepare("
-        select usuario.email_usuario, ponto.*
-        from ponto join usuario on ponto.id_usuario = usuario.id_usuario
+        SELECT 
+            usuario.email_usuario, ponto.*,
+            TIMESTAMPDIFF(MINUTE, hora_entrada, NOW()) AS tempo_logado 
+        FROM ponto JOIN usuario ON ponto.id_usuario = usuario.id_usuario
         WHERE hora_entrada IS NOT NULL AND (hora_saida IS NOT NULL AND hora_saida != '00:00:00')
         AND ponto.data_ponto = CURDATE()
         ;
@@ -182,6 +188,27 @@ function relatorio_ponto_filtrado($conn, $id_usuario) {
         TIMESTAMPDIFF(MINUTE, data_inicio, data_fim) AS tempo_logado
         FROM login
         WHERE MONTH(data_inicio) = MONTH(CURDATE())
+        AND id_usuario = ?;
+    ");
+    $coleta_usuario_tabela->bind_param("i", $id_usuario);
+    $coleta_usuario_tabela->execute();
+    
+    $result = $coleta_usuario_tabela->get_result();
+    while($linha = $result->fetch_assoc()) {
+        $usuario[] = $linha;
+    }
+    return $usuario;
+}
+
+function get_tempo_logado($conn, $id_usuario) {
+    $coleta_usuario_tabela = $conn->prepare("
+        SELECT data_inicio, data_fim,
+        CASE
+            WHEN data_fim != null THEN TIMESTAMPDIFF(MINUTE, data_inicio, data_fim) 
+            ELSE TIMESTAMPDIFF(MINUTE, data_inicio, NOW())
+        END AS tempo_logado
+        FROM login
+        WHERE MONTH(data_inicio) = MONTH(curdate())
         AND id_usuario = ?;
     ");
     $coleta_usuario_tabela->bind_param("i", $id_usuario);

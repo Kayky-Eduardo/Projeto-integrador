@@ -30,9 +30,11 @@ verificar_login($conn);
                 <th>Almoço(entrada - saida)</th>
                 <th>Saida</th>
                 <th>Data</th>
+                <th>Tempo logado</th>
             </thead>
             <tbody id="resposta-tbody">
                 <tr>
+                    <td>-</td>
                     <td>-</td>
                     <td>-</td>
                     <td>-</td>
@@ -183,8 +185,14 @@ verificar_login($conn);
                             let almoco_entrada = r.hora_almoco_saida ?? '-';
                             let almoco_saida = r.hora_almoco_retorno ?? '';
                             let saida = r.hora_saida ?? '-';
-                            let data =r.data_ponto ?? '-';
-
+                            let data = r.data_ponto ?? '-';
+                            // if (r.tempo_logado > 60) {
+                            //     const hora = Math.floor(r.tempo_logado / 60);
+                            //     const minutos = r.tempo_logado % 60;
+                            //     let tempo_logado = hora > 0 ? `${hora}h ${minutos}min` : `${minutos}min`;
+                            // } else {
+                            // }
+                            let tempo_logado = `${r.tempo_logado} Minutos` ?? '-';
                             const tr = document.createElement("tr");
                             
                             tr.innerHTML = `
@@ -194,6 +202,7 @@ verificar_login($conn);
                                 <td>${almoco_entrada} - ${almoco_saida}</td>
                                 <td>${saida}</td>
                                 <td>${data}</td>
+                                <td>${tempo_logado}</td>
                             `;
                             resultado_relatorio.appendChild(tr);
                             }); 
