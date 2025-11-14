@@ -5,7 +5,6 @@ if (session_status() === PHP_SESSION_NONE) {
 // função para verificar se o login do usuário é válido
 
 function verificar_login($conn) {
-
     if (!isset($_SESSION['id_login']) || !isset($_SESSION['id_usuario'])) {
         header("Location: logout.php");
         exit;

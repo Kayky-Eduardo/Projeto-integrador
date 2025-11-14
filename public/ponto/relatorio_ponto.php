@@ -73,7 +73,37 @@ verificar_login($conn);
         </div>
         <div id="exibicao-hora-extra">exibicao aqui</div>
     </div>
-    <?php ?>
+    <div class="container">        
+        <div class="formulario">
+            <div class="form-group">
+                <label for="usuarioId">ID do Usuário:</label>
+                <input type="number" id="usuarioId" value="1" min="1">
+            </div>
+            
+            <div class="form-group">
+                <label for="dataInicio">Data Início:</label>
+                <input type="date" id="dataInicio" value="2025-11-11">
+            </div>
+            
+            <div class="form-group">
+                <label for="dataFim">Data Fim:</label>
+                <input type="date" id="dataFim" value="2025-11-13">
+            </div>
+            
+            <button id="btnVerificar" onclick="buscarJornada()">
+                Verificar Jornada
+            </button>
+        </div>
+        
+        <div id="loading" class="loading" style="display: none;">
+            Carregando...
+        </div>
+        
+        <div id="error" class="error" style="display: none;"></div>
+        
+        <div id="resultado"></div>
+        <div id="detalhes"></div>
+    </div>
 </body>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
@@ -263,5 +293,176 @@ verificar_login($conn);
             filtrar_tabela_hora(id_usuario)
         })
         exibicao_usuarios();
+
+        async function verificarJornada(usuarioId, dataInicio, dataFim) {
+            try {
+                const params = new URLSearchParams({
+                    usuario_id: usuarioId,
+                    data_inicio: dataInicio,
+                    data_fim: dataFim
+                });
+                
+                const response = await fetch(`../../api/api_jornada.php?${params}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const resultado = await response.json();
+                
+                if (!resultado.sucesso) {
+                    throw new Error(resultado.mensagem);
+                }
+                
+                return resultado.dados;
+        
+        } catch (error) {
+            console.error('Erro ao verificar jornada:', error);
+            throw error;
+        }
+    }
+    // Formata horas para exibição
+    function formatarHoras(horas) {
+        return horas.toFixed(2).replace('.', ',') + 'h';
+    }
+
+    function formatarPercentual(percentual) {
+        return percentual.toFixed(2).replace('.', ',') + '%';
+    }
+
+    function exibirResultado(resultado, elementoId) {
+        const elemento = document.getElementById(elementoId);
+        
+        if (!elemento) {
+            console.error('Elemento não encontrado:', elementoId);
+            return;
+        }
+        
+        const simboloDiferenca = resultado.diferenca >= 0 ? '+' : '';
+        
+        elemento.innerHTML = `
+            <div class="jornada-resultado">
+                <h3>Verificação de Jornada</h3>
+                <div class="jornada-info">
+                    <p><strong>Usuário ID:</strong> ${resultado.usuario_id}</p>
+                    <p><strong>Período:</strong> ${resultado.periodo.inicio} até ${resultado.periodo.fim}</p>
+                </div>
+                
+                <div class="jornada-metricas">
+                    <div class="metrica">
+                        <span class="label">Horas Trabalhadas:</span>
+                        <span class="valor">${formatarHoras(resultado.horas_trabalhadas)}</span>
+                    </div>
+                    <div class="metrica">
+                        <span class="label">Horas Esperadas:</span>
+                        <span class="valor">${formatarHoras(resultado.horas_esperadas)}</span>
+                    </div>
+                    <div class="metrica">
+                        <span class="label">Diferença:</span>
+                        <span class="valor">${simboloDiferenca}${formatarHoras(resultado.diferenca)}</span>
+                    </div>
+                    <div class="metrica">
+                        <span class="label">Cumprimento:</span>
+                        <span class="valor">${formatarPercentual(resultado.percentual)}</span>
+                    </div>
+                </div>
+            
+            </div>
+        `;
+    }
+
+    function exibirDetalhes(resultado, elementoId) {
+    const elemento = document.getElementById(elementoId);
+    
+    if (!elemento) {
+        console.error('Elemento não encontrado:', elementoId);
+        return;
+    }
+    
+    let html = '<div class="jornada-detalhes">';
+    
+    // Dias trabalhados
+    if (resultado.detalhes_trabalhados && resultado.detalhes_trabalhados.length > 0) {
+        html += '<h4>Dias Trabalhados</h4>';
+        html += '<table class="tabela-detalhes">';
+        html += '<thead><tr><th>Data</th><th>Horas</th></tr></thead><tbody>';
+        
+        resultado.detalhes_trabalhados.forEach(dia => {
+            html += `<tr>
+                <td>${dia.data}</td>
+                <td>${formatarHoras(dia.horas)}</td>
+            </tr>`;
+        });
+        
+        html += '</tbody></table>';
+    }
+    
+    // Dias esperados
+    if (resultado.detalhes_esperados && resultado.detalhes_esperados.length > 0) {
+        html += '<h4>Dias Esperados</h4>';
+        html += '<table class="tabela-detalhes">';
+        html += '<thead><tr><th>Data</th><th>Dia da Semana</th><th>Horas</th></tr></thead><tbody>';
+        
+        resultado.detalhes_esperados.forEach(dia => {
+            html += `<tr>
+                <td>${dia.data}</td>
+                <td>${dia.dia_semana}</td>
+                <td>${formatarHoras(dia.horas)}</td>
+            </tr>`;
+        });
+        
+        html += '</tbody></table>';
+    }
+    
+    html += '</div>';
+    
+    elemento.innerHTML = html;
+}
+    async function buscarJornada() {
+            const usuarioId = document.getElementById('usuarioId').value;
+            const dataInicio = document.getElementById('dataInicio').value;
+            const dataFim = document.getElementById('dataFim').value;
+            
+            // Validações
+            if (!usuarioId || !dataInicio || !dataFim) {
+                alert('Preencha todos os campos!');
+                return;
+            }
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('error').style.display = 'none';
+                limparResultados();
+                
+            try {
+                // Chama a API
+                const resultado = await verificarJornada(usuarioId, dataInicio, dataFim);
+                
+                // Exibe resultados
+                exibirResultado(resultado, 'resultado');
+                exibirDetalhes(resultado, 'detalhes');
+                
+            } catch (error) {
+                alert('Erro ao buscar dados: ' + error.message);
+            } finally {
+                 document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        function limparResultados() {
+            document.getElementById('resultado').innerHTML = '';
+            document.getElementById('detalhes').innerHTML = '';
+        }
+        
+        // Permite pressionar Enter para buscar
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        buscarJornada();
+                    }
+                });
+            });
+        });
     </script>
 </html>

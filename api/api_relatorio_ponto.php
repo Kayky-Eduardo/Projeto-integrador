@@ -165,7 +165,7 @@ function coleta_usuarios($conn) {
 function filtrar_usuario($conn, $id_usuario) {
     $coleta_usuario = $conn->prepare("
     SELECT sum(minutos) as total_extra
-    FROM hora_extra WHERE id_usuario = ?;
+    FROM horas_extras WHERE id_usuario = ?;
     ");
     $coleta_usuario->bind_param("i", $id_usuario);
     $coleta_usuario->execute();
