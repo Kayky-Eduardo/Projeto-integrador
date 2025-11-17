@@ -1,81 +1,87 @@
 <?php
 session_start();
-date_default_timezone_set('America/Sao_Paulo');
 include(__DIR__ . "/../../BD/conexao.php");
-require "../../include/verificacao.php";
+date_default_timezone_set('America/Sao_Paulo');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registro'])) {
+$id_usuario = $_SESSION['id_usuario'] ?? null;  
+$evento = $_POST['evento'] ?? null;
+$hora = $_POST['hora'] ?? null;
 
-    // Validação básica que até um jegue saberia
-    $id_usuario = $_SESSION['id_usuario'] ?? null;
+if (!$evento || !$hora) {
+    echo "Dados inválidos";
+    exit;
+}
 
-    if (!$id_usuario) {
-        echo "Erro: usuário não autenticado.";
-        exit;
-    }
+$data = date("Y-m-d");
 
-    // atribuindo os posts as variáveis para facilitar meu mundinho
-    $entrada         = $_POST['entrada'] ?? null;
-    $saida           = $_POST['saida'] ?? null;
-    $almoco_saida    = $_POST['almoco_saida'] ?? null;
-    $almoco_entrada  = $_POST['almoco_entrada'] ?? null;
-    $observacao  = $_POST['observacao'] ?? null;
-    $data_ponto = date('Y-m-d'); // Pega a data atual no fuso correto
+// Mapeia evento → coluna da tabela
+$map = [
+    'entrada' => 'hora_entrada',
+    'saida' => 'hora_saida',
+    'almoco_saida' => 'hora_almoco_saida',
+    'almoco_retorno' => 'hora_almoco_retorno'
+];
 
-    // Verifica se já existe ponto hoje
-    $check = $conn->prepare("SELECT id_ponto FROM ponto WHERE id_usuario = ? AND data_ponto = ?");
-    $check->bind_param("is", $id_usuario, $data_ponto);
-    $check->execute();
-    $check->store_result();
+if (!isset($map[$evento])) {
+    echo "Evento inválido";
+    exit;
+}
 
-    if ($check->num_rows > 0) {
-        $check->close();
-        echo "Você já registrou ponto hoje.";
-        echo "<a href='registrar_ponto.php'>Voltar</a>";
-        exit;
-    }
-    $check->close();
+$coluna = $map[$evento];
 
-    // Criando inserção
-    $sql = "INSERT INTO ponto (
-                id_usuario, 
-                data_ponto, 
-                hora_entrada, 
-                hora_saida, 
-                hora_almoco_saida, 
-                hora_almoco_retorno,
-                observacao,
-                status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pendente')";
+// Verifica se já existe ponto do dia
+$sql = "SELECT * FROM ponto WHERE id_usuario = ? AND data_ponto = ?";
+$stmt = $conn->prepare($sql);
 
-    // statement prepare para preparar a query
+if (!$stmt) {
+    echo "Erro no prepare: " . $conn->error;
+    exit;
+}
+
+$stmt->bind_param("is", $id_usuario, $data);
+$stmt->execute();
+$result = $stmt->get_result();
+$registro = $result->fetch_assoc();
+
+
+// Se não existe da INSERT
+if (!$registro) {
+
+    $sql = "INSERT INTO ponto (id_usuario, data_ponto, $coluna)
+            VALUES (?, ?, ?)";
+
     $stmt = $conn->prepare($sql);
 
     if (!$stmt) {
-        die("Erro ao preparar query: " . $conn->error);
-    }
-
-    // Associando os parâmetros(palavra bonita usada pra parecer inteligente)
-    $stmt->bind_param(
-        "issssss", 
-        $id_usuario,
-        $data_ponto,
-        $entrada,
-        $saida,
-        $almoco_saida,
-        $almoco_entrada,
-        $observacao
-    );
-
-    // Execução
-    if ($stmt->execute()) {
-        header("Location: registrar_ponto.php?sucesso=1");
+        echo "Erro no prepare (insert): " . $conn->error;
         exit;
-    } else {
-        echo "Erro ao registrar ponto: " . $stmt->error;
-        echo "<a href='registrar_ponto.php'>Voltar</a>";
     }
 
-    $stmt->close();
+    $stmt->bind_param("iss", $id_usuario, $data, $hora);
+
+    if ($stmt->execute()) echo "Registrado (insert)";
+    else echo "Erro no insert";
+
+    exit;
 }
-?>
+
+
+// não permite sobrescrever um evento já registrado
+if (!is_null($registro[$coluna])) {
+    echo "Evento já registrado";
+    exit;
+}
+
+// UPDATE SOMENTE da coluna referente ao evento
+$sql = "UPDATE ponto SET $coluna = ? WHERE id_ponto = ?";
+$stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+    echo "Erro no prepare (update): " . $conn->error;
+    exit;
+}
+
+$stmt->bind_param("si", $hora, $registro['id_ponto']);
+
+if ($stmt->execute()) echo "Registrado (update)";
+else echo "Erro no update";

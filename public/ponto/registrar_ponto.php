@@ -3,73 +3,66 @@ session_start();
 date_default_timezone_set('America/Sao_Paulo');
 include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
-$ponto = [];
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <title>Registrar Ponto</title>
 </head>
 
 <body>
+    <a href="relatorio_ponto.php">voltar</a>
     <h2>Registro de Ponto</h2>
 
-    <form method="post" action="sql_registrar_ponto.php">
-        <label for="entradas">Entrada:</label>
+    <label for="evento">Evento:</label>
+    <select id="evento">
+        <option value="entrada">Entrada</option>
+        <option value="saida">Saída</option>
+        <option value="almoco_saida">Almoço - Saída</option>
+        <option value="almoco_retorno">Almoço - Retorno</option>
+    </select>
 
-        <select id="select">
-            <option value="expediente">Expediente</option>
-            <option value="almoco">Almoço</option>
-        </select>
-    </form>
-    <button id="btn_registrar">Registrar Dados</button><br>
-    <a id="resultado">Resultado: </a><br>
+    <button id="btn_registrar">Registrar Dados</button><br><br>
 
+    <p id="resultado"></p>
 
     <script>
-        const btn = document.getElementById("btn");
-        const btnImprimir = document.getElementById("btn_registrar");
-        const select = document.getElementById("select");
+        const select = document.getElementById("evento");
+        const btn = document.getElementById("btn_registrar");
         const resultado = document.getElementById("resultado");
-        var array = {
-            entrada: {registrado: 0},
-            almoco_entrada: {registrado: 0}
-        };
 
-        btn.textContent = 'Iniciar';
-        btn.addEventListener("click", () => {
-            array[select.value].registrado += 1;
-            btn.textContent = array[select.value].registrado == 1 ? "Sair" : "Iniciar";
-            if (array[select.value].registrado == 2) {
-                retornarTempo();
-                btn.setAttribute('disabled', 'disabled');
-            } else if (array[select.value].registrado <= 1) {
-                retornarTempo();
-                btn.removeAttribute('disabled');
-            }
-        });
+        btn.onclick = () => {
+            const evento = select.value;
+            const now = new Date();
+            const hora = now.toLocaleTimeString("pt-BR", { hour12: false });
 
-        select.addEventListener('change', () => {
-            if (array[select.value].registrado <= 1) btn.removeAttribute('disabled');
-            btn.textContent = array[select.value].registrado == 1 ? "Sair" : "Iniciar";
-        })
-
-        function retornarTempo() {
-            var now = new Date();
-            var time = now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
             fetch("sql_registrar_ponto.php", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body:
-                    "tipo=" + encodeURIComponent(select.value) +
-                    "&evento=" + encodeURIComponent(array[select.value].registrado == 1 ? "inicio" : "fim") +
-                    "&time=" + encodeURIComponent(time)
-            });
+                    "evento=" + encodeURIComponent(evento) +
+                    "&hora=" + encodeURIComponent(hora)
+            })
+            .then(r => r.text())
+            .then(t => resultado.textContent = t);
         }
+
+        window.onload = () => {
+            fetch("status_ponto.php")
+            .then(r => r.json())
+            .then(status => {
+                const select = document.getElementById("evento");
+
+                // percorre cada opção
+                for (let opt of select.options) {
+                    if (status[opt.value] === true) {
+                        opt.disabled = true;
+                    }
+                }
+            });
+        };
     </script>
 </body>
-
 </html>
