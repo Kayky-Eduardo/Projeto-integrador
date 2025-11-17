@@ -18,25 +18,12 @@ $ponto = [];
     <h2>Registro de Ponto</h2>
 
     <form method="post" action="sql_registrar_ponto.php">
-        <!-- <a>Entrada</a>
-        <input type="time" name="entrada">
-        <a>Saída</a>
-        <input type="time" name="saida">
-        <a>Almoço Entrada</a>
-        <input type="time" name="almoco">
-        <a>Almoço Saída</a>
-        <input type="time" name="almoco_saida">
-        <a>Observações</a>
-        <textarea name="observacao"></textarea>
-        <button type="submit" name="registro">Registrar</button> -->
-
         <label for="entradas">Entrada:</label>
 
-        <select name="entradas" id="select">
-            <option value="entrada">Expediente</option>
+        <select id="select">
+            <option value="expediente">Expediente</option>
             <option value="almoco">Almoço</option>
         </select>
-        <button id="btn" type="button"></button>
     </form>
     <button id="btn_registrar">Registrar Dados</button><br>
     <a id="resultado">Resultado: </a><br>
@@ -47,7 +34,10 @@ $ponto = [];
         const btnImprimir = document.getElementById("btn_registrar");
         const select = document.getElementById("select");
         const resultado = document.getElementById("resultado");
-
+        var array = {
+            entrada: {registrado: 0},
+            almoco_entrada: {registrado: 0}
+        };
 
         btn.textContent = 'Iniciar';
         btn.addEventListener("click", () => {
@@ -70,29 +60,16 @@ $ponto = [];
         function retornarTempo() {
             var now = new Date();
             var time = now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
-            fetch("processa.php", {
+            fetch("sql_registrar_ponto.php", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: "time=" + encodeURIComponent(time)
-            })
-            .then(r => r.text())
-            .then(retorno => {
-                console.log("Resposta do PHP:", retorno);
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body:
+                    "tipo=" + encodeURIComponent(select.value) +
+                    "&evento=" + encodeURIComponent(array[select.value].registrado == 1 ? "inicio" : "fim") +
+                    "&time=" + encodeURIComponent(time)
             });
         }
     </script>
-
-    <?php
-    if (empty($_POST['entrada']) || empty($_POST['saida'])) {
-        echo "Preencha todos os campos obrigatórios.";
-        exit;
-    }
-    if (isset($_POST['registro'])) {
-        echo "Registrado em: " . date('d-m-Y H:i:s');
-    }
-    ?>
 </body>
 
 </html>
