@@ -52,18 +52,32 @@ $saida_automatica = $config['saida_automatica'] ?? 0;
 
 </head>
 <body>
-        <h2>Configuração de Pausas</h2>
-        <form method="POST">
-            <label for="tempo_min">Tempo mínimo (minutos):</label>
-            <input type="number" id="tempo_min" name="tempo_min" min="1" value="<?= htmlspecialchars($tempo_min) ?>" required>
+    <h2>Configuração de Pausas</h2>
+    <form method="POST">
+        <label for="tempo_min">Tempo mínimo (minutos):</label>
+        <input type="number" id="tempo_min" name="tempo_min" min="1" value="<?= htmlspecialchars($tempo_min) ?>" required>
 
-            <label for="tempo_max">Tempo máximo (minutos):</label>
-            <input type="number" id="tempo_max" name="tempo_max" min="1" value="<?= htmlspecialchars($tempo_max) ?>" required>
+        <label for="tempo_max">Tempo máximo (minutos):</label>
+        <input type="number" id="tempo_max" name="tempo_max" min="1" value="<?= htmlspecialchars($tempo_max) ?>" required>
 
-            <input type="checkbox" id="saida_automatica" name="saida_automatica" <?= $saida_automatica ? 'checked' : '' ?>>
-            <label for="saida_automatica">Ativar saída automática</label>
-            
-            <button type="submit">Salvar Configuração</button>
-        </form>
+        <input type="checkbox" id="saida_automatica" name="saida_automatica" <?= $saida_automatica ? 'checked' : '' ?>>
+        <label for="saida_automatica">Ativar saída automática</label>
+        
+        <button type="submit">Salvar Configuração</button>
+    </form>
+
+    <?php
+    // Executa pausa_auto.php e captura os logs
+    ob_start();
+    include 'pausa_auto.php';
+    $logs = ob_get_clean();
+
+    if ($logs) {
+        echo "<div class='logs'>
+                <h3>Logs do Encerramento Automático:</h3>
+                <pre>$logs</pre>
+              </div>";
+    }
+    ?>
 </body>
 </html>

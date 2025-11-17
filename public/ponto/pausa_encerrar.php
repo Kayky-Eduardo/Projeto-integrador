@@ -5,6 +5,7 @@ include '../../include/verificacao.php'; // garante que o usuário está logado
 header('Content-Type: application/json');
 
 $id_usuario = $_SESSION['id_usuario'] ?? null;
+
 if (!$id_usuario) {
     echo json_encode(['erro' => true, 'mensagem' => 'Usuário não autenticado.']);
     exit;
@@ -27,8 +28,11 @@ $id_pausa = $pausa['id_pausa'];
 $inicio = $pausa['inicio'];
 
 // Busca configuração da pausa
-$sql = "SELECT * FROM pausa_config LIMIT 1";
-$configRes = $conn->query($sql);
+$sql = "SELECT * FROM pausa_config WHERE id_usuario = ? LIMIT 1";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id_usuario);
+$stmt->execute();
+$configRes = $stmt->get_result();
 $config = $configRes->fetch_assoc();
 
 $tempo_min = $config['tempo_min'] ?? 5;
@@ -43,13 +47,13 @@ $res = $stmt->get_result();
 $row = $res->fetch_assoc();
 $minutos = intval($row['minutos']);
 
-// Verifica se respeitou o tempo mínimo/máximo
+// Verifica se respeitou o tempo mínimo
 if ($minutos < $tempo_min) {
     echo json_encode(['erro' => true, 'mensagem' => "A pausa mínima é de $tempo_min minutos. Aguarde mais um pouco."]);
     exit;
 }
 
-// Atualiza pausa como encerrada
+// Encerra pausa 
 $sql = "UPDATE pausa SET fim = NOW(), status = 'encerrada' WHERE id_pausa = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $id_pausa);

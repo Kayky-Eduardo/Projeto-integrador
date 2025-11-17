@@ -1,12 +1,24 @@
 <?php
 include "../../BD/conexao.php";
 
-// Verifica se existe alguma pausa ativa
-$sql = "SELECT p.*, c.tempo_max, c.saida_automatica 
-        FROM pausa p
-        JOIN pausa_config c ON p.id_usuario = c.id_usuario
-        WHERE p.fim IS NULL";
+// Busca pausas ativas junto com a configuração global
+$sql = "
+    SELECT 
+        p.id_pausa, 
+        p.id_usuario, 
+        p.inicio,
+        c.tempo_max, 
+        c.saida_automatica
+    FROM pausa p
+    CROSS JOIN pausa_config c
+    WHERE p.status = 'ativa'
+";
 $result = $conn->query($sql);
+
+// Caso não haja pausas ativas
+if ($result->num_rows === 0) {
+    echo "Nenhuma pausa ativa no momento.<br>";
+}
 
 while ($row = $result->fetch_assoc()) {
     $id_pausa = $row['id_pausa'];
@@ -15,20 +27,30 @@ while ($row = $result->fetch_assoc()) {
     $tempo_max = (int)$row['tempo_max'];
     $saida_automatica = (int)$row['saida_automatica'];
 
-    // Calcula quanto tempo a pausa ta ativa
-    $diff_sql = "SELECT TIMESTAMPDIFF(MINUTE, '$inicio', NOW()) AS minutos_passados";
-    $diff_result = $conn->query($diff_sql);
-    $tempo_decorrido = $diff_result->fetch_assoc()['minutos_passados'];
+    // Calcula o tempo decorrido desde o início da pausa
+    $diff_sql = "SELECT TIMESTAMPDIFF(MINUTE, ?, NOW()) AS minutos_passados";
+    $stmt = $conn->prepare($diff_sql);
+    $stmt->bind_param("s", $inicio);
+    $stmt->execute();
+    $diff_result = $stmt->get_result();
+    $tempo_decorrido = $diff_result->fetch_assoc()['minutos_passados'] ?? 0;
 
-    // Se passou do tempo máximo e a saída automática estiver ligada
+    // Se passou do tempo máximo e a saída automática estiver habilitada
     if ($tempo_decorrido >= $tempo_max && $saida_automatica == 1) {
-        $update = "UPDATE pausa 
-                SET fim = NOW(), duracao = TIMESTAMPDIFF(MINUTE, inicio, NOW()) 
-                WHERE id_pausa = $id_pausa";
-        $conn->query($update);
+        $update = "
+            UPDATE pausa 
+            SET 
+                fim = NOW(), 
+                status = 'encerrada'
+            WHERE id_pausa = ?
+        ";
+        $stmt2 = $conn->prepare($update);
+        $stmt2->bind_param("i", $id_pausa);
+        $stmt2->execute();
 
-
-        echo "Pausa do usuário $id_usuario encerrada automaticamente após $tempo_decorrido minutos.<br>";
+        echo "Pausa do usuário <b>$id_usuario</b> encerrada automaticamente após <b>$tempo_decorrido</b> minutos.<br>";
+    } else {
+        echo "Pausa ativa do usuário <b>$id_usuario</b> há <b>$tempo_decorrido</b> minutos.<br>";
     }
 }
 
