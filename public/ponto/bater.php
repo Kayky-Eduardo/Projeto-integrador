@@ -4,20 +4,15 @@ include(__DIR__ . "/../../BD/conexao.php");
 require __DIR__ . "/../../include/verificacao.php";
 verificar_login($conn);
 
-// timezone
 date_default_timezone_set('America/Sao_Paulo');
-
 $id_usuario = $_SESSION['id_usuario'] ?? null;
 if (!$id_usuario) {
     http_response_code(403);
-    echo "Usuário não autenticado.";
+    echo json_encode(['ok' => false, 'mensagem' => 'Usuário não autenticado.']);
     exit;
 }
 
-// evita batidas muito próximas (1 minuto)
-$min_interval_seconds = 5;
-
-// hoje
+$min_interval_seconds = 1;
 $hoje = date("Y-m-d");
 $agora = date("Y-m-d H:i:s");
 
@@ -28,24 +23,18 @@ $q->execute();
 $res = $q->get_result();
 $reg = $res->fetch_assoc();
 
-// função auxiliar: checar última batida do registro
 function ultima_batida_ts($reg)
 {
-    $times = [];
-    if (!empty($reg['inicio_ponto'])) $times[] = strtotime($reg['inicio_ponto']);
-    if (!empty($reg['inicio_almoco'])) $times[] = strtotime($reg['inicio_almoco']);
-    if (!empty($reg['fim_almoco'])) $times[] = strtotime($reg['fim_almoco']);
-    if (!empty($reg['fim_ponto'])) $times[] = strtotime($reg['fim_ponto']);
-    if (empty($times)) return 0;
-    return max($times);
+    $t = [];
+    foreach (['inicio_ponto', 'inicio_almoco', 'fim_almoco', 'fim_ponto'] as $c) {
+        if (!empty($reg[$c])) $t[] = strtotime($reg[$c]);
+    }
+    return $t ? max($t) : 0;
 }
 
-// se não existe registro do dia, cria com inicio_ponto = agora
+// se não existe registro do dia, cria com inicio_ponto = agora e status 'Em Andamento'
 if (!$reg) {
-    $ins = $conn->prepare("
-        INSERT INTO ponto_dia (id_usuario, data_reg, inicio_ponto)
-        VALUES (?, ?, ?)
-    ");
+    $ins = $conn->prepare("INSERT INTO ponto_dia (id_usuario, data_reg, inicio_ponto, status) VALUES (?, ?, ?, 'Em Andamento')");
     $ins->bind_param("iss", $id_usuario, $hoje, $agora);
     if ($ins->execute()) {
         echo json_encode(['ok' => true, 'mensagem' => 'Entrada registrada: ' . $agora, 'acao' => 'entrada']);
@@ -56,7 +45,7 @@ if (!$reg) {
     exit;
 }
 
-// já existe registro do dia -> decide próxima ação
+// evita batidas muito próximas
 $ultima_ts = ultima_batida_ts($reg);
 if (time() - $ultima_ts < $min_interval_seconds) {
     echo json_encode(['ok' => false, 'mensagem' => 'Você já bateu há pouco tempo. Aguarde alguns segundos.']);
@@ -89,10 +78,11 @@ if (empty($reg['fim_almoco'])) {
 }
 
 if (empty($reg['fim_ponto'])) {
+    // Ao registrar saída, definimos status = 'Finalizado' (conforme seu schema)
     $up = $conn->prepare("UPDATE ponto_dia SET fim_ponto = ?, status = 'Finalizado' WHERE id_ponto = ?");
     $up->bind_param("si", $agora, $reg['id_ponto']);
     if ($up->execute()) {
-        echo json_encode(['ok' => true, 'mensagem' => 'Saída registrada: ' . $agora, 'acao' => 'saida']);
+        echo json_encode(['ok' => true, 'mensagem' => 'Saída registrada: ' . $agora . '. Ponto finalizado e aguardando aprovação.', 'acao' => 'saida']);
     } else {
         http_response_code(500);
         echo json_encode(['ok' => false, 'mensagem' => 'Erro ao registrar saída.']);

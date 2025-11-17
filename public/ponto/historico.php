@@ -7,127 +7,117 @@ verificar_login($conn);
 $id_usuario = $_SESSION['id_usuario'];
 $nivel = $_SESSION['nivel'];
 
-// --------------------------
-// HISTÓRICO DE BATIDAS (ponto_dia)
-// --------------------------
-if ($nivel >= 3) {
-    // RH e Admin visualizam todos
-    $sql_ponto = "
-        SELECT p.*, u.nome_usuario
-        FROM ponto_dia p
-        INNER JOIN usuario u ON u.id_usuario = p.id_usuario
-        ORDER BY p.data_reg DESC
-    ";
-} else {
-    // Funcionário vê só o dele
-    $sql_ponto = "
-        SELECT * FROM ponto_dia
-        WHERE id_usuario = $id_usuario
-        ORDER BY data_reg DESC
-    ";
+$f_from = $_GET['from'] ?? '';
+$f_to = $_GET['to'] ?? '';
+$f_status = $_GET['status'] ?? '';
+
+$where = [];
+$params = [];
+$types = '';
+
+$sql = "
+    SELECT 
+        p.*, 
+        u.nome_usuario AS nome
+    FROM ponto_dia p
+    INNER JOIN usuario u ON u.id_usuario = p.id_usuario
+";
+
+// Se usuário comum, só mostra o histórico dele
+if ($nivel < 3) {
+    $where[] = "p.id_usuario = ?";
+    $params[] = $id_usuario;
+    $types .= 'i';
 }
 
-$batidas = $conn->query($sql_ponto);
-
-
-// --------------------------
-// HISTÓRICO DE SOLICITAÇÕES DE AJUSTE (ajustes_ponto)
-// --------------------------
-if ($nivel >= 3) {
-    $sql_ajustes = "
-        SELECT a.*, u.nome_usuario
-        FROM ajustes_ponto a
-        INNER JOIN usuario u ON u.id_usuario = a.id_usuario
-        ORDER BY a.data_solicitacao DESC
-    ";
-} else {
-    $sql_ajustes = "
-        SELECT *
-        FROM ajustes_ponto
-        WHERE id_usuario = $id_usuario
-        ORDER BY data_solicitacao DESC
-    ";
+if ($f_from) {
+    $where[] = "p.data_reg >= ?";
+    $params[] = $f_from;
+    $types .= 's';
 }
 
-$ajustes = $conn->query($sql_ajustes);
+if ($f_to) {
+    $where[] = "p.data_reg <= ?";
+    $params[] = $f_to;
+    $types .= 's';
+}
+
+if ($f_status) {
+    $where[] = "p.status = ?";
+    $params[] = $f_status;
+    $types .= 's';
+}
+
+if ($where) {
+    $sql .= " WHERE " . implode(" AND ", $where);
+}
+
+$sql .= " ORDER BY p.data_reg DESC";
+
+$stmt = $conn->prepare($sql);
+if ($params) {
+    $stmt->bind_param($types, ...$params);
+}
+$stmt->execute();
+$batidas = $stmt->get_result();
 ?>
+<!DOCTYPE html>
+<html>
 
-<h1>Histórico Geral</h1>
+<head>
+    <meta charset="utf-8">
+    <title>Histórico de Batidas</title>
+</head>
 
-<a href="../index.php">Voltar</a>
+<body>
+    <a href="../index.php">Voltar</a>
+    <h1>Histórico de Batidas</h1>
 
-<hr>
+    <form method="get">
+        <label>De:</label>
+        <input type="date" name="from" value="<?= htmlspecialchars($f_from) ?>">
 
-<!-- ====================== -->
-<!-- HISTÓRICO DE BATIDAS   -->
-<!-- ====================== -->
-<h2>Histórico de Batidas</h2>
+        <label>Até:</label>
+        <input type="date" name="to" value="<?= htmlspecialchars($f_to) ?>">
 
-<table border="1" cellpadding="8">
-    <tr>
-        <?php if ($nivel >= 3) echo "<th>Usuário</th>"; ?>
-        <th>Data</th>
-        <th>Entrada</th>
-        <th>Início Almoço</th>
-        <th>Fim Almoço</th>
-        <th>Saída</th>
-        <th>Status</th>
-    </tr>
+        <label>Status:</label>
+        <select name="status">
+            <option value="">Todos</option>
+            <option value="Em Andamento" <?= $f_status == 'Em Andamento' ? 'selected' : '' ?>>Em Andamento</option>
+            <option value="Finalizado" <?= $f_status == 'Finalizado' ? 'selected' : '' ?>>Finalizado</option>
+            <option value="Revisar" <?= $f_status == 'Revisar' ? 'selected' : '' ?>>Revisar</option>
+            <option value="Aprovado" <?= $f_status == 'Aprovado' ? 'selected' : '' ?>>Aprovado</option>
+        </select>
 
-    <?php while ($row = $batidas->fetch_assoc()): ?>
+        <button>Filtrar</button>
+    </form>
+
+    <br>
+
+    <table border="1" cellpadding="8">
         <tr>
-            <?php if ($nivel >= 3) echo "<td>{$row['nome_usuario']}</td>"; ?>
-            <td><?= $row['data_reg'] ?></td>
-            <td><?= $row['inicio_ponto'] ?? '-' ?></td>
-            <td><?= $row['inicio_almoco'] ?? '-' ?></td>
-            <td><?= $row['fim_almoco'] ?? '-' ?></td>
-            <td><?= $row['fim_ponto'] ?? '-' ?></td>
-            <td><?= $row['status'] ?></td>
+            <th>Data</th>
+            <th>Funcionário</th>
+            <th>Entrada</th>
+            <th>Início Almoço</th>
+            <th>Fim Almoço</th>
+            <th>Saída</th>
+            <th>Status</th>
         </tr>
-    <?php endwhile; ?>
-</table>
 
-<hr>
+        <?php while ($r = $batidas->fetch_assoc()): ?>
+            <tr>
+                <td><?= date("d-m-Y", strtotime($r['data_reg'])) ?></td>
+                <td><?= htmlspecialchars($r['nome']) ?></td>
+                <td><?= $r['inicio_ponto'] ? date("H:i", strtotime($r['inicio_ponto'])) : '-' ?></td>
+                <td><?= $r['inicio_almoco'] ? date("H:i", strtotime($r['inicio_almoco'])) : '-' ?></td>
+                <td><?= $r['fim_almoco'] ? date("H:i", strtotime($r['fim_almoco'])) : '-' ?></td>
+                <td><?= $r['fim_ponto'] ? date("H:i", strtotime($r['fim_ponto'])) : '-' ?></td>
+                <td><?= $r['status'] ?></td>
+            </tr>
+        <?php endwhile; ?>
+    </table>
 
-<!-- ============================= -->
-<!-- HISTÓRICO DE SOLICITAÇÕES    -->
-<!-- ============================= -->
-<h2>Histórico de Solicitações de Ajuste</h2>
+</body>
 
-<table border="1" cellpadding="8">
-    <tr>
-        <?php if ($nivel >= 3) echo "<th>Usuário</th>"; ?>
-        <th>Campo Ajustado</th>
-        <th>Valor Antigo</th>
-        <th>Valor Novo</th>
-        <th>Motivo</th>
-        <th>Status</th>
-        <th>Solicitado em</th>
-        <?php if ($nivel >= 3) echo "<th>Aprovado/Rejeitado por</th>"; ?>
-    </tr>
-
-    <?php while ($row = $ajustes->fetch_assoc()): ?>
-        <tr>
-            <?php if ($nivel >= 3) echo "<td>{$row['nome_usuario']}</td>"; ?>
-            <td><?= $row['campo'] ?></td>
-            <td><?= $row['valor_antigo'] ?: '-' ?></td>
-            <td><?= $row['valor_novo'] ?></td>
-            <td><?= $row['motivo'] ?></td>
-            <td><?= $row['status'] ?></td>
-            <td><?= $row['data_solicitacao'] ?></td>
-
-            <?php
-            if ($nivel >= 3) {
-                if ($row['id_rh']) {
-                    // Busca nome do RH
-                    $buscar = $conn->query("SELECT nome_usuario FROM usuario WHERE id_usuario = {$row['id_rh']}");
-                    $rh = $buscar->fetch_assoc()['nome_usuario'] ?? '-';
-                    echo "<td>$rh</td>";
-                } else {
-                    echo "<td>-</td>";
-                }
-            }
-            ?>
-        </tr>
-    <?php endwhile; ?>
-</table>
+</html>
