@@ -133,7 +133,7 @@ function filtrar($conn, $tipo) {
         $filtro_horario_completo = $conn->prepare("
         SELECT 
             usuario.email_usuario, ponto.*,
-            TIMESTAMPDIFF(MINUTE, hora_entrada, NOW()) AS tempo_logado 
+            TIMESTAMPDIFF(MINUTE, hora_entrada, hora_saida) AS tempo_logado 
         FROM ponto JOIN usuario ON ponto.id_usuario = usuario.id_usuario
         WHERE hora_entrada IS NOT NULL AND (hora_saida IS NOT NULL AND hora_saida != '00:00:00')
         AND ponto.data_ponto = CURDATE()

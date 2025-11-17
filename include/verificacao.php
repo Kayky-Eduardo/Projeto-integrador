@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 function verificar_login($conn) {
     if (!isset($_SESSION['id_login']) || !isset($_SESSION['id_usuario'])) {
-        header("Location: logout.php");
+        header("Location: /Projeto-integrador/public/logout.php");
         exit;
     }
     $stmt = $conn->prepare("

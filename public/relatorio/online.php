@@ -2,6 +2,7 @@
 include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
+include "../../include/navbar.php";
 
 $verificacao_logado = $conn->prepare("
 SELECT id_login, email_login, data_inicio FROM login
