@@ -18,10 +18,8 @@ require "../../include/verificacao.php";
 
     <label for="evento">Evento:</label>
     <select id="evento">
-        <option value="entrada">Entrada</option>
-        <option value="saida">Saída</option>
-        <option value="almoco_saida">Almoço - Saída</option>
-        <option value="almoco_retorno">Almoço - Retorno</option>
+        <option value="ponto">Ponto</option>
+        <option value="almoco">Almoço</option>
     </select>
 
     <button id="btn_registrar">Registrar Dados</button><br><br>
@@ -34,16 +32,12 @@ require "../../include/verificacao.php";
         const resultado = document.getElementById("resultado");
 
         btn.onclick = () => {
-            const evento = select.value;
-            const now = new Date();
-            const hora = now.toLocaleTimeString("pt-BR", { hour12: false });
+            const pausa = select.value;
 
             fetch("sql_registrar_ponto.php", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body:
-                    "evento=" + encodeURIComponent(evento) +
-                    "&hora=" + encodeURIComponent(hora)
+                body: "pausa=" + encodeURIComponent(pausa)
             })
             .then(r => r.text())
             .then(t => resultado.textContent = t);
