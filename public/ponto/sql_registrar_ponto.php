@@ -53,7 +53,7 @@ if ($pausa === "ponto") {
         $acao = "Saída registrada";
     }
     else {
-        echo "Ponto já finalizado hoje.";
+        echo "ponto já finalizado hoje.";
         exit;
     }
 }
