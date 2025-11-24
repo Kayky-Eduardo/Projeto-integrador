@@ -13,7 +13,10 @@ verificar_login($conn);
     <link rel="stylesheet" href="../../assets/estilo.css">
 </head>
 <body>
+    <a href="../">Voltar</a>
     <a href="registrar_ponto.php">Registrar Ponto</a>
+    <a href="pausa_config.php">Criar Pausa</a>
+    <a href="pausa.php">Pausas Ativas</a>
     <dialog>
         <div class="filtrar-relatorio-grafico">
             <input type="date" id="data-filtro-relatorio-grafico">
