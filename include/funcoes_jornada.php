@@ -148,10 +148,10 @@ function verificarFeriado($conn, $data) {
     $stmt->bind_param("s", $data);
     $stmt->execute();
     $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
+    $linha = $result->fetch_assoc();
     $stmt->close();
     
-    return $row['total'] > 0;
+    return $linha['total'] > 0;
 }
 
 // Retorna nome do dia da semana

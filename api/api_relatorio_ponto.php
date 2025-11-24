@@ -200,18 +200,13 @@ function relatorio_ponto_filtrado($conn, $id_usuario) {
     return $usuario;
 }
 
-function get_tempo_logado($conn, $id_usuario) {
+function get_logados($conn) {
     $coleta_usuario_tabela = $conn->prepare("
-        SELECT data_inicio, data_fim,
-        CASE
-            WHEN data_fim != null THEN TIMESTAMPDIFF(MINUTE, data_inicio, data_fim) 
-            ELSE TIMESTAMPDIFF(MINUTE, data_inicio, NOW())
-        END AS tempo_logado
-        FROM login
-        WHERE MONTH(data_inicio) = MONTH(curdate())
-        AND id_usuario = ?;
+    SELECT id_login, email_login, data_inicio, TIMESTAMPDIFF(MINUTE, data_inicio, NOW()) AS tempo_logado
+    FROM login
+    WHERE MONTH(data_inicio) = MONTH(CURDATE())
+    AND data_fim IS NULL;
     ");
-    $coleta_usuario_tabela->bind_param("i", $id_usuario);
     $coleta_usuario_tabela->execute();
     
     $result = $coleta_usuario_tabela->get_result();
@@ -227,7 +222,7 @@ $input = json_decode(file_get_contents('php://input'), true);
 $white_list = [
     'ausentes', 'pausa', 'horario',
     'presentes', 'usuarios', 'filtrar_usuario',
-    'filtrar_tabela_hora'
+    'filtrar_tabela_hora', 'get_logado'
 ];
 
 if ($acao) {
@@ -242,6 +237,9 @@ if ($acao) {
             exit;
         } else if ($acao_formatada === 'filtrar_tabela_hora') {
             echo json_encode(relatorio_ponto_filtrado($conn, $input['id_usuario']));
+            exit;
+        } else if ($acao_formatada === 'get_logado') {
+            echo json_encode(get_logados($conn));
             exit;
         } else {
             echo json_encode(filtrar($conn, $acao_formatada));
