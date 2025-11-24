@@ -7,8 +7,8 @@ verificar_login($conn);
 $id_usuario = $_SESSION['id_usuario'];
 $nivel = $_SESSION['nivel'];
 
-$f_from = $_GET['from'] ?? '';
-$f_to = $_GET['to'] ?? '';
+$f_from   = $_GET['from']   ?? '';
+$f_to     = $_GET['to']     ?? '';
 $f_status = $_GET['status'] ?? '';
 
 $where = [];
@@ -23,26 +23,29 @@ $sql = "
     INNER JOIN usuario u ON u.id_usuario = p.id_usuario
 ";
 
-// Se usuário comum, só mostra o histórico dele
-if ($nivel < 3) {
+// Funcionário comum vê só dele
+if ($nivel < 2) {
     $where[] = "p.id_usuario = ?";
     $params[] = $id_usuario;
     $types .= 'i';
 }
 
-if ($f_from) {
+// Filtro data inicial
+if (!empty($f_from)) {
     $where[] = "p.data_reg >= ?";
     $params[] = $f_from;
     $types .= 's';
 }
 
-if ($f_to) {
+// Filtro data final
+if (!empty($f_to)) {
     $where[] = "p.data_reg <= ?";
     $params[] = $f_to;
     $types .= 's';
 }
 
-if ($f_status) {
+// Filtro status
+if (!empty($f_status)) {
     $where[] = "p.status = ?";
     $params[] = $f_status;
     $types .= 's';
@@ -70,10 +73,12 @@ $batidas = $stmt->get_result();
 </head>
 
 <body>
+
     <a href="../index.php">Voltar</a>
     <h1>Histórico de Batidas</h1>
 
     <form method="get">
+
         <label>De:</label>
         <input type="date" name="from" value="<?= htmlspecialchars($f_from) ?>">
 
@@ -84,12 +89,12 @@ $batidas = $stmt->get_result();
         <select name="status">
             <option value="">Todos</option>
             <option value="Em Andamento" <?= $f_status == 'Em Andamento' ? 'selected' : '' ?>>Em Andamento</option>
-            <option value="Finalizado" <?= $f_status == 'Finalizado' ? 'selected' : '' ?>>Finalizado</option>
-            <option value="Revisar" <?= $f_status == 'Revisar' ? 'selected' : '' ?>>Revisar</option>
-            <option value="Aprovado" <?= $f_status == 'Aprovado' ? 'selected' : '' ?>>Aprovado</option>
+            <option value="Finalizado" <?= $f_status == 'Finalizado'   ? 'selected' : '' ?>>Finalizado</option>
+            <option value="Revisar" <?= $f_status == 'Revisar'      ? 'selected' : '' ?>>Revisar</option>
+            <option value="Aprovado" <?= $f_status == 'Aprovado'     ? 'selected' : '' ?>>Aprovado</option>
         </select>
 
-        <button>Filtrar</button>
+        <button type="submit">Filtrar</button>
     </form>
 
     <br>
@@ -103,17 +108,31 @@ $batidas = $stmt->get_result();
             <th>Fim Almoço</th>
             <th>Saída</th>
             <th>Status</th>
+
+            <?php if ($nivel < 2): ?>
+                <th>Ação</th>
+            <?php endif; ?>
         </tr>
 
         <?php while ($r = $batidas->fetch_assoc()): ?>
             <tr>
-                <td><?= date("d-m-Y", strtotime($r['data_reg'])) ?></td>
+                <td><?= date("d/m/Y", strtotime($r['data_reg'])) ?></td>
                 <td><?= htmlspecialchars($r['nome']) ?></td>
-                <td><?= $r['inicio_ponto'] ? date("H:i", strtotime($r['inicio_ponto'])) : '-' ?></td>
-                <td><?= $r['inicio_almoco'] ? date("H:i", strtotime($r['inicio_almoco'])) : '-' ?></td>
-                <td><?= $r['fim_almoco'] ? date("H:i", strtotime($r['fim_almoco'])) : '-' ?></td>
-                <td><?= $r['fim_ponto'] ? date("H:i", strtotime($r['fim_ponto'])) : '-' ?></td>
+
+                <td><?= $r['inicio_ponto']   ? date("H:i", strtotime($r['inicio_ponto']))   : '--:--' ?></td>
+                <td><?= $r['inicio_almoco']  ? date("H:i", strtotime($r['inicio_almoco']))  : '--:--' ?></td>
+                <td><?= $r['fim_almoco']     ? date("H:i", strtotime($r['fim_almoco']))     : '--:--' ?></td>
+                <td><?= $r['fim_ponto']      ? date("H:i", strtotime($r['fim_ponto']))      : '--:--' ?></td>
+
                 <td><?= $r['status'] ?></td>
+
+                <?php if ($nivel < 2): ?>
+                    <td>
+                        <a href="solicitar.php?id_ponto=<?= $r['id_ponto'] ?>">
+                            Solicitar ajuste
+                        </a>
+                    </td>
+                <?php endif; ?>
             </tr>
         <?php endwhile; ?>
     </table>

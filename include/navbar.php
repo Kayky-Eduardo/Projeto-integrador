@@ -7,20 +7,18 @@ $nivel = $_SESSION['nivel'];
 
 echo '<nav>';
 
-if ($nivel >= 4) {
+if ($nivel >= 3) {
     echo '
         <a href="usuario/lista.php">Usuários</a>
         <a href="ponto/gerenciar.php">Gerenciar Solicitações</a>
-        <a href="ponto/solicitar.php">Solicitar Ajuste de Ponto</a>
         <a href="ponto/historico.php">Histórico</a>
-        <a href="ponto/notificacoes.php">Notificações</a>
     ';
-} elseif ($nivel == 3) {
+} elseif ($nivel == 2) {
     echo '
         <a href="usuario/lista.php">Usuários</a>
         <a href="ponto/status.php">Bater Ponto / Status</a>
-        <a href="ponto/gerenciar.php">Gerenciar Solicitações</a>
-        <a href="ponto/solicitar.php">Solicitar Ajuste de Ponto</a>
+        <a href="ponto/gerenciar.php">Gerenciar Pontos</a>
+        <a href="rh/ajustes_pendentes.php">Ajustes Pendentes</a>
         <a href="ponto/historico.php">Histórico</a>
         <a href="ponto/notificacoes.php">Notificações</a>
     ';
@@ -35,4 +33,3 @@ if ($nivel >= 4) {
 
 echo '<a href="logout.php">Sair</a>';
 echo '</nav>';
-?>

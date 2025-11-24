@@ -4,7 +4,7 @@ include(__DIR__ . "/../../BD/conexao.php");
 require __DIR__ . "/../../include/verificacao.php";
 verificar_login($conn);
 
-if ($_SESSION['nivel'] < 3) die("Acesso restrito.");
+if ($_SESSION['nivel'] < 2) die("Acesso restrito.");
 
 date_default_timezone_set('America/Sao_Paulo');
 
@@ -40,12 +40,25 @@ if (isset($_GET['aprovar'])) {
 if (isset($_GET['ajuste'])) {
     $id = intval($_GET['ajuste']);
 
+    // 1. Buscar dados do ponto
+    $ponto = $conn->query("SELECT * FROM ponto_dia WHERE id_ponto=$id")->fetch_assoc();
+
+    // 2. Criar o registro de ajuste
+    $stmt = $conn->prepare("
+        INSERT INTO ajustes_ponto 
+        (id_ponto, id_usuario, campo, valor_antigo, valor_novo, motivo, status, data_solicitacao)
+        VALUES (?, ?, 'Geral', '', '', 'Ajuste solicitado pelo RH', 'Pendente', NOW())
+    ");
+    $stmt->bind_param("ii", $id, $ponto['id_usuario']);
+    $stmt->execute();
+
+    // 3. Atualizar status do ponto
     $up = $conn->prepare("UPDATE ponto_dia SET status='Revisar' WHERE id_ponto=?");
     $up->bind_param("i", $id);
     $up->execute();
 
-    $res = $conn->query("SELECT id_usuario FROM ponto_dia WHERE id_ponto=$id")->fetch_assoc();
-    criar_notificacao($conn, $res['id_usuario'], $id, "Seu ponto precisa ser revisado.");
+    // 4. Notificar o funcionário
+    criar_notificacao($conn, $ponto['id_usuario'], $id, "Seu ponto precisa ser revisado.");
 
     header("Location: gerenciar.php");
     exit;
