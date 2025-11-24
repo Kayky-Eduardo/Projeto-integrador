@@ -13,31 +13,25 @@ include "../../include/navbar.php";
     <link rel="stylesheet" href="../../assets/estilo.css">
 </head>
 <body>
-    <dialog>
-        <div class="filtrar-relatorio-grafico">
-            <input type="date" id="data-filtro-relatorio-grafico">
-        </div>
-    </dialog>
-    <div class="caixa-grafico">
-        <div id="piechart_3d" style="width: 900px; height: 500px;"></div>
-    </div>
-        <table>
-            <thead>
-                <th>ID login</th>
-                <th>Email</th>
-                <th>Entrada</th>
-                <th>Tempo logado</th>
-            </thead>
-            <tbody id="resposta-tbody">
-                <tr>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                </tr>
-            </tbody>
-        </table>
-        <!-- Perfil de usuario geral(com filtro), porém irei fazer um para o profissional ver o próprio -->
-        <hr>
+    <table>
+        <thead>
+            <th></th>
+            <th>ID login</th>
+            <th>Email</th>
+            <th>Entrada</th>
+            <th>Tempo logado</th>
+        </thead>
+        <tbody id="resposta-tbody">
+            <tr>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+    <!-- Perfil de usuario geral(com filtro), porém irei fazer um para o profissional ver o próprio -->
+    <hr>
 </body>
 <script>
     async function get_logados() {
@@ -45,7 +39,7 @@ include "../../include/navbar.php";
     const resultado_relatorio = document.getElementById('resposta-tbody')
     
     // esperando a resposta em json da api
-    const resposta_api = await fetch(`../../api/api_relatorio_ponto.php?acao="get_logados"`);
+    const resposta_api = await fetch(`../../api/api_relatorio_ponto.php?acao=get_logados`);
     
     // transformando a array em json para array normal
     const resposta = await resposta_api.json();
@@ -68,13 +62,16 @@ include "../../include/navbar.php";
         const tr = document.createElement("tr");
         
         tr.innerHTML = `
+            <td><button onclick="deslogar()">Deslogar</button>
             <td>${id}</td>
             <td>${r.email_usuario}</td>
             <td>${entrada}</td>
             <td>${tempo_logado}</td>
         `;
         resultado_relatorio.appendChild(tr);
-        }); 
+        });
+        async function deslogar(id_usuario) {
+        }
     }
     get_logados();
 </script>
