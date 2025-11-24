@@ -26,7 +26,8 @@ switch ($_SESSION['nivel']) {
         <nav>
             <a href="usuario/lista.php">Usuario</a>
             <a href="ponto/relatorio_ponto.php">Ponto</a>
-            <a href="ponto/pausa.php">pausa</a>
+            <a href="ponto/pausa.php">pausas ativas</a>
+            <a href="ponto/pausa_config.php">pausas criar</a>
             <a href="logout.php">Sair</a>
         </nav>
         ';

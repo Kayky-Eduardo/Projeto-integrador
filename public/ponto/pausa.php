@@ -1,204 +1,104 @@
 <?php
-session_start(); // TEM QUE SER O PRIMEIRO
-
-include '../../BD/conexao.php';
-include '../../include/verificacao.php';
-
-// ID do usuário logado
-$id_usuario = $_SESSION['id_usuario'] ?? null;
-if (!$id_usuario) {
-    die("Usuário não autenticado.");
-}
-
-// Mostrar mensagem única
-if (isset($_SESSION['msg'])) {
-    echo "<script>alert('" . $_SESSION['msg'] . "');</script>";
-    unset($_SESSION['msg']);
-}
+session_start(); 
+include '../../BD/conexao.php'; // Conexão com BD
+include '../../include/verificacao.php'; // Verifica se o usuário está logado
 
 
-// ----------------------------------------
-// 1) SALVAR CONFIGURAÇÃO
-// ----------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['salvar_config'])) {
+// ----------------------------------------------------------
+// BUSCA TODAS AS PAUSAS ATIVAS (aquelas que NÃO têm fim)
+// ----------------------------------------------------------
+$sql = "
+    SELECT 
+        p.id_pausa, 
+        p.id_usuario, 
+        p.inicio, 
+        p.data, 
+        p.fim,
+        c.descricao_pausa, 
+        c.tempo_max, 
+        u.nome_usuario
+    FROM pausa p
+    LEFT JOIN pausa_config c ON c.id_config = p.id_config
+    LEFT JOIN usuario u ON u.id_usuario = p.id_usuario
+    WHERE p.fim IS NULL      -- fim NULL = pausa ainda aberta
+    ORDER BY p.inicio DESC   -- mais recente primeiro
+";
 
-    $tempo_min = intval($_POST['tempo_min']);
-    $tempo_max = intval($_POST['tempo_max']);
-    $saida_automatica = isset($_POST['saida_automatica']) ? 1 : 0;
-
-    // Verifica se já existe
-    $sqlCheck = "SELECT id_config FROM pausa_config WHERE id_usuario = ?";
-    $stmt = $conn->prepare($sqlCheck);
-    $stmt->bind_param("i", $id_usuario);
-    $stmt->execute();
-    $res = $stmt->get_result();
-
-    if ($res->num_rows > 0) {
-        // Atualiza
-        $sql = "UPDATE pausa_config SET tempo_min=?, tempo_max=?, saida_automatica=? 
-                WHERE id_usuario=?";
-        $stmt2 = $conn->prepare($sql);
-        $stmt2->bind_param("iiii", $tempo_min, $tempo_max, $saida_automatica, $id_usuario);
-        $stmt2->execute();
-    } else {
-        // Insere
-        $sql = "INSERT INTO pausa_config (id_usuario, tempo_min, tempo_max, saida_automatica)
-                VALUES (?, ?, ?, ?)";
-        $stmt2 = $conn->prepare($sql);
-        $stmt2->bind_param("iiii", $id_usuario, $tempo_min, $tempo_max, $saida_automatica);
-        $stmt2->execute();
-    }
-
-    $_SESSION['msg'] = "Configurações salvas com sucesso!";
-    header("Location: pausa.php");
-    exit;
-}
-
-
-// ----------------------------------------
-// 2) BUSCAR CONFIG DO USUÁRIO
-// ----------------------------------------
-$sql = "SELECT * FROM pausa_config WHERE id_usuario = ? LIMIT 1";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id_usuario);
-$stmt->execute();
-$config = $stmt->get_result()->fetch_assoc();
-
-$tempo_min = $config['tempo_min'] ?? 5;
-$tempo_max = $config['tempo_max'] ?? 15;
-$saida_automatica = $config['saida_automatica'] ?? 0;
-
-
-// ----------------------------------------
-// 3) VERIFICAR PAUSA ATUAL
-// ----------------------------------------
-$sql = "SELECT * FROM pausa WHERE id_usuario = ? AND status='ativa' LIMIT 1";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id_usuario);
-$stmt->execute();
-$pausa = $stmt->get_result()->fetch_assoc();
-
-$tem_pausa_ativa = $pausa ? true : false;
-
-
-// ----------------------------------------
-// 4) TEMPO DECORRIDO
-// ----------------------------------------
-$minutos_decorridos = 0;
-
-if ($tem_pausa_ativa) {
-    $sql = "SELECT TIMESTAMPDIFF(MINUTE, ?, NOW()) AS min";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $pausa['inicio']);
-    $stmt->execute();
-    $minutos_decorridos = $stmt->get_result()->fetch_assoc()['min'] ?? 0;
-}
-
+// executa consulta
+$res = $conn->query($sql);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Pausa</title>
-    <link rel="stylesheet" href="../../assets/estilo.css">
+<meta charset="utf-8">
+<title>Pausas Ativas</title>
 </head>
 <body>
 
-<h2>Configuração e Controle de Pausas</h2>
+    <h2>Pausas Ativas</h2>
+    <p>Mostrando pausas abertas (ainda sem fim).</p>
 
-<!-- CONFIG -->
-<h3>Configuração</h3>
-<form method="POST">
-    <label>Tempo Mínimo:</label>
-    <input type="number" name="tempo_min" value="<?= $tempo_min ?>" min="1" required>
+    <!-- Se não tem registro nenhum -->
+    <?php if (!$res || $res->num_rows === 0): ?>
+        <div>Nenhuma pausa ativa no momento.</div>
 
-    <label>Tempo Máximo:</label>
-    <input type="number" name="tempo_max" value="<?= $tempo_max ?>" min="1" required>
+    <?php else: ?>
 
-    <label>
-        <input type="checkbox" name="saida_automatica" <?= $saida_automatica ? "checked" : "" ?>>
-        Saída Automática
-    </label>
+        <table border="1" cellpadding="5">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuário</th>
+                    <th>Tipo</th>
+                    <th>Início</th>
+                    <th>Data</th>
+                    <th>Minutos dec.</th>
+                    <th>Tempo Máx</th>
+                </tr>
+            </thead>
 
-    <button type="submit" name="salvar_config">Salvar Configuração</button>
-</form>
+            <tbody>
 
+            <?php while ($row = $res->fetch_assoc()): 
 
-<!-- STATUS -->
-<h3>Status Atual</h3>
+                // ----------------------------------------------------------
+                // CALCULA QUANTOS MINUTOS DE PAUSA JÁ SE PASSARAM
+                // ----------------------------------------------------------
+                $inicio = $row['inicio'];
+                $minutos = 0;
 
-<?php if ($tem_pausa_ativa): ?>
+                if ($inicio) {
+                    // transforma data e hora em timestamp
+                    $t1 = strtotime($row['data'] . ' ' . $inicio);
+                    $t2 = time(); // agora
+                    $minutos = floor(($t2 - $t1) / 60); // diferença em minutos
+                }
+            ?>
 
-    <p><b>Pausa ativa!</b></p>
-    <p>Iniciada há: <b><?= $minutos_decorridos ?></b> minutos</p>
+                <tr>
+                    <td><?= $row['id_pausa'] ?></td>
 
-    <button onclick="encerrarPausa()">Encerrar Pausa</button>
+                    <!-- nome do usuário -->
+                    <td><?= htmlspecialchars($row['nome_usuario']) ?></td>
 
-<?php else: ?>
+                    <!-- tipo de pausa -->
+                    <td><?= htmlspecialchars($row['descricao_pausa']) ?></td>
 
-    <p>Nenhuma pausa ativa.</p>
+                    <td><?= $row['inicio'] ?></td>
+                    <td><?= $row['data'] ?></td>
 
-    <!-- MOTIVO DA PAUSA (só mostra quando NÃO tem pausa ativa) -->
-    <form id="formPausa">
-        <label for="motivo">Motivo da pausa:</label>
-        <select name="motivo" id="motivo" required>
-            <option value="">Selecione um motivo</option>
-            <option value="Banheiro">Banheiro</option>
-            <option value="Água">Água</option>
-            <option value="Café">Café</option>
-            <option value="Descanso rápido">Descanso rápido</option>
-            <option value="Problema técnico">Problema técnico</option>
-            <option value="Conversa com gestor">Conversa com gestor</option>
-        </select>
+                    <!-- minutos decorridos -->
+                    <td><?= $minutos ?></td>
 
-        <br><br>
-        <button type="button" onclick="iniciarPausa()">Iniciar Pausa</button>
-    </form>
+                    <!-- tempo máximo definido na config -->
+                    <td><?= $row['tempo_max'] ?></td>
+                </tr>
 
-<?php endif; ?>
+            <?php endwhile; ?>
 
+            </tbody>
+        </table>
 
-
-<!-- LOGS -->
-<h3>Logs do Encerramento Automático</h3>
-<div>
-<?php
-ob_start();
-include "pausa_auto.php";
-$logs = ob_get_clean();
-echo nl2br($logs);
-?>
-</div>
-
-<script>
-function iniciarPausa() {
-
-    let motivo = document.getElementById("motivo").value;
-
-    if (!motivo) {
-        alert("Selecione um motivo!");
-        return;
-    }
-
-    fetch("pausa_iniciar.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: "motivo=" + encodeURIComponent(motivo)
-    })
-    .then(r => r.json())
-    .then(d => alert(d.mensagem))
-    .then(() => location.reload());
-}
-
-function encerrarPausa() {
-    fetch("pausa_encerrar.php", { method: "POST" })
-        .then(r => r.json())
-        .then(d => alert(d.mensagem))
-        .then(() => location.reload());
-}
-
-
-</script>
-
+    <?php endif; ?>
 </body>
 </html>
