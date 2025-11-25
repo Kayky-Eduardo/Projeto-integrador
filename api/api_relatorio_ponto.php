@@ -202,7 +202,8 @@ function relatorio_ponto_filtrado($conn, $id_usuario) {
 
 function get_logados($conn) {
     $coleta_usuario_tabela = $conn->prepare("
-    SELECT usuario.email_usuario, id_login, email_login, data_inicio, TIMESTAMPDIFF(MINUTE, data_inicio, NOW()) AS tempo_logado
+    SELECT usuario.id_usuario, usuario.email_usuario, id_login, email_login, data_inicio,
+    TIMESTAMPDIFF(MINUTE, data_inicio, NOW()) AS tempo_logado
     FROM login 
     LEFT JOIN usuario on login.id_usuario = usuario.id_usuario
     WHERE MONTH(data_inicio) = MONTH(CURDATE())
@@ -216,6 +217,24 @@ function get_logados($conn) {
     }
     return $usuario;
 }
+
+function deslogar_usuario($conn, $id_login) {
+    $stmt = $conn->prepare("
+        UPDATE login 
+        SET data_fim = NOW() 
+        WHERE id_login = ? AND data_fim IS NULL
+    ");
+
+    $stmt->bind_param("i", $id_login);
+    $sucesso = $stmt->execute();
+
+    if ($sucesso && $stmt->affected_rows > 0) {
+        return ['success' => true, 'message' => 'Usuário deslogado com sucesso'];
+    } else {
+        return ['success' => false, 'message' => 'Nenhum registro foi atualizado'];
+    }
+}
+
 // pegando o tipo e entregando o resultado
 $acao = $_GET['acao'] ?? null;
 $input = json_decode(file_get_contents('php://input'), true);
@@ -223,7 +242,7 @@ $input = json_decode(file_get_contents('php://input'), true);
 $white_list = [
     'ausentes', 'pausa', 'horario',
     'presentes', 'usuarios', 'filtrar_usuario',
-    'filtrar_tabela_hora', 'get_logados'
+    'filtrar_tabela_hora', 'get_logados', 'deslogar' // Adicione 'deslogar'
 ];
 
 if ($acao) {
@@ -241,6 +260,9 @@ if ($acao) {
             exit;
         } else if ($acao_formatada === 'get_logados') {
             echo json_encode(get_logados($conn));
+            exit;
+        } else if ($acao_formatada === 'deslogar') {
+            echo json_encode(deslogar_usuario($conn, $input['id_login'] ?? 0));
             exit;
         } else {
             echo json_encode(filtrar($conn, $acao_formatada));

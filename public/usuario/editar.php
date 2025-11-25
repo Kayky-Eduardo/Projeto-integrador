@@ -94,10 +94,9 @@ if (isset($_POST['editar_usuario'])) {
   <link rel="stylesheet" href="../../assets/estilo.css">
 </head>
 <body>
-  <h1>Editar Usuário</h1>
-  <a href="../index.php">Home</a> | 
-  <a href="cadastro.php">Cadastro</a>
-  <br><br>
+    <header>
+        <?php include("../../include/navbar.php");?>
+    </header>
 
   <form action="" method="POST">
     <input type="hidden" name="id_usuario" value="<?= htmlspecialchars($usuario['id_usuario']) ?>">

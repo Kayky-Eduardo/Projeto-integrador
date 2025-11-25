@@ -13,10 +13,11 @@ include "../../include/navbar.php";
     <link rel="stylesheet" href="../../assets/estilo.css">
 </head>
 <body>
+    <h1>Usuarios logados</h1>
     <table>
         <thead>
             <th></th>
-            <th>ID login</th>
+            <th>ID usuario</th>
             <th>Email</th>
             <th>Entrada</th>
             <th>Tempo logado</th>
@@ -49,20 +50,19 @@ include "../../include/navbar.php";
 
     // exibindo o resultado
     resposta.forEach(r => {
-        let id = r.id_login ?? '-';
+        let id = r.id_usuario ?? '-';
         let email = r.email_login ?? '-';
         let entrada = r.data_inicio ?? '-';
-        // if (r.tempo_logado > 60) {
-        //     const hora = Math.floor(r.tempo_logado / 60);
-        //     const minutos = r.tempo_logado % 60;
-        //     let tempo_logado = hora > 0 ? `${hora}h ${minutos}min` : `${minutos}min`;
-        // } else {
-        // }
-        let tempo_logado = `${r.tempo_logado} Minutos` ?? '-';
+        let tempo_logado = '-';
+        if (r.tempo_logado) {
+            const horas = Math.floor(r.tempo_logado / 60);
+            const minutos = r.tempo_logado % 60;
+            tempo_logado = horas > 0 ? `${horas}h ${minutos}min` : `${minutos}min`;
+        }
         const tr = document.createElement("tr");
         
         tr.innerHTML = `
-            <td><button onclick="deslogar()">Deslogar</button>
+            <td><button onclick="deslogar(${r.id_login})">Deslogar</button>
             <td>${id}</td>
             <td>${r.email_usuario}</td>
             <td>${entrada}</td>
@@ -70,9 +70,18 @@ include "../../include/navbar.php";
         `;
         resultado_relatorio.appendChild(tr);
         });
-        async function deslogar(id_usuario) {
-        }
+    }
+    async function deslogar(id_login) {
+        const resposta = await fetch('../../api/api_relatorio_ponto.php?acao=deslogar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id_login: id_login })
+            });
+        get_logados();
     }
     get_logados();
+    setInterval(get_logados, 15000);
 </script>
 </html>

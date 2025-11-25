@@ -22,10 +22,9 @@ $result = $conn->query($sql);
   <link rel="stylesheet" href="../../assets/estilo.css">
 </head>
 <body>
-  <h1>Usuários Cadastrados</h1>
-  <a href="../index.php">home</a>
-  <a href="cadastro.php">Cadastro</a>
-  <br><br>
+    <header>
+        <?php include("../../include/navbar.php");?>
+    </header>
 
   <table>
     <tr>

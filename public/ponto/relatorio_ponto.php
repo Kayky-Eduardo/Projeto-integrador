@@ -219,7 +219,6 @@ include "../../include/navbar.php";
         
         async function filtrar_tabela_hora(id_usuario) {
             const exibicao_tabela_hora = document.getElementById("filtro-usuarios-tabela");
-
                     const response = await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_tabela_hora", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},

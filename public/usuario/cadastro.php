@@ -223,6 +223,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 
 <body>
+    <header>
+        <?php include("../../include/navbar.php");?>
+    </header>
     <h1>Cadastro de Usuário</h1>
 
     <?php
