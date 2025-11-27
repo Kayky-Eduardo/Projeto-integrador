@@ -7,6 +7,7 @@ switch ($_SESSION['nivel']) {
     case $_SESSION['nivel'] >= 4:
         echo '
         <nav>
+            <a href="/Projeto-integrador/public/index.php">Home</a>
             <a href="/Projeto-integrador/public/usuario/lista.php">Usuario</a>
             <a href="/Projeto-integrador/public/ponto/relatorio_ponto.php">Ponto</a>
             <a href="/Projeto-integrador/public/relatorio/online.php">Relatórios</a>
@@ -17,6 +18,7 @@ switch ($_SESSION['nivel']) {
     case 3:
         echo '
         <nav>
+            <a href="/Projeto-integrador/public/index.php">Home</a>
             <a href="/Projeto-integrador/public/usuario/lista.php">Usuario</a>
             <a href="/Projeto-integrador/public/logout.php">Sair</a>
         </nav>';
@@ -24,6 +26,7 @@ switch ($_SESSION['nivel']) {
     default:
         echo '  
         <nav>
+            <a href="/Projeto-integrador/public/index.php">Home</a>
             <a href="/Projeto-integrador/public/usuario/lista.php">Usuario</a>
             <a href="/Projeto-integrador/public/ponto/relatorio_ponto.php">Ponto</a>
             <a href="/Projeto-integrador/public/logout.php">Sair</a>
