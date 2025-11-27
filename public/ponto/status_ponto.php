@@ -33,7 +33,7 @@ if ($registro) {
 }
 
 // BUSCA qualquer pausa aberta (qualquer tipo) — LIMIT 1 (não devemos ter mais de uma aberta por regra)
-$sql = "SELECT * FROM pausas WHERE id_usuario = ? AND data_pausa = ? AND fim IS NULL LIMIT 1";
+$sql = "SELECT * FROM pausa WHERE id_usuario = ? AND data_pausa = ? AND fim IS NULL LIMIT 1";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("is", $id_usuario, $data);
 $stmt->execute();

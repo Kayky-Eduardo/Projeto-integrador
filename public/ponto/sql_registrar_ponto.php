@@ -15,9 +15,8 @@ if (!$id_usuario || !$pausa) {
 $data = date("Y-m-d");
 $hora = date("H:i:s");
 
-// ------------------ LÓGICA EXISTENTE DE PONTO / ALMOÇO (preservada) ------------------
+// ------------------ LÓGICA EXISTENTE DE PONTO / ALMOÇO ------------------
 if ($pausa === "ponto" || $pausa === "almoco") {
-
     // Buscar registro do dia
     $sql = "SELECT * FROM ponto WHERE id_usuario = ? AND data_ponto = ?";
     $stmt = $conn->prepare($sql);
@@ -86,7 +85,7 @@ if ($pausa === "ponto" || $pausa === "almoco") {
     exit; // interrompe para não cair na lógica de pausas
 }
 
-// ------------------ LÓGICA DE PAUSAS (tabela 'pausas') ------------------
+// ------------------ LÓGICA DE PAUSAS (tabela 'pausa') ------------------
 if ($pausa === "pausa") {
     if (!$tipo_pausa) {
         echo "Tipo de pausa não informado.";
@@ -94,7 +93,7 @@ if ($pausa === "pausa") {
     }
 
     // NOVA REGRA: impedir nova pausa se EXISTIR QUALQUER pausa aberta hoje (fim IS NULL)
-    $sql = "SELECT * FROM pausas WHERE id_usuario = ? AND data_pausa = ? AND fim IS NULL LIMIT 1";
+    $sql = "SELECT * FROM pausa WHERE id_usuario = ? AND data_pausa = ? AND fim IS NULL LIMIT 1";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("is", $id_usuario, $data);
     $stmt->execute();
@@ -107,7 +106,7 @@ if ($pausa === "pausa") {
         // Para isso, checamos se o tipo da pausa aberta é igual ao tipo enviado: se sim, fechamos; senão impedimos.
         if ($pausa_aberta_qualquer['tipo_pausa'] === $tipo_pausa) {
             // fechar a pausa atual (mesmo tipo)
-            $sql = "UPDATE pausas SET fim = ? WHERE id_pausa = ?";
+            $sql = "UPDATE pausa SET fim = ? WHERE id_pausa = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("si", $hora, $pausa_aberta_qualquer['id_pausa']);
             if ($stmt->execute()) {
@@ -122,8 +121,20 @@ if ($pausa === "pausa") {
             exit;
         }
     } else {
+        // Verifica o id_config para saber qual pausa é
+        $stmt = $con->prepare("SELECT id_config FROM pausa_config WHERE descricao_pausa = ?");
+        $stmt->bind_param("s", $descricao);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows === 0) {
+            // pausa inválida → erro
+        }
+
+        $id_config = $result->fetch_assoc()['id_config'];
+
         // Não existe pausa aberta → inserir nova pausa com inicio
-        $sql = "INSERT INTO pausas (id_usuario, data_pausa, tipo_pausa, inicio) VALUES (?, ?, ?, ?)";
+        $sql = "INSERT INTO pausa (id_usuario, data_pausa, tipo_pausa, inicio) VALUES (?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("isss", $id_usuario, $data, $tipo_pausa, $hora);
         if ($stmt->execute()) {
