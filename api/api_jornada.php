@@ -5,10 +5,10 @@ include("../BD/conexao.php");
 
 
 // Pega o método da requisição
-$method = $_SERVER['REQUEST_METHOD'];
+$metodo = $_SERVER['REQUEST_METHOD'];
 
 // Processa requisição
-if ($method === 'GET') {
+if ($metodo === 'GET') {
     // GET: Verificar jornada
     $usuarioId = $_GET['usuario_id'] ?? null;
     $dataInicio = $_GET['data_inicio'] ?? null;
@@ -36,7 +36,7 @@ if ($method === 'GET') {
         ]);
     }
     
-} elseif ($method === 'POST') {
+} elseif ($metodo === 'POST') {
     // POST: Atualizar assiduidade
     $input = json_decode(file_get_contents('php://input'), true);
     
