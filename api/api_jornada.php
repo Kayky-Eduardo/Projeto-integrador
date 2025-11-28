@@ -5,16 +5,16 @@ include("../BD/conexao.php");
 
 
 // Pega o método da requisição
-$metodo = $_SERVER['REQUEST_METHOD'];
+$method = $_SERVER['REQUEST_METHOD'];
 
 // Processa requisição
-if ($metodo === 'GET') {
+if ($method === 'GET') {
     // GET: Verificar jornada
-    $usuarioId = $_GET['usuario_id'] ?? null;
-    $dataInicio = $_GET['data_inicio'] ?? null;
-    $dataFim = $_GET['data_fim'] ?? null;
+    $usuario_id = $_GET['usuario_id'] ?? null;
+    $data_inicio = $_GET['data_inicio'] ?? null;
+    $data_fim = $_GET['data_fim'] ?? null;
     
-    if (!$usuarioId || !$dataInicio || !$dataFim) {
+    if (!$usuario_id || !$data_inicio || !$data_fim) {
         echo json_encode([
             'sucesso' => false,
             'mensagem' => 'Parâmetros obrigatórios: usuario_id, data_inicio, data_fim'
@@ -23,7 +23,7 @@ if ($metodo === 'GET') {
     }
     
     try {
-        $resultado = verificarJornada($conn, $usuarioId, $dataInicio, $dataFim);
+        $resultado = verificar_jornada($conn, $usuario_id, $data_inicio, $data_fim);
         
         echo json_encode([
             'sucesso' => true,
@@ -36,14 +36,14 @@ if ($metodo === 'GET') {
         ]);
     }
     
-} elseif ($metodo === 'POST') {
+} elseif ($method === 'POST') {
     // POST: Atualizar assiduidade
     $input = json_decode(file_get_contents('php://input'), true);
     
-    $usuarioId = $input['usuario_id'] ?? null;
-    $percentual = $input['percentual'] ?? null;
+    $jornada = $input['usuario_id'] ?? null;
+    $hora_extra = $input['percentual'] ?? null;
     
-    if (!$usuarioId || $percentual === null) {
+    if (!$jornada || $hora_extra === null) {
         echo json_encode([
             'sucesso' => false,
             'mensagem' => 'Parâmetros obrigatórios: usuario_id, percentual'
@@ -51,19 +51,19 @@ if ($metodo === 'GET') {
         exit;
     }
     
-    // try {
-    //     $sucesso = atualizarAssiduidade($conn, $usuarioId, $percentual);
+    try {
+        $sucesso = set_jornada($conn, $jornada, $hora_extra);
         
-    //     echo json_encode([
-    //         'sucesso' => $sucesso,
-    //         'mensagem' => $sucesso ? 'Assiduidade atualizada com sucesso' : 'Erro ao atualizar'
-    //     ]);
-    // } catch (Exception $e) {
-    //     echo json_encode([
-    //         'sucesso' => false,
-    //         'mensagem' => 'Erro: ' . $e->getMessage()
-    //     ]);
-    // }
+        echo json_encode([
+            'sucesso' => $sucesso,
+            'mensagem' => $sucesso ? 'jornada setada' : 'Erro ao setar a jornada'
+        ]);
+    } catch (Exception $e) {
+        echo json_encode([
+            'sucesso' => false,
+            'mensagem' => 'Erro: ' . $e->getMessage()
+        ]);
+    }
     
 } else {
     echo json_encode([

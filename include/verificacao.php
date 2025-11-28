@@ -53,4 +53,10 @@ function verificar_tempo_logado($conn) {
     // se a verificacao retornar acima do tempo maximo estimado
     // ele seta a data_fim e então a verificação acima vai derrubar o login
 }
+
+function verificar_jornada($conn) {
+    $verificacao_jornada = $conn->query("
+        
+    ");
+}
 ?>

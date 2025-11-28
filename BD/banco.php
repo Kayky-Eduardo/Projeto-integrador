@@ -78,15 +78,34 @@ salario_liquido decimal(10, 2),
 foreign key (id_usuario) references usuario(id_usuario) ON DELETE CASCADE
 );
 
-create table horas (
+create table horas_extras (
 id_hora int auto_increment primary key,
 id_usuario int,
-fds_feriado int,
-dia_he int,
-noite_he int,
-noite_hf int,
-dia_hf int,
-foreign key (id_usuario) references usuario(id_usuario) ON DELETE CASCADE
+data date not null default (current_date()),
+tipo enum('dia_he', 'noite_he', 'dia_hf', 'noite_hf'),
+minutos int not null,
+foreign key (id_usuario) references usuario(id_usuario)
+);
+
+create table feriados (
+data date primary key,
+descricao varchar(150)
+);
+
+create table tempo_jornada(
+	id_tempo INT PRIMARY KEY AUTO_INCREMENT,
+    jornada time not null default '08:00:00',
+    maximo_hora_extra time not null default '02:00:00'
+);
+
+CREATE TABLE jornadas_trabalho (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    usuario_id INT,
+    horas_diarias DECIMAL(4,2),
+    dias_semana JSON, -- ex: [1,2,3,4,5] para seg-sex
+    data_inicio DATE,
+    data_fim DATE NULL,
+    created_at TIMESTAMP
 );
 
 insert into cargo (nome_cargo, salario_bruto, nivel)

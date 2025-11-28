@@ -18,17 +18,14 @@ verificar_login($conn);
         <h1>Sistema de RH</h1>        
     </header>
 
-
-<footer>
-    <h3>Sistema de RH</h3>
-    <p>&copy; 2025 Todos os direitos reservados.</p>
-    <ul>
-        <li><a href="#">Política de Privacidade</a></li>
-        <li><a href="#">Termos de Uso</a></li>
-        <li><a href="#">Contato</a></li>
-    </ul>
-    <p><strong>Suporte:</strong> suporte@rhempresa.com</p>
-    <p><strong>Telefone:</strong> (11) 99999-9999</p>
-
-
-</footer>
+    <footer>
+        <h3>Sistema de RH</h3>
+        <p>&copy; 2025 Todos os direitos reservados.</p>
+        <ul>
+            <li><a href="#">Política de Privacidade</a></li>
+            <li><a href="#">Termos de Uso</a></li>
+            <li><a href="#">Contato</a></li>
+        </ul>
+        <p><strong>Suporte:</strong> suporte@rhempresa.com</p>
+        <p><strong>Telefone:</strong> (11) 99999-9999</p>
+    </footer>

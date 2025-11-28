@@ -1,7 +1,7 @@
 <?php
 // Busca a jornada de trabalho do usuário em uma data específica
 
-function buscarJornadaUsuario($conn, $usuarioId, $data = null) {
+function buscar_jornada_usuario($conn, $usuario_id, $data = null) {
     $data = $data ?? date('Y-m-d');
     
     $stmt = $conn->prepare("
@@ -13,7 +13,7 @@ function buscarJornadaUsuario($conn, $usuarioId, $data = null) {
         ORDER BY data_inicio DESC 
         LIMIT 1"
     );
-    $stmt->bind_param("iss", $usuarioId, $data, $data);
+    $stmt->bind_param("iss", $usuario_id, $data, $data);
     $stmt->execute();
     $result = $stmt->get_result();
     $jornada = $result->fetch_assoc();
@@ -32,7 +32,7 @@ function buscarJornadaUsuario($conn, $usuarioId, $data = null) {
 
 // Soma todas as horas que o usuário trabalhou em um período
 // (baseado nos registros da tabela ponto).
-function calcularHorasTrabalhadas($conn, $usuarioId, $dataInicio, $dataFim) { 
+function calcular_horas_trabalhadas($conn, $usuario_id, $data_inicio, $data_fim) { 
     // Busca todos os pontos aprovados no período   
     $stmt = $conn->prepare("
     SELECT data_ponto,
@@ -46,35 +46,35 @@ function calcularHorasTrabalhadas($conn, $usuarioId, $dataInicio, $dataFim) {
     AND status = 'aprovado'
     ORDER BY data_ponto"
     );
-    $stmt->bind_param("iss", $usuarioId, $dataInicio, $dataFim);
+    $stmt->bind_param("iss", $usuario_id, $data_inicio, $data_fim);
     $stmt->execute();
     $result = $stmt->get_result();
     
-    $totalMinutos = 0;
+    $total_minutos = 0;
     $detalhes = [];
     
     while ($ponto = $result->fetch_assoc()) {
-        $minutosDia = calcularMinutosDia($ponto);
-        $totalMinutos += $minutosDia;
+        $minutos_dia = calcular_minutos_dia($ponto);
+        $total_minutos += $minutos_dia;
         
         $detalhes[] = [
             'data' => $ponto['data_ponto'],
-            'minutos' => $minutosDia,
-            'horas' => round($minutosDia / 60, 2)
+            'minutos' => $minutos_dia,
+            'horas' => round($minutos_dia / 60, 2)
         ];
     }
     
     $stmt->close();
     
     return [
-        'total_horas' => round($totalMinutos / 60, 2),
-        'total_minutos' => $totalMinutos,
+        'total_horas' => round($total_minutos / 60, 2),
+        'total_minutos' => $total_minutos,
         'detalhes' => $detalhes
     ];
 }
 
 // Calcula quantos minutos o usuário trabalhou em um dia específico, descontando o almoço.
-function calcularMinutosDia($ponto) {
+function calcular_minutos_dia($ponto) {
     // Se não tem entrada ou saída, não trabalhou
     if (!$ponto['hora_entrada'] || !$ponto['hora_saida']) {
         return 0;
@@ -83,25 +83,25 @@ function calcularMinutosDia($ponto) {
     $entrada = strtotime($ponto['hora_entrada']);
     $saida = strtotime($ponto['hora_saida']);
     
-    $minutosTotal = ($saida - $entrada) / 60;
+    $minutos_total = ($saida - $entrada) / 60;
     
     // Desconta intervalo de almoço se houver
     if ($ponto['hora_almoco_saida'] && $ponto['hora_almoco_retorno']) {
-        $almocoSaida = strtotime($ponto['hora_almoco_saida']);
-        $almocoRetorno = strtotime($ponto['hora_almoco_retorno']);
-        $minutosAlmoco = ($almocoRetorno - $almocoSaida) / 60;
-        $minutosTotal -= $minutosAlmoco;
+        $almoco_saida = strtotime($ponto['hora_almoco_saida']);
+        $almoco_retorno = strtotime($ponto['hora_almoco_retorno']);
+        $minutos_almoco = ($almoco_retorno - $almoco_saida) / 60;
+        $minutos_total -= $minutos_almoco;
     }
     
-    return max(0, $minutosTotal); // garantindo que não é 0
+    return max(0, $minutos_total); // garantindo que não é 0
 }
 
 // Calcula quantas horas o usuário DEVERIA ter trabalhado no período,
 // baseado na jornada configurada.
 
-function calcularHorasEsperadas($conn, $usuarioId, $dataInicio, $dataFim) {
-    $inicio = new DateTime($dataInicio);
-    $fim = new DateTime($dataFim);
+function calcular_horas_esperadas($conn, $usuario_id, $data_inicio, $data_fim) {
+    $inicio = new DateTime($data_inicio);
+    $fim = new DateTime($data_fim);
     $current = clone $inicio;
     
     $total_horas = 0;
@@ -112,12 +112,12 @@ function calcularHorasEsperadas($conn, $usuarioId, $dataInicio, $dataFim) {
         $dia_semana = (int)$current->format('N'); // 1=segunda, 7=domingo
         
         // Busca jornada válida para esta data
-        $jornada = buscarJornadaUsuario($conn, $usuarioId, $data_atual);
+        $jornada = buscar_jornada_usuario($conn, $usuario_id, $data_atual);
         $dias_semana = json_decode($jornada['dias_semana'], true);
         
         // Verifica se é dia útil (não é feriado e está nos dias de trabalho)
         $dia_util = in_array($dia_semana, $dias_semana);
-        $feriado = verificarFeriado($conn, $data_atual);
+        $feriado = verificar_feriado($conn, $data_atual);
         
         if ($dia_util && !$feriado) {
             $horas_dia = floatval($jornada['horas_diarias']);
@@ -139,7 +139,7 @@ function calcularHorasEsperadas($conn, $usuarioId, $dataInicio, $dataFim) {
 }
 
 // simples, preciso explicar isto também?
-function verificarFeriado($conn, $data) {
+function verificar_feriado($conn, $data) {
     $stmt = $conn->prepare("
     SELECT COUNT(*) as total FROM feriados WHERE data = ?
     ");
@@ -152,37 +152,20 @@ function verificarFeriado($conn, $data) {
     return $linha['total'] > 0;
 }
 
-// Retorna nome do dia da semana
-function obterNomeDiaSemana($numero) {
-    $dias = [
-        1 => 'Segunda-feira',
-        2 => 'Terça-feira',
-        3 => 'Quarta-feira',
-        4 => 'Quinta-feira',
-        5 => 'Sexta-feira',
-        6 => 'Sábado',
-        7 => 'Domingo'
-    ];
-    return $dias[$numero] ?? 'Desconhecido';
-}
-
-
-
 // Verifica a jornada de trabalho
-function verificarJornada($conn, $usuarioId, $dataInicio, $dataFim) {
+function verificar_jornada($conn, $usuario_id, $data_inicio, $data_fim) {
     // Calcula horas trabalhadas (baseado nos pontos aprovados)
-    $trabalhadas = calcularHorasTrabalhadas($conn, $usuarioId, $dataInicio, $dataFim);
+    $trabalhadas = calcular_horas_trabalhadas($conn, $usuario_id, $data_inicio, $data_fim);
     
     // Calcula horas esperadas (baseado na jornada configurada)
-    $esperadas = calcularHorasEsperadas($conn, $usuarioId, $dataInicio, $dataFim);
+    $esperadas = calcular_horas_esperadas($conn, $usuario_id, $data_inicio, $data_fim);
     
     $diferenca = $trabalhadas['total_horas'] - $esperadas['total_horas'];
     $percentual = $esperadas['total_horas'] > 0 ?
     ($trabalhadas['total_horas'] / $esperadas['total_horas']) * 100 : 0;
     
     return [
-        'usuario_id' => $usuarioId,
-        'periodo' => ['inicio' => $dataInicio, 'fim' => $dataFim],
+        'usuario_id' => $usuario_id,
         'horas_trabalhadas' => $trabalhadas['total_horas'],
         'horas_esperadas' => $esperadas['total_horas'],
         'diferenca' => round($diferenca, 2),
@@ -192,11 +175,25 @@ function verificarJornada($conn, $usuarioId, $dataInicio, $dataFim) {
 
 // Atualiza a assiduidae do usuário
 
-function atualizarAssiduidade($conn, $usuarioId, $percentual) {
+function atualizar_assiduidade($conn, $usuario_id, $percentual) {
     $stmt = $conn->prepare("UPDATE usuario SET assiduidade = ? WHERE id_usuario = ?");
-    $stmt->bind_param("di", $percentual, $usuarioId);
+    $stmt->bind_param("di", $percentual, $usuario_id);
     $sucesso = $stmt->execute();
     $stmt->close();
     
     return $sucesso;
 }
+
+function set_jornada($conn, $jornada, $hora_extra) {
+    $stmt = $conn->prepare("
+        UPDATE tempo_jornada SET jornada = '08:00:00',
+        maximo_hora_extra = '02:00:00' where id_tempo = 1;
+    ");
+    $stmt->bind_param('ss', $jornada, $hora_extra);
+    $sucesso = $stmt->execute();
+    $stmt->close();
+
+    return $sucesso;
+}
+
+?>

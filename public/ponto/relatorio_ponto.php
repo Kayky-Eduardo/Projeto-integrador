@@ -85,12 +85,12 @@ include "../../include/navbar.php";
             
             <div class="form-group">
                 <label for="dataInicio">Data Início:</label>
-                <input type="date" id="dataInicio" value="2025-11-11">
+                <input type="date" id="dataInicio">
             </div>
             
             <div class="form-group">
                 <label for="dataFim">Data Fim:</label>
-                <input type="date" id="dataFim" value="2025-11-13">
+                <input type="date" id="dataFim">
             </div>
             
             <button id="btnVerificar" onclick="buscarJornada()">
@@ -148,7 +148,7 @@ include "../../include/navbar.php";
                 return
             }
             var options = {
-            title: 'Status Operador',
+            title: 'Status Operador(diario)',
             pieHole: 0.4,
             };
             var chart = new google.visualization.PieChart(document.getElementById('piechart_3d'));
@@ -212,7 +212,6 @@ include "../../include/navbar.php";
             })
             chart.draw(dadosDoGrafico, options);
         }
-
         // coleta de dados horas extras usando o filtro para id_usuario
         const select = document.getElementById("filtro-usuarios");
         
@@ -326,7 +325,7 @@ include "../../include/navbar.php";
                 return resultado.dados;
         
         } catch (error) {
-            console.error('Erro ao verificar jornada:', error);
+            console.log('Erro ao verificar jornada:', error);
             throw error;
         }
     }
@@ -343,7 +342,7 @@ include "../../include/navbar.php";
         const elemento = document.getElementById(elementoId);
         
         if (!elemento) {
-            console.error('Elemento não encontrado:', elementoId);
+            console.log('Elemento não encontrado:', elementoId);
             return;
         }
         
@@ -354,7 +353,6 @@ include "../../include/navbar.php";
                 <h3>Verificação de Jornada</h3>
                 <div class="jornada-info">
                     <p><strong>Usuário ID:</strong> ${resultado.usuario_id}</p>
-                    <p><strong>Período:</strong> ${resultado.periodo.inicio} até ${resultado.periodo.fim}</p>
                 </div>
                 
                 <div class="jornada-metricas">
@@ -384,7 +382,7 @@ include "../../include/navbar.php";
     const elemento = document.getElementById(elementoId);
     
     if (!elemento) {
-        console.error('Elemento não encontrado:', elementoId);
+        console.log('Elemento não encontrado:', elementoId);
         return;
     }
     
@@ -449,7 +447,7 @@ include "../../include/navbar.php";
                 exibirResultado(resultado, 'resultado');
                 
             } catch (error) {
-                alert('Erro ao buscar dados: ' + error.message);
+                console.log('Erro ao buscar dados: ' + error.message);
             } finally {
                 document.getElementById('loading').style.display = 'none';
             }
