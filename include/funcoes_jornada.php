@@ -165,7 +165,6 @@ function obterNomeDiaSemana($numero) {
         6 => 'Sábado',
         7 => 'Domingo'
     ];
-    
     return $dias[$numero] ?? 'Desconhecido';
 }
 
