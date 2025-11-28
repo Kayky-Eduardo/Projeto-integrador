@@ -70,13 +70,11 @@ verificar_login($conn);
 
         <p>&copy; 2025 Todos os direitos reservados.</p>
 
-        <nav aria-label="Links institucionais">
-            <ul>
-                <li><a href="#">Política de Privacidade</a></li>
-                <li><a href="#">Termos de Uso</a></li>
-                <li><a href="#">Contato</a></li>
-            </ul>
-        </nav>
+        <ul>
+            <li><a href="#">Política de Privacidade</a></li>
+            <li><a href="#">Termos de Uso</a></li>
+            <li><a href="#">Contato</a></li>
+        </ul>
 
         <address>
             <p><strong>Suporte:</strong> suporte@rhempresa.com</p>
