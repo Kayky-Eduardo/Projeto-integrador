@@ -74,7 +74,7 @@ include "../../include/navbar.php";
                 </tbody>
             </table>
         </div>
-        <div id="exibicao-hora-extra">exibicao aqui</div>
+        <div id="exibicao-hora-extra"></div>
     </div>
     <div class="container">        
         <div class="formulario">
@@ -187,13 +187,12 @@ include "../../include/navbar.php";
                             let almoco_saida = r.hora_almoco_retorno ?? '';
                             let saida = r.hora_saida ?? '-';
                             let data = r.data_ponto ?? '-';
-                            // if (r.tempo_logado > 60) {
-                            //     const hora = Math.floor(r.tempo_logado / 60);
-                            //     const minutos = r.tempo_logado % 60;
-                            //     let tempo_logado = hora > 0 ? `${hora}h ${minutos}min` : `${minutos}min`;
-                            // } else {
-                            // }
-                            let tempo_logado = `${r.tempo_logado} Minutos` ?? '-';
+                            let tempo_logado = '-';
+                            if (r.tempo_logado) {
+                                const horas = Math.floor(r.tempo_logado / 60);
+                                const minutos = r.tempo_logado % 60;
+                                tempo_logado = horas > 0 ? `${horas}h ${minutos}min` : `${minutos}min`;
+                            }
                             const tr = document.createElement("tr");
                             
                             tr.innerHTML = `
@@ -448,12 +447,11 @@ include "../../include/navbar.php";
                 
                 // Exibe resultados
                 exibirResultado(resultado, 'resultado');
-                exibirDetalhes(resultado, 'detalhes');
                 
             } catch (error) {
                 alert('Erro ao buscar dados: ' + error.message);
             } finally {
-                 document.getElementById('loading').style.display = 'none';
+                document.getElementById('loading').style.display = 'none';
             }
         }
         
@@ -462,7 +460,6 @@ include "../../include/navbar.php";
             document.getElementById('detalhes').innerHTML = '';
         }
         
-        // Permite pressionar Enter para buscar
         document.addEventListener('DOMContentLoaded', function() {
             const inputs = document.querySelectorAll('input');
             inputs.forEach(input => {

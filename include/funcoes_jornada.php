@@ -33,7 +33,6 @@ function buscarJornadaUsuario($conn, $usuarioId, $data = null) {
 // Soma todas as horas que o usuário trabalhou em um período
 // (baseado nos registros da tabela ponto).
 function calcularHorasTrabalhadas($conn, $usuarioId, $dataInicio, $dataFim) { 
-
     // Busca todos os pontos aprovados no período   
     $stmt = $conn->prepare("
     SELECT data_ponto,
@@ -127,7 +126,6 @@ function calcularHorasEsperadas($conn, $usuarioId, $dataInicio, $dataFim) {
             $detalhes[] = [
                 'data' => $data_atual,
                 'horas' => $horas_dia,
-                'dia_semana' => obterNomeDiaSemana($dia_semana)
             ];
         }
         
@@ -189,8 +187,6 @@ function verificarJornada($conn, $usuarioId, $dataInicio, $dataFim) {
         'horas_esperadas' => $esperadas['total_horas'],
         'diferenca' => round($diferenca, 2),
         'percentual' => round($percentual, 2),
-        'detalhes_trabalhados' => $trabalhadas['detalhes'],
-        'detalhes_esperados' => $esperadas['detalhes']
     ];
 }
 
