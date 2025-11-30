@@ -26,7 +26,7 @@ verificar_login($conn);
                 <input id="set-hora-max" type="time">
             </div>
             <br>
-            <button onclick="setJornada">Aplicar</button>
+            <button onclick="setJornada()">Aplicar</button>
         </div>
     </div>
 </body>
@@ -35,17 +35,18 @@ verificar_login($conn);
         const jornada = document.getElementById('set-jornada').value;
         const hora_extra = document.getElementById('set-hora-max').value;
 
+        if (!jornada || !hora_extra) {
+            console.log("Por favor, preencha os campos de jornada e hora extra.");
+            return;
+        }
         try {
-            const params = new URLSearchParams({
-                jornada: jornada,
-                hora_extra: hora_extra
-            });
-
-            const response = await fetch(`../../api/api_jornada.php?${params}`, {
+            const response = await fetch(`../api/api_jornada.php`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    jornada: jornada,
+                    hora_extra: hora_extra
+                })
             });
         } catch (error) {
             console.log("Problema ao realizar ação" + error)

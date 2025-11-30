@@ -32,15 +32,6 @@ data_demissao date,
 foreign key (id_cargo) references cargo (id_cargo)
 );
 
-create table ponto (
-id_ponto int auto_increment primary key,
-id_usuario int not null,
-inicio_ponto datetime not null,
-fim_ponto datetime not null,
-inicio_almoco time not null,
-fim_almoco time not null,
-foreign key (id_usuario) references usuario(id_usuario) ON DELETE CASCADE
-);
 
 CREATE TABLE ponto (
     id_ponto INT AUTO_INCREMENT PRIMARY KEY,

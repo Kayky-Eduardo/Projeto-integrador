@@ -185,15 +185,30 @@ function atualizar_assiduidade($conn, $usuario_id, $percentual) {
 }
 
 function set_jornada($conn, $jornada, $hora_extra) {
-    $stmt = $conn->prepare("
-        UPDATE tempo_jornada SET jornada = '08:00:00',
-        maximo_hora_extra = '02:00:00' where id_tempo = 1;
-    ");
-    $stmt->bind_param('ss', $jornada, $hora_extra);
-    $sucesso = $stmt->execute();
-    $stmt->close();
+    $conn->begin_transaction();
 
-    return $sucesso;
+    try {
+        $conn->query("TRUNCATE TABLE tempo_jornada");
+
+        $jornada_formatada = $jornada . ':00';
+        $hora_extra_formatada = $hora_extra . ':00';
+
+        $stmt = $conn->prepare("
+            INSERT INTO tempo_jornada (jornada, maximo_hora_extra)
+            VALUES (?, ?);
+        ");
+
+        $stmt->bind_param('ss', $jornada_formatada, $hora_extra_formatada);
+        $sucesso = $stmt->execute();
+
+        $stmt->close();
+        $conn->commit();
+
+        return $sucesso;
+    } catch(Exception $e) {
+        $conn->rollback();
+        throw new Exception("Erro ao configurar jornada: " . $e->getMessage());
+    }
 }
 
 ?>

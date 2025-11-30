@@ -5,7 +5,10 @@ if (session_status() === PHP_SESSION_NONE) {
 // função para verificar se o login do usuário é válido
 
 function verificar_login($conn) {
-    if (!isset($_SESSION['id_login']) || !isset($_SESSION['id_usuario'])) {
+    $id_login = $_SESSION['id_login'];
+    $id_usuario = $_SESSION['id_usuario'];
+
+    if (!isset($id_login) || !isset($id_usuario)) {
         header("Location: /Projeto-integrador/public/logout.php");
         exit;
     }
@@ -13,7 +16,7 @@ function verificar_login($conn) {
         SELECT data_fim FROM login
         WHERE id_login = ? AND id_usuario = ? LIMIT 1
     ");
-    $stmt->bind_param("ii", $_SESSION['id_login'], $_SESSION['id_usuario']);
+    $stmt->bind_param("ii", $id_login, $id_usuario);
     $stmt->execute();
     $result = $stmt->get_result();
     if ($result->num_rows === 0) {
@@ -26,37 +29,48 @@ function verificar_login($conn) {
         header("Location: /Projeto-integrador/public/logout.php");
         exit;
     }
+    
+    verificar_tempo_logado($conn, $id_usuario, $id_login);
 }
 
-
-// pensei em fazer algo do tipo
-// sql => tempo_logado = TIMESTAMPDIFF(MINUTE, data_inicio, agora)
-// se tempo logado > $_GLOBAL['hora_max_extra'];
-// executa o script abaixo
-function verificar_tempo_logado($conn) {
-    $verificacao_tempo = $conn->query("
-        SELECT TIMESTAMPDIFF(MINUTE, data_inicio, CURRENT_TIMESTAMP) AS minutos_passados
-        FROM login
-        WHERE data_fim is null;
+function verificar_tempo_logado($conn, $usuario_id, $id_login) {
+    // Busca configuração e tempo logado em uma única query
+    $stmt = $conn->prepare("
+    SELECT 
+        TIME_TO_SEC(ADDTIME(tempo_jornada.jornada, tempo_jornada.maximo_hora_extra)) as segundos_maximos,
+        TIMESTAMPDIFF(SECOND, login.data_inicio, NOW()) as segundos_logado
+    FROM tempo_jornada
+    CROSS JOIN login
+    WHERE login.id_login = ? 
+    AND login.id_usuario = ?
+    AND login.data_fim IS NULL
+    LIMIT 1
     ");
-    $result = $verificacao_tempo->get_result();
-
-    $linha = $result->fetch_row();
-
-    $tempo_logado = $linha[0];
-
-    // teste
-    if ($tempo_logado > 480) {
+    
+    $stmt->bind_param("ii", $id_login, $usuario_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    // Se não encontrar configuração ou login, não faz nada
+    if ($result->num_rows === 0) {
+        $stmt->close();
+        return;
+    }
+    
+    $dados = $result->fetch_assoc();
+    $stmt->close();
+    
+    // Verifica se ultrapassou o tempo máximo
+    if ($dados['segundos_logado'] >= $dados['segundos_maximos']) {
+        // Desloga
+        $stmt_update = $conn->prepare("UPDATE login SET data_fim = NOW() WHERE id_login = ?");
+        $stmt_update->bind_param("i", $id_login);
+        $stmt_update->execute();
+        $stmt_update->close();
+        
+        // Redireciona
         header("Location: /Projeto-integrador/public/logout.php");
         exit;
     }
-    // se a verificacao retornar acima do tempo maximo estimado
-    // ele seta a data_fim e então a verificação acima vai derrubar o login
-}
-
-function verificar_jornada($conn) {
-    $verificacao_jornada = $conn->query("
-        
-    ");
 }
 ?>

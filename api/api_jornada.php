@@ -40,13 +40,13 @@ if ($method === 'GET') {
     // POST: Atualizar assiduidade
     $input = json_decode(file_get_contents('php://input'), true);
     
-    $jornada = $input['usuario_id'] ?? null;
-    $hora_extra = $input['percentual'] ?? null;
+    $jornada = $input['jornada'] ?? null;
+    $hora_extra = $input['hora_extra'] ?? null;
     
     if (!$jornada || $hora_extra === null) {
         echo json_encode([
             'sucesso' => false,
-            'mensagem' => 'Parâmetros obrigatórios: usuario_id, percentual'
+            'mensagem' => 'Parâmetros obrigatórios: jornada e hora extra'
         ]);
         exit;
     }
