@@ -14,7 +14,7 @@ $nivel = $_SESSION['nivel'];
 $id_ponto = isset($_GET['id_ponto']) ? intval($_GET['id_ponto']) : 0;
 
 if ($id_ponto <= 0) {
-    echo "<p>Registro inválido. <a href=\"../ponto/historico.php\">Voltar</a></p>";
+    echo "<p>Registro inválido. <a href=\"../ponto/gerenciar.php\">Voltar</a></p>";
     exit;
 }
 
@@ -24,12 +24,12 @@ if ($id_ponto <= 0) {
 // RH pode ver de qualquer usuário
 // ===============
 
-if ($nivel >= 3) {
-    // RH pode ver qualquer ponto
+if ($nivel >= 2) {
+    // RH vê qualquer ponto
     $stmt = $conn->prepare("SELECT * FROM ponto_dia WHERE id_ponto = ?");
     $stmt->bind_param("i", $id_ponto);
 } else {
-    // Funcionário só vê os seus pontos
+    // Funcionário vê somente o próprio
     $stmt = $conn->prepare("SELECT * FROM ponto_dia WHERE id_ponto = ? AND id_usuario = ?");
     $stmt->bind_param("ii", $id_ponto, $id_usuario);
 }
@@ -40,7 +40,7 @@ $reg = $res->fetch_assoc();
 
 if (!$reg) {
     echo "<p>Ponto não encontrado ou você não tem permissão. 
-          <a href=\"../ponto/historico.php\">Voltar</a></p>";
+          <a href=\"../ponto/gerenciar.php\">Voltar</a></p>";
     exit;
 }
 ?>
@@ -74,15 +74,15 @@ if (!$reg) {
         <input type="time" name="valor_novo" id="valor_novo" required>
         <br><br>
 
-        <label for="motivo">Motivo:</label><br>
-        <textarea name="motivo" id="motivo" required></textarea>
+        <label for="justificativa">Justificativa:</label><br>
+        <textarea name="justificativa" id="justificativa" required></textarea>
         <br><br>
 
         <button type="submit">Enviar Solicitação</button>
     </form>
 
     <br>
-    <a href="../ponto/historico.php">Voltar</a>
+    <a href="../ponto/gerenciar.php">Voltar</a>
 
 </body>
 

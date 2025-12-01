@@ -25,7 +25,6 @@ if ($nivel >= 3) {
 } else {
     echo '
         <a href="ponto/status.php">Bater Ponto / Status</a>
-        <a href="ponto/solicitar.php">Solicitar Ajuste de Ponto</a>
         <a href="ponto/historico.php">Histórico</a>
         <a href="ponto/notificacoes.php">Notificações</a>
     ';
