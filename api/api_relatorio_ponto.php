@@ -8,10 +8,10 @@ header("Content-Type: application/json");
 function dados_grafico ($conn) {
     $pesquisa_trabalhando = $conn->prepare("
         SELECT COUNT(*) AS total_trabalhando
-        FROM ponto
-        WHERE hora_entrada IS NOT NULL AND (hora_saida IS NULL OR hora_saida = '00:00:00')
-        AND data_ponto = CURDATE()"
-    );
+        FROM ponto_dia
+        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NULL OR fim_ponto = '00:00:00')
+        AND data_ponto = CURDATE()
+    ");
     
     $pesquisa_trabalhando->execute();
     $result = $pesquisa_trabalhando->get_result();
@@ -36,25 +36,26 @@ function dados_grafico ($conn) {
     
     // Pesquisa de pausa( incompleto porque depende de outro código),
     // irei retornar aqui assim que o código de ponto/pausas estiverem feito
-    $pesquisa_pausa = $conn->prepare("
-        SELECT COUNT(*) AS total_pausa
-        FROM ponto
-        WHERE hora_almoco_saida IS NOT NULL AND (hora_almoco_retorno IS NULL or hora_almoco_retorno = '' or hora_almoco_retorno = '00:00:00')
-        AND data_ponto = CURDATE()
-    ");
-    $pesquisa_pausa->execute();
-    $result = $pesquisa_pausa->get_result();
-    if ($linha = $result->fetch_assoc()) {
-        $numero_pausa = (int)$linha['total_pausa'];
-    } else {
+    // validar
+    // $pesquisa_pausa = $conn->prepare("
+    //     SELECT COUNT(*) AS total_pausa
+    //     FROM ponto_dia
+    //     WHERE hora_almoco_saida IS NOT NULL AND (hora_almoco_retorno IS NULL or hora_almoco_retorno = '' or hora_almoco_retorno = '00:00:00')
+    //     AND data_ponto = CURDATE()
+    // ");
+    // $pesquisa_pausa->execute();
+    // $result = $pesquisa_pausa->get_result();
+    // if ($linha = $result->fetch_assoc()) {
+    //     $numero_pausa = (int)$linha['total_pausa'];
+    // } else {
         $numero_pausa = 0;
-    }
+    // }
     
     // pesquisa horario completo
     $pesquisa_horario_completo = $conn->prepare("
         SELECT COUNT(*) AS total_completo
-        FROM ponto
-        WHERE hora_entrada IS NOT NULL AND (hora_saida IS NOT NULL AND hora_saida != '00:00:00')
+        FROM ponto_dia
+        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NOT NULL AND fim_ponto != '00:00:00')
         AND data_ponto = CURDATE()
         ;
     ");
@@ -82,10 +83,10 @@ function filtrar($conn, $tipo) {
         $presentes = [];
         $filtro_presente = $conn->prepare("
         SELECT
-            usuario.email_usuario, ponto.*,
-            TIMESTAMPDIFF(MINUTE, hora_entrada, NOW()) AS tempo_logado
-        FROM ponto JOIN usuario ON ponto.id_usuario = usuario.id_usuario
-        WHERE hora_entrada IS NOT NULL AND (hora_saida IS NULL or hora_saida = '00:00:00')
+            usuario.email_usuario, ponto_dia.*,
+            TIMESTAMPDIFF(MINUTE, inicio_ponto, NOW()) AS tempo_logado
+        FROM ponto_dia JOIN usuario ON ponto_dia.id_usuario = usuario.id_usuario
+        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NULL or fim_ponto = '00:00:00')
         AND data_ponto = CURDATE();
         ");
         $filtro_presente->execute();
@@ -101,10 +102,10 @@ function filtrar($conn, $tipo) {
         $filtro_ausente = $conn->prepare("
         select 
             usuario.email_usuario, usuario.id_usuario,
-            IFNULL(TIMESTAMPDIFF(MINUTE, hora_entrada, NOW()), 0) AS tempo_logado 
+            IFNULL(TIMESTAMPDIFF(MINUTE, inicio_ponto, NOW()), 0) AS tempo_logado 
         from usuario
-        left join ponto on usuario.id_usuario = ponto.id_usuario
-        where ponto.id_ponto is null or ponto.hora_entrada = '00:00:00'
+        left join ponto_dia on usuario.id_usuario = ponto_dia.id_usuario
+        where ponto_dia.id_ponto is null or ponto_dia.inicio_ponto = '00:00:00'
         ");
         $filtro_ausente->execute();
         $result = $filtro_ausente->get_result();
@@ -113,30 +114,31 @@ function filtrar($conn, $tipo) {
         }
         return $ausentes;
     }
-    if($tipo == 'pausa') {
-        $pausas = [];
-        $filtro_pausa = $conn->prepare("
-        select usuario.email_usuario, ponto.*
-        from ponto join usuario on ponto.id_usuario = usuario.id_usuario
-        WHERE hora_almoco_saida IS NOT NULL AND (hora_almoco_retorno IS NULL or hora_almoco_retorno = ''
-        or hora_almoco_retorno = '00:00:00') AND ponto.data_ponto = CURDATE()
-        ");
-        $filtro_pausa->execute();
-        $result = $filtro_pausa->get_result();
-        while($linha = $result->fetch_assoc()){
-            $pausas[] = $linha;
-        }
-        return $pausas;
-    }
+    // validar
+    // if($tipo == 'pausa') {
+    //     $pausas = [];
+    //     $filtro_pausa = $conn->prepare("
+    //     select usuario.email_usuario, ponto_dia.*
+    //     from ponto_dia join usuario on ponto_dia.id_usuario = usuario.id_usuario
+    //     WHERE hora_almoco_saida IS NOT NULL AND (hora_almoco_retorno IS NULL or hora_almoco_retorno = ''
+    //     or hora_almoco_retorno = '00:00:00') AND ponto_dia.data_ponto = CURDATE()
+    //     ");
+    //     $filtro_pausa->execute();
+    //     $result = $filtro_pausa->get_result();
+    //     while($linha = $result->fetch_assoc()){
+    //         $pausas[] = $linha;
+    //     }
+    //     return $pausas;
+    // }
     if($tipo == 'horario') {
         $horario_completo = [];
         $filtro_horario_completo = $conn->prepare("
         SELECT 
-            usuario.email_usuario, ponto.*,
-            TIMESTAMPDIFF(MINUTE, hora_entrada, hora_saida) AS tempo_logado 
-        FROM ponto JOIN usuario ON ponto.id_usuario = usuario.id_usuario
-        WHERE hora_entrada IS NOT NULL AND (hora_saida IS NOT NULL AND hora_saida != '00:00:00')
-        AND ponto.data_ponto = CURDATE()
+            usuario.email_usuario, ponto_dia.*,
+            TIMESTAMPDIFF(MINUTE, inicio_ponto, fim_ponto) AS tempo_logado 
+        FROM ponto_dia JOIN usuario ON ponto_dia.id_usuario = usuario.id_usuario
+        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NOT NULL AND fim_ponto != '00:00:00')
+        AND ponto_dia.data_ponto = CURDATE()
         ;
     ");
     $filtro_horario_completo->execute();

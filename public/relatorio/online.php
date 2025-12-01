@@ -82,6 +82,6 @@ include "../../include/navbar.php";
         get_logados();
     }
     get_logados();
-    setInterval(get_logados, 15000);
+    setInterval(get_logados(), 15000);
 </script>
 </html>

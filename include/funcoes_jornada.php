@@ -36,16 +36,14 @@ function calcular_horas_trabalhadas($conn, $usuario_id, $data_inicio, $data_fim)
     // Busca todos os pontos aprovados no período   
     $stmt = $conn->prepare("
     SELECT data_ponto,
-    hora_entrada,
-    hora_saida,
-    hora_almoco_saida,
-    hora_almoco_retorno
-    FROM ponto
+    inicio_ponto,
+    fim_ponto
+    FROM ponto_dia
     WHERE id_usuario = ?
     AND data_ponto BETWEEN ? AND ?
     AND status = 'aprovado'
-    ORDER BY data_ponto"
-    );
+    ORDER BY data_ponto
+    ");
     $stmt->bind_param("iss", $usuario_id, $data_inicio, $data_fim);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -76,22 +74,22 @@ function calcular_horas_trabalhadas($conn, $usuario_id, $data_inicio, $data_fim)
 // Calcula quantos minutos o usuário trabalhou em um dia específico, descontando o almoço.
 function calcular_minutos_dia($ponto) {
     // Se não tem entrada ou saída, não trabalhou
-    if (!$ponto['hora_entrada'] || !$ponto['hora_saida']) {
+    if (!$ponto['inicio_ponto'] || !$ponto['fim_ponto']) {
         return 0;
     }
     
-    $entrada = strtotime($ponto['hora_entrada']);
-    $saida = strtotime($ponto['hora_saida']);
+    $entrada = strtotime($ponto['inicio_ponto']);
+    $saida = strtotime($ponto['fim_ponto']);
     
     $minutos_total = ($saida - $entrada) / 60;
     
     // Desconta intervalo de almoço se houver
-    if ($ponto['hora_almoco_saida'] && $ponto['hora_almoco_retorno']) {
-        $almoco_saida = strtotime($ponto['hora_almoco_saida']);
-        $almoco_retorno = strtotime($ponto['hora_almoco_retorno']);
-        $minutos_almoco = ($almoco_retorno - $almoco_saida) / 60;
-        $minutos_total -= $minutos_almoco;
-    }
+    // if ($ponto['hora_almoco_saida'] && $ponto['hora_almoco_retorno']) {
+    //     $almoco_saida = strtotime($ponto['hora_almoco_saida']);
+    //     $almoco_retorno = strtotime($ponto['hora_almoco_retorno']);
+    //     $minutos_almoco = ($almoco_retorno - $almoco_saida) / 60;
+    //     $minutos_total -= $minutos_almoco;
+    // }
     
     return max(0, $minutos_total); // garantindo que não é 0
 }

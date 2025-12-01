@@ -28,7 +28,6 @@ include "../../include/navbar.php";
                 <th>ID ponto</th>
                 <th>Email</th>
                 <th>Entrada</th>
-                <th>Almoço(entrada - saida)</th>
                 <th>Saida</th>
                 <th>Data</th>
                 <th>Tempo logado</th>
@@ -182,24 +181,23 @@ include "../../include/navbar.php";
                         // exibindo o resultado
                         resposta.forEach(r => {
                             let id = r.id_ponto ?? '-';
-                            let entrada = r.hora_entrada ?? '-';
-                            let almoco_entrada = r.hora_almoco_saida ?? '-';
-                            let almoco_saida = r.hora_almoco_retorno ?? '';
-                            let saida = r.hora_saida ?? '-';
+                            let entrada = r.inicio_ponto ?? '-';
+                            let saida = r.fim_ponto ?? '-';
                             let data = r.data_ponto ?? '-';
                             let tempo_logado = '-';
+
                             if (r.tempo_logado) {
                                 const horas = Math.floor(r.tempo_logado / 60);
                                 const minutos = r.tempo_logado % 60;
                                 tempo_logado = horas > 0 ? `${horas}h ${minutos}min` : `${minutos}min`;
                             }
+
                             const tr = document.createElement("tr");
                             
                             tr.innerHTML = `
                                 <td>${id}</td>
                                 <td>${r.email_usuario}</td>
                                 <td>${entrada}</td>
-                                <td>${almoco_entrada} - ${almoco_saida}</td>
                                 <td>${saida}</td>
                                 <td>${data}</td>
                                 <td>${tempo_logado}</td>
@@ -220,7 +218,7 @@ include "../../include/navbar.php";
                     const response = await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_tabela_hora", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({id_usuario})
+                    body: JSON.stringify({id_usuario: id_usuario})
                 });
 
                 const tabela_hora = await response.json();

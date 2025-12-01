@@ -103,6 +103,4 @@ insert into cargo (nome_cargo, salario_bruto, nivel)
 values (“adm”, 10, 1);
 
 ");
-$conn->query($sql);
-
 ?>

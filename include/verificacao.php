@@ -71,33 +71,38 @@ function verificar_tempo_logado($conn, $usuario_id, $id_login) {
         
         // Redireciona
         header("Location: /Projeto-integrador/public/logout.php");
+
+        $verificacao_hora_extra = $conn->prepare("
+            SELECT 
+                TIME_TO_SEC(tempo_jornada.jornada) as segundos_maximos,
+                TIMESTAMPDIFF(SECOND, login.data_inicio, login.data_fim) as segundos_logado
+            FROM tempo_jornada
+            CROSS JOIN login
+            WHERE login.id_login = ?
+            AND login.id_usuario = ?
+            AND login.data_fim IS NOT NULL
+            LIMIT 1;
+        ");
+        
+        $verificacao_hora_extra->bind_param("ii", $id_login, $usuario_id);
+        $verificacao_hora_extra->execute();
+        $result_hora_extra = $verificacao_hora_extra->get_result();
+        $dados_verificacao = $result_hora_extra->fetch_assoc();
+    
+        $segundos_logados = $dados_verificacao['segundos_logado'];
+        $segundos_maximos = $dados_verificacao['segundos_maximos'];
+    
+        if ($segundos_maximos < $segundos_logados) {
+            
+            $resto_minutos = ($segundos_logados - $segundos_maximos) / 60;
+            $insert_hora_extra = $conn->query("
+            insert into horas_extras(id_usuario, data, tipo, minutos) values
+            ($id_usuario, current_date(), 'dia_he', $resto_minutos);
+            ");
+        }
         exit;
     }
 
-    $verificacao_hora_extra = $conn->prepare("
-        SELECT 
-            TIME_TO_SEC(tempo_jornada.jornada) as segundos_maximos,
-            TIMESTAMPDIFF(SECOND, login.data_inicio, NOW()) as segundos_logado
-        FROM tempo_jornada
-        CROSS JOIN login
-        WHERE login.id_login = ?
-        AND login.id_usuario = ?
-        AND login.data_fim IS NULL
-        LIMIT 1;
-    ");
-    
-    $verificacao_hora_extra->bind_param("ii", $id_login, $usuario_id);
-    $verificacao_hora_extra->execute();
-    $result_hora_extra = $verificacao_hora_extra->get_result();
-    $dados_verificacao = $result_hora_extra->fetch_assoc();
-
-    $segundos_logados = $dados_verificacao['segundos_logados'];
-    $segundos_maximos = $dados_verificacao['segundos_maximos'];
-
-    if ($segundos_maximos < $segundos_logados) {
-        $resto = $segundos_logados - $segundos_maximos;
-        
-    }
 
 }
 ?>
