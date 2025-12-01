@@ -29,11 +29,13 @@ verificar_login($conn);
             <button onclick="setJornada()">Aplicar</button>
         </div>
     </div>
+    <p id="resposta"></p>
 </body>
 <script>
     async function setJornada() {
         const jornada = document.getElementById('set-jornada').value;
         const hora_extra = document.getElementById('set-hora-max').value;
+        const resposta = document.getElementById('resposta');
 
         if (!jornada || !hora_extra) {
             console.log("Por favor, preencha os campos de jornada e hora extra.");
@@ -48,8 +50,10 @@ verificar_login($conn);
                     hora_extra: hora_extra
                 })
             });
+            resposta.textContent = "Jornada configurada com sucesso!";
         } catch (error) {
-            console.log("Problema ao realizar ação" + error)
+            console.log("Problema ao realizar ação" + error);
+            resposta.textContent = "Erro ao configurar jornada!";
         }
     }
 </script>
