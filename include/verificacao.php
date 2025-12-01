@@ -50,6 +50,7 @@ function verificar_tempo_logado($conn, $usuario_id, $id_login) {
     $stmt->bind_param("ii", $id_login, $usuario_id);
     $stmt->execute();
     $result = $stmt->get_result();
+
     
     // Se não encontrar configuração ou login, não faz nada
     if ($result->num_rows === 0) {
@@ -72,5 +73,31 @@ function verificar_tempo_logado($conn, $usuario_id, $id_login) {
         header("Location: /Projeto-integrador/public/logout.php");
         exit;
     }
+
+    $verificacao_hora_extra = $conn->prepare("
+        SELECT 
+            TIME_TO_SEC(tempo_jornada.jornada) as segundos_maximos,
+            TIMESTAMPDIFF(SECOND, login.data_inicio, NOW()) as segundos_logado
+        FROM tempo_jornada
+        CROSS JOIN login
+        WHERE login.id_login = ?
+        AND login.id_usuario = ?
+        AND login.data_fim IS NULL
+        LIMIT 1;
+    ");
+    
+    $verificacao_hora_extra->bind_param("ii", $id_login, $usuario_id);
+    $verificacao_hora_extra->execute();
+    $result_hora_extra = $verificacao_hora_extra->get_result();
+    $dados_verificacao = $result_hora_extra->fetch_assoc();
+
+    $segundos_logados = $dados_verificacao['segundos_logados'];
+    $segundos_maximos = $dados_verificacao['segundos_maximos'];
+
+    if ($segundos_maximos < $segundos_logados) {
+        $resto = $segundos_logados - $segundos_maximos;
+        
+    }
+
 }
 ?>
