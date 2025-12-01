@@ -1,7 +1,7 @@
 <?php
 session_start(); 
-include '../../BD/conexao.php'; 
-include '../../include/verificacao.php';
+include __DIR__ . '/../../../BD/conexao.php';
+require __DIR__ . '/../../../include/verificacao.php';
 
 
 // Se o formulário for enviado (método POST)
@@ -73,65 +73,64 @@ $listRes = $conn->query($listSql);
 <title>Tipos de Pausa</title>
 </head>
 <body>
-    <a href="relatorio_ponto.php">Voltar</a>
+    <a href="../relatorio_ponto.php">Voltar</a>
 
-<h2>Gerenciar Tipos de Pausa</h2>
+    <h2>Gerenciar Tipos de Pausa</h2>
 
-<!-- Mostra mensagem de sucesso/erro (se existir) -->
-<?php if (!empty($_SESSION['msg'])): ?>
-    <p><?= htmlspecialchars($_SESSION['msg']); ?></p>
-    <?php unset($_SESSION['msg']); ?>
-<?php endif; ?>
+    <!-- Mostra mensagem de sucesso/erro (se existir) -->
+    <?php if (!empty($_SESSION['msg'])): ?>
+        <p><?= htmlspecialchars($_SESSION['msg']); ?></p>
+        <?php unset($_SESSION['msg']); ?>
+    <?php endif; ?>
 
 
-<!-- Formulário para criar novo tipo de pausa -->
-<form method="POST">
-    <input type="hidden" name="acao" value="criar">
+    <!-- Formulário para criar novo tipo de pausa -->
+    <form method="POST">
+        <input type="hidden" name="acao" value="criar">
 
-    <p>
-        <label>Descrição:</label><br>
-        <input type="text" name="descricao" required>
-    </p>
+        <p>
+            <label>Descrição:</label><br>
+            <input type="text" name="descricao" required>
+        </p>
 
-    <p>
-        <label>Tempo mínimo (min):</label><br>
-        <input type="number" name="tempo_min" required>
-    </p>
+        <p>
+            <label>Tempo mínimo (min):</label><br>
+            <input type="number" name="tempo_min" required>
+        </p>
 
-    <p>
-        <label>Tempo máximo (min):</label><br>
-        <input type="number" name="tempo_max" required>
-    </p>
+        <p>
+            <label>Tempo máximo (min):</label><br>
+            <input type="number" name="tempo_max" required>
+        </p>
 
-    <button type="submit">Criar pausa</button>
-</form>
+        <button type="submit">Criar pausa</button>
+    </form>
 
-<hr>
+    <hr>
 
-<!-- Tabela listando as pausas cadastradas -->
-<table border="1" cellpadding="5">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Descrição</th>
-            <th>Min</th>
-            <th>Max</th>
-        </tr>
-    </thead>
-    <tbody>
+    <!-- Tabela listando as pausas cadastradas -->
+    <table border="1" cellpadding="5">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Descrição</th>
+                <th>Min</th>
+                <th>Max</th>
+            </tr>
+        </thead>
+        <tbody>
 
-    <!-- Loop que mostra cada registro da tabela -->
-    <?php while ($row = $listRes->fetch_assoc()): ?>
-        <tr>
-            <td><?= $row['id_config'] ?></td>
-            <td><?= htmlspecialchars($row['descricao_pausa']) ?></td>
-            <td><?= $row['tempo_min'] ?></td>
-            <td><?= $row['tempo_max'] ?></td>
-        </tr>
-    <?php endwhile; ?>
+        <!-- Loop que mostra cada registro da tabela -->
+        <?php while ($row = $listRes->fetch_assoc()): ?>
+            <tr>
+                <td><?= $row['id_config'] ?></td>
+                <td><?= htmlspecialchars($row['descricao_pausa']) ?></td>
+                <td><?= $row['tempo_min'] ?></td>
+                <td><?= $row['tempo_max'] ?></td>
+            </tr>
+        <?php endwhile; ?>
 
-    </tbody>
-</table>
-
+        </tbody>
+    </table>
 </body>
 </html>

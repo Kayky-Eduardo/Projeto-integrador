@@ -1,12 +1,14 @@
 <?php
-session_start(); 
-include '../../BD/conexao.php'; // Conexão com BD
-include '../../include/verificacao.php'; // Verifica se o usuário está logado
+// Fragmento que lista pausas ativas (só div) para inclusão.
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+include __DIR__ . '/../../../BD/conexao.php';
+require __DIR__ . '/../../../include/verificacao.php';
 
+$id_usuario = $_SESSION['id_usuario'] ?? null;
 
-// ----------------------------------------------------------
-// BUSCA TODAS AS PAUSAS ATIVAS (aquelas que NÃO têm fim)
-// ----------------------------------------------------------
+// Mostra apenas pausas ativas do usuário logado
 $sql = "
     SELECT 
         p.id_pausa, 
@@ -20,30 +22,22 @@ $sql = "
     FROM pausa p
     LEFT JOIN pausa_config c ON c.id_config = p.id_config
     LEFT JOIN usuario u ON u.id_usuario = p.id_usuario
-    WHERE p.fim IS NULL      -- fim NULL = pausa ainda aberta
-    ORDER BY p.inicio DESC   -- mais recente primeiro
+    WHERE p.fim IS NULL AND p.id_usuario = ?
+    ORDER BY p.inicio DESC
 ";
-
-// executa consulta
-$res = $conn->query($sql);
+//mudei para prepared statement por "segurança"
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id_usuario);
+$stmt->execute();
+$res = $stmt->get_result();
 ?>
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="utf-8">
-<title>Pausas Ativas</title>
-</head>
-<body>
-    <a href="relatorio_ponto.php">Voltar</a>
-    <h2>Pausas Ativas</h2>
-    <p>Mostrando pausas abertas (ainda sem fim).</p>
 
-    <!-- Se não tem registro nenhum -->
+<!-- mudei o html para uma div para exibir pausas ativas -->
+<div>
+    <h2>Pausas Ativas</h2>
     <?php if (!$res || $res->num_rows === 0): ?>
         <div>Nenhuma pausa ativa no momento.</div>
-
     <?php else: ?>
-
         <table border="1" cellpadding="5">
             <thead>
                 <tr>
@@ -56,25 +50,19 @@ $res = $conn->query($sql);
                     <th>Tempo Máx</th>
                 </tr>
             </thead>
-
             <tbody>
-
-            <?php while ($row = $res->fetch_assoc()): 
-
-                // ----------------------------------------------------------
-                // CALCULA QUANTOS MINUTOS DE PAUSA JÁ SE PASSARAM
-                // ----------------------------------------------------------
-                $inicio = $row['inicio'];
+            <?php while ($row = $res->fetch_assoc()):
+            // ----------------------------------------------------------
+            // CALCULA QUANTOS MINUTOS DE PAUSA JÁ SE PASSARAM
+            // ----------------------------------------------------------
+                $inicio = $row['inicio']; // mudei $row['data'] para $row['inicio']
                 $minutos = 0;
-
                 if ($inicio) {
-                    // transforma data e hora em timestamp
                     $t1 = strtotime($row['inicio']);
-                    $t2 = time(); // agora
-                    $minutos = floor(($t2 - $t1) / 60) - 240; // diferença em minutos(NÃO REMOVA O -240 SE NÃO QUISER BUGS)
+                    $t2 = time();
+                    $minutos = floor(($t2 - $t1) / 60) - 240;
                 }
             ?>
-
                 <tr>
                     <td><?= $row['id_pausa'] ?></td>
 
@@ -93,12 +81,8 @@ $res = $conn->query($sql);
                     <!-- tempo máximo definido na config -->
                     <td><?= $row['tempo_max'] ?></td>
                 </tr>
-
             <?php endwhile; ?>
-
             </tbody>
         </table>
-
     <?php endif; ?>
-</body>
-</html>
+</div>
