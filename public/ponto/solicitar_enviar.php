@@ -98,7 +98,7 @@ $stmt->bind_param(
 ========================== */
 if ($stmt->execute()) {
 
-    // ✅ FORÇA REVISÃO
+    // FORÇA REVISÃO
     $up = $conn->prepare("UPDATE ponto_dia SET status='Revisar' WHERE id_ponto=?");
     $up->bind_param("i", $id_ponto);
     $up->execute();
