@@ -3,47 +3,67 @@ include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
 
-$id = $_GET['id'] ?? 0;
+if ($_SESSION['nivel'] < 2) die("Acesso restrito.");
 
-$aj = $conn->query("SELECT * FROM ajustes_ponto WHERE id_ajuste = $id")->fetch_assoc();
+$id = intval($_GET['id'] ?? 0);
 
-if (!$aj) {
-    die("Ajuste não encontrado.");
-}
+// Busca ajuste
+$stmt = $conn->prepare("SELECT * FROM ajustes_ponto WHERE id_ajuste = ?");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$aj = $stmt->get_result()->fetch_assoc();
+
+if (!$aj) die("Ajuste não encontrado.");
 
 $campo = $aj['campo'];
 $valor = $aj['valor_novo'];
 
-// Mapeamento correto para coluna do banco
-$mapa = [
-    'inicio_ponto' => 'entrada',
-    'inicio_almoco' => 'inicio_almoco',
-    'fim_almoco' => 'fim_almoco',
-    'fim_ponto' => 'saida'
-];
-
-if (!isset($mapa[$campo])) {
-    die("Campo inválido recebido: $campo");
+// 🔒 segurança: só permite campos válidos
+$permitidos = ['inicio_ponto', 'inicio_almoco', 'fim_almoco', 'fim_ponto'];
+if (!in_array($campo, $permitidos)) {
+    die("Campo inválido.");
 }
 
-$campo_corrigido = $mapa[$campo];
+// ✅ Atualiza SOMENTE o campo solicitado
+$stmt = $conn->prepare("UPDATE ponto_dia SET $campo = ? WHERE id_ponto = ?");
+$stmt->bind_param("si", $valor, $aj['id_ponto']);
+$stmt->execute();
 
-$conn->query("
-    UPDATE ponto_dia 
-    SET $campo_corrigido = '$valor' 
-    WHERE id_ponto = {$aj['id_ponto']}
+// Marca ajuste como aprovado
+$stmt = $conn->prepare("
+    UPDATE ajustes_ponto
+    SET status='Aprovado', data_resposta=NOW(), id_rh=?
+    WHERE id_ajuste=?
 ");
+$stmt->bind_param("ii", $_SESSION['id_usuario'], $id);
+$stmt->execute();
 
-$conn->query("
-    UPDATE ajustes_ponto 
-    SET status='Aprovado', data_resposta=NOW(), id_rh={$_SESSION['id_usuario']}
-    WHERE id_ajuste=$id
-");
-
-$conn->query("
+// Notificação
+$stmt = $conn->prepare("
     INSERT INTO notificacoes_ponto (id_usuario, id_ponto, mensagem)
-    VALUES ({$aj['id_usuario']}, {$aj['id_ponto']}, 'Seu ajuste de ponto foi aprovado.')
+    VALUES (?, ?, 'Seu ajuste foi aprovado.')
 ");
+$stmt->bind_param("ii", $aj['id_usuario'], $aj['id_ponto']);
+$stmt->execute();
 
-header("Location: ajustes.php");
+// ✅ Recalcula status após ajuste
+function statusAuto($conn, $id_ponto)
+{
+    $q = $conn->prepare("SELECT inicio_ponto, inicio_almoco, fim_almoco, fim_ponto FROM ponto_dia WHERE id_ponto=?");
+    $q->bind_param("i", $id_ponto);
+    $q->execute();
+    $r = $q->get_result()->fetch_assoc();
+
+    return (
+        $r['inicio_ponto'] && $r['inicio_almoco'] &&
+        $r['fim_almoco'] && $r['fim_ponto']
+    ) ? 'Finalizado' : 'Em Andamento';
+}
+
+$novo = statusAuto($conn, $aj['id_ponto']);
+$up = $conn->prepare("UPDATE ponto_dia SET status=? WHERE id_ponto=?");
+$up->bind_param("si", $novo, $aj['id_ponto']);
+$up->execute();
+
+header("Location: ajustes_pendentes.php");
 exit;

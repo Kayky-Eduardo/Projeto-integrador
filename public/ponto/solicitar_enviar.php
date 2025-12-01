@@ -3,16 +3,46 @@ session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 date_default_timezone_set('America/Sao_Paulo');
 
-// ==========================
-// VALIDAR LOGIN
-// ==========================
+/* ==========================
+   FUNÇÃO STATUS AUTOMÁTICO
+========================== */
+function atualizarStatusPonto($conn, $id_ponto)
+{
+    $sql = "SELECT inicio_ponto, inicio_almoco, fim_almoco, fim_ponto 
+            FROM ponto_dia WHERE id_ponto = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id_ponto);
+    $stmt->execute();
+    $res = $stmt->get_result()->fetch_assoc();
+
+    if (
+        $res['inicio_ponto'] &&
+        $res['inicio_almoco'] &&
+        $res['fim_almoco'] &&
+        $res['fim_ponto']
+    ) {
+        $status = 'Finalizado';
+    } else {
+        $status = 'Em Andamento';
+    }
+
+    $up = $conn->prepare("UPDATE ponto_dia SET status = ? WHERE id_ponto = ?");
+    $up->bind_param("si", $status, $id_ponto);
+    $up->execute();
+
+    return $status;
+}
+
+/* ==========================
+   VALIDAR LOGIN
+========================== */
 if (!isset($_SESSION['id_usuario'])) {
     die("Acesso negado.");
 }
 
-// ==========================
-// VALIDAR DADOS DO FORM
-// ==========================
+/* ==========================
+   VALIDAR FORM
+========================== */
 $id_ponto   = intval($_POST['id_ponto'] ?? 0);
 $campo      = $_POST['campo'] ?? '';
 $valor_time = $_POST['valor_novo'] ?? '';
@@ -22,12 +52,11 @@ if ($id_ponto <= 0 || !$campo || !$valor_time || !$motivo) {
     die("Dados inválidos.");
 }
 
-// Usuario solicitante
 $id_usuario = $_SESSION['id_usuario'];
 
-// ==========================
-// BUSCAR REGISTRO DO PONTO
-// ==========================
+/* ==========================
+   BUSCAR VALOR ANTIGO
+========================== */
 $busca = $conn->prepare("SELECT data_reg, `$campo` FROM ponto_dia WHERE id_ponto = ?");
 $busca->bind_param("i", $id_ponto);
 $busca->execute();
@@ -37,25 +66,16 @@ if (!$res) {
     die("Ponto não encontrado.");
 }
 
-// ==========================
-// MONTAR DATETIME CORRETO
-// ==========================
-
-// data do ponto
 $data = $res['data_reg'];
-
-// valor antigo (se existir)
 $valor_antigo = $res[$campo]
     ? date('Y-m-d H:i:s', strtotime($res[$campo]))
     : null;
 
-// novo valor usando a mesma data do ponto
 $valor_novo = $data . ' ' . $valor_time . ':00';
 
-
-// ==========================
-// INSERIR AJUSTE
-// ==========================
+/* ==========================
+   INSERIR AJUSTE
+========================== */
 $stmt = $conn->prepare("
     INSERT INTO ajustes_ponto 
         (id_ponto, id_usuario, campo, valor_antigo, valor_novo, motivo, status, data_solicitacao)
@@ -73,24 +93,23 @@ $stmt->bind_param(
     $motivo
 );
 
-// ==========================
-// EXECUTAR E FINALIZAR
-// ==========================
+/* ==========================
+   FINAL
+========================== */
 if ($stmt->execute()) {
 
-    // Atualiza status do ponto
-    $up = $conn->prepare("UPDATE ponto_dia SET status = 'Revisar' WHERE id_ponto = ?");
+    // ✅ FORÇA REVISÃO
+    $up = $conn->prepare("UPDATE ponto_dia SET status='Revisar' WHERE id_ponto=?");
     $up->bind_param("i", $id_ponto);
     $up->execute();
 
     echo "
         <script>
-            alert('Solicitação enviada com sucesso! Horário salvo corretamente.');
+            alert('Solicitação enviada! O ponto está em revisão.');
             window.location.href = '../ponto/gerenciar.php';
         </script>
     ";
 } else {
-
     echo "
         <script>
             alert('Erro ao salvar ajuste.');
