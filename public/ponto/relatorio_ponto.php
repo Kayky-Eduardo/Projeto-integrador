@@ -14,9 +14,8 @@ verificar_login($conn);
 </head>
 <body>
     <a href="../">Voltar</a>
-    <a href="registrar_ponto.php">Registrar Ponto</a>
-    <a href="pausa_config.php">Criar Pausa</a>
-    <a href="pausa.php">Pausas Ativas</a>
+    <a href="pausas_e_ponto/registrar_ponto.php">Registrar Ponto</a>
+    <a href="pausas_e_ponto/pausa_config.php">Criar Pausa</a>
     <dialog>
         <div class="filtrar-relatorio-grafico">
             <input type="date" id="data-filtro-relatorio-grafico">

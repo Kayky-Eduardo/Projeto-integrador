@@ -4,7 +4,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 include __DIR__ . '/../../../BD/conexao.php';
-require __DIR__ . '/../../../include/verificacao.php';
+require_once __DIR__ . '/../../../include/verificacao.php';
 
 $id_usuario = $_SESSION['id_usuario'] ?? null;
 

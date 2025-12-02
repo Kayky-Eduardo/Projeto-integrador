@@ -2,7 +2,7 @@
 session_start();
 date_default_timezone_set('America/Sao_Paulo');
 include __DIR__ . '/../../../BD/conexao.php';
-require __DIR__ . '/../../../include/verificacao.php';
+require_once __DIR__ . '/../../../include/verificacao.php';
 
 $id_usuario = $_SESSION['id_usuario'] ?? null;
 $pausa = $_POST['pausa'] ?? null;       // 'ponto', 'almoco' ou 'pausa'
