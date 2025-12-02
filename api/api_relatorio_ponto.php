@@ -185,6 +185,8 @@ function filtrar_usuario($conn, $id_usuario) {
 }
 
 function relatorio_ponto_filtrado($conn, $id_usuario) {
+    $usuario = [];
+
     $coleta_usuario_tabela = $conn->prepare("
         SELECT id_login, email_login, data_inicio, data_fim,
         TIMESTAMPDIFF(MINUTE, data_inicio, data_fim) AS tempo_logado

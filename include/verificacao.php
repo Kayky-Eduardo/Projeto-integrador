@@ -34,25 +34,24 @@ function verificar_login($conn) {
 }
 
 function verificar_tempo_logado($conn, $usuario_id, $id_login) {
-    // Busca configuração e tempo logado em uma única query
+    // Busca tudo de uma vez: jornada, hora extra máxima e tempo logado
     $stmt = $conn->prepare("
-    SELECT 
-        TIME_TO_SEC(ADDTIME(tempo_jornada.jornada, tempo_jornada.maximo_hora_extra)) as segundos_maximos,
-        TIMESTAMPDIFF(SECOND, login.data_inicio, NOW()) as segundos_logado
-    FROM tempo_jornada
-    CROSS JOIN login
-    WHERE login.id_login = ? 
-    AND login.id_usuario = ?
-    AND login.data_fim IS NULL
-    LIMIT 1
+        SELECT 
+            TIME_TO_SEC(tempo_jornada.jornada) as segundos_jornada,
+            TIME_TO_SEC(ADDTIME(tempo_jornada.jornada, tempo_jornada.maximo_hora_extra)) as segundos_maximos,
+            TIMESTAMPDIFF(SECOND, login.data_inicio, NOW()) as segundos_logado
+        FROM tempo_jornada
+        CROSS JOIN login
+        WHERE login.id_login = ? 
+        AND login.id_usuario = ?
+        AND login.data_fim IS NULL
+        LIMIT 1
     ");
     
     $stmt->bind_param("ii", $id_login, $usuario_id);
     $stmt->execute();
     $result = $stmt->get_result();
-
     
-    // Se não encontrar configuração ou login, não faz nada
     if ($result->num_rows === 0) {
         $stmt->close();
         return;
@@ -63,46 +62,32 @@ function verificar_tempo_logado($conn, $usuario_id, $id_login) {
     
     // Verifica se ultrapassou o tempo máximo
     if ($dados['segundos_logado'] >= $dados['segundos_maximos']) {
-        // Desloga
-        $stmt_update = $conn->prepare("UPDATE login SET data_fim = NOW() WHERE id_login = ?");
+        
+        // 1. Desloga no banco
+        $stmt_update = $conn->prepare("
+        UPDATE login SET data_fim = NOW() WHERE id_login = ?
+        ");
         $stmt_update->bind_param("i", $id_login);
         $stmt_update->execute();
         $stmt_update->close();
         
-        // Redireciona
-        header("Location: /Projeto-integrador/public/logout.php");
-
-        $verificacao_hora_extra = $conn->prepare("
-            SELECT 
-                TIME_TO_SEC(tempo_jornada.jornada) as segundos_maximos,
-                TIMESTAMPDIFF(SECOND, login.data_inicio, login.data_fim) as segundos_logado
-            FROM tempo_jornada
-            CROSS JOIN login
-            WHERE login.id_login = ?
-            AND login.id_usuario = ?
-            AND login.data_fim IS NOT NULL
-            LIMIT 1;
-        ");
+        // 2. Calcula hora extra (se houver)
+        $segundos_extra = $dados['segundos_logado'] - $dados['segundos_jornada'];
         
-        $verificacao_hora_extra->bind_param("ii", $id_login, $usuario_id);
-        $verificacao_hora_extra->execute();
-        $result_hora_extra = $verificacao_hora_extra->get_result();
-        $dados_verificacao = $result_hora_extra->fetch_assoc();
-    
-        $segundos_logados = $dados_verificacao['segundos_logado'];
-        $segundos_maximos = $dados_verificacao['segundos_maximos'];
-    
-        if ($segundos_maximos < $segundos_logados) {
+        if ($segundos_extra > 0) {
+            $minutos_extra = round($segundos_extra / 60);
             
-            $resto_minutos = ($segundos_logados - $segundos_maximos) / 60;
-            $insert_hora_extra = $conn->query("
-            insert into horas_extras(id_usuario, data, tipo, minutos) values
-            ($id_usuario, current_date(), 'dia_he', $resto_minutos);
+            $stmt_hora_extra = $conn->prepare("
+                INSERT INTO horas_extras (id_usuario, data, tipo, minutos) 
+                VALUES (?, CURDATE(), 'dia_he', ?)
             ");
+            $stmt_hora_extra->bind_param("ii", $usuario_id, $minutos_extra);
+            $stmt_hora_extra->execute();
+            $stmt_hora_extra->close();
         }
+        
+        header("Location: /Projeto-integrador/public/logout.php");
         exit;
     }
-
-
 }
 ?>

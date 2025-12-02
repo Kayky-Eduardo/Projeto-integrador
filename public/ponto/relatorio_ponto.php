@@ -134,9 +134,12 @@ include "../../include/navbar.php";
                     ['Pausa', valores[2]],
                     ['Horario', valores[3]]
                 ]);
-                drawChart();
             }
+            drawChart();
         }
+
+        setInterval(carregar_dados, 5000);
+        
         google.charts.load("current", {packages:["corechart"]});
         google.charts.setOnLoadCallback(carregar_dados);
 
@@ -149,7 +152,7 @@ include "../../include/navbar.php";
             var options = {
             title: 'Status Operador(diario)',
             pieHole: 0.4,
-            };
+        };
             var chart = new google.visualization.PieChart(document.getElementById('piechart_3d'));
             // event listener
             google.visualization.events.addListener(chart, 'select', () => {
