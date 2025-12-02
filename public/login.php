@@ -61,7 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     }
                     header("Location: index.php");
             } else {
-                echo "Falha ao tentar logar! Verifique se o email ou senha estão digitados de forma correta";
+                echo "Falha ao tentar logar! Verifique se o email ou senha estão digitados de forma correta<br>";
+                echo "<a href='recuperar_senha.php'>Recuperar Senha</a>";
             }
         } else {
             echo "Falha ao tentar logar! Verifique se o email ou senha estão digitados de forma correta<br>";

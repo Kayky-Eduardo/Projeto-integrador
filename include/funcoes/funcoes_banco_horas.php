@@ -1,6 +1,4 @@
 <?php
-
-
 function adicionar_horas($conn, $id_usuario, $minutos, $tipo) {
     $stmt_saldo = $conn->prepare("
     SELECT
@@ -27,15 +25,18 @@ function adicionar_horas($conn, $id_usuario, $minutos, $tipo) {
         WHERE id_banco = ?;
         ");
         $stmt_update_banco->bind_param('ii', $minutos);
+        $stmt_criar_banco->execute();
+
+        // $stmt_update_historico = $conn->prepare("
+                
+        // ");
     }
-
-
 }
 
 function get_banco_horas($conn, $id_usuario) {
 
 }
 
-function retirar_banco_horas($conn, $id_usuario) {
+function retirar_tempo_banco($conn, $id_usuario) {
 
 }
