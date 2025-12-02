@@ -52,9 +52,6 @@ verificar_login($conn);
         <h1>Sistema de RH</h1>
     </header>
 
-    <footer>
-        <h3>Sistema de RH</h3>
-        <p>&copy; 2025 Todos os direitos reservados.</p>
     <!-- Navbar -->
     <nav role="navigation" aria-label="Menu principal">
         <?php include("../include/navbar.php"); ?>
@@ -78,9 +75,6 @@ verificar_login($conn);
             <li><a href="#">Termos de Uso</a></li>
             <li><a href="#">Contato</a></li>
         </ul>
-        <p><strong>Suporte:</strong> suporte@rhempresa.com</p>
-        <p><strong>Telefone:</strong> (11) 99999-9999</p>
-    </footer>
 
         <address>
             <p><strong>Suporte:</strong> suporte@rhempresa.com</p>

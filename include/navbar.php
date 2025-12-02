@@ -13,6 +13,7 @@ switch ($_SESSION['nivel']) {
             <a href="/Projeto-integrador/public/relatorio/online.php">Relatórios</a>
             <a href="/Projeto-integrador/config/config_tempo_login.php">Jornada</a>
             <a href="/Projeto-integrador/public/logout.php">Sair</a>
+            <a href="ponto/historico.php">Histórico</a>
         </nav>
         ';
         break;
