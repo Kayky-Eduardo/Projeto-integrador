@@ -1,6 +1,6 @@
 <?php
 header("Content-Type: application/json");
-require_once '../include/funcoes_jornada.php';
+require_once '../include/funcoes/funcoes_jornada.php';
 include("../BD/conexao.php");
 
 
