@@ -42,7 +42,7 @@ verificar_login($conn);
 <head>
     <meta charset="UTF-8">
     <title>Sistema de RH</title>
-    <link rel="stylesheet" href="../assets/estilo.css">
+    <link rel="stylesheet" href="../assets/CSS/estilo.css">
 </head>
 
 <body>
@@ -59,9 +59,38 @@ verificar_login($conn);
 
     <!-- Conteúdo Principal -->
     <main role="main" aria-label="Conteúdo principal">
-        <!-- 
-            INSERIR AQUI CONTEÚDO DA PÁGINA PRINCIPAL 
-        -->
+
+        <!-- Carrossel de Notícias -->
+        <section class="carrossel" aria-label="Notícias da empresa">
+            <ul class="slides">
+                <li class="slide ativo">
+                    <article>
+                        <img src="../assets/IMG/ambiente_coorporativo.jpg" alt="Ambiente corporativo">
+                        <h2>Bem-vindo ao Sistema</h2>
+                        <p>Fique por dentro das novidades internas.</p>
+                    </article>
+                </li>
+
+                <li class="slide">
+                    <article>
+                        <img src="../assets/IMG/reuniao.webp" alt="Reunião da equipe">
+                        <h2>Nova política interna</h2>
+                        <p>Consulte as atualizações no RH.</p>
+                    </article>
+                </li>
+
+                <li class="slide">
+                    <article>
+                        <img src="../assets/IMG/treinamento.jpg" alt="Treinamento de funcionários">
+                        <h2>Treinamentos disponíveis</h2>
+                        <p>Veja os cursos liberados para você.</p>
+                    </article>
+                </li>
+            </ul>
+
+            <button class="btn prev" aria-label="Notícia anterior">&#10094;</button>
+            <button class="btn next" aria-label="Próxima notícia">&#10095;</button>
+        </section>
     </main>
 
     <!-- Rodapé -->
@@ -81,6 +110,8 @@ verificar_login($conn);
             <p><strong>Telefone:</strong> (11) 99999-9999</p>
         </address>
     </footer>
+
+    <script src="../assets/JS/script.js"></script>
 </body>
 
 </html>
