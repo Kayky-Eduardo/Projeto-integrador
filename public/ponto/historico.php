@@ -4,17 +4,26 @@ include(__DIR__ . "/../../BD/conexao.php");
 require __DIR__ . "/../../include/verificacao.php";
 verificar_login($conn);
 
+// Recupera dados da sessão
 $id_usuario = $_SESSION['id_usuario'];
-$nivel = $_SESSION['nivel'];
+$nivel      = $_SESSION['nivel'];
 
+/* ======================
+FILTROS RECEBIDOS VIA GET
+====================== */
 $f_from   = $_GET['from']   ?? '';
 $f_to     = $_GET['to']     ?? '';
 $f_status = $_GET['status'] ?? '';
+$f_nome   = $_GET['nome']   ?? '';
 
-$where = [];
+// Arrays para montagem dinâmica da query
+$where  = [];
 $params = [];
-$types = '';
+$types  = '';
 
+/* =======
+QUERY BASE
+======= */
 $sql = "
     SELECT 
         p.*, 
@@ -23,47 +32,77 @@ $sql = "
     INNER JOIN usuario u ON u.id_usuario = p.id_usuario
 ";
 
-// Funcionário comum vê só dele
+/* ===================
+CONTROLE DE PERMISSÕES
+=================== */
+// Funcionário comum vê apenas seus dados
 if ($nivel < 2) {
-    $where[] = "p.id_usuario = ?";
+    $where[]  = "p.id_usuario = ?";
     $params[] = $id_usuario;
-    $types .= 'i';
+    $types   .= 'i';
 }
 
-// Filtro data inicial
+/* ===========
+APLICA FILTROS
+=========== */
+
+// Filtro por data inicial
 if (!empty($f_from)) {
-    $where[] = "p.data_reg >= ?";
+    $where[]  = "p.data_reg >= ?";
     $params[] = $f_from;
-    $types .= 's';
+    $types   .= 's';
 }
 
-// Filtro data final
+// Filtro por data final
 if (!empty($f_to)) {
-    $where[] = "p.data_reg <= ?";
+    $where[]  = "p.data_reg <= ?";
     $params[] = $f_to;
-    $types .= 's';
+    $types   .= 's';
 }
 
-// Filtro status
+// Filtro por status
 if (!empty($f_status)) {
-    $where[] = "p.status = ?";
+    $where[]  = "p.status = ?";
     $params[] = $f_status;
-    $types .= 's';
+    $types   .= 's';
 }
 
+// Filtro por nome do funcionário (RH)
+if (!empty($f_nome)) {
+    $where[]  = "u.nome_usuario LIKE ?";
+    $params[] = "%$f_nome%";
+    $types   .= 's';
+}
+
+/* =================
+MONTA WHERE DINÂMICO
+================= */
 if ($where) {
     $sql .= " WHERE " . implode(" AND ", $where);
 }
 
+/* ==============
+ORDENA RESULTADOS
+============== */
 $sql .= " ORDER BY p.data_reg DESC";
 
+/* ==================
+PREPARA E EXECUTA SQL
+================== */
 $stmt = $conn->prepare($sql);
+
+// Aplica parâmetros apenas se houver filtros
 if ($params) {
     $stmt->bind_param($types, ...$params);
 }
+
+// Executa a query
 $stmt->execute();
+
+// Recupera resultados
 $batidas = $stmt->get_result();
 ?>
+
 <!DOCTYPE html>
 <html>
 
@@ -74,17 +113,26 @@ $batidas = $stmt->get_result();
 
 <body>
 
+    <!-- Navegação -->
     <a href="../index.php">Voltar</a>
     <h1>Histórico de Batidas</h1>
 
+    <!-- FORMULÁRIO DE FILTRO -->
     <form method="get">
 
+        <!-- Filtro por data inicial -->
         <label>De:</label>
         <input type="date" name="from" value="<?= htmlspecialchars($f_from) ?>">
 
+        <!-- Filtro por data final -->
         <label>Até:</label>
         <input type="date" name="to" value="<?= htmlspecialchars($f_to) ?>">
 
+        <!-- Filtro por nome (RH) -->
+        <label>Nome:</label>
+        <input type="text" name="nome" value="<?= htmlspecialchars($f_nome) ?>">
+
+        <!-- Filtro por status -->
         <label>Status:</label>
         <select name="status">
             <option value="">Todos</option>
@@ -96,9 +144,9 @@ $batidas = $stmt->get_result();
 
         <button type="submit">Filtrar</button>
     </form>
-
     <br>
 
+    <!-- TABELA DE RESULTADOS -->
     <table border="1" cellpadding="8">
         <tr>
             <th>Data</th>
@@ -109,6 +157,7 @@ $batidas = $stmt->get_result();
             <th>Saída</th>
             <th>Status</th>
 
+            <!-- Só funcionário comum vê coluna de ação -->
             <?php if ($nivel < 2): ?>
                 <th>Ação</th>
             <?php endif; ?>
@@ -116,16 +165,23 @@ $batidas = $stmt->get_result();
 
         <?php while ($r = $batidas->fetch_assoc()): ?>
             <tr>
+
+                <!-- Data -->
                 <td><?= date("d/m/Y", strtotime($r['data_reg'])) ?></td>
+
+                <!-- Funcionário -->
                 <td><?= htmlspecialchars($r['nome']) ?></td>
 
+                <!-- Horários (com fallback visual) -->
                 <td><?= $r['inicio_ponto']   ? date("H:i", strtotime($r['inicio_ponto']))   : '--:--' ?></td>
                 <td><?= $r['inicio_almoco']  ? date("H:i", strtotime($r['inicio_almoco']))  : '--:--' ?></td>
                 <td><?= $r['fim_almoco']     ? date("H:i", strtotime($r['fim_almoco']))     : '--:--' ?></td>
                 <td><?= $r['fim_ponto']      ? date("H:i", strtotime($r['fim_ponto']))      : '--:--' ?></td>
 
+                <!-- Status -->
                 <td><?= $r['status'] ?></td>
 
+                <!-- Botão de ajuste apenas para funcionário -->
                 <?php if ($nivel < 2): ?>
                     <td>
                         <a href="solicitar.php?id_ponto=<?= $r['id_ponto'] ?>">
@@ -136,7 +192,6 @@ $batidas = $stmt->get_result();
             </tr>
         <?php endwhile; ?>
     </table>
-
 </body>
 
 </html>

@@ -4,21 +4,28 @@ include("../../BD/conexao.php");
 require("../../include/verificacao.php");
 verificar_login($conn);
 
-// Somente RH / Admin
-if ($_SESSION['nivel'] < 2) die("Acesso restrito.");
+// ==================
+// CONTROLE DE ACESSO
+// ==================
+if ($_SESSION['nivel'] < 3) {
+    die("Acesso restrito.");
+}
 
-$id_ajuste = intval($_POST['id_ajuste']);
-$id_ponto  = intval($_POST['id_ponto']);
+// ===================
+// DADOS DO FORMULÁRIO
+// ===================
+$id_ajuste = intval($_POST['id_ajuste'] ?? 0);
+$id_ponto  = intval($_POST['id_ponto'] ?? 0);
 
-$entrada_time       = $_POST['inicio_ponto'];
-$inicio_almoco_time = $_POST['inicio_almoco'];
-$fim_almoco_time    = $_POST['fim_almoco'];
-$saida_time         = $_POST['fim_ponto'];
-$motivo             = $_POST['motivo'];
+$entrada_time       = $_POST['inicio_ponto']   ?? null;
+$inicio_almoco_time = $_POST['inicio_almoco']  ?? null;
+$fim_almoco_time    = $_POST['fim_almoco']     ?? null;
+$saida_time         = $_POST['fim_ponto']      ?? null;
+$motivo             = trim($_POST['motivo']    ?? '');
 
-// ---------------------------------------------
-// 1. Buscar a data do ponto (obrigatório p/ DATETIME)
-// ---------------------------------------------
+// ====================
+// BUSCAR DATA DO PONTO
+// ====================
 $q = $conn->prepare("SELECT id_usuario, data_reg FROM ponto_dia WHERE id_ponto = ?");
 $q->bind_param("i", $id_ponto);
 $q->execute();
@@ -28,12 +35,12 @@ if (!$ponto) {
     die("Ponto não encontrado.");
 }
 
-$data = $ponto['data_reg'];     // YYYY-MM-DD
+$data = $ponto['data_reg'];
 $id_usuario = $ponto['id_usuario'];
 
-// ---------------------------------------------
-// 2. Montar horários completos no formato DATETIME
-// ---------------------------------------------
+// ===========================
+// FUNÇÃO PARA MONTAR DATETIME
+// ===========================
 function montarDateTime($data, $hora)
 {
     if (empty($hora)) return null;
@@ -45,25 +52,33 @@ $inicio_almoco = montarDateTime($data, $inicio_almoco_time);
 $fim_almoco    = montarDateTime($data, $fim_almoco_time);
 $saida         = montarDateTime($data, $saida_time);
 
-// ---------------------------------------------
-// 3. Atualizar tabela ponto_dia
-// ---------------------------------------------
+// ========================
+// ATUALIZA SOMENTE O PONTO
+// ========================
+// Não apaga registros
+// Atualiza APENAS esse ponto
 $stmt = $conn->prepare("
     UPDATE ponto_dia SET 
-        inicio_ponto   = ?,
-        inicio_almoco  = ?,
-        fim_almoco     = ?,
-        fim_ponto      = ?,
-        status         = 'Finalizado'
+        inicio_ponto  = ?,
+        inicio_almoco = ?,
+        fim_almoco    = ?,
+        fim_ponto     = ?,
+        status        = 'Finalizado'
     WHERE id_ponto = ?
 ");
 
-$stmt->bind_param("ssssi", $entrada, $inicio_almoco, $fim_almoco, $saida, $id_ponto);
+$stmt->bind_param("ssssi", 
+    $entrada, 
+    $inicio_almoco, 
+    $fim_almoco, 
+    $saida,
+    $id_ponto
+);
 $stmt->execute();
 
-// ---------------------------------------------
-// 4. Atualizar status do ajuste
-// ---------------------------------------------
+// ===========================
+// MARCAR AJUSTE COMO APROVADO
+// ===========================
 $stmt = $conn->prepare("
     UPDATE ajustes_ponto 
     SET status='Aprovado', motivo=?, data_resposta=NOW(), id_rh=?
@@ -73,18 +88,19 @@ $stmt = $conn->prepare("
 $stmt->bind_param("sii", $motivo, $_SESSION['id_usuario'], $id_ajuste);
 $stmt->execute();
 
-// ---------------------------------------------
-// 5. Criar notificação para o funcionário
-// ---------------------------------------------
+// ==========================
+// NOTIFICAÇÃO AO FUNCIONÁRIO
+// ==========================
 $stmt = $conn->prepare("
     INSERT INTO notificacoes_ponto (id_usuario, id_ponto, mensagem, data_notificacao) 
-    VALUES (?, ?, 'Seu ponto foi ajustado e aprovado pelo RH.', NOW())
+    VALUES (?, ?, 'Seu ajuste foi aprovado e seu ponto foi atualizado.', NOW())
 ");
+
 $stmt->bind_param("ii", $id_usuario, $id_ponto);
 $stmt->execute();
 
-// ---------------------------------------------
-// 6. Redirecionar
-// ---------------------------------------------
+// ============
+// REDIRECIONAR
+// ============
 header("Location: ajustes_pendentes.php");
 exit;

@@ -4,22 +4,40 @@ include("../../BD/conexao.php");
 require("../../include/verificacao.php");
 verificar_login($conn);
 
-// Somente RH / Admin
-if ($_SESSION['nivel'] < 2) die("Acesso restrito.");
+// =====================
+// CONTROLE DE PERMISSÃO
+// =====================
+// Apenas usuários nível 2 ou maior (RH / Admin)
+if ($_SESSION['nivel'] < 2) {
+    die("Acesso restrito.");
+}
 
+// =====================
+// VALIDA O ID DO AJUSTE
+// =====================
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     die("ID inválido.");
 }
 
 $id = intval($_GET['id']);
 
-// ============================
+// ======================
 // BUSCAR DADOS DO AJUSTE
-// ============================
+// ======================
+
+/*
+Recupera o ajuste e o ponto relacionado
+
+Tabelas:
+ajustes_ponto -> dados da solicitação
+ponto_dia     -> horários reais do ponto
+usuario       -> funcionário solicitante
+*/
+
 $sql = "
 SELECT 
-    a.campo,
-    a.motivo,
+    a.campo,                -- Campo que pode ser alterado
+    a.justificativa,        -- Justificativa do pedido
     a.id_ajuste,
     a.id_ponto,
     p.inicio_ponto,
@@ -27,7 +45,7 @@ SELECT
     p.fim_almoco,
     p.fim_ponto,
     p.data_reg,
-    u.nome_usuario 
+    u.nome_usuario          -- Funcionário
 FROM ajustes_ponto a
 INNER JOIN ponto_dia p ON p.id_ponto = a.id_ponto
 INNER JOIN usuario u ON u.id_usuario = a.id_usuario
@@ -43,15 +61,24 @@ if (!$ajuste) {
     die("Ajuste não encontrado.");
 }
 
-// Nome do campo que pode editar
+// ==============
+// CAMPO EDITÁVEL
+// ==============
+// Somente um campo é alterável por vez
 $campo_editavel = $ajuste['campo'];
 
-// Função pra travar inputs que não podem ser editados
+// ============================
+// FUNÇÃO DE BLOQUEIO DE INPUTS
+// ============================
+// Todos os campos são travados, exceto o que foi solicitado
 function desabilitar($nomeCampo, $campoEditavel)
 {
-    return ($nomeCampo !== $campoEditavel) ? 'readonly disabled' : '';
+    return ($nomeCampo !== $campoEditavel)
+        ? 'readonly disabled'
+        : '';
 }
 ?>
+
 <!DOCTYPE html>
 <html>
 
@@ -61,19 +88,24 @@ function desabilitar($nomeCampo, $campoEditavel)
 </head>
 
 <body>
-
     <h1>Editar horário solicitado</h1>
     <a href="ajustes_pendentes.php">Voltar</a>
     <br><br>
 
     <form method="post" action="salvar.php">
 
+        <!-- IDs usados no salvamento -->
         <input type="hidden" name="id_ajuste" value="<?= $ajuste['id_ajuste'] ?>">
         <input type="hidden" name="id_ponto" value="<?= $ajuste['id_ponto'] ?>">
         <input type="hidden" name="campo" value="<?= $campo_editavel ?>">
 
+        <!-- Informações do ajuste -->
         <p><strong>Funcionário:</strong> <?= htmlspecialchars($ajuste['nome_usuario']) ?></p>
         <p><strong>Data:</strong> <?= htmlspecialchars($ajuste['data_reg']) ?></p>
+
+        <!-- ===================== -->
+        <!-- CAMPOS DE HORÁRIO     -->
+        <!-- ===================== -->
 
         <!-- ENTRADA -->
         <label>Entrada:</label>
@@ -107,14 +139,14 @@ function desabilitar($nomeCampo, $campoEditavel)
             <?= desabilitar('fim_ponto', $campo_editavel) ?>>
         <br><br>
 
-        <label>Motivo:</label><br>
-        <textarea name="motivo" rows="4" cols="50"><?= htmlspecialchars($ajuste['motivo']) ?></textarea>
+        <!-- Justificativa -->
+        <label>Justificativa:</label><br>
+        <textarea name="justificativa" rows="4" cols="50"><?= htmlspecialchars($ajuste['justificativa']) ?></textarea>
         <br><br>
 
+        <!-- AÇÃO FINAL -->
         <button type="submit">Salvar Ajuste</button>
-
     </form>
-
 </body>
 
 </html>
