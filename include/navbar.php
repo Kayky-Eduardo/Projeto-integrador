@@ -35,4 +35,6 @@ switch ($_SESSION['nivel']) {
         ';
         break;
 }
-?>
+
+echo '<a href="logout.php">Sair</a>';
+echo '</nav>';

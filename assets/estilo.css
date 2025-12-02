@@ -1,23 +1,151 @@
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border-radius: 8px;
-    overflow: hidden;
+/* ==============================
+   RESET GLOBAL
+================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-table thead {
-    background-color: #f0f0f0;
+html {
+    font-size: 100%;
 }
 
-th, td {
-    padding: 14px 12px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
+body {
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background-color: #edf0f3;
+    color: #1f2933;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-th {
-    color: #555;
-    font-weight: bold;
+/* ==============================
+   HEADER
+================================ */
+header {
+    background: linear-gradient(90deg, #0f172a, #1e293b);
+    color: #ffffff;
+    padding: 1rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+header h1 {
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+/* ==============================
+   NAVBAR
+================================ */
+nav {
+    background-color: #020617;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0.6rem 1rem;
+    justify-content: center;
+}
+
+nav a {
+    text-decoration: none;
+    color: #e2e8f0;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* destaque do item ao passar */
+nav a:hover,
+nav a:focus {
+    background-color: #334155;
+    outline: none;
+    transform: translateY(-2px);
+}
+
+/* ==============================
+   CONTEÚDO
+================================ */
+main {
+    flex: 1;
+    padding: 2rem;
+}
+
+/* ==============================
+   FOOTER
+================================ */
+footer {
+    background-color: #020617;
+    color: #cbd5e1;
+    text-align: center;
+    padding: 1.2rem;
+    font-size: 0.85rem;
+}
+
+footer ul {
+    list-style-type: none;
+}
+
+footer a {
+    text-decoration: none;
+    color: #38bdf8;
+}
+
+/* ==============================
+   MOBILE FIRST
+================================ */
+@media (max-width: 600px) {
+
+    header {
+        text-align: center;
+    }
+
+    nav {
+        flex-direction: column;
+    }
+
+    nav a {
+        text-align: center;
+        border: 1px solid #1e293b;
+    }
+}
+
+/* ==============================
+   ACESSIBILIDADE
+================================ */
+
+/* foco de teclado */
+a:focus {
+    outline: 2px solid #38bdf8;
+}
+
+/* Contraste reforçado */
+@media (prefers-contrast: high) {
+
+    body {
+        background-color: #fff;
+        color: #000;
+    }
+
+    header,
+    nav,
+    footer {
+        background: #000;
+    }
+
+    nav a {
+        color: #fff;
+    }
+}
+
+/* Redução de movimento */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none;
+        transform: none;
+    }
 }
