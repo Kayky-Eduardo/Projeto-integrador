@@ -5,7 +5,7 @@ include __DIR__ . '/../../../BD/conexao.php';
 require_once __DIR__ . '/../../../include/verificacao.php';
 
 $id_usuario = $_SESSION['id_usuario'] ?? null;
-$pausa = $_POST['pausa'] ?? null;       // 'ponto', 'almoco' ou 'pausa'
+$pausa = $_POST['pausa'] ?? null;       // 'ponto' ou 'pausa'
 $tipo_pausa = $_POST['tipo'] ?? null;  // identifica o tipo de pausa comum
 
 if (!$id_usuario || !$pausa) {
@@ -16,8 +16,8 @@ if (!$id_usuario || !$pausa) {
 $data = date("Y-m-d");
 $hora = date("H:i:s");
 
-// ------------------ LÓGICA EXISTENTE DE PONTO / ALMOÇO ------------------ //
-if ($pausa === "ponto" || $pausa === "almoco") {
+// ------------------ LÓGICA DE PONTO ------------------ //
+if ($pausa === "ponto") {
     // Buscar registro do dia
     $sql = "SELECT * FROM ponto WHERE id_usuario = ? AND data_ponto = ?";
     $stmt = $conn->prepare($sql);
@@ -37,43 +37,22 @@ if ($pausa === "ponto" || $pausa === "almoco") {
         $registro = [
             "id_ponto" => $conn->insert_id,
             "hora_entrada" => null,
-            "hora_saida" => null,
-            "hora_almoco_saida" => null,
-            "hora_almoco_retorno" => null
+            "hora_saida" => null
         ];
     }
 
     // lógica de alternância automática
-    if ($pausa === "ponto") {
-
-        if (empty($registro['hora_entrada'])) {
-            $coluna = "hora_entrada";
-            $acao = "Entrada registrada";
-        }
-        elseif (empty($registro['hora_saida'])) {
-            $coluna = "hora_saida";
-            $acao = "Saída registrada";
-        }
-        else {
-            echo "ponto já finalizado hoje.";
-            exit;
-        }
+    if (empty($registro['hora_entrada'])) {
+        $coluna = "hora_entrada";
+        $acao = "Entrada registrada";
     }
-
-    elseif ($pausa === "almoco") {
-
-        if (empty($registro['hora_almoco_saida'])) {
-            $coluna = "hora_almoco_saida";
-            $acao = "Saída para almoço registrada";
-        }
-        elseif (empty($registro['hora_almoco_retorno'])) {
-            $coluna = "hora_almoco_retorno";
-            $acao = "Retorno do almoço registrado";
-        }
-        else {
-            echo "Pausa de almoço já concluída.";
-            exit;
-        }
+    elseif (empty($registro['hora_saida'])) {
+        $coluna = "hora_saida";
+        $acao = "Saída registrada";
+    }
+    else {
+        echo "ponto já finalizado hoje.";
+        exit;
     }
 
     // executa o registro na tabela ponto

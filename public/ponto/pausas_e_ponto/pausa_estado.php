@@ -12,12 +12,11 @@ $response = [
     'tipo' => null,
     'descricao_aberta' => null,
     'inicio' => null,
-    'almoco_usado' => false,
     'tipos_comuns' => []
 ];
 
 // 1) verificar se existe pausa aberta
-$sql = "SELECT p.id_pausa, p.id_config, p.inicio, pc.descricao_pausa, pc.is_almoco 
+$sql = "SELECT p.id_pausa, p.id_config, p.inicio, pc.descricao_pausa 
         FROM pausa p
         JOIN pausa_config pc ON pc.id_config = p.id_config
         WHERE p.id_usuario = ? AND p.fim IS NULL
@@ -28,34 +27,34 @@ $stmt->execute();
 $res = $stmt->get_result();
 if ($row = $res->fetch_assoc()) {
     $response['aberta'] = true;
-    $response['tipo'] = $row['is_almoco'] ? 'almoco' : 'pausa';
+    $response['tipo'] = 'pausa';
     $response['descricao_aberta'] = $row['descricao_pausa'];
     $response['inicio'] = date('H:i:s', strtotime($row['inicio']));
 }
-
-// 2) verificar se almoço já foi usado hoje
-$hoje = date('Y-m-d');
-$sql = "SELECT COUNT(*) as cnt FROM pausa p JOIN pausa_config pc ON pc.id_config = p.id_config
-        WHERE p.id_usuario = ? AND p.data = ? AND pc.is_almoco = 1";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("is", $id_usuario, $hoje);
-$stmt->execute();
-$res = $stmt->get_result();
-$row = $res->fetch_assoc();
-$response['almoco_usado'] = ($row['cnt'] > 0);
-
-// 3) carregar tipos comuns e marcar se já usados hoje
-$sql = "SELECT id_config, descricao_pausa FROM pausa_config WHERE is_almoco = 0 ORDER BY id_config";
+// 2) carregar todos os tipos de pausa (inclui almoço como pausa comum)
+// 3) carregar todos os tipos de pausa (inclui almoço como pausa comum)
+$sql = "SELECT id_config, descricao_pausa, limite_pausa_diario FROM pausa_config ORDER BY id_config";
 $res = $conn->query($sql);
+$hoje = date('Y-m-d');
 while ($t = $res->fetch_assoc()) {
     $idc = $t['id_config'];
-    // Removido bloqueio por uso diário para pausas comuns: sempre permitir.
-    $used = false; // Manter false para indicar que a pausa pode ser usada
+    $limite = intval($t['limite_pausa_diario']);
+
+    // calcula quantas pausas desse tipo o usuário já registrou hoje
+    $used = false;
+    if ($limite > 0) {
+        $stmt2 = $conn->prepare("SELECT COUNT(*) as cnt FROM pausa WHERE id_usuario = ? AND data = ? AND id_config = ?");
+        $stmt2->bind_param("isi", $id_usuario, $hoje, $idc);
+        $stmt2->execute();
+        $cnt = $stmt2->get_result()->fetch_assoc()['cnt'] ?? 0;
+        if ($cnt >= $limite) $used = true;
+    }
 
     $response['tipos_comuns'][] = [
         'id_config' => $idc,
         'descricao_pausa' => $t['descricao_pausa'],
-        'usado' => $used
+        'usado' => $used,
+        'limite' => $limite
     ];
 }
 

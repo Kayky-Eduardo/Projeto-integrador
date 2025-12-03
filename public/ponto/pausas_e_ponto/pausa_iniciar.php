@@ -26,38 +26,32 @@ if ($cnt > 0) {
     exit;
 }
 
-if ($tipo === 'almoco') {
-    // verifica se almoco já foi registrado hoje
-    $sql = "SELECT COUNT(*) as cnt FROM pausa p JOIN pausa_config pc ON pc.id_config = p.id_config
-            WHERE p.id_usuario = ? AND p.data = ? AND pc.is_almoco = 1";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("is", $id_usuario, $hoje);
-    $stmt->execute();
-    $used = $stmt->get_result()->fetch_assoc()['cnt'] > 0;
-    if ($used) {
-        echo json_encode(['success' => false, 'message' => 'Almoço já registrado hoje.']);
-        exit;
-    }
-
-    // encontrar id_config do almoco
-    $sql = "SELECT id_config FROM pausa_config WHERE is_almoco = 1 LIMIT 1";
-    $res = $conn->query($sql);
-    $row = $res->fetch_assoc();
-    if (!$row) {
-        echo json_encode(['success' => false, 'message' => 'Configuração de almoço não encontrada.']);
-        exit;
-    }
-    $id_config = $row['id_config'];
-}
-// 2) se pausa normal -> validar id_config
-elseif ($tipo === 'pausa') {
+// Aceitamos apenas pausas por id_config (tratamos almoço como pausa comum)
+if ($tipo === 'pausa') {
     $id_config = intval($_POST['id_config'] ?? 0);
     if ($id_config <= 0) {
         echo json_encode(['success' => false, 'message' => 'Tipo de pausa inválido.']);
         exit;
     }
-}
-else {
+
+    // checar limite diário definido em pausa_config
+    $stmtL = $conn->prepare("SELECT limite_pausa_diario FROM pausa_config WHERE id_config = ? LIMIT 1");
+    $stmtL->bind_param("i", $id_config);
+    $stmtL->execute();
+    $rowL = $stmtL->get_result()->fetch_assoc();
+    $limite = intval($rowL['limite_pausa_diario'] ?? 0);
+    if ($limite > 0) {
+        $stmtC = $conn->prepare("SELECT COUNT(*) as cnt FROM pausa WHERE id_usuario = ? AND data = ? AND id_config = ?");
+        $stmtC->bind_param("isi", $id_usuario, $hoje, $id_config);
+        $stmtC->execute();
+        $cnt = intval($stmtC->get_result()->fetch_assoc()['cnt'] ?? 0);
+        if ($cnt >= $limite) {
+            echo json_encode(['success' => false, 'message' => 'Limite diário para essa pausa atingido.']);
+            exit;
+        }
+    }
+
+} else {
     echo json_encode(['success' => false, 'message' => 'Tipo desconhecido']);
     exit;
 }

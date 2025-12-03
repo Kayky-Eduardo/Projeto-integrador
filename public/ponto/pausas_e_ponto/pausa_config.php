@@ -2,8 +2,6 @@
 session_start(); 
 include __DIR__ . '/../../../BD/conexao.php';
 require __DIR__ . '/../../../include/verificacao.php';
-
-
 // Se o formulário for enviado (método POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -15,17 +13,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $descricao = trim($_POST['descricao']);
         $tempo_min = intval($_POST['tempo_min']);
         $tempo_max = intval($_POST['tempo_max']);
+            $limite_pausa_diario = intval($_POST['limite_pausa_diario'] ?? 0);
 
         // Validação simples
         if ($descricao === '' || $tempo_min < 0 || $tempo_max < 0) {
             $_SESSION['msg'] = 'Preencha os campos corretamente.';
         } else {
             // Insere no banco
-            $sql = "INSERT INTO pausa_config (descricao_pausa, tempo_min, tempo_max)
-                    VALUES (?, ?, ?)";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sii", $descricao, $tempo_min, $tempo_max);
-            $stmt->execute();
+                $sql = "INSERT INTO pausa_config (descricao_pausa, tempo_min, tempo_max, limite_pausa_diario)
+                    VALUES (?, ?, ?, ?)";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("siii", $descricao, $tempo_min, $tempo_max, $limite_pausa_diario);
+                $stmt->execute();
 
             $_SESSION['msg'] = 'Tipo de pausa criado.';
         }
@@ -43,13 +42,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $descricao = trim($_POST['descricao']);
         $tempo_min = intval($_POST['tempo_min']);
         $tempo_max = intval($_POST['tempo_max']);
+            $limite_pausa_diario = intval($_POST['limite_pausa_diario'] ?? 0);
 
         // Atualiza no banco
         $sql = "UPDATE pausa_config 
-                SET descricao_pausa = ?, tempo_min = ?, tempo_max = ?
-                WHERE id_config = ?";
+            SET descricao_pausa = ?, tempo_min = ?, tempo_max = ?, limite_pausa_diario = ?
+            WHERE id_config = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("siii", $descricao, $tempo_min, $tempo_max, $id);
+        $stmt->bind_param("siiii", $descricao, $tempo_min, $tempo_max, $limite_pausa_diario, $id);
         $stmt->execute();
 
         $_SESSION['msg'] = 'Tipo de pausa atualizado.';
@@ -102,6 +102,11 @@ $listRes = $conn->query($listSql);
             <label>Tempo máximo (min):</label><br>
             <input type="number" name="tempo_max" required>
         </p>
+        <!-- novo codigin ↓ -->
+        <p>
+            <label>Limite diário:</label><br>
+            <input type="number" name="limite_pausa_diario" required>
+        </p>
 
         <button type="submit">Criar pausa</button>
     </form>
@@ -116,6 +121,7 @@ $listRes = $conn->query($listSql);
                 <th>Descrição</th>
                 <th>Min</th>
                 <th>Max</th>
+                <th>Limite diário</th><!-- novo codigin -->
             </tr>
         </thead>
         <tbody>
@@ -127,6 +133,7 @@ $listRes = $conn->query($listSql);
                 <td><?= htmlspecialchars($row['descricao_pausa']) ?></td>
                 <td><?= $row['tempo_min'] ?></td>
                 <td><?= $row['tempo_max'] ?></td>
+                <td><?= intval($row['limite_pausa_diario'] ?? 0) ?>x por dia</td><!-- novo codigin -->
             </tr>
         <?php endwhile; ?>
 

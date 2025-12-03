@@ -2,7 +2,7 @@
 session_start();
 date_default_timezone_set('America/Sao_Paulo');
 include __DIR__ . '/../../../BD/conexao.php';
-require __DIR__ . '/../../../include/verificacao.php';
+require_once __DIR__ . '/../../../include/verificacao.php';
 
 $id_usuario = $_SESSION['id_usuario'];
 ?>
@@ -24,9 +24,6 @@ $id_usuario = $_SESSION['id_usuario'];
         <!-- Botão registrar ponto diário -->
         <button id="btnPonto">Registrar Ponto</button>
 
-        <!-- Botão Almoço -->
-        <button id="btnAlmoco">Carregando...</button>
-
         <!-- Pausa comum: select + botão -->
         <label for="pausa_tipo">Tipo de pausa:</label>
         <select id="pausa_tipo"></select>
@@ -41,7 +38,6 @@ $id_usuario = $_SESSION['id_usuario'];
     </div>
 
     <script>
-    const btnAlmoco = document.getElementById('btnAlmoco');
     const btnPausa = document.getElementById('btnPausa');
     const selectPausa = document.getElementById('pausa_tipo');
     const resultado = document.getElementById('resultado');
@@ -54,7 +50,7 @@ $id_usuario = $_SESSION['id_usuario'];
             if (!res.ok) throw new Error('Erro ao obter estado');
             const data = await res.json();
 
-            // popula select com tipos comuns (exclui almoco)
+            // popula select
             selectPausa.innerHTML = '';
             (data.tipos_comuns || []).forEach(t => {
                 const opt = document.createElement('option');
@@ -66,34 +62,12 @@ $id_usuario = $_SESSION['id_usuario'];
 
             // atualizar botões conforme estado
             if (data.aberta) {
-                // se pausa almoço aberta
-                if (data.tipo === 'almoco') {
-                    btnAlmoco.textContent = 'Finalizar Almoço';
-                    btnAlmoco.disabled = false;
-                    btnPausa.textContent = 'Iniciar Pausa';
-                    btnPausa.disabled = true;
-                    selectPausa.disabled = true;
-                } else { // se pausa comum aberta
-                    btnPausa.textContent = 'Finalizar Pausa';
-                    btnPausa.disabled = false;
-                    selectPausa.disabled = true;
-                    btnAlmoco.textContent = 'Iniciar Almoço';
-                    btnAlmoco.disabled = true;
-                }
+                btnPausa.textContent = 'Finalizar Pausa';
+                btnPausa.disabled = false;
+                selectPausa.disabled = true;
                 resultado.textContent = `Pausa aberta: ${data.descricao_aberta}`;
             } else {
                 // sem pausa aberta
-                // Almoço
-                if (data.almoco_usado) {
-                    btnAlmoco.textContent = 'Almoço usado';
-                    btnAlmoco.disabled = true;
-                } else {
-                    btnAlmoco.textContent = 'Iniciar Almoço';
-                    btnAlmoco.disabled = false;
-                }
-
-                // Pausa comum
-                // se já fez todas as pausas comuns, desabilita botão
                 const existeOpcaoHabilitada = (data.tipos_comuns || []).some(t => !t.usado);
                 if (!existeOpcaoHabilitada) {
                     btnPausa.textContent = 'Pausas concluídas';
@@ -124,29 +98,6 @@ $id_usuario = $_SESSION['id_usuario'];
             console.error('Erro ao atualizar pausas ativas', e);
         }
     }
-
-    // Iniciar almoço
-    btnAlmoco.addEventListener('click', async () => {
-        if (btnAlmoco.disabled) return;
-        // Se texto tem "Finalizar" -> finalizar
-        if (btnAlmoco.textContent.toLowerCase().includes('finalizar')) {
-            await fetch('pausa_finalizar.php', { method: 'POST' })
-                .then(r => r.json())
-                .then(j => resultado.textContent = j.message || JSON.stringify(j))
-                .catch(e => resultado.textContent = 'Erro ao finalizar');
-        } else {
-            // iniciar almoço
-            await fetch('pausa_iniciar.php', {
-                method: 'POST',
-                headers: {'Content-Type':'application/x-www-form-urlencoded'},
-                body: 'tipo=almoco'
-            })
-            .then(r => r.json())
-            .then(j => resultado.textContent = j.message || JSON.stringify(j))
-            .catch(e => resultado.textContent = 'Erro ao iniciar almoço');
-        }
-        await carregarEstado(false);
-    });
 
     // Iniciar / finalizar pausa comum
     btnPausa.addEventListener('click', async () => {
