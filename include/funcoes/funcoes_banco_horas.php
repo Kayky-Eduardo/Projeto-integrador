@@ -1,5 +1,9 @@
 <?php
 function adicionar_horas($conn, $id_usuario, $minutos, $tipo = 'hora_extra', $descricao = null) {
+    if ($minutos === null) {
+        return;
+    }
+   
     $stmt_saldo = $conn->prepare("
     SELECT saldo_minutos
     FROM banco_horas
@@ -12,7 +16,7 @@ function adicionar_horas($conn, $id_usuario, $minutos, $tipo = 'hora_extra', $de
     if ($result_verificacao->num_rows === 0) {
         $stmt_criar_banco = $conn->prepare("
         INSERT INTO banco_horas(id_usuario, saldo_minutos)
-        VALUES (?, 0);
+        VALUES (?, ?);
         ");
         $stmt_criar_banco->bind_param('ii', $id_usuario, $minutos);
         $stmt_criar_banco->execute();
@@ -78,7 +82,7 @@ function get_banco_horas($conn, $usuarioId) {
     return [
         'saldo_minutos' => $minutos,
         'saldo_horas' => $minutos / 60,
-        'saldo_formatado' => "$sinal" + "$horas:" + "$mins",
+        'saldo_formatado' => "$sinal" + "$horas:$mins",
         'ultima_atualizacao' => $dados['ultima_atualizacao']
     ];
 }

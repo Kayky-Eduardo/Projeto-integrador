@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $verificacao_logado->bind_param("i", $usuario['id_usuario']);
                     $verificacao_logado->execute();
                     $verificacao_logado = $verificacao_logado->get_result();
+                    // desloga a conta se alguem estiver nela
                     if ($verificacao_logado && $verificacao_logado->num_rows > 0) {
                         $row = $verificacao_logado->fetch_assoc();
                         $logout = $conn->prepare("UPDATE login SET data_fim = NOW() WHERE id_login = ?");
