@@ -1,6 +1,8 @@
 <?php
 session_start();
 include("../BD/conexao.php");
+include("../Projeto-integrador/include/funcoes/funcoes_banco_horas.php");
+
 
 date_default_timezone_set('America/Sao_Paulo');
 $data = new datetime();
