@@ -104,7 +104,7 @@ $listRes = $conn->query($listSql);
         </p>
         <!-- novo codigin ↓ -->
         <p>
-            <label>Limite diário:</label><br>
+            <label>Limite diário(0 = ilimitado):</label><br>
             <input type="number" name="limite_pausa_diario" required>
         </p>
 
@@ -133,7 +133,7 @@ $listRes = $conn->query($listSql);
                 <td><?= htmlspecialchars($row['descricao_pausa']) ?></td>
                 <td><?= $row['tempo_min'] ?></td>
                 <td><?= $row['tempo_max'] ?></td>
-                <td><?= intval($row['limite_pausa_diario'] ?? 0) ?>x por dia</td><!-- novo codigin -->
+                <td><?php echo (intval($row['limite_pausa_diario']) == 0 ? "ilimitado" : intval($row['limite_pausa_diario'])) ?></td><!-- novo codigin -->
             </tr>
         <?php endwhile; ?>
 

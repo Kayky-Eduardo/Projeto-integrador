@@ -20,9 +20,9 @@ $id_usuario = $_SESSION['id_usuario'];
     <a href="../relatorio_ponto.php">voltar</a>
     <h2>Registro de Ponto</h2>
 
-    <div>
+    <div id='controles'>
         <!-- Botão registrar ponto diário -->
-        <button id="btnPonto">Registrar Ponto</button>
+        <button id="btnPonto">Iniciar Ponto</button>
 
         <!-- Pausa comum: select + botão -->
         <label for="pausa_tipo">Tipo de pausa:</label>
@@ -38,110 +38,118 @@ $id_usuario = $_SESSION['id_usuario'];
     </div>
 
     <script>
-    const btnPausa = document.getElementById('btnPausa');
-    const selectPausa = document.getElementById('pausa_tipo');
-    const resultado = document.getElementById('resultado');
+        const controles = document.getElementById('controles');
+        const btnPonto = document.getElementById('btnPonto');
+        const btnPausa = document.getElementById('btnPausa');
+        const selectPausa = document.getElementById('pausa_tipo');
+        const resultado = document.getElementById('resultado');
 
-    // Carrega estado inicial e popula select
-    // clearResultado: se true (padrão) apaga a mensagem em `resultado`; se false preserva a mensagem atual
-    async function carregarEstado(clearResultado = true) {
-        try {
-            const res = await fetch('pausa_estado.php');
-            if (!res.ok) throw new Error('Erro ao obter estado');
-            const data = await res.json();
+        // Carrega estado inicial e popula select
+        // clearResultado: se true (padrão) apaga a mensagem em `resultado`; se false preserva a mensagem atual
+        async function carregarEstado(clearResultado = true) {
+            try {
+                const res = await fetch('pausa_estado.php');
+                if (!res.ok) throw new Error('Erro ao obter estado');
+                const data = await res.json();
 
-            // popula select
-            selectPausa.innerHTML = '';
-            (data.tipos_comuns || []).forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = t.id_config;
-                opt.textContent = t.descricao_pausa + (t.usado ? ' (já usado hoje)' : '');
-                opt.disabled = !!t.usado;
-                selectPausa.appendChild(opt);
-            });
-
-            // atualizar botões conforme estado
-            if (data.aberta) {
-                btnPausa.textContent = 'Finalizar Pausa';
-                btnPausa.disabled = false;
-                selectPausa.disabled = true;
-                resultado.textContent = `Pausa aberta: ${data.descricao_aberta}`;
-            } else {
-                // sem pausa aberta
-                const existeOpcaoHabilitada = (data.tipos_comuns || []).some(t => !t.usado);
-                if (!existeOpcaoHabilitada) {
-                    btnPausa.textContent = 'Pausas concluídas';
+                // se ponto ainda não for registrado, desabilita select e botão de pausa
+                if (data.ponto_registrado === false) {
                     btnPausa.disabled = true;
                     selectPausa.disabled = true;
-                } else {
-                    btnPausa.textContent = 'Iniciar Pausa';
-                    btnPausa.disabled = false;
-                    selectPausa.disabled = false;
+                    if (clearResultado) resultado.textContent = 'Registre o ponto diário antes de iniciar uma pausa.';
+                } else{
+                    // popula select
+                    selectPausa.innerHTML = '';
+                    (data.tipos_comuns || []).forEach(t => {
+                        const opt = document.createElement('option');
+                        opt.value = t.id_config;
+                        opt.textContent = t.descricao_pausa + (t.usado ? ' (já usado hoje)' : '');
+                        opt.disabled = !!t.usado;
+                        selectPausa.appendChild(opt);
+                    });
+
+                    // atualizar botões conforme estado
+                    if (data.aberta) {
+                        btnPausa.textContent = 'Finalizar Pausa';
+                        btnPausa.disabled = false;
+                        selectPausa.disabled = true;
+                        resultado.textContent = `Pausa aberta: ${data.descricao_aberta}`;
+                    } else {
+                        // sem pausa aberta
+                        const existeOpcaoHabilitada = (data.tipos_comuns || []).some(t => !t.usado);
+                        if (!existeOpcaoHabilitada) {
+                            btnPausa.textContent = 'Pausas concluídas';
+                            btnPausa.disabled = true;
+                            selectPausa.disabled = true;
+                        } else {
+                            btnPausa.textContent = 'Iniciar Pausa';
+                            btnPausa.disabled = false;
+                            selectPausa.disabled = false;
+                        }
+
+                        if (clearResultado) resultado.textContent = '';
+                    }
                 }
-
-                if (clearResultado) resultado.textContent = '';
+            } catch (err) {
+                if (clearResultado) resultado.textContent = 'Erro ao carregar estado';
+                console.error(err);
             }
-        } catch (err) {
-            if (clearResultado) resultado.textContent = 'Erro ao carregar estado';
-            console.error(err);
+
+            // Atualiza a lista de pausas ativas (fragmento HTML)
+            try {
+                const container = document.getElementById('pausas_ativas_container');
+                const r2 = await fetch('pausas_ativas.php', { credentials: 'same-origin' });
+                if (r2.ok) {
+                    const html = await r2.text();
+                    container.innerHTML = html;
+                }
+            } catch (e) {
+                console.error('Erro ao atualizar pausas ativas', e);
+            }
         }
 
-        // Atualiza a lista de pausas ativas (fragmento HTML)
-        try {
-            const container = document.getElementById('pausas_ativas_container');
-            const r2 = await fetch('pausas_ativas.php', { credentials: 'same-origin' });
-            if (r2.ok) {
-                const html = await r2.text();
-                container.innerHTML = html;
-            }
-        } catch (e) {
-            console.error('Erro ao atualizar pausas ativas', e);
-        }
-    }
+        // Iniciar / finalizar pausa comum
+        btnPausa.addEventListener('click', async () => {
+            if (btnPausa.disabled) return;
+            if (btnPausa.textContent.toLowerCase().includes('finalizar')) {
+                await fetch('pausa_finalizar.php', { method: 'POST' })
+                    .then(r => r.json())
+                    .then(j => resultado.textContent = j.message || JSON.stringify(j))
+                    .catch(e => resultado.textContent = 'Erro ao finalizar pausa');
+            } else {
+                const idConfig = selectPausa.value;
+                if (!idConfig) { resultado.textContent = 'Selecione o tipo de pausa.'; return; }
 
-    // Iniciar / finalizar pausa comum
-    btnPausa.addEventListener('click', async () => {
-        if (btnPausa.disabled) return;
-        if (btnPausa.textContent.toLowerCase().includes('finalizar')) {
-            await fetch('pausa_finalizar.php', { method: 'POST' })
+                await fetch('pausa_iniciar.php', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/x-www-form-urlencoded'},
+                    body: 'tipo=pausa&id_config=' + encodeURIComponent(idConfig)
+                })
                 .then(r => r.json())
                 .then(j => resultado.textContent = j.message || JSON.stringify(j))
-                .catch(e => resultado.textContent = 'Erro ao finalizar pausa');
-        } else {
-            const idConfig = selectPausa.value;
-            if (!idConfig) { resultado.textContent = 'Selecione o tipo de pausa.'; return; }
+                .catch(e => resultado.textContent = 'Erro ao iniciar pausa');
+            }
+            await carregarEstado(false);
+        });
 
-            await fetch('pausa_iniciar.php', {
-                method: 'POST',
-                headers: {'Content-Type':'application/x-www-form-urlencoded'},
-                body: 'tipo=pausa&id_config=' + encodeURIComponent(idConfig)
-            })
-            .then(r => r.json())
-            .then(j => resultado.textContent = j.message || JSON.stringify(j))
-            .catch(e => resultado.textContent = 'Erro ao iniciar pausa');
-        }
-        await carregarEstado(false);
-    });
+        // Registrar ponto diário (entrada/saída)
+        btnPonto.addEventListener('click', async () => {
+            try {
+                const r = await fetch('sql_registrar_ponto.php', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/x-www-form-urlencoded'},
+                    body: ''
+                });
+                const text = await r.text();
+                resultado.textContent = text;
+            } catch (e) {
+                resultado.textContent = 'Erro ao registrar ponto';
+            }
+            await carregarEstado(false);
+        });
 
-    // Registrar ponto diário (entrada/saída)
-    const btnPonto = document.getElementById('btnPonto');
-    btnPonto.addEventListener('click', async () => {
-        try {
-            const r = await fetch('sql_registrar_ponto.php', {
-                method: 'POST',
-                headers: {'Content-Type':'application/x-www-form-urlencoded'},
-                body: 'pausa=ponto'
-            });
-            const text = await r.text();
-            resultado.textContent = text;
-        } catch (e) {
-            resultado.textContent = 'Erro ao registrar ponto';
-        }
-        await carregarEstado(false);
-    });
-
-    // inicializa
-    window.onload = () => carregarEstado();
+        // inicializa
+        window.onload = () => carregarEstado();
     </script>
 </body>
 </html>

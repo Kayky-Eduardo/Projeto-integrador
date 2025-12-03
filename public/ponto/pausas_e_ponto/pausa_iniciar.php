@@ -25,8 +25,7 @@ if ($cnt > 0) {
     echo json_encode(['success' => false, 'message' => 'Já existe uma pausa aberta. Finalize-a antes.']);
     exit;
 }
-
-// Aceitamos apenas pausas por id_config (tratamos almoço como pausa comum)
+// 2) valida tipo de pausa
 if ($tipo === 'pausa') {
     $id_config = intval($_POST['id_config'] ?? 0);
     if ($id_config <= 0) {
