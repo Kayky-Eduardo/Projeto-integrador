@@ -7,10 +7,18 @@ include("../include/verificacao.php");
 $dados = get_banco_horas($conn, $_SESSION['id_usuario']);
 
 function entregar_dados($dados) {
-    $saldo_minutos = $dados['saldo_minutos'];
-    $saldo_horas = $dados['saldo_horas'];
+    $saldo_antigo = $dados['saldo_antigo'];
+    // $saldo_minutos = $dados['saldo_minutos'];
+    // $saldo_horas = $dados['saldo_horas'];
     $saldo_formatado = $dados['saldo_formatado'] ?? 0;
     $ultima_atualizacao = $dados['ultima_atualizacao'] ?? "";
+
+    echo "
+    <article>
+        <h2>$saldo_antigo</h1>
+        <p>Saldo anterior</p>
+    </article>
+    ";
 
     echo "
     <article>

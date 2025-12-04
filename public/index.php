@@ -3,8 +3,6 @@ session_start();
 include(__DIR__ . "/../BD/conexao.php");
 require "../include/verificacao.php";
 verificar_login($conn);
-$coleta_tempo = verificar_tempo_logado($conn, $_SESSION['id_usuario'], $_SESSION['id_login']);
-echo "$coleta_tempo";
 ?>
 
 <!DOCTYPE html>

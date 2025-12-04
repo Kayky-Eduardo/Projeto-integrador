@@ -78,37 +78,6 @@ function verificar_tempo_logado($conn, $id_usuario, $id_login) {
             return $minutos_faltantes;
         }
     }
-    // // Verifica se ultrapassou o tempo máximo
-    // if ($dados['segundos_logado'] >= $dados['segundos_maximos']) {
-        
-    //     // 1. Desloga no banco
-    //     $stmt_update = $conn->prepare("
-    //     UPDATE login SET data_fim = NOW() WHERE id_login = ?
-    //     ");
-    //     $stmt_update->bind_param("i", $id_login);
-    //     $stmt_update->execute();
-    //     $stmt_update->close();
-        
-    //     // 2. Calcula hora extra (se houver)
-    //     $segundos_extra = $dados['segundos_logado'] - $dados['segundos_jornada'];
-        
-    //     if ($segundos_extra > 0) {
-    //         $minutos_extra = round($segundos_extra / 60);
-            
-    //         // $stmt_hora_extra = $conn->prepare("
-    //         //     INSERT INTO horas_extras (id_usuario, data, tipo, minutos) 
-    //         //     VALUES (?, CURDATE(), 'dia_he', ?)
-    //         // ");
-    //         // $stmt_hora_extra->bind_param("ii", $id_usuario, $minutos_extra);
-    //         // $stmt_hora_extra->execute();
-    //         // $stmt_hora_extra->close();
-        
-    //         return $minutos_extra;
-    //     }
-    //     // header("Location: /Projeto-integrador/public/logout.php");
-    //     // exit;
-    //     return $minutos_extra;
-    // }
     return $minutos_extra;
 }
 ?>
