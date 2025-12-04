@@ -3,32 +3,32 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-switch ($_SESSION['nivel']) {
-    case $_SESSION['nivel'] >= 4:
-        echo '
-        <nav>
-            <a href="usuario/lista.php">Usuario</a>
-            <a href="ponto/relatorio_ponto.php">Ponto</a>
-            <a href="relatorio/online.php">Relatórios</a>
-            <a href="logout.php">Sair</a>
-        </nav>
-        ';
-        break;
-    case 3:
-        echo '
-        <nav>
-            <a href="usuario/lista.php">Usuario</a>
-            <a href="logout.php">Sair</a>
-        </nav>';
-        break;
-    default:
-        echo '  
-        <nav>
-            <a href="usuario/lista.php">Usuario</a>
-            <a href="ponto/relatorio_ponto.php">Ponto</a>
-            <a href="logout.php">Sair</a>
-        </nav>
-        ';
-        break;
+$nivel = $_SESSION['nivel'];
+
+echo '<nav>';
+
+if ($nivel >= 3) {
+    echo '
+        <a href="usuario/lista.php">Usuários</a>
+        <a href="ponto/gerenciar.php">Gerenciar Solicitações</a>
+        <a href="ponto/historico.php">Histórico</a>
+    ';
+} elseif ($nivel == 2) {
+    echo '
+        <a href="usuario/lista.php">Usuários</a>
+        <a href="ponto/status.php">Bater Ponto / Status</a>
+        <a href="ponto/gerenciar.php">Gerenciar Pontos</a>
+        <a href="rh/ajustes_pendentes.php">Ajustes Pendentes</a>
+        <a href="ponto/historico.php">Histórico</a>
+        <a href="ponto/notificacoes.php">Notificações</a>
+    ';
+} else {
+    echo '
+        <a href="ponto/status.php">Bater Ponto / Status</a>
+        <a href="ponto/historico.php">Histórico</a>
+        <a href="ponto/notificacoes.php">Notificações</a>
+    ';
 }
-?>
+
+echo '<a href="logout.php">Sair</a>';
+echo '</nav>';
