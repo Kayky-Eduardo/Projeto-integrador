@@ -13,7 +13,8 @@ $response = [
     'descricao_aberta' => null,
     'inicio' => null,
     'tipos_comuns' => [],
-    'ponto_registrado' => false
+    'ponto_registrado' => false,
+    'fim_ponto' => false
 ];
 
 // Verifica se o ponto diário já foi registrado
@@ -25,8 +26,9 @@ $stmt->execute();
 $rowP = $stmt->get_result()->fetch_assoc();
 // ponto_registrado = true se o usuário já iniciou o ponto (tem hora de início) e não finalizou ainda (hora de fim vazia)
 $response['ponto_registrado'] = !empty($rowP['inicio_ponto']) && empty($rowP['fim_ponto']);
+$response['fim_ponto'] = !empty($rowP['fim_ponto']);
 
-// 1) verificar se existe pausa aberta
+// verifica se existe pausa aberta
 $sql = "SELECT p.id_pausa, p.id_config, p.inicio, pc.descricao_pausa 
         FROM pausa p
         JOIN pausa_config pc ON pc.id_config = p.id_config
@@ -43,7 +45,7 @@ if ($row = $res->fetch_assoc()) {
     $response['inicio'] = date('H:i:s', strtotime($row['inicio']));
 }
 
-// 2) carregar todos os tipos de pausa (inclui almoço como pausa comum)
+// carrega todos os tipos de pausa
 $sql = "SELECT id_config, descricao_pausa, limite_pausa_diario FROM pausa_config ORDER BY id_config";
 $res = $conn->query($sql);
 $hoje = date('Y-m-d');

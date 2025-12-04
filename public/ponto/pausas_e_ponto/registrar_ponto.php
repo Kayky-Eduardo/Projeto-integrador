@@ -3,8 +3,7 @@ session_start();
 date_default_timezone_set('America/Sao_Paulo');
 include __DIR__ . '/../../../BD/conexao.php';
 require_once __DIR__ . '/../../../include/verificacao.php';
-
-$id_usuario = $_SESSION['id_usuario'];
+verificar_login($conn);
 ?>
 
 <!DOCTYPE html>
@@ -52,12 +51,25 @@ $id_usuario = $_SESSION['id_usuario'];
                 if (!res.ok) throw new Error('Erro ao obter estado');
                 const data = await res.json();
 
-                // se ponto ainda não for registrado, desabilita select e botão de pausa
-                if (data.ponto_registrado === false) {
+                // Se ponto finalizado, desabilita todos os controles de ponto/pausa
+                if (data.fim_ponto === true) {
                     btnPausa.disabled = true;
                     selectPausa.disabled = true;
+                    btnPonto.disabled = true;
+                    btnPonto.textContent = 'Finalizar Ponto';
+                    if (clearResultado) resultado.textContent = 'Ponto diário finalizado. Não é possível iniciar pausas.';
+                }
+                // se ponto ainda não for registrado, desabilita select e botão de pausa
+                else if (data.ponto_registrado === false) {
+                    btnPausa.disabled = true;
+                    selectPausa.disabled = true;
+                    btnPonto.disabled = false;
+                    btnPonto.textContent = 'Iniciar Ponto';
                     if (clearResultado) resultado.textContent = 'Registre o ponto diário antes de iniciar uma pausa.';
-                } else{
+                } else {
+                    // ponto iniciado e não finalizado
+                    btnPonto.disabled = false;
+                    btnPonto.textContent = 'Finalizar Ponto';
                     // popula select
                     selectPausa.innerHTML = '';
                     (data.tipos_comuns || []).forEach(t => {
@@ -149,7 +161,19 @@ $id_usuario = $_SESSION['id_usuario'];
         });
 
         // inicializa
-        window.onload = () => carregarEstado();
+        window.onload = () => {
+            // corrige quaisquer links relativos para logout que venham do navbar incluído externamente
+            try {
+                const anchors = document.querySelectorAll('a[href$="logout.php"], a[href="logout.php"]');
+                anchors.forEach(a => {
+                    // ajusta para o caminho correto relativo a esta página
+                    a.href = '../../logout.php';
+                });
+            } catch (e) {
+                console.error('Erro ao ajustar links de logout', e);
+            }
+            carregarEstado();
+        };
     </script>
 </body>
 </html>
