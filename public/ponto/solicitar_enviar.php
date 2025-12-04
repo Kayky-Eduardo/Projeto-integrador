@@ -55,7 +55,7 @@ if (
 BUSCAR VALOR ANTIGO E DATA
 ======================= */
 // Busca a data do registro e o valor antigo do campo
-$busca = $conn->prepare("SELECT data_reg, `$campo` FROM ponto_dia WHERE id_ponto = ?");
+$busca = $conn->prepare("SELECT data_ponto, `$campo` FROM ponto_dia WHERE id_ponto = ?");
 $busca->bind_param("i", $id_ponto);
 $busca->execute();
 
@@ -68,7 +68,7 @@ if (!$res) {
 }
 
 // Data do ponto (YYYY-MM-DD)
-$data = $res['data_reg'];
+$data = $res['data_ponto'];
 
 // Verifica se o campo antigo possuía valor
 $valor_antigo = $res[$campo]

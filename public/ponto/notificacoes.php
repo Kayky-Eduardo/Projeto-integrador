@@ -74,7 +74,7 @@ $sql = "
         n.mensagem,           -- Texto da mensagem
         n.data_notificacao,   -- Data e hora
         n.lida,               -- Status (0 = não lida, 1 = lida)
-        p.data_reg,           -- Data do ponto relacionado
+        p.data_ponto,           -- Data do ponto relacionado
         p.id_ponto            -- ID do ponto
     FROM notificacoes_ponto n
     INNER JOIN ponto_dia p ON p.id_ponto = n.id_ponto
@@ -168,7 +168,7 @@ $notificacoes = $stmt->get_result();
 
                 <!-- Link para o ponto daquele dia -->
                 <td>
-                    <a href="../ponto/historico.php?from=<?= $row['data_reg'] ?>&to=<?= $row['data_reg'] ?>">
+                    <a href="../ponto/historico.php?from=<?= $row['data_ponto'] ?>&to=<?= $row['data_ponto'] ?>">
                         Ver dia
                     </a>
                 </td>

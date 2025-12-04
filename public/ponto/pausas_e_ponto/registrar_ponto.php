@@ -16,7 +16,7 @@ verificar_login($conn);
     </style>
 </head>
 <body>
-    <a href="../relatorio_ponto.php">voltar</a>
+    <a href="../../index.php">voltar</a>
     <h2>Registro de Ponto</h2>
 
     <div id='controles'>
@@ -85,19 +85,14 @@ verificar_login($conn);
                         btnPausa.textContent = 'Finalizar Pausa';
                         btnPausa.disabled = false;
                         selectPausa.disabled = true;
+                        btnPonto.disabled =true;
                         resultado.textContent = `Pausa aberta: ${data.descricao_aberta}`;
                     } else {
                         // sem pausa aberta
-                        const existeOpcaoHabilitada = (data.tipos_comuns || []).some(t => !t.usado);
-                        if (!existeOpcaoHabilitada) {
-                            btnPausa.textContent = 'Pausas concluídas';
-                            btnPausa.disabled = true;
-                            selectPausa.disabled = true;
-                        } else {
                             btnPausa.textContent = 'Iniciar Pausa';
                             btnPausa.disabled = false;
+                            btnPonto.disabled = false;
                             selectPausa.disabled = false;
-                        }
 
                         if (clearResultado) resultado.textContent = '';
                     }

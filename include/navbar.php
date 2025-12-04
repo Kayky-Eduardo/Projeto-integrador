@@ -7,24 +7,31 @@ $nivel = $_SESSION['nivel'];
 
 echo '<nav>';
 
+// Nível 3 - ADM
 if ($nivel >= 3) {
     echo '
         <a href="usuario/lista.php">Usuários</a>
         <a href="ponto/gerenciar.php">Gerenciar Solicitações</a>
         <a href="ponto/historico.php">Histórico</a>
     ';
-} elseif ($nivel == 2) {
+}
+// Nível 2 - RH
+elseif ($nivel == 2) {
     echo '
         <a href="usuario/lista.php">Usuários</a>
-        <a href="ponto/status.php">Bater Ponto / Status</a>
+        <a href="ponto/pausas_e_ponto/registrar_ponto.php">Bater Ponto</a>
+        <a href="ponto/pausas_e_ponto/pausa_config.php">Pausas</a>
         <a href="ponto/gerenciar.php">Gerenciar Pontos</a>
         <a href="rh/ajustes_pendentes.php">Ajustes Pendentes</a>
         <a href="ponto/historico.php">Histórico</a>
         <a href="ponto/notificacoes.php">Notificações</a>
     ';
-} else {
+}
+// Nível 1 - Funcionário
+else {
     echo '
-        <a href="ponto/status.php">Bater Ponto / Status</a>
+        <a href="ponto/pausas_e_ponto/registrar_ponto.php">Bater Ponto</a>
+        <a href="ponto/pausas_e_ponto/pausa_config.php">Pausas</a>
         <a href="ponto/historico.php">Histórico</a>
         <a href="ponto/notificacoes.php">Notificações</a>
     ';

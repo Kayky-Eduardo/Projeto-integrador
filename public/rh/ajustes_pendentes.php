@@ -36,7 +36,7 @@ SELECT
     a.*, 
     u.nome_usuario AS funcionario,   -- Dono do ponto
     s.nome_usuario AS solicitante,   -- Quem fez a solicitação
-    p.data_reg                      -- Dia do ponto
+    p.data_ponto                      -- Dia do ponto
 FROM ajustes_ponto a
 INNER JOIN ponto_dia p ON p.id_ponto = a.id_ponto
 INNER JOIN usuario u ON u.id_usuario = p.id_usuario   -- FUNCIONÁRIO DO PONTO
@@ -88,7 +88,7 @@ $res = $conn->query($sql);
                 <td><?= htmlspecialchars($r['solicitante']) ?></td>
 
                 <!-- Data do registro de ponto -->
-                <td><?= htmlspecialchars($r['data_reg']) ?></td>
+                <td><?= htmlspecialchars($r['data_ponto']) ?></td>
 
                 <!-- Campo que será alterado -->
                 <td><?= htmlspecialchars($r['campo']) ?></td>

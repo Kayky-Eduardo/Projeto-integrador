@@ -71,7 +71,7 @@ if (!$reg) {
 <body>
 
     <!-- Título com a data do ponto -->
-    <h1>Solicitar ajuste do dia <?= htmlspecialchars($reg['data_reg']) ?></h1>
+    <h1>Solicitar ajuste do dia <?= htmlspecialchars($reg['data_ponto']) ?></h1>
 
     <!-- Formulário de envio do ajuste -->
     <form method="POST" action="solicitar_enviar.php">

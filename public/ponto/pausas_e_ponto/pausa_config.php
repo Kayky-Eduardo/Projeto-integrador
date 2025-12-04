@@ -73,7 +73,7 @@ $listRes = $conn->query($listSql);
 <title>Tipos de Pausa</title>
 </head>
 <body>
-    <a href="../relatorio_ponto.php">Voltar</a>
+    <a href="../../index.php">Voltar</a>
 
     <h2>Gerenciar Tipos de Pausa</h2>
 

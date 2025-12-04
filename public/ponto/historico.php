@@ -48,14 +48,14 @@ APLICA FILTROS
 
 // Filtro por data inicial
 if (!empty($f_from)) {
-    $where[]  = "p.data_reg >= ?";
+    $where[]  = "p.data_ponto >= ?";
     $params[] = $f_from;
     $types   .= 's';
 }
 
 // Filtro por data final
 if (!empty($f_to)) {
-    $where[]  = "p.data_reg <= ?";
+    $where[]  = "p.data_ponto <= ?";
     $params[] = $f_to;
     $types   .= 's';
 }
@@ -84,7 +84,7 @@ if ($where) {
 /* ==============
 ORDENA RESULTADOS
 ============== */
-$sql .= " ORDER BY p.data_reg DESC";
+$sql .= " ORDER BY p.data_ponto DESC";
 
 /* ==================
 PREPARA E EXECUTA SQL
@@ -167,7 +167,7 @@ $batidas = $stmt->get_result();
             <tr>
 
                 <!-- Data -->
-                <td><?= date("d/m/Y", strtotime($r['data_reg'])) ?></td>
+                <td><?= date("d/m/Y", strtotime($r['data_ponto'])) ?></td>
 
                 <!-- Funcionário -->
                 <td><?= htmlspecialchars($r['nome']) ?></td>

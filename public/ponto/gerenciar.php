@@ -110,14 +110,14 @@ $sql = "
 
 // Filtro por data inicial
 if ($data_from) {
-    $where[]  = "p.data_reg >= ?";
+    $where[]  = "p.data_ponto >= ?";
     $params[] = $data_from;
     $types   .= 's';
 }
 
 // Filtro por data final
 if ($data_to) {
-    $where[]  = "p.data_reg <= ?";
+    $where[]  = "p.data_ponto <= ?";
     $params[] = $data_to;
     $types   .= 's';
 }
@@ -152,7 +152,7 @@ $sql .= " ORDER BY
         WHEN 'Aprovado' THEN 4
         ELSE 5
     END,
-    p.data_reg DESC,
+    p.data_ponto DESC,
     p.inicio_ponto ASC
 ";
 
@@ -211,14 +211,19 @@ $result = $stmt->get_result();
     <br>
 
     <!-- TABELA DE RESULTADOS -->
+     <?php
+        $listSql = "SELECT * FROM pausa_config ORDER BY id_config ASC";
+        $listRes = $conn->query($listSql);
+     ?>
     <table border="1" cellpadding="6">
         <tr>
             <th>Data</th>
             <th>Funcionário</th>
             <th>Entrada</th>
-            <th>Início Almoço</th>
-            <th>Fim Almoço</th>
             <th>Saída</th>
+            <?php while ($rowP = $listRes->fetch_assoc()): ?>
+                <td><?= htmlspecialchars($rowP['descricao_pausa']) ?></td>
+            <?php endwhile; ?>
             <th>Status</th>
             <th>Ações</th>
         </tr>
@@ -227,17 +232,28 @@ $result = $stmt->get_result();
             <tr>
 
                 <!-- Data formatada -->
-                <td><?= date("d/m/Y", strtotime($row['data_reg'])) ?></td>
+                <td><?= date("d/m/Y", strtotime($row['data_ponto'])) ?></td>
 
                 <!-- Nome do funcionário -->
                 <td><?= htmlspecialchars($row['nome_usuario']) ?></td>
 
                 <!-- Horários -->
                 <td><?= $row['inicio_ponto'] ? date("H:i", strtotime($row['inicio_ponto'])) : '-' ?></td>
-                <td><?= $row['inicio_almoco'] ? date("H:i", strtotime($row['inicio_almoco'])) : '-' ?></td>
-                <td><?= $row['fim_almoco'] ? date("H:i", strtotime($row['fim_almoco'])) : '-' ?></td>
                 <td><?= $row['fim_ponto'] ? date("H:i", strtotime($row['fim_ponto'])) : '-' ?></td>
 
+                <!-- Pausas -->
+                <?php
+                    $timeSql = "SELECT * FROM pausa ORDER BY id_config ASC";
+                    $timeRes = $conn->query($timeSql);
+                 while ($rowT = $timeRes->fetch_assoc()): ?>
+                    <td>
+                        <?= htmlspecialchars(
+                            (!empty($rowT['inicio']) ? date('H:i', strtotime($rowT['inicio'])) : '00:00')
+                            . " - " .
+                            (!empty($rowT['fim']) ? date('H:i', strtotime($rowT['fim'])) : '00:00')
+                        ) ?>
+                    </td>
+                <?php endwhile; ?>
                 <!-- Status -->
                 <td><?= $row['status'] ?></td>
 
