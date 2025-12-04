@@ -51,7 +51,7 @@ function adicionar_horas($conn, $id_usuario, $minutos, $tipo = 'hora_extra', $de
     $stmt_historico->close();
 }
 
-function get_banco_horas($conn, $usuarioId) {
+function get_banco_horas($conn, $id_usuario) {
     $stmt = $conn->prepare("
         SELECT 
             saldo_minutos,
@@ -59,7 +59,7 @@ function get_banco_horas($conn, $usuarioId) {
         FROM banco_horas 
         WHERE id_usuario = ?
     ");
-    $stmt->bind_param("i", $usuarioId);
+    $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
     $result = $stmt->get_result();
     
@@ -78,20 +78,20 @@ function get_banco_horas($conn, $usuarioId) {
     $horas = floor(abs($minutos) / 60);
     $mins = abs($minutos) % 60;
     $sinal = $minutos < 0 ? '-' : '+';
-    
+    $saldo_formatado = "$sinal$horas:$mins";
     return [
         'saldo_minutos' => $minutos,
         'saldo_horas' => $minutos / 60,
-        'saldo_formatado' => "$sinal" + "$horas:$mins",
+        'saldo_formatado' => "$saldo_formatado",
         'ultima_atualizacao' => $dados['ultima_atualizacao']
     ];
 }
 
-function retirar_tempo_banco($conn, $id_usuario, $minutos, $tipo = 'falta', $descricao = null) {
+function retirar_horas($conn, $id_usuario, $minutos, $tipo = 'falta', $descricao = null) {
     adicionar_horas($conn, $id_usuario, -abs($minutos), $tipo, $descricao);
 }
 
-function calcular_debito_falta($conn, $usuarioId, $data) {
+function calcular_debito_falta($conn, $id_usuario, $data) {
     // Busca jornada do usuário
     $stmt = $conn->prepare("
         SELECT TIME_TO_SEC(jornada) as segundos_jornada
@@ -111,7 +111,7 @@ function calcular_debito_falta($conn, $usuarioId, $data) {
     $minutos_jornada = round($jornada['segundos_jornada'] / 60);
     
     // Debita do banco de horas
-    retirar_tempo_banco($conn, $usuarioId, $minutos_jornada, 'falta', "Falta no dia {$data}");
+    retirar_horas($conn, $id_usuario, $minutos_jornada, 'falta', "Falta no dia {$data}");
     
     return $minutos_jornada;
 }

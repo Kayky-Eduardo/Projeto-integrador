@@ -13,7 +13,7 @@ $coleta_tempo = verificar_tempo_logado($conn, $id_usuario, $id_login);
 if ($coleta_tempo >= 0) {
     adicionar_horas($conn, $id_usuario, $coleta_tempo);
 } else {
-    retirar_tempo_banco($conn, $id_usuario, $coleta_tempo);
+    retirar_horas($conn, $id_usuario, $coleta_tempo);
 }
 
 date_default_timezone_set('America/Sao_Paulo');
