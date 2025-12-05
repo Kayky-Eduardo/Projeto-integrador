@@ -27,8 +27,6 @@ CAMPOS PERMITIDOS
 // Define quais campos podem ser alterados
 $camposPermitidos = [
     'inicio_ponto',
-    'inicio_almoco',
-    'fim_almoco',
     'fim_ponto'
 ];
 

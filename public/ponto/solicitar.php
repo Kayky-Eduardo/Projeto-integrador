@@ -83,8 +83,6 @@ if (!$reg) {
         <label for="campo">Campo a ajustar:</label>
         <select name="campo" id="campo" required>
             <option value="inicio_ponto">Entrada</option>
-            <option value="inicio_almoco">Início Almoço</option>
-            <option value="fim_almoco">Fim Almoço</option>
             <option value="fim_ponto">Saída</option>
         </select>
         <br><br>

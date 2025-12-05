@@ -101,6 +101,33 @@ $stmt->execute();
 
 // Recupera resultados
 $batidas = $stmt->get_result();
+
+$sql = "
+    SELECT 
+        p.id_pausa, 
+        p.id_usuario, 
+        p.inicio, 
+        p.data, 
+        p.fim,
+        c.descricao_pausa, 
+        c.tempo_max, 
+        u.nome_usuario
+    FROM pausa p
+    LEFT JOIN pausa_config c ON c.id_config = p.id_config
+    LEFT JOIN usuario u ON u.id_usuario = p.id_usuario
+    WHERE p.id_usuario = ?
+    ORDER BY p.inicio ASC
+";
+//mudei para prepared statement por "segurança"
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id_usuario);
+$stmt->execute();
+$res = $stmt->get_result();
+if ($result->num_rows > 0) {
+    $users = [];
+    while($rowP = $res -> fetch_assoc()) $users[] = $row;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -152,8 +179,10 @@ $batidas = $stmt->get_result();
             <th>Data</th>
             <th>Funcionário</th>
             <th>Entrada</th>
-            <th>Início Almoço</th>
-            <th>Fim Almoço</th>
+            <?php while($rowP = $res -> fetch_assoc()):
+                echo "<th>". $rowP['descricao_pausa']."</th>";
+                ?>
+            <?php endwhile?>
             <th>Saída</th>
             <th>Status</th>
 
@@ -174,9 +203,13 @@ $batidas = $stmt->get_result();
 
                 <!-- Horários (com fallback visual) -->
                 <td><?= $r['inicio_ponto']   ? date("H:i", strtotime($r['inicio_ponto']))   : '--:--' ?></td>
-                <td><?= $r['inicio_almoco']  ? date("H:i", strtotime($r['inicio_almoco']))  : '--:--' ?></td>
-                <td><?= $r['fim_almoco']     ? date("H:i", strtotime($r['fim_almoco']))     : '--:--' ?></td>
                 <td><?= $r['fim_ponto']      ? date("H:i", strtotime($r['fim_ponto']))      : '--:--' ?></td>
+
+                <!-- Pausas -->
+                <?php while($rowP = $res -> fetch_assoc()):
+                    echo "<td>". $rowP['inicio'] . "-" .$rowP['fim']."</td>";
+                ?>
+                <?php endwhile?>
 
                 <!-- Status -->
                 <td><?= $r['status'] ?></td>

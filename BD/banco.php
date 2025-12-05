@@ -6,11 +6,12 @@ $sql = (
 default character set utf8mb4
 default collate utf8mb4_unicode_ci;
 
-
+use pi_0392;
 create table cargo (
 id_cargo int auto_increment primary key,
 nome_cargo varchar(100) not null,
-salario_bruto decimal(10, 2) not null
+salario_bruto decimal(10, 2) not null,
+nivel int not null
 );
 
 create table usuario(
@@ -31,30 +32,57 @@ data_demissao date,
 foreign key (id_cargo) references cargo (id_cargo)
 );
 
-create table ponto (
-id_ponto int auto_increment primary key,
-id_usuario int not null,
-inicio_ponto datetime not null,
-fim_ponto datetime not null,
-inicio_almoco time not null,
-fim_almoco time not null,
-foreign key (id_usuario) references usuario(id_usuario) ON DELETE CASCADE
+create table login (
+id_login int auto_increment primary key,
+email_login varchar(100) not null,
+data_inicio datetime default current_timestamp,
+data_fim datetime,
+id_usuario int,
+id_cargo int,
+foreign key (id_cargo) references cargo (id_cargo),
+foreign key (id_usuario) references usuario (id_usuario)
 );
 
-CREATE TABLE ponto (
-    id_ponto INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT NOT NULL,
-    data_ponto DATE NOT NULL, 
-    hora_entrada TIME DEFAULT NULL,
-    hora_saida TIME DEFAULT NULL,
-    hora_almoco_saida TIME DEFAULT NULL,
-    hora_almoco_retorno TIME DEFAULT NULL,
-    observacao TEXT,
-    status ENUM('pendente', 'aprovado', 'rejeitado') DEFAULT 'pendente',
-    aprovado_por INT DEFAULT NULL,
-    data_aprovacao DATETIME DEFAULT NULL,
-    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario),
-    FOREIGN KEY (aprovado_por) REFERENCES usuario(id_usuario)
+CREATE TABLE ponto_dia (
+id_ponto INT AUTO_INCREMENT PRIMARY KEY,
+id_usuario INT NOT NULL,
+data_ponto DATE NOT NULL default (current_date),
+inicio_ponto TIME DEFAULT (current_time()),
+fim_ponto TIME DEFAULT NULL,
+status ENUM('Em Andamento', 'Finalizado', 'Aprovado', 'Revisar')
+NOT NULL DEFAULT 'Em Andamento',
+criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+UNIQUE KEY ux_usuario_data (id_usuario, data_ponto),
+FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
+);
+
+CREATE TABLE ajustes_ponto (
+id_ajuste INT AUTO_INCREMENT PRIMARY KEY,
+id_ponto INT NOT NULL,
+id_usuario INT NOT NULL,
+campo VARCHAR(30) NOT NULL, -- entrada / almoço saída...
+valor_antigo DATETIME,
+valor_novo DATETIME,
+motivo TEXT NOT NULL,
+status ENUM('Pendente', 'Aprovado', 'Recusado') DEFAULT 'Pendente',
+data_solicitacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+data_resposta DATETIME NULL,
+id_rh INT NULL,
+FOREIGN KEY (id_ponto) REFERENCES ponto_dia(id_ponto),
+FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario),
+FOREIGN KEY (id_rh) REFERENCES usuario(id_usuario)
+);
+ 
+CREATE TABLE notificacoes_ponto (
+id_notificacao INT AUTO_INCREMENT PRIMARY KEY,
+id_usuario INT NOT NULL,
+id_ponto INT NOT NULL,
+mensagem VARCHAR(255) NOT NULL,
+data_notificacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+lida TINYINT DEFAULT 0,
+FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario),
+FOREIGN KEY (id_ponto) REFERENCES ponto_dia(id_ponto)
 );
 
 create table dados_bancarios (
@@ -88,8 +116,24 @@ dia_hf int,
 foreign key (id_usuario) references usuario(id_usuario) ON DELETE CASCADE
 );
 
-insert into cargo (nome_cargo, salario_bruto, nivel)
-values (“adm”', 10, 1);
+CREATE TABLE IF NOT EXISTS pausa_config (
+  id_config INT AUTO_INCREMENT PRIMARY KEY,
+  descricao_pausa VARCHAR(100) NOT NULL,
+  tempo_min INT DEFAULT 0,
+  tempo_max INT DEFAULT 0,
+  limite_pausa_diario INT DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS pausa (
+  id_pausa INT AUTO_INCREMENT PRIMARY KEY,
+  id_usuario INT NOT NULL,
+  id_config INT NOT NULL,
+  inicio TIME NOT NULL,
+  fim TIME DEFAULT NULL,
+  data DATE NOT NULL,
+  duracao_minutos INT DEFAULT NULL,
+  FOREIGN KEY (id_config) REFERENCES pausa_config(id_config)
+);
 
 ");
 $conn->query($sql);

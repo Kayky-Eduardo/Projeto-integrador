@@ -43,7 +43,7 @@ if (isset($_GET['aprovar'])) {
 
     // Busca se o ponto está completo
     $check = $conn->query("
-        SELECT inicio_ponto, inicio_almoco, fim_almoco, fim_ponto
+        SELECT inicio_ponto, fim_ponto
         FROM ponto_dia
         WHERE id_ponto = $id
     ")->fetch_assoc();
@@ -211,19 +211,13 @@ $result = $stmt->get_result();
     <br>
 
     <!-- TABELA DE RESULTADOS -->
-     <?php
-        $listSql = "SELECT * FROM pausa_config ORDER BY id_config ASC";
-        $listRes = $conn->query($listSql);
-     ?>
+
     <table border="1" cellpadding="6">
         <tr>
             <th>Data</th>
             <th>Funcionário</th>
             <th>Entrada</th>
             <th>Saída</th>
-            <?php while ($rowP = $listRes->fetch_assoc()): ?>
-                <td><?= htmlspecialchars($rowP['descricao_pausa']) ?></td>
-            <?php endwhile; ?>
             <th>Status</th>
             <th>Ações</th>
         </tr>
@@ -242,18 +236,7 @@ $result = $stmt->get_result();
                 <td><?= $row['fim_ponto'] ? date("H:i", strtotime($row['fim_ponto'])) : '-' ?></td>
 
                 <!-- Pausas -->
-                <?php
-                    $timeSql = "SELECT * FROM pausa ORDER BY id_config ASC";
-                    $timeRes = $conn->query($timeSql);
-                 while ($rowT = $timeRes->fetch_assoc()): ?>
-                    <td>
-                        <?= htmlspecialchars(
-                            (!empty($rowT['inicio']) ? date('H:i', strtotime($rowT['inicio'])) : '00:00')
-                            . " - " .
-                            (!empty($rowT['fim']) ? date('H:i', strtotime($rowT['fim'])) : '00:00')
-                        ) ?>
-                    </td>
-                <?php endwhile; ?>
+
                 <!-- Status -->
                 <td><?= $row['status'] ?></td>
 
