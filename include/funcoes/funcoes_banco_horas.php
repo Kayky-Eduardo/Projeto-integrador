@@ -57,6 +57,34 @@ function adicionar_horas($conn, $id_usuario, $minutos, $tipo = 'hora_extra', $de
     $stmt_historico->close();
 }
 
+function get_banco_data($conn, $id_usuario, $inicio, $fim) {
+    $dados_antigos = [];
+
+    $stmt = $conn->prepare("
+    SELECT id_historico, data, saldo_anterior, saldo_novo
+    FROM banco_horas_historico
+    WHERE data >= ?
+    AND data <= ?
+    AND id_usuario = ?;
+    ");
+    $stmt->bind_param("ssi", $inicio, $fim, $id_usuario);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows === 0) {
+        return false;
+    }
+    
+    while ($linha = $result->fetch_assoc()) {
+        $dados_antigos[] = $linha;
+    };
+
+    $stmt->close();
+    
+    return $dados_antigos;
+}
+
+
 function get_banco_horas($conn, $id_usuario) {
     $stmt = $conn->prepare("
         SELECT
@@ -93,6 +121,13 @@ function get_banco_horas($conn, $id_usuario) {
     $stmt_saldo_anterior->execute();
 
     $result_saldo = $stmt_saldo_anterior->get_result();
+    if ($result_saldo->num_rows == 0) {
+        return [
+        'saldo_formatado' => "$sinal$tempo",
+        'ultima_atualizacao' => $dados['ultima_atualizacao']
+        ];
+    }
+
     $saldo_antigo = $result_saldo->fetch_assoc()['saldo_anterior'];
 
     $stmt_saldo_anterior->close();
