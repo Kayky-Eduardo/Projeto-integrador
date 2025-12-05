@@ -1,6 +1,6 @@
-/* ==============================
+/* ===============
    RESET GLOBAL
-================================ */
+=============== */
 * {
     margin: 0;
     padding: 0;
@@ -13,34 +13,31 @@ html {
 
 body {
     font-family: "Segoe UI", Tahoma, sans-serif;
-    background-color: #edf0f3;
-    color: #1f2933;
+    background-color: #F2F2F2;
+    color: #0D0D0D;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-/* ==============================
+/* =========
    HEADER
-================================ */
+========= */
 header {
-    background: linear-gradient(90deg, #0f172a, #1e293b);
-    color: #ffffff;
-    padding: 1rem 1.5rem;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    object-fit: cover;
+    padding: 0;
+    margin: 0;
 }
 
-header h1 {
-    font-size: 1.5rem;
-    letter-spacing: 1px;
-    text-align: center;
+header img {
+    display: block;
+    width: 100%;
+    height: auto;
 }
 
-/* ==============================
+/* =========
    NAVBAR
-================================ */
+========= */
 nav {
     background-color: #020617;
     display: flex;
@@ -52,14 +49,13 @@ nav {
 
 nav a {
     text-decoration: none;
-    color: #e2e8f0;
+    color: #F2F2F2;
     padding: 0.4rem 0.8rem;
     border-radius: 4px;
     font-size: 0.9rem;
     transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-/* destaque do item ao passar */
 nav a:hover,
 nav a:focus {
     background-color: #334155;
@@ -67,20 +63,23 @@ nav a:focus {
     transform: translateY(-2px);
 }
 
-/* ==============================
+/* ===========
    CONTEÚDO
-================================ */
+=========== */
 main {
     flex: 1;
     padding: 2rem;
+
+    display: flex;
+    justify-content: center;
 }
 
-/* ==============================
+/* =========
    FOOTER
-================================ */
+========= */
 footer {
     background-color: #020617;
-    color: #cbd5e1;
+    color: #F2F2F2;
     text-align: center;
     padding: 1.2rem;
     font-size: 0.85rem;
@@ -95,9 +94,9 @@ footer a {
     color: #38bdf8;
 }
 
-/* ==============================
+/* ===============
    MOBILE FIRST
-================================ */
+=============== */
 @media (max-width: 600px) {
 
     header {
@@ -114,20 +113,18 @@ footer a {
     }
 }
 
-/* ==============================
+/* =================
    ACESSIBILIDADE
-================================ */
+================= */
 
-/* foco de teclado */
 a:focus {
     outline: 2px solid #38bdf8;
 }
 
-/* Contraste reforçado */
 @media (prefers-contrast: high) {
 
     body {
-        background-color: #fff;
+        background-color: #F2F2F2;
         color: #000;
     }
 
@@ -138,11 +135,10 @@ a:focus {
     }
 
     nav a {
-        color: #fff;
+        color: #F2F2F2;
     }
 }
 
-/* Redução de movimento */
 @media (prefers-reduced-motion: reduce) {
     * {
         transition: none;
@@ -150,11 +146,12 @@ a:focus {
     }
 }
 
-/* ==============================
+/* ============
    CARROSSEL
-================================ */
+============ */
 .carrossel {
     max-width: 900px;
+    width: 100%;
     margin: auto;
     overflow: hidden;
     position: relative;
@@ -166,7 +163,6 @@ a:focus {
     height: 500px;
 }
 
-/* cada slide ocupa o mesmo espaço */
 .slide {
     position: absolute;
     inset: 0;
@@ -174,13 +170,11 @@ a:focus {
     transition: opacity 0.8s ease-in-out;
 }
 
-/* slide visível */
 .slide.ativo {
     opacity: 1;
     z-index: 1;
 }
 
-/* imagem ocupa tudo */
 .slide img {
     width: 100%;
     height: 100%;
@@ -188,13 +182,11 @@ a:focus {
     border-radius: 8px;
 }
 
-/* artigo vira camada de texto */
 .slide article {
     position: relative;
     height: 100%;
 }
 
-/* faixa escura embaixo */
 .slide article::after {
     content: "";
     position: absolute;
@@ -207,42 +199,39 @@ a:focus {
     border-radius: 0 0 8px 8px;
 }
 
-/* escurece ao passar mouse */
 .carrossel:hover .slide article::after {
     background: rgba(15, 23, 42, 0.85);
 }
 
-/* título */
 .slide h2 {
     position: absolute;
     bottom: 44px;
     left: 16px;
-    color: white;
+    color: #F2F2F2;
     font-size: 1.5rem;
     z-index: 2;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
 }
 
-/* legenda */
 .slide p {
     position: absolute;
     bottom: 14px;
     left: 16px;
-    color: rgba(255, 255, 255, 0.9);
+    color: #F2F2F2;
     font-size: 1rem;
     z-index: 2;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
 }
 
-/* ==============================
+/* =========
    BOTÕES
-================================ */
+========= */
 .btn {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     background-color: rgba(15, 23, 42, 0.75);
-    color: #fff;
+    color: #F2F2F2;
     border: none;
     font-size: 1.8rem;
     padding: 0.3rem 0.8rem;
@@ -261,4 +250,332 @@ a:focus {
 
 .btn:hover {
     background-color: rgba(15, 23, 42, 1);
+}
+
+/* ===========================
+   INDICADORES DO CARROSSEL
+=========================== */
+
+.indicadores {
+    background: transparent;
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 6;
+    border-radius: 10px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.dot:hover {
+    transform: scale(1.2);
+}
+
+.dot.ativo {
+    background-color: #141640;
+    transform: scale(1.3);
+}
+
+/* =============
+   LOGIN PAGE
+============= */
+
+.pagina-login {
+    background: url(../IMG/fundo_login.jpg) no-repeat center center fixed;
+    background-size: cover;
+}
+
+.pagina-login::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.55);
+    z-index: -1;
+}
+
+.login-sistema {
+    max-width: 460px;
+    width: 100%;
+    margin: auto auto;
+    background-color: #ffffff;
+    padding: 2.4rem;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.35),
+        0 3px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* título */
+.login-sistema h2 {
+    font-size: 1.4rem;
+    color: #020617;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+}
+
+/* subtítulo */
+.login-sistema p {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 1.6rem;
+}
+
+/* fieldset */
+.login-sistema fieldset {
+    border: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+/* labels */
+.login-sistema label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #334155;
+}
+
+/* inputs */
+.login-sistema input {
+    padding: 0.65rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background-color: #f8fafc;
+}
+
+.login-sistema input::placeholder {
+    color: #94a3b8;
+}
+
+.login-sistema input:focus {
+    outline: none;
+    border-color: #020617;
+}
+
+/* botão */
+.login-sistema button {
+    margin-top: 1.2rem;
+    padding: 0.75rem;
+    background-color: #020617;
+    color: white;
+    border: none;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 0.4px;
+    transition: background-color 0.2s ease;
+}
+
+.login-sistema button:hover {
+    background-color: #020617e8;
+}
+
+.erro-login {
+    background-color: #fee2e2;
+    color: #7f1d1d;
+    border: 1px solid #fecaca;
+    border-radius: 4px;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+/* =====================
+   CONFIGURAÇÕES GUI
+===================== */
+
+.configuracoes {
+    display: flex;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+/* menu lateral */
+.menu-config {
+    list-style: none;
+    min-width: 220px;
+    background-color: #020617;
+    border-radius: 6px;
+    padding: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* links */
+.menu-config a {
+    display: block;
+    padding: 0.5rem 0.7rem;
+    color: #F2F2F2;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    transition: background-color 0.2s ease;
+}
+
+.menu-config a:hover {
+    background-color: #334155;
+}
+
+/* painel direito */
+.painel-config {
+    flex: 1;
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 1.6rem;
+    border: 1px solid #e2e8f0;
+}
+
+/* título */
+.painel-config h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+}
+
+/* descrição */
+.painel-config p {
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+/* responsividade */
+@media (max-width: 768px) {
+
+    .configuracoes {
+        flex-direction: column;
+    }
+
+    .menu-config {
+        width: 100%;
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+/* =====================
+   CONFIGURAÇÕES
+===================== */
+
+.configuracoes {
+    display: flex;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+/* menu lateral */
+.menu-config {
+    list-style: none;
+    background-color: #020617;
+    padding: 1rem;
+    border-radius: 8px;
+    min-width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu-config a {
+    text-decoration: none;
+    color: #F2F2F2;
+    font-size: 0.85rem;
+    padding: 0.6rem;
+    border-radius: 4px;
+    display: block;
+}
+
+.menu-config a:hover,
+.menu-config a.ativo {
+    background-color: #334155;
+}
+
+/* painel */
+.painel-config {
+    flex: 1;
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 1.6rem;
+    border: 1px solid #e2e8f0;
+}
+
+.painel-config h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.4rem;
+}
+
+.painel-config p {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-bottom: 1.4rem;
+}
+
+/* formulário */
+.painel-config fieldset {
+    border: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.painel-config label {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.painel-config input {
+    padding: 0.6rem;
+    border-radius: 4px;
+    border: 1px solid #cbd5e1;
+    font-size: 0.9rem;
+}
+
+.painel-config input:focus {
+    outline: none;
+    border-color: #020617;
+}
+
+.painel-config button {
+    margin-top: 1rem;
+    padding: 0.7rem;
+    background-color: #020617;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.painel-config button:hover {
+    background-color: #020617e8;
+}
+
+/* resposta */
+#resposta {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+/* mobile */
+@media (max-width: 768px) {
+    .configuracoes {
+        flex-direction: column;
+    }
+
+    .menu-config {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
 }

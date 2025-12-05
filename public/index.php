@@ -49,7 +49,7 @@ verificar_login($conn);
 
     <!-- Banner / Topo -->
     <header role="banner">
-        <h1>Sistema de RH</h1>
+        <img src="../assets/IMG/banner_rh_pi.png" alt="">
     </header>
 
     <!-- Navbar -->
@@ -63,6 +63,12 @@ verificar_login($conn);
         <!-- Carrossel de Notícias -->
         <section class="carrossel" aria-label="Notícias da empresa">
             <ul class="slides">
+                <nav class="indicadores" aria-label="Indicador de slides">
+                    <button class="dot ativo" data-slide="0" aria-label="Slide 1"></button>
+                    <button class="dot" data-slide="1" aria-label="Slide 2"></button>
+                    <button class="dot" data-slide="2" aria-label="Slide 3"></button>
+                </nav>
+
                 <li class="slide ativo">
                     <article>
                         <img src="../assets/IMG/ambiente_coorporativo.jpg" alt="Ambiente corporativo">

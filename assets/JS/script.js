@@ -3,20 +3,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const slides = document.querySelectorAll(".slide");
     const prev = document.querySelector(".prev");
     const next = document.querySelector(".next");
-    const area = document.querySelector("section"); // área do carrossel
+    const dots = document.querySelectorAll(".dot");
+    const area = document.querySelector(".carrossel");
 
     let index = 0;
     let interval;
 
     function mostrarSlide(i) {
         slides.forEach(slide => slide.classList.remove("ativo"));
+        dots.forEach(dot => dot.classList.remove("ativo"));
+
         slides[i].classList.add("ativo");
+        dots[i].classList.add("ativo");
+
+        index = i;
     }
 
     function iniciarAuto() {
         interval = setInterval(() => {
-            index = (index + 1) % slides.length;
-            mostrarSlide(index);
+            let novoIndex = (index + 1) % slides.length;
+            mostrarSlide(novoIndex);
         }, 6000);
     }
 
@@ -25,19 +31,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     next.addEventListener("click", () => {
-        index = (index + 1) % slides.length;
-        mostrarSlide(index);
+        mostrarSlide((index + 1) % slides.length);
     });
 
     prev.addEventListener("click", () => {
-        index = (index - 1 + slides.length) % slides.length;
-        mostrarSlide(index);
+        mostrarSlide((index - 1 + slides.length) % slides.length);
     });
 
-    // Pausa ao passar o mouse
+    dots.forEach((dot, i) => {
+        dot.addEventListener("click", () => {
+            mostrarSlide(i);
+            pararAuto();
+            iniciarAuto();
+        });
+    });
+
     area.addEventListener("mouseenter", pararAuto);
     area.addEventListener("mouseleave", iniciarAuto);
 
-    // Inicia o carrossel automaticamente
     iniciarAuto();
 });
