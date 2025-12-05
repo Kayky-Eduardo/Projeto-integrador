@@ -3,55 +3,62 @@
 <head>
 <meta charset="UTF-8">
 <title>Teste – Gerar Folha de Pagamento</title>
-
 </head>
 <body>
 
 <div class="card">
     <h2>Gerar Folha de Pagamento</h2>
 
+    <!-- Campo que permite selecionar a competência da folha (formato YYYY-MM) -->
     <label>Mês:</label>
     <input type="month" id="mes">
 
+    <!-- Botão que dispara a função gerar() no JavaScript -->
     <button onclick="gerar()">Gerar Folha</button>
 </div>
 
 <h3>Resposta da API:</h3>
+
+<!-- Aqui será exibido o texto retornado -->
 <pre id="resposta">{ esperando requisição... }</pre>
 
+
 <script>
+// Função executada ao clicar no botão
 function gerar() {
-    // Obtém o valor digitado no campo "mes"
+
+    // Obtém o valor do campo <input type="month">
     let mes = document.getElementById("mes").value;
 
-    // Verifica se o mês foi preenchido e se está no formato correto YYYY-MM usando regex
+    // Validação simples: verifica se está no formato YYYY-MM
     if (!mes || !/^\d{4}-\d{2}$/.test(mes)) {
         alert("Selecione um mês válido no formato YYYY-MM");
-        return; // Para a execução se o formato estiver errado
+        return; // Impede o envio se estiver inválido
     }
 
-    // Envia uma requisição POST para o backend (API)
-    fetch("http://localhost/Projeto-integrador/api/api_folha.php", {
-        method: "POST",                           // Define o método como POST
-        headers: { "Content-Type": "application/json" }, // Informa que o corpo será JSON
+    // Envia a requisição para a API
+    fetch("../api/api_folha.php", {
+        method: "POST", // Método HTTP
+        headers: { "Content-Type": "application/json" }, // Corpo em JSON
         body: JSON.stringify({
-            mes: mes                              // Envia o mês no corpo da requisição
+            mes: mes // Dados enviados para a API
         })
     })
-    // Recebe a resposta como texto
+
+    // A API retorna texto puro
     .then(res => res.text())
-    // Exibe a resposta dentro da <div id="resposta">
+
+    // Exibe o resultado dentro do <pre id="resposta">
     .then(txt => {           
         document.getElementById("resposta").textContent = txt;
     })
-    // Caso ocorra algum erro na comunicação com a API
+
+    // Caso alguma falha ocorra
     .catch(err => {
         document.getElementById("resposta").textContent =
-            "Erro: " + err;
+            "Erro ao comunicar com a API: " + err;
     });
 }
 </script>
-
-
 </body>
 </html>
