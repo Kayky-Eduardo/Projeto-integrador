@@ -123,8 +123,8 @@ function get_banco_horas($conn, $id_usuario) {
     $result_saldo = $stmt_saldo_anterior->get_result();
     if ($result_saldo->num_rows == 0) {
         return [
-        'saldo_formatado' => "$sinal$tempo",
-        'ultima_atualizacao' => $dados['ultima_atualizacao']
+        'saldo_formatado' => "00:00",
+        'ultima_atualizacao' => 'Sem registros'
         ];
     }
 
@@ -133,26 +133,19 @@ function get_banco_horas($conn, $id_usuario) {
     $stmt_saldo_anterior->close();
     
     $horas_antiga = floor(abs($saldo_antigo) / 60);
-    $mins_antigo = abs($horas_antiga) % 60; 
+    $mins_antigo = abs($saldo_antigo) % 60; 
     $sinal_antigo = $saldo_antigo < 0 ? '-' : '+';
-    $saldo_anterior = "$horas_antiga:$mins_antigo";
-    $tempo_antigo = (new Datetime($saldo_anterior))->format('H:i');
+    $saldo_anterior_formatado = sprintf('%s%02d:%02d', $sinal_antigo, $horas_antiga, $mins_antigo);
 
     $minutos = $dados['saldo_minutos'];
     $horas = floor(abs($minutos) / 60);
     $mins = abs($minutos) % 60;
     $sinal = $minutos < 0 ? '-' : '+';
-    $saldo_banco = "$horas:$mins";
-
-    $tempo = (new Datetime($saldo_banco))->format('H:i');
+    $saldo_formatado = sprintf('%s%02d:%02d', $sinal, $horas, $mins);
     
     return [
-        'saldo_antigo' => "$sinal_antigo$tempo_antigo",
-        // caso queira usar mais pra frente
-        // 'saldo_minutos' => $minutos,
-        // 'saldo_horas' => $minutos / 60,
-
-        'saldo_formatado' => "$sinal$tempo",
+        'saldo_antigo' => "$saldo_anterior_formatado",
+        'saldo_formatado' => "$saldo_formatado",
         'ultima_atualizacao' => $dados['ultima_atualizacao']
     ];
 }

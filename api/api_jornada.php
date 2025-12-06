@@ -80,12 +80,22 @@ if ($method === 'GET') {
                 }
                 
                 try {
-                    $sucesso = get_banco_data($conn, $input['id_usuario'], $input['inicio'], $input['fim']);
+                    $dados_historico = get_banco_data($conn, $input['id_usuario'], $input['inicio'], $input['fim']); 
                     
-                    echo json_encode([
-                        'sucesso' => $sucesso,
-                        'mensagem' => $sucesso ? 'historico encontrado' : 'Erro ao procurar'
-                    ]);
+                    if (is_array($dados_historico) && count($dados_historico) > 0) {
+                        
+                        echo json_encode([
+                            'sucesso' => true,
+                            'mensagem' => 'Histórico encontrado com sucesso.',
+                            'dados' => $dados_historico
+                        ]);
+                    } else {
+                        echo json_encode([
+                            'sucesso' => true,
+                            'mensagem' => 'Nenhum registro de histórico encontrado para o período.',
+                            'dados' => []
+                        ]);
+                    }
                 } catch (Exception $e) {
                     echo json_encode([
                         'sucesso' => false,

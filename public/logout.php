@@ -3,6 +3,7 @@ session_start();
 include("../BD/conexao.php");
 include("../include/funcoes/funcoes_banco_horas.php");
 include("../include/verificacao.php");
+date_default_timezone_set('America/Sao_Paulo');
 
 if (isset($_SESSION['id_usuario'], $_SESSION['id_login'])) {
     $id_usuario = $_SESSION['id_usuario'];
@@ -16,14 +17,13 @@ if (isset($_SESSION['id_usuario'], $_SESSION['id_login'])) {
     } else {
         retirar_horas($conn, $id_usuario, $coleta_tempo);
     }
-    
-    date_default_timezone_set('America/Sao_Paulo');
-    $data = new datetime();
-    $agora = $data->format('Y-m-d H:i:s');
-    $update = $conn->prepare("UPDATE login SET data_fim = ? WHERE id_login = ?");
-    $update->bind_param("si", $agora, $id_login);
-    $update->execute();
 }
+
+$data = new datetime();
+$agora = $data->format('Y-m-d H:i:s');
+$update = $conn->prepare("UPDATE login SET data_fim = ? WHERE id_login = ?");
+$update->bind_param("si", $agora, $id_login);
+$update->execute();
 
 // Destroi todas as variáveis de sessão
 session_unset();
