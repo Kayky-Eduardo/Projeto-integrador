@@ -4,6 +4,7 @@ include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
 include "../../include/navbar.php";
+include "../usuario/meu_banco_horas.php";
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -12,6 +13,8 @@ include "../../include/navbar.php";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório ponto</title>
     <link rel="stylesheet" href="../../assets/estilo.css">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
 </head>
 <body>
     <dialog>
@@ -20,7 +23,13 @@ include "../../include/navbar.php";
         </div>
     </dialog>
     <div class="caixa-grafico">
+        <h2>Relatório diário</h2>
         <div id="piechart_3d" style="width: 900px; height: 500px;"></div>
+    </div>
+
+    <div class="caixa-grafico">
+        <h2>Taxa de presença</h2>
+        <div id="columnchart_material" style="width: 800px; height: 500px;"></div>
     </div>
     <div id="resultado-caixa-grafico">
         <table>
@@ -107,7 +116,6 @@ include "../../include/navbar.php";
         <div id="detalhes"></div>
     </div>
 </body>
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
     // Validar mais tarde
         let dadosDoGrafico = null;
@@ -128,7 +136,7 @@ include "../../include/navbar.php";
             } else {
                 // se algum campo ficar vazio é porque o resultado do campo é igual 0
                 dadosDoGrafico = google.visualization.arrayToDataTable([
-                    ['Task', 'Hours per Day'],
+                    ['status', 'Pessoas por Status'],
                     ['Presentes', valores[0]],
                     ['Ausentes',  valores[1]], 
                     ['Pausa', valores[2]],
@@ -140,7 +148,7 @@ include "../../include/navbar.php";
 
         setInterval(carregar_dados, 5000);
         
-        google.charts.load("current", {packages:["corechart"]});
+        google.charts.load("current", {packages:['corechart', 'bar']});
         google.charts.setOnLoadCallback(carregar_dados);
 
         // função para dar forma ao gráfico.
@@ -169,6 +177,7 @@ include "../../include/navbar.php";
                     const tipo = dadosDoGrafico.getValue(indiceLinha, 0);
                     
                     async function exibir_tipo(tipo) {
+                        window.location.replace('/Projeto-integrador/public/ponto/relatorio_ponto.php#resultado-caixa-grafico')
                         // pegando a tabela
                         const resultado_relatorio = document.getElementById('resposta-tbody')
                         
@@ -257,7 +266,7 @@ include "../../include/navbar.php";
                 });
         }
 
-        async function exibicao_usuarios() {
+        async function exibicao_usuarios_option() {
             select.innerHTML = `<option value="">Selecione um usuario</option>`
             const coleta_usuarios = await fetch("../../api/api_relatorio_ponto.php?acao=usuarios");
             const resposta_usuarios = await coleta_usuarios.json();
@@ -300,7 +309,7 @@ include "../../include/navbar.php";
             exibicao_hora_extra.appendChild(tag_h2_hora_extra);
             filtrar_tabela_hora(id_usuario)
         })
-        exibicao_usuarios();
+        exibicao_usuarios_option();
 
         async function verificarJornada(usuarioId, dataInicio, dataFim) {
             try {
@@ -389,9 +398,9 @@ include "../../include/navbar.php";
     
     let html = '<div class="jornada-detalhes">';
     
-    // Dias trabalhados
+    // horas trabalhados
     if (resultado.detalhes_trabalhados && resultado.detalhes_trabalhados.length > 0) {
-        html += '<h4>Dias Trabalhados</h4>';
+        html += '<h4>horas Trabalhados</h4>';
         html += '<table class="tabela-detalhes">';
         html += '<thead><tr><th>Data</th><th>Horas</th></tr></thead><tbody>';
         
@@ -405,9 +414,9 @@ include "../../include/navbar.php";
         html += '</tbody></table>';
     }
     
-    // Dias esperados
+    // horas esperados
     if (resultado.detalhes_esperados && resultado.detalhes_esperados.length > 0) {
-        html += '<h4>Dias Esperados</h4>';
+        html += '<h4>horas Esperados</h4>';
         html += '<table class="tabela-detalhes">';
         html += '<thead><tr><th>Data</th><th>Dia da Semana</th><th>Horas</th></tr></thead><tbody>';
         
@@ -433,7 +442,7 @@ include "../../include/navbar.php";
             
             // Validações
             if (!usuarioId || !dataInicio || !dataFim) {
-                alert('Preencha todos os campos!');
+                console.log('Preencha todos os campos!');
                 return;
             }
                 document.getElementById('loading').style.display = 'block';
@@ -469,5 +478,38 @@ include "../../include/navbar.php";
                 });
             });
         });
+
+        async function exibicao_usuarios() {
+            const coleta_usuarios = await fetch("../../api/api_relatorio_ponto.php?acao=usuarios");
+            const resposta_usuarios = await coleta_usuarios.json();
+    
+            return resposta_usuarios;
+        }
+
+        google.charts.setOnLoadCallback(carregar_grafico_bar);
+        function carregar_grafico_bar() {
+        var data = google.visualization.arrayToDataTable([
+            ['Funcionarios', 'horas trabalhados', 'horas esperados', 'taxa de presença'],
+            // puxar as informações com api. Ex:
+    
+            ['Chines', 5, 10, 0.5],
+            ['Safado', 10, 10, 1],
+            ['Kayky', 30, 10, 3],
+            ['2017', 20, 10, 2]
+            ]);
+
+            var options = {
+            chart: {
+                title: 'Taxa de presença',
+                subtitle: 'horas esperados/trabalhados e taxa de presença',
+            }
+            };
+
+            var chart = new google.charts.Bar(document.getElementById('columnchart_material'));
+
+            chart.draw(data, google.charts.Bar.convertOptions(options));
+        }
+
+
     </script>
 </html>

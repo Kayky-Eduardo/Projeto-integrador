@@ -162,10 +162,12 @@ function verificar_jornada($conn, $usuario_id, $data_inicio, $data_fim) {
     $percentual = $esperadas['total_horas'] > 0 ?
     ($trabalhadas['total_horas'] / $esperadas['total_horas']) * 100 : 0;
     
+    $taxa_presenca = $trabalhadas['total_horas'] / $esperadas['total_horas'];
     return [
         'usuario_id' => $usuario_id,
         'horas_trabalhadas' => $trabalhadas['total_horas'],
         'horas_esperadas' => $esperadas['total_horas'],
+        'taxa_presenca' => $taxa_presenca,
         'diferenca' => round($diferenca, 2),
         'percentual' => round($percentual, 2),
     ];
