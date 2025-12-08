@@ -9,56 +9,94 @@
 <div class="card">
     <h2>Gerar Folha de Pagamento</h2>
 
-    <!-- Campo que permite selecionar a competência da folha (formato YYYY-MM) -->
     <label>Mês:</label>
-    <input type="month" id="mes">
 
-    <!-- Botão que dispara a função gerar() no JavaScript -->
+    <!-- Input do tipo month já valida mês/ano.
+         min = menor data permitida.
+         max = mês atual, impedindo seleção futura. -->
+    <input type="month" id="mes" min="2005-01" max="<?= date('Y-m'); ?>">
+
+    <!-- Botão para gerar apenas a folha em HTML/texto -->
     <button onclick="gerar()">Gerar Folha</button>
+
+    <!-- Botão para gerar PDF (abre em nova aba) -->
+    <button onclick="gerarPDF()">Gerar PDF</button>
 </div>
 
 <h3>Resposta da API:</h3>
 
-<!-- Aqui será exibido o texto retornado -->
+<!-- Área onde o retorno da API será exibido -->
 <pre id="resposta">{ esperando requisição... }</pre>
 
-
 <script>
-// Função executada ao clicar no botão
+
+// Função chamada ao clicar em "Gerar Folha"
 function gerar() {
 
-    // Obtém o valor do campo <input type="month">
+    // Pega o valor do <input>
     let mes = document.getElementById("mes").value;
 
-    // Validação simples: verifica se está no formato YYYY-MM
+    // Captura o mês atual no formato YYYY-MM
+    let atual = new Date().toISOString().slice(0, 7);
+
+    // Validação: campo vazio ou formato inválido
     if (!mes || !/^\d{4}-\d{2}$/.test(mes)) {
         alert("Selecione um mês válido no formato YYYY-MM");
-        return; // Impede o envio se estiver inválido
+        return;
     }
 
-    // Envia a requisição para a API
+    // Impede seleção de meses futuros
+    if (mes > atual) {
+        alert("Você não pode escolher um mês futuro.");
+        return;
+    }
+
+    // Envia requisição POST para api_folha.php
     fetch("../api/api_folha.php", {
-        method: "POST", // Método HTTP
-        headers: { "Content-Type": "application/json" }, // Corpo em JSON
-        body: JSON.stringify({
-            mes: mes // Dados enviados para a API
-        })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mes: mes })  // Envia JSON
     })
 
-    // A API retorna texto puro
+    // Recebe a resposta como texto
     .then(res => res.text())
 
-    // Exibe o resultado dentro do <pre id="resposta">
-    .then(txt => {           
+    // Exibe a resposta dentro do <pre id="resposta">
+    .then(txt => {
         document.getElementById("resposta").textContent = txt;
     })
 
-    // Caso alguma falha ocorra
+    // Caso aconteça algum erro na comunicação
     .catch(err => {
         document.getElementById("resposta").textContent =
             "Erro ao comunicar com a API: " + err;
     });
 }
+
+
+
+// Função chamada ao clicar em "Gerar PDF"
+function gerarPDF() {
+
+    let mes = document.getElementById("mes").value;
+    let atual = new Date().toISOString().slice(0, 7);
+
+    // Mesmas validações da função gerar()
+    if (!mes || !/^\d{4}-\d{2}$/.test(mes)) {
+        alert("Selecione um mês válido no formato YYYY-MM");
+        return;
+    }
+
+    if (mes > atual) {
+        alert("Você não pode escolher um mês futuro.");
+        return;
+    }
+
+    // Abre o PHP que gera PDF em outra aba
+    window.open("../api/api_gerar_pdf.php?mes=" + mes, "_blank");
+}
+
 </script>
+
 </body>
 </html>
