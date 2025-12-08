@@ -4,7 +4,6 @@ include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
 include "../../include/navbar.php";
-include "../usuario/meu_banco_horas.php";
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -434,81 +433,97 @@ include "../usuario/meu_banco_horas.php";
     html += '</div>';
     
     elemento.innerHTML = html;
-}
+    }
     async function buscarJornada() {
-            const usuarioId = document.getElementById('usuarioId').value;
-            const dataInicio = document.getElementById('dataInicio').value;
-            const dataFim = document.getElementById('dataFim').value;
+        const usuarioId = document.getElementById('usuarioId').value;
+        const dataInicio = document.getElementById('dataInicio').value;
+        const dataFim = document.getElementById('dataFim').value;
+        
+        // Validações
+        if (!usuarioId || !dataInicio || !dataFim) {
+            console.log('Preencha todos os campos!');
+            return;
+        }
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            limparResultados();
             
-            // Validações
-            if (!usuarioId || !dataInicio || !dataFim) {
-                console.log('Preencha todos os campos!');
-                return;
-            }
-                document.getElementById('loading').style.display = 'block';
-                document.getElementById('error').style.display = 'none';
-                limparResultados();
-                
-            try {
-                // Chama a API
-                const resultado = await verificarJornada(usuarioId, dataInicio, dataFim);
-                
-                // Exibe resultados
-                exibirResultado(resultado, 'resultado');
-                
-            } catch (error) {
-                console.log('Erro ao buscar dados: ' + error.message);
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
+        try {
+            // Chama a API
+            const resultado = await verificarJornada(usuarioId, dataInicio, dataFim);
+            
+            // Exibe resultados
+            exibirResultado(resultado, 'resultado');
+            
+        } catch (error) {
+            console.log('Erro ao buscar dados: ' + error.message);
+        } finally {
+            document.getElementById('loading').style.display = 'none';
         }
-        
-        function limparResultados() {
-            document.getElementById('resultado').innerHTML = '';
-            document.getElementById('detalhes').innerHTML = '';
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputs = document.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        buscarJornada();
-                    }
-                });
+    }
+    
+    function limparResultados() {
+        document.getElementById('resultado').innerHTML = '';
+        document.getElementById('detalhes').innerHTML = '';
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    buscarJornada();
+                }
             });
         });
+    });
 
-        async function exibicao_usuarios() {
-            const coleta_usuarios = await fetch("../../api/api_relatorio_ponto.php?acao=usuarios");
-            const resposta_usuarios = await coleta_usuarios.json();
-    
-            return resposta_usuarios;
-        }
-
-        google.charts.setOnLoadCallback(carregar_grafico_bar);
-        function carregar_grafico_bar() {
-        var data = google.visualization.arrayToDataTable([
-            ['Funcionarios', 'horas trabalhados', 'horas esperados', 'taxa de presença'],
-            // puxar as informações com api. Ex:
-    
-            ['Chines', 5, 10, 0.5],
-            ['Safado', 10, 10, 1],
-            ['Kayky', 30, 10, 3],
-            ['2017', 20, 10, 2]
-            ]);
+    async function carregar_grafico_bar() {
+        try {
+            // Busca dados da API
+            const response = await fetch('../../api/api_jornada.php?acao=taxa_presenca_geral');
+            const resultado = await response.json();
+            
+            if (!resultado.sucesso) {
+                console.error('Erro ao buscar dados:', resultado.mensagem);
+                return;
+            }
+            
+            const usuarios = resultado.dados.usuarios;
+            
+            const dadosGrafico = [
+                ['Funcionários', 'Horas Trabalhadas', 'Horas Esperadas', 'Taxa de Presença']
+            ];
+            
+            usuarios.forEach(usuario => {
+                dadosGrafico.push([
+                    usuario.nome,
+                    usuario.horas_trabalhadas,
+                    usuario.horas_esperadas,
+                    parseFloat(usuario.taxa_presenca.toFixed(2))
+                ]);
+            });
+            
+            var data = google.visualization.arrayToDataTable(dadosGrafico);
 
             var options = {
-            chart: {
-                title: 'Taxa de presença',
-                subtitle: 'horas esperados/trabalhados e taxa de presença',
-            }
+                chart: {
+                    title: 'Taxa de Presença - ' + resultado.dados.periodo.inicio + ' até ' + resultado.dados.periodo.fim,
+                    subtitle: 'Horas esperadas/trabalhadas e taxa de presença',
+                }
             };
 
             var chart = new google.charts.Bar(document.getElementById('columnchart_material'));
-
             chart.draw(data, google.charts.Bar.convertOptions(options));
+            
+        } catch (error) {
+            console.error('Erro ao carregar gráfico:', error);
         }
+    }
+
+    google.charts.setOnLoadCallback(carregar_grafico_bar);
+
+    setInterval(carregar_grafico_bar, 300000);
 
 
     </script>

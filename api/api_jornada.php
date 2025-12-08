@@ -10,6 +10,25 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 // Processa requisição
 if ($method === 'GET') {
+     $acao = $_GET['acao'] ?? 'verificar_individual';
+    
+    // NOVA ROTA: Para o gráfico de taxa de presença
+    if ($acao === 'taxa_presenca_geral') {
+        try {
+            $resultado = verificar_jornada_todos_usuarios($conn);
+            
+            echo json_encode([
+                'sucesso' => true,
+                'dados' => $resultado
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => 'Erro ao buscar taxa de presença: ' . $e->getMessage()
+            ]);
+        }
+        exit;
+    }
     // GET: Verificar jornada
     $usuario_id = $_GET['usuario_id'] ?? null;
     $data_inicio = $_GET['data_inicio'] ?? null;
