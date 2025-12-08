@@ -123,9 +123,9 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $id_usuario);
 $stmt->execute();
 $res = $stmt->get_result();
-if ($result->num_rows > 0) {
+if ($res->num_rows > 0) {
     $users = [];
-    while($rowP = $res -> fetch_assoc()) $users[] = $row;
+    while($rowP = $res -> fetch_assoc()) $users[] = $rowP;
 }
 
 ?>
@@ -179,11 +179,12 @@ if ($result->num_rows > 0) {
             <th>Data</th>
             <th>Funcionário</th>
             <th>Entrada</th>
-            <?php while($rowP = $res -> fetch_assoc()):
-                echo "<th>". $rowP['descricao_pausa']."</th>";
-                ?>
-            <?php endwhile?>
             <th>Saída</th>
+            <?php if (!empty($users)): ?>
+                <?php foreach($users as $user): ?>
+                    <th><?= $user['descricao_pausa']; ?></th>
+                <?php endforeach; ?>
+            <?php endif; ?>
             <th>Status</th>
 
             <!-- Só funcionário comum vê coluna de ação -->
@@ -206,10 +207,12 @@ if ($result->num_rows > 0) {
                 <td><?= $r['fim_ponto']      ? date("H:i", strtotime($r['fim_ponto']))      : '--:--' ?></td>
 
                 <!-- Pausas -->
-                <?php while($rowP = $res -> fetch_assoc()):
-                    echo "<td>". $rowP['inicio'] . "-" .$rowP['fim']."</td>";
+                <?php foreach($users as $user):
+                    echo "<td>". ($user['inicio'] ? date("H:i", strtotime($user['inicio'] )) : '--') . " : "
+                    . ($user['fim'] ? date("H:i", strtotime($user['fim'] )) : '--') .
+                    "</td>";
                 ?>
-                <?php endwhile?>
+                <?php endforeach?>
 
                 <!-- Status -->
                 <td><?= $r['status'] ?></td>
