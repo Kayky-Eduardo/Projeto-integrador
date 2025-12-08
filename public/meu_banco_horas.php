@@ -3,6 +3,7 @@ session_start();
 include("../BD/conexao.php");
 include("../include/funcoes/funcoes_banco_horas.php");
 include("../include/verificacao.php");
+verificar_login($conn);
 
 $dados = get_banco_horas($conn, $_SESSION['id_usuario']);
 
@@ -12,8 +13,7 @@ function entregar_dados($dados) {
     } else {
         $saldo_antigo = "00:00";
     }
-    // $saldo_minutos = $dados['saldo_minutos'];
-    // $saldo_horas = $dados['saldo_horas'];
+
     $saldo_formatado = $dados['saldo_formatado'] ?? 0;
     $ultima_atualizacao = $dados['ultima_atualizacao'] ?? "";
 
@@ -69,7 +69,7 @@ function entregar_dados($dados) {
                 <input id="set-fim" type="date">
             </div>
             <br>
-            <button onclick="setTempo(<?php $_SESSION['id_usuario']?>)">Aplicar</button>
+            <button onclick="setTempo(<?php echo $_SESSION['id_usuario']; ?>)">Aplicar</button>
         </div>
     </div>
     <div id="resposta"></p>
@@ -95,9 +95,14 @@ function entregar_dados($dados) {
                     })
                 });
 
-                const resposta_historico = await response.json();
+                const resposta_json = await response.json();
+                const resposta_historico = resposta_json.dados;
 
-                resposta.innerhtml = `
+                if (!resposta_json.sucesso) {
+                    resposta.innerHTML = `<p>Erro: ${resposta_json.mensagem}</p>`;
+                    return;
+                }
+                resposta.innerHTML = `
                 <table>
                     <thead>
                         <th>ID</th>
@@ -106,31 +111,32 @@ function entregar_dados($dados) {
                         <th>Saldo</th>
                     </thead>
                     <tbody id="resposta-tbody">
-                        <tr>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
                     </tbody>
                 </table>
                 `;
 
                 const exibicao_resultado = document.getElementById('resposta-tbody');
 
+                if (resposta_historico.length === 0) {
+                    exibicao_resultado.innerHTML = `<tr><td colspan="4">${resposta_objeto.mensagem}</td></tr>`;
+                    return;
+                }
+
+
+
                 resposta_historico.forEach(r => {
                     let id = r.id_historico ?? '-';
                     let data = r.data ?? '-';
-                    let saldo_anterior_periodo = r.saldo_anterior_periodo ?? '-';
-                    let saldo_atual_periodo = r.saldo_atual_periodo ?? '-';
+                    let saldo_anterior = r.saldo_anterior ?? '-';
+                    let saldo_novo = r.saldo_novo?? '-';
 
                     const tr = document.createElement("tr");
                     
                     tr.innerHTML = `
                         <td>${id}</td>
                         <td>${data}</td>
-                        <td>${saldo_anterior_periodo}</td>
-                        <td>${saldo_atual_periodo}</td>
+                        <td>${saldo_anterior}</td>
+                        <td>${saldo_novo}</td>
                     `;
 
                    exibicao_resultado.appendChild(tr);
