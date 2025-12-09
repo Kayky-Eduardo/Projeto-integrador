@@ -223,13 +223,15 @@ if ($res->num_rows > 0) {
 
                 <!-- Pausas -->
                 <td>
-                    <?php foreach($users as $user):
-                    if ($r['data_ponto'] == $user['data']){
-                        $pausa_inicio = ($user['inicio'] ? date("H:i", strtotime($user['inicio'] )) : '--');
-                        $pausa_fim = ($user['fim'] ? date("H:i", strtotime($user['fim'] )) : '--');
-                        echo $user['descricao_pausa'] . ": " . $pausa_inicio . ":" . $pausa_fim . "<br>";}
-                    ?>
-                    <?php endforeach?>
+                    <ul style="list-style-type : none; padding: 0; margin: 0;">
+                        <?php foreach($users as $user):
+                        if ($r['data_ponto'] == $user['data']){
+                            $pausa_inicio = ($user['inicio'] ? date("H:i", strtotime($user['inicio'] )) : '--');
+                            $pausa_fim = ($user['fim'] ? date("H:i", strtotime($user['fim'] )) : '--');
+                            echo "<li>".$user['descricao_pausa'] . ": " . $pausa_inicio . ":" . $pausa_fim . "</li><br>";}
+                        ?>
+                        <?php endforeach?>
+                    </ul>
                 </td>
 
                 <!-- Status -->
