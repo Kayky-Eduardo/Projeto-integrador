@@ -38,4 +38,6 @@ else {
 }
 
 echo '<a href="logout.php">Sair</a>';
+echo '<a style="pointer-events: none;">'. $_SESSION["nome_usuario"] .' </a>';
 echo '</nav>';
+?>

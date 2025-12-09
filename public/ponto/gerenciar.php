@@ -95,11 +95,21 @@ $where  = [];
 $params = [];
 $types  = '';
 
-// Query base
+/* =======
+QUERY BASE
+======= */
 $sql = "
-    SELECT p.*, u.nome_usuario
+    SELECT 
+        p.*, 
+        u.nome_usuario AS nome,
+        ps.inicio AS inicio_pausa,       -- Novo
+        ps.fim AS fim_pausa,             -- Novo
+        pc.descricao_pausa               -- Novo
     FROM ponto_dia p
     INNER JOIN usuario u ON u.id_usuario = p.id_usuario
+    -- O JOIN CRÍTICO: LIGAÇÃO POR CHAVE COMPOSTA (ID do Usuário e Data)
+    LEFT JOIN pausa ps ON ps.id_usuario = p.id_usuario AND ps.data = p.data_ponto
+    LEFT JOIN pausa_config pc ON pc.id_config = ps.id_config
 ";
 
 // ==============
@@ -165,6 +175,37 @@ if ($params) {
 // Executa busca
 $stmt->execute();
 $result = $stmt->get_result();
+
+// NOVO PROCESSAMENTO: Agrupar resultados por ID do Ponto
+$pontos_agrupados = [];
+
+while ($row = $result->fetch_assoc()) {
+    $id_ponto = $row['id_ponto'];
+
+    // Se é a primeira vez que vemos este ponto, inicialize o registro principal
+    if (!isset($pontos_agrupados[$id_ponto])) {
+        // Armazena todos os dados do dia, menos os específicos de pausa
+        $pontos_agrupados[$id_ponto] = [
+            'data_ponto'   => $row['data_ponto'],
+            'nome'         => $row['nome'],
+            'inicio_ponto' => $row['inicio_ponto'],
+            'fim_ponto'    => $row['fim_ponto'],
+            'status'       => $row['status'],
+            'id_ponto'     => $row['id_ponto'],
+            'pausas'       => [], // Array para armazenar todas as pausas
+        ];
+    }
+
+    // Se houver dados de pausa na linha (devido ao JOIN)
+    if (!empty($row['inicio_pausa'])) {
+        $pontos_agrupados[$id_ponto]['pausas'][] = [
+            'descricao_pausa' => $row['descricao_pausa'],
+            'inicio'          => $row['inicio_pausa'],
+            'fim'             => $row['fim_pausa'],
+        ];
+    }
+}
+// Agora, $pontos_agrupados é o array que você irá iterar no HTML.
 ?>
 
 <!DOCTYPE html>
@@ -220,36 +261,45 @@ $result = $stmt->get_result();
             <th>Ações</th>
         </tr>
 
-        <?php while ($row = $result->fetch_assoc()): ?>
+        <?php foreach($pontos_agrupados as $r): ?>
             <tr>
 
                 <!-- Data formatada -->
-                <td><?= date("d/m/Y", strtotime($row['data_ponto'])) ?></td>
+                <td><?= date("d/m/Y", strtotime($r['data_ponto'])) ?></td>
 
                 <!-- Nome do funcionário -->
-                <td><?= htmlspecialchars($row['nome_usuario']) ?></td>
+                <td><?= htmlspecialchars($r['nome']) ?></td>
 
                 <!-- Horários -->
-                <td><?= $row['inicio_ponto'] ? date("H:i", strtotime($row['inicio_ponto'])) : '-' ?></td>
-                <td><?= $row['fim_ponto'] ? date("H:i", strtotime($row['fim_ponto'])) : '-' ?></td>
+                <td><?= $r['inicio_ponto'] ? date("H:i", strtotime($r['inicio_ponto'])) : '-' ?></td>
+                <td><?= $r['fim_ponto'] ? date("H:i", strtotime($r['fim_ponto'])) : '-' ?></td>
 
                 <!-- Pausas -->
+                <td>
+                    <?php foreach($r['pausas'] as $pausa): ?>
+                        <?php 
+                            $pausa_inicio = ($pausa['inicio'] ? date("H:i", strtotime($pausa['inicio'] )) : '--:--');
+                            $pausa_fim    = ($pausa['fim']    ? date("H:i", strtotime($pausa['fim']    )) : '--:--');
+                            echo htmlspecialchars($pausa['descricao_pausa']) . ": " . $pausa_inicio . ":" . $pausa_fim . "<br>";
+                        ?>
+                    <?php endforeach; ?>
+                </td>
 
                 <!-- Status -->
-                <td><?= $row['status'] ?></td>
+                <td><?= $r['status'] ?></td>
 
                 <!-- AÇÕES -->
                 <td>
 
                     <!-- Aprovar somente se ainda não estiver aprovado -->
-                    <?php if ($row['status'] !== 'Aprovado'): ?>
-                        <a href="gerenciar.php?aprovar=<?= $row['id_ponto'] ?>">Aprovar</a>
+                    <?php if ($r['status'] !== 'Aprovado'): ?>
+                        <a href="gerenciar.php?aprovar=<?= $r['id_ponto'] ?>">Aprovar</a>
                     <?php endif; ?>
 
                     <!-- Permitir ajuste se não estiver aprovado -->
-                    <?php if ($row['status'] === 'Finalizado' || $row['status'] === 'Em Andamento'): ?>
+                    <?php if ($r['status'] === 'Finalizado' || $r['status'] === 'Em Andamento'): ?>
                         |
-                        <a href="../ponto/solicitar.php?id_ponto=<?= $row['id_ponto'] ?>">
+                        <a href="../ponto/solicitar.php?id_ponto=<?= $r['id_ponto'] ?>">
                             Solicitar Ajuste
                         </a>
                     <?php endif; ?>
@@ -257,7 +307,7 @@ $result = $stmt->get_result();
                 </td>
 
             </tr>
-        <?php endwhile; ?>
+        <?php endforeach; ?>
     </table>
 </body>
 

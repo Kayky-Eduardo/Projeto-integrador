@@ -27,9 +27,15 @@ QUERY BASE
 $sql = "
     SELECT 
         p.*, 
-        u.nome_usuario AS nome
+        u.nome_usuario AS nome,
+        ps.inicio AS inicio_pausa,       -- Novo
+        ps.fim AS fim_pausa,             -- Novo
+        pc.descricao_pausa               -- Novo
     FROM ponto_dia p
     INNER JOIN usuario u ON u.id_usuario = p.id_usuario
+    -- O JOIN CRÍTICO: LIGAÇÃO POR CHAVE COMPOSTA (ID do Usuário e Data)
+    LEFT JOIN pausa ps ON ps.id_usuario = p.id_usuario AND ps.data = p.data_ponto
+    LEFT JOIN pausa_config pc ON pc.id_config = ps.id_config
 ";
 
 /* ===================
@@ -102,29 +108,36 @@ $stmt->execute();
 // Recupera resultados
 $batidas = $stmt->get_result();
 
+// NOVO PROCESSAMENTO: Agrupar resultados por ID do Ponto
+$pontos_agrupados = [];
 
+while ($row = $batidas->fetch_assoc()) {
+    $id_ponto = $row['id_ponto'];
 
-// pegar todas as pausas (CÓDIGO ANTIGO)
-$sql = "
-    SELECT 
-        ps.*,
-        pc.descricao_pausa,
-        pc.id_config,
-        u.nome_usuario
-    FROM pausa ps
-    LEFT JOIN pausa_config pc ON pc.id_config = ps.id_config
-    LEFT JOIN usuario u ON u.id_usuario = ps.id_usuario
-    ORDER BY ps.inicio ASC
-";
+    // Se é a primeira vez que vemos este ponto, inicialize o registro principal
+    if (!isset($pontos_agrupados[$id_ponto])) {
+        // Armazena todos os dados do dia, menos os específicos de pausa
+        $pontos_agrupados[$id_ponto] = [
+            'data_ponto'   => $row['data_ponto'],
+            'nome'         => $row['nome'],
+            'inicio_ponto' => $row['inicio_ponto'],
+            'fim_ponto'    => $row['fim_ponto'],
+            'status'       => $row['status'],
+            'id_ponto'     => $row['id_ponto'],
+            'pausas'       => [], // Array para armazenar todas as pausas
+        ];
+    }
 
-$stmt = $conn->prepare($sql);
-$stmt->execute();
-$res = $stmt->get_result();
-if ($res->num_rows > 0) {
-    $users = [];
-    while($rowP = $res -> fetch_assoc()) $users[] = $rowP;
+    // Se houver dados de pausa na linha (devido ao JOIN)
+    if (!empty($row['inicio_pausa'])) {
+        $pontos_agrupados[$id_ponto]['pausas'][] = [
+            'descricao_pausa' => $row['descricao_pausa'],
+            'inicio'          => $row['inicio_pausa'],
+            'fim'             => $row['fim_pausa'],
+        ];
+    }
 }
-
+// Agora, $pontos_agrupados é o array que você irá iterar no HTML.
 ?>
 
 <!DOCTYPE html>
@@ -186,34 +199,33 @@ if ($res->num_rows > 0) {
             <?php endif; ?>
         </tr>
 
-        <?php while ($r = $batidas->fetch_assoc()): ?>
+        <?php foreach ($pontos_agrupados as $r): ?>
             <tr>
-
-                <!-- Data -->
+                <!-- Data formatada -->
                 <td><?= date("d/m/Y", strtotime($r['data_ponto'])) ?></td>
 
-                <!-- Funcionário -->
+                <!-- Nome do funcionário -->
                 <td><?= htmlspecialchars($r['nome']) ?></td>
 
-                <!-- Horários (com fallback visual) -->
+                <!-- Horários -->
                 <td><?= $r['inicio_ponto']   ? date("H:i", strtotime($r['inicio_ponto']))   : '--:--' ?></td>
                 <td><?= $r['fim_ponto']      ? date("H:i", strtotime($r['fim_ponto']))      : '--:--' ?></td>
 
                 <!-- Pausas -->
                 <td>
-                    <?php foreach($users as $user):
-                    if ($r['data_ponto'] == $user['data'] && $r['id_usuario'] == $user['id_usuario']){
-                        $pausa_inicio = ($user['inicio'] ? date("H:i", strtotime($user['inicio'] )) : '--');
-                        $pausa_fim = ($user['fim'] ? date("H:i", strtotime($user['fim'] )) : '--');
-                        echo $user['descricao_pausa'] . ": " . $pausa_inicio . ":" . $pausa_fim . "<br>";}
-                    ?>
-                    <?php endforeach?>
+                    <?php foreach($r['pausas'] as $pausa): ?>
+                        <?php 
+                            $pausa_inicio = ($pausa['inicio'] ? date("H:i", strtotime($pausa['inicio'] )) : '--');
+                            $pausa_fim    = ($pausa['fim']    ? date("H:i", strtotime($pausa['fim']    )) : '--');
+                            echo htmlspecialchars($pausa['descricao_pausa']) . ": " . $pausa_inicio . ":" . $pausa_fim . "<br>";
+                        ?>
+                    <?php endforeach; ?>
                 </td>
 
                 <!-- Status -->
                 <td><?= $r['status'] ?></td>
 
-                <!-- Botão de ajuste apenas para funcionário -->
+                <!-- AÇÕES -->
                 <?php if ($nivel < 2): ?>
                     <td>
                         <a href="solicitar.php?id_ponto=<?= $r['id_ponto'] ?>">
@@ -222,7 +234,7 @@ if ($res->num_rows > 0) {
                     </td>
                 <?php endif; ?>
             </tr>
-        <?php endwhile; ?>
+        <?php endforeach; ?>
     </table>
 </body>
 
