@@ -30,6 +30,7 @@ switch ($_SESSION['nivel']) {
             <a href="ponto/pausa_config.php">pausas criar</a>
             <a href="logout.php">Sair</a>
             <a href="gerar_folha.php">Folha</a>
+            <a href="historico_folhas.php">Historico folha</a>
         </nav>
         ';
         break;
