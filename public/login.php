@@ -8,30 +8,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['email'], $_POST['senha'])) {
         $email = $_POST['email'];
         $senha = $_POST['senha'];
+
         $stmt = $conn->prepare("
         SELECT usuario.*, cargo.nome_cargo, cargo.nivel, cargo.id_cargo, usuario.senha_usuario
         FROM usuario
         JOIN cargo ON usuario.id_cargo = cargo.id_cargo
         WHERE usuario.email_usuario = ?
         ");
+
         $stmt->bind_param("s", $email);
         $stmt->execute() or die("Falha ao executar o código SQL: " . $stmt->error);
+
         $result = $stmt->get_result();
         if ($result->num_rows == 1) {
             $usuario = $result->fetch_assoc();
             $senha_banco = $usuario['senha_usuario'];
+
             if (password_verify($senha, $senha_banco) || $senha === $senha_banco) {
                 $_SESSION['nivel'] = $usuario['nivel'];
                 $_SESSION['id_usuario'] = $usuario['id_usuario'];
                 $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
+
                 $verificacao_logado = $conn->prepare("
                     SELECT id_login FROM login
                     WHERE id_usuario = ? AND data_fim IS NULL
                     LIMIT 1
                     ");
+
                 $verificacao_logado->bind_param("i", $usuario['id_usuario']);
                 $verificacao_logado->execute();
                 $verificacao_logado = $verificacao_logado->get_result();
+                
                 if ($verificacao_logado && $verificacao_logado->num_rows > 0) {
                     $row = $verificacao_logado->fetch_assoc();
                     $logout = $conn->prepare("UPDATE login SET data_fim = NOW() WHERE id_login = ?");
