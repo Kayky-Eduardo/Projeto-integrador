@@ -25,7 +25,19 @@ if ($acao) {
             echo json_encode(coleta_usuarios($conn));
             exit;
         } else if ($acao_formatada === 'filtrar_usuario') {
-            echo json_encode(filtrar_usuario($conn, $input['id_usuario'] ?? null));
+            try {
+                $resultado = filtrar_usuario($conn, $input['id_usuario'] ?? null);
+                
+                echo json_encode([
+                    'sucesso' => true,
+                    'dados' => $resultado
+                ]);
+            } catch (Exception $e) {
+                echo json_encode([
+                    'sucesso' => false,
+                    'mensagem' => 'Erro ao buscar dados: ' . $e->getMessage()
+                ]);
+            }
             exit;
         } else if ($acao_formatada === 'filtrar_tabela_hora') {
             echo json_encode(relatorio_ponto_filtrado($conn, $input['id_usuario']));

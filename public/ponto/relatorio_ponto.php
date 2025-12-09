@@ -30,6 +30,11 @@ include "../../include/navbar.php";
         <h2>Taxa de presença</h2>
         <div id="columnchart_material" style="width: 800px; height: 500px;"></div>
     </div>
+
+    <div class="caixa-grafico">
+        <h2>Hora Extra</h2>
+        <div id="columnchart_material2" style="width: 800px; height: 500px;"></div>
+    </div>
     <div id="resultado-caixa-grafico">
         <table>
             <thead>
@@ -526,7 +531,7 @@ include "../../include/navbar.php";
     async function carregar_grafico_bar2() {
         try {
             // Busca dados da API
-            const response = await fetch('../../api/api_jornada.php?acao=taxa_presenca_geral');
+            const response = await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_usuario")
             const resultado = await response.json();
             
             if (!resultado.sucesso) {
@@ -542,10 +547,9 @@ include "../../include/navbar.php";
 
             usuarios.forEach(usuario => {
                 dadosGrafico.push([
-                    usuario.nome,
-                    usuario.horas_trabalhadas,
-                    usuario.horas_esperadas,
-                    parseFloat(usuario.taxa_presenca.toFixed(2))
+                    usuario.nome_usuario,
+                    usuario.saldo_minutos,
+                    
                 ]);
             });
             
@@ -553,12 +557,12 @@ include "../../include/navbar.php";
 
             var options = {
                 chart: {
-                    title: 'Taxa de Presença - ' + resultado.dados.periodo.inicio + ' até ' + resultado.dados.periodo.fim,
-                    subtitle: 'Horas esperadas/trabalhadas e taxa de presença',
+                    title: 'Hora extra - ' + resultado.dados.periodo.inicio + ' até ' + resultado.dados.periodo.fim,
+                    subtitle: 'Tabela de Hora extras dos funcionários',
                 }
             };
 
-            var chart = new google.charts.Bar(document.getElementById('columnchart_material'));
+            var chart = new google.charts.Bar(document.getElementById('columnchart_material2'));
             chart.draw(data, google.charts.Bar.convertOptions(options));
             
         } catch (error) {

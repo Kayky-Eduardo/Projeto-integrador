@@ -183,18 +183,39 @@ function filtrar_usuario($conn, $id_usuario = null) {
         return $linha['total_extra'] ?? 0;
     }
 
+    $data_inicio = date('Y-m-01'); // Primeiro dia do mes
+    $data_fim = date('Y-m-d'); // hoje
+
     $coleta_usuario = $conn->prepare("
-    SELECT saldo_minutos, nome_usuario
+    SELECT saldo_minutos, nome_usuario, ultima_atualizacao
     FROM banco_horas
-    JOIN usuario ON banco_horas.id_usuario = usuario.id_usuario;
+    JOIN usuario ON banco_horas.id_usuario = usuario.id_usuario
+    WHERE ultima_atualizacao between ? AND ?;
     ");
-    $coleta_usuario->bind_param("i", $id_usuario);
+    $coleta_usuario->bind_param("ss", $data_inicio, $data_fim);
     $coleta_usuario->execute();
     
     $result = $coleta_usuario->get_result();
-    $linha = $result->fetch_assoc();
+    
+    $dados_grafico = [];
 
-    return $linha['total_extra'] ?? 0;
+    while ($usuario = $result->fetch_assoc()) {
+        $dados_grafico[] = [
+            'nome_usuario' => $usuario['nome_usuario'],
+            'saldo_minutos' => $usuario['saldo_minutos'],
+            'data' => $usuario['ultima_atualizacao']
+        ];
+    }
+
+    $coleta_usuario->close();
+
+    return [
+        'periodo' => [
+            'inicio' => $data_inicio,
+            'fim' => $data_fim
+        ],
+        'usuarios' => $dados_grafico
+    ];
 }
 
 function relatorio_ponto_filtrado($conn, $id_usuario) {
