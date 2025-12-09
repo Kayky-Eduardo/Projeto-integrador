@@ -10,7 +10,7 @@ include "../../include/navbar.php";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório ponto</title>
-    <link rel="stylesheet" href="../../assets/estilo.css">
+    <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
 <body>
     <h1>Usuarios logados</h1>

@@ -10,7 +10,7 @@ verificar_login($conn);
 <head>
     <meta charset="UTF-8">
     <title>RH</title>
-    <link rel="stylesheet" href="../assets/estilo.css">
+    <link rel="stylesheet" href="../assets/css/estilo.css">
 </head>
 <body>
     <header>
