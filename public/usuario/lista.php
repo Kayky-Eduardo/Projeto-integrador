@@ -59,85 +59,56 @@ $result = $conn->query($sql);
 </head>
 
 <body>
-  <!-- NAV -->
   <nav role="navigation" aria-label="Menu principal">
     <?php include("../../include/navbar.php"); ?>
   </nav>
 
-  <!-- CONTEÚDO -->
-  <main>
-    <section class="usuarios-painel">
-
+  <main role="main">
+    <section class="usuarios-painel" aria-label="Painel de usuários">
       <header class="usuarios-topo">
-        <a href="cadastro.php" class="btn-cadastrar">Cadastrar Usuário</a>
+        <a href="cadastro.php" class="btn-cadastrar">
+          Cadastrar Usuário
+        </a>
 
-        <form class="busca-usuarios" onsubmit="return false">
+        <form class="busca-usuarios" onsubmit="return false;">
           <input
             type="search"
             id="busca"
             placeholder="Buscar usuário..."
-            onkeyup="filtrarUsuarios()">
+            aria-label="Buscar usuário">
         </form>
       </header>
 
-      <!-- TABELA -->
-      <section class="tabela-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>CPF</th>
-              <th>RG</th>
-              <th>Gênero</th>
-              <th>Email</th>
-              <th>Telefone</th>
-              <th>CEP</th>
-              <th>Cargo</th>
-              <th>Assiduidade</th>
-              <th>Admissão</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
+      <section class="cards-container" id="tabelaUsuarios" aria-label="Lista de usuários">
+        <?php while ($row = $result->fetch_assoc()): ?>
+          <article class="usuario-card" aria-label="Usuário">
 
-          <tbody id="tabelaUsuarios">
-            <?php while ($row = $result->fetch_assoc()): ?>
-              <tr>
-                <td data-label="Nome"><?= $row['nome_usuario'] ?></td>
-                <td data-label="CPF"><?= $row['cpf_usuario'] ?></td>
-                <td data-label="RG"><?= $row['rg_usuario'] ?></td>
-                <td data-label="Gênero"><?= $row['genero'] ?></td>
-                <td data-label="Email"><?= $row['email_usuario'] ?></td>
-                <td data-label="Telefone"><?= $row['telefone'] ?></td>
-                <td data-label="CEP"><?= $row['cep'] ?></td>
-                <td data-label="Cargo"><?= $row['nome_cargo'] ?? 'Não definido' ?></td>
-                <td data-label="Assiduidade"><?= $row['assiduidade'] ?>%</td>
-                <td data-label="Admissão"><?= $row['data_admissao'] ?></td>
+            <!-- FOTO -->
+            <figure class="usuario-foto">
+              <img src="../../assets/img/user_padrao.png" alt="Foto do usuário">
+            </figure>
 
-                <td data-label="Status">
-                  <?= $row['conta_ativa'] ? "<span class='ativo'>Ativo</span>" : "<span class='inativo'>Inativo</span>" ?>
-                </td>
+            <!-- NOME -->
+            <h3><?= $row['nome_usuario'] ?></h3>
 
-                <td data-label="Ações" class="acoes">
-                  <form action="editar.php" method="GET">
-                    <input type="hidden" name="id" value="<?= $row['id_usuario'] ?>">
-                    <button type="submit" class="btn-editar">Editar</button>
-                  </form>
+            <!-- STATUS -->
+            <?= $row['conta_ativa']
+              ? "<span class='ativo'>Ativo</span>"
+              : "<span class='inativo'>Inativo</span>" ?>
 
-                  <form action="deletar_usuario.php" method="POST" onsubmit="return confirm('Excluir este usuário?');">
-                    <input type="hidden" name="id_usuario" value="<?= $row['id_usuario'] ?>">
-                    <button type="submit" class="btn-excluir">Excluir</button>
-                  </form>
-                </td>
-              </tr>
-            <?php endwhile; ?>
-          </tbody>
-        </table>
+            <!-- CARGO -->
+            <p class="cargo"><?= $row['nome_cargo'] ?? 'Cargo não definido' ?></p>
+
+            <!-- AÇÃO -->
+            <a href="editar.php?id=<?= $row['id_usuario'] ?>" class="btn-perfil">
+              Perfil
+            </a>
+          </article>
+        <?php endwhile; ?>
       </section>
     </section>
   </main>
 
-  <!-- SCRIPT -->
   <script src="../../assets/js/script.js"></script>
 </body>
 

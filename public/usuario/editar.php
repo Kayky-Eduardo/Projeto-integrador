@@ -54,9 +54,18 @@ if (isset($_POST['editar_usuario'])) {
         $stmt = $conn->prepare($sqlUpdate);
         $stmt->bind_param(
             "ssssssssidsi",
-            $nome, $cpf, $rg, $genero,
-            $email, $senha_hash, $telefone, $cep,
-            $id_cargo, $assiduidade, $data_admissao, $id
+            $nome,
+            $cpf,
+            $rg,
+            $genero,
+            $email,
+            $senha_hash,
+            $telefone,
+            $cep,
+            $id_cargo,
+            $assiduidade,
+            $data_admissao,
+            $id
         );
     } else {
         // Não altera a senha
@@ -69,9 +78,17 @@ if (isset($_POST['editar_usuario'])) {
         $stmt = $conn->prepare($sqlUpdate);
         $stmt->bind_param(
             "sssssssidsi",
-            $nome, $cpf, $rg, $genero,
-            $email, $telefone, $cep,
-            $id_cargo, $assiduidade, $data_admissao, $id
+            $nome,
+            $cpf,
+            $rg,
+            $genero,
+            $email,
+            $telefone,
+            $cep,
+            $id_cargo,
+            $assiduidade,
+            $data_admissao,
+            $id
         );
     }
 
@@ -85,63 +102,101 @@ if (isset($_POST['editar_usuario'])) {
 }
 ?>
 
-
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Editar Usuário</title>
-  <link rel="stylesheet" href="../../assets/estilo.css">
+    <meta charset="UTF-8">
+    <title>Perfil do Usuário</title>
+    <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
+
 <body>
-  <h1>Editar Usuário</h1>
-  <a href="../index.php">Home</a> | 
-  <a href="cadastro.php">Cadastro</a>
-  <br><br>
 
-  <form action="" method="POST">
-    <input type="hidden" name="id_usuario" value="<?= htmlspecialchars($usuario['id_usuario']) ?>">
+    <nav>
+        <?php include("../../include/navbar.php"); ?>
+    </nav>
 
-    <label>Nome:</label><br>
-    <input type="text" name="nome_usuario" value="<?= htmlspecialchars($usuario['nome_usuario']) ?>" required><br><br>
+    <main class="perfil">
 
-    <label>CPF:</label><br>
-    <input type="text" name="cpf_usuario" maxlength="11" value="<?= htmlspecialchars($usuario['cpf_usuario']) ?>" required><br><br>
+        <!-- PERFIL VISUAL -->
+        <section class="perfil-header">
+            <img src="../../assets/img/avatar-padrao.png" class="perfil-foto">
 
-    <label>RG:</label><br>
-    <input type="text" name="rg_usuario" maxlength="11" value="<?= htmlspecialchars($usuario['rg_usuario']) ?>" required><br><br>
+            <h2><?= $usuario['nome_usuario'] ?></h2>
 
-    <label>Gênero:</label><br>
-    <select name="genero" required>
-      <option value="Masculino" <?= $usuario['genero'] == 'Masculino' ? 'selected' : '' ?>>Masculino</option>
-      <option value="Feminino" <?= $usuario['genero'] == 'Feminino' ? 'selected' : '' ?>>Feminino</option>
-      <option value="Outro" <?= $usuario['genero'] == 'Outro' ? 'selected' : '' ?>>Outro</option>
-      <option value="Não Declarado" <?= $usuario['genero'] == 'Não Declarado' ? 'selected' : '' ?>>Não Declarado</option>
-    </select><br><br>
+            <span class="<?= $usuario['conta_ativa'] ? 'ativo' : 'inativo' ?>">
+                <?= $usuario['conta_ativa'] ? 'Usuário Ativo' : 'Usuário Inativo' ?>
+            </span>
 
-    <label>Email:</label><br>
-    <input type="email" name="email_usuario" value="<?= htmlspecialchars($usuario['email_usuario']) ?>" required><br><br>
+            <p class="perfil-cargo">Cargo ID: <?= $usuario['id_cargo'] ?></p>
+        </section>
 
-    <label>Senha (deixe em branco para não alterar):</label><br>
-    <input type="password" name="senha_usuario" placeholder="Nova senha (opcional)"><br><br>
+        <!-- INFORMAÇÕES -->
+        <section class="perfil-dados">
 
-    <label>Telefone:</label><br>
-    <input type="text" name="telefone" value="<?= htmlspecialchars($usuario['telefone']) ?>"><br><br>
+            <article>
+                <h4>Contato</h4>
+                <p>Email: <strong><?= $usuario['email_usuario'] ?></strong></p>
+                <p>Telefone: <strong><?= $usuario['telefone'] ?></strong></p>
+                <p>CEP: <strong><?= $usuario['cep'] ?></strong></p>
+            </article>
 
-    <label>CEP:</label><br>
-    <input type="text" name="cep" maxlength="8" value="<?= htmlspecialchars($usuario['cep']) ?>" required><br><br>
+            <article>
+                <h4>Documentos</h4>
+                <p>CPF: <strong><?= $usuario['cpf_usuario'] ?></strong></p>
+                <p>RG: <strong><?= $usuario['rg_usuario'] ?></strong></p>
+                <p>Gênero: <strong><?= $usuario['genero'] ?></strong></p>
+            </article>
 
-    <label>Cargo (ID):</label><br>
-    <input type="number" name="id_cargo" value="<?= htmlspecialchars($usuario['id_cargo']) ?>" required><br><br>
+            <article>
+                <h4>Empresa</h4>
+                <p>Assiduidade: <strong><?= $usuario['assiduidade'] ?>%</strong></p>
+                <p>Admissão: <strong><?= date('d/m/Y', strtotime($usuario['data_admissao'])) ?></strong></p>
+            </article>
 
-    <label>Assiduidade (%):</label><br>
-    <input type="number" name="assiduidade" step="0.01" value="<?= htmlspecialchars($usuario['assiduidade']) ?>" required><br><br>
+            <section class="acoes-empresa">
+                <button onclick="document.getElementById('form-edicao').style.display='block'">
+                    Editar Perfil
+                </button>
 
-    <label>Data de Admissão:</label><br>
-    <input type="date" name="data_admissao" value="<?= htmlspecialchars($usuario['data_admissao']) ?>" required><br><br>
+                <a href="deletar_usuario.php?id=<?= $usuario['id_usuario'] ?>"
+                    onclick="return confirm('Confirma excluir este usuário?')"
+                    class="btn-excluir">
+                    Excluir Usuário
+                </a>
+            </section>
 
-    <button type="submit" name="editar_usuario">Salvar</button>
-    <button><a href="lista.php">Voltar</a></button>
-  </form>
+            <section class="voltar-final">
+                <a href="lista.php">← Voltar</a>
+            </section>
+        </section>
+
+        <!-- FORMULÁRIO INLINE -->
+        <section id="form-edicao" style="display:none;">
+
+            <h3>Editar Dados</h3>
+
+            <form method="POST">
+
+                <input type="hidden" name="id_usuario" value="<?= $usuario['id_usuario'] ?>">
+
+                <label>Nome</label>
+                <input name="nome_usuario" value="<?= $usuario['nome_usuario'] ?>" required>
+
+                <label>Email</label>
+                <input name="email_usuario" value="<?= $usuario['email_usuario'] ?>" required>
+
+                <label>Telefone</label>
+                <input name="telefone" value="<?= $usuario['telefone'] ?>">
+
+                <label>Senha</label>
+                <input type="password" name="senha_usuario" placeholder="Nova senha (opcional)">
+
+                <button name="editar_usuario">Salvar alterações</button>
+            </form>
+        </section>
+    </main>
 </body>
+
 </html>

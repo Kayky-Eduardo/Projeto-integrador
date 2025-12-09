@@ -1,3 +1,43 @@
+<!--
+    MÓDULO: AUTENTICAÇÃO DO USUÁRIO
+
+    OBJETIVO
+        Realizar a validação de acesso ao sistema através de e-mail e senha
+
+    ESTRUTURA SEMÂNTICA
+        main      - Área principal do acesso
+        section   - Bloco central de autenticação
+        form      - Coleta de credenciais
+        fieldset  - Agrupamento de campos
+        label     - Identificação de campos
+        input     - Entrada de dados
+        button    - Ação de envio
+
+    FUNCIONALIDADES
+        1. Validação de e-mail e senha
+        2. Criação de sessão do usuário
+        3. Controle de login ativo
+        4. Inserção de histórico de login
+        5. Atualização automática de hash de senha
+        6. Mensagem de erro em caso de falha
+
+    ACESSIBILIDADE
+        - Uso semântico de HTML
+        - Leitores de tela reconhecem campos corretamente
+        - role="alert" para mensagens de erro
+
+    SEGURANÇA
+        - Senha verificada com password_verify
+        - Prepared Statements (mysqli)
+        - Proteção contra SQL Injection
+        - Hash automático quando detectada senha antiga
+
+    OBSERVAÇÕES TÉCNICAS
+        - Banco conectado via mysqli
+        - Sessão controlada por PHP
+        - Estilos centralizados em: ../assets/css/estilo.css
+-->
+
 <?php
 include("../BD/conexao.php");
 session_start();
@@ -38,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $verificacao_logado->bind_param("i", $usuario['id_usuario']);
                 $verificacao_logado->execute();
                 $verificacao_logado = $verificacao_logado->get_result();
-                
+
                 if ($verificacao_logado && $verificacao_logado->num_rows > 0) {
                     $row = $verificacao_logado->fetch_assoc();
                     $logout = $conn->prepare("UPDATE login SET data_fim = NOW() WHERE id_login = ?");

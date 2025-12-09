@@ -59,19 +59,18 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==================
 document.addEventListener("DOMContentLoaded", () => {
     const campoBusca = document.getElementById("busca");
-    const tabela = document.getElementById("tabelaUsuarios");
+    const container = document.getElementById("tabelaUsuarios");
 
     // Se não estiver na página de lista, ignora
-    if (!campoBusca || !tabela) return;
+    if (!campoBusca || !container) return;
 
     campoBusca.addEventListener("keyup", () => {
         const termo = campoBusca.value.toLowerCase();
-        const linhas = tabela.querySelectorAll("tr");
+        const cards = container.querySelectorAll(".usuario-card");
 
-        linhas.forEach(linha => {
-            const texto = linha.innerText.toLowerCase();
-
-            linha.style.display = texto.includes(termo) ? "" : "none";
+        cards.forEach(card => {
+            const texto = card.innerText.toLowerCase();
+            card.style.display = texto.includes(termo) ? "" : "none";
         });
     });
 });

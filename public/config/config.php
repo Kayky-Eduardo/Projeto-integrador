@@ -1,3 +1,41 @@
+<!--
+    MÓDULO: CONFIGURAÇÕES DO SISTEMA
+
+    OBJETIVO
+        Permitir a administração de parâmetros operacionais do sistema.
+
+    ESTRUTURA SEMÂNTICA
+        nav     - Barra de navegação principal
+        main    - Área principal da página
+        aside   - Menu lateral de configurações
+        section - Painel de conteúdo
+        form    - Formulário de configuração
+        fieldset- Agrupamento dos campos
+
+    FUNCIONALIDADES
+        1. Definir jornada diária de trabalho
+        2. Definir limite máximo de horas extras
+        3. Envio dos dados via fetch (AJAX)
+        4. Validação de campos obrigatórios
+        5. Exibição de mensagens de status ao usuário
+
+    ACESSIBILIDADE
+        role="navigation" - Navegação da aplicação
+        role="main"       - Conteúdo principal
+        aria-label        - Descrição para leitores de tela
+        tabindex="0"      - Leitura dinâmica da resposta
+
+    BENEFÍCIOS
+        - Configuração centralizada
+        - Respostas imediatas ao usuário
+        - Código organizado para futuras expansões
+
+    OBSERVAÇÕES TÉCNICAS
+        - Comunicação via API REST (api_jornada.php)
+        - Requisições usando JSON
+        - Layout controlado por CSS centralizado
+-->
+
 <?php
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
