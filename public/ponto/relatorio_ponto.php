@@ -478,7 +478,7 @@ include "../../include/navbar.php";
         });
     });
 
-    async function carregar_grafico_bar() {
+    async function carregar_grafico_bar1() {
         try {
             // Busca dados da API
             const response = await fetch('../../api/api_jornada.php?acao=taxa_presenca_geral');
@@ -494,7 +494,7 @@ include "../../include/navbar.php";
             const dadosGrafico = [
                 ['Funcionários', 'Horas Trabalhadas', 'Horas Esperadas', 'Taxa de Presença']
             ];
-            
+
             usuarios.forEach(usuario => {
                 dadosGrafico.push([
                     usuario.nome,
@@ -521,10 +521,51 @@ include "../../include/navbar.php";
         }
     }
 
-    google.charts.setOnLoadCallback(carregar_grafico_bar);
+    google.charts.setOnLoadCallback(carregar_grafico_bar1);
 
-    setInterval(carregar_grafico_bar, 300000);
+    async function carregar_grafico_bar2() {
+        try {
+            // Busca dados da API
+            const response = await fetch('../../api/api_jornada.php?acao=taxa_presenca_geral');
+            const resultado = await response.json();
+            
+            if (!resultado.sucesso) {
+                console.error('Erro ao buscar dados:', resultado.mensagem);
+                return;
+            }
+            
+            const usuarios = resultado.dados.usuarios;
+            
+            const dadosGrafico = [
+                ['Funcionários', 'Hora Extra']
+            ];
 
+            usuarios.forEach(usuario => {
+                dadosGrafico.push([
+                    usuario.nome,
+                    usuario.horas_trabalhadas,
+                    usuario.horas_esperadas,
+                    parseFloat(usuario.taxa_presenca.toFixed(2))
+                ]);
+            });
+            
+            var data = google.visualization.arrayToDataTable(dadosGrafico);
 
+            var options = {
+                chart: {
+                    title: 'Taxa de Presença - ' + resultado.dados.periodo.inicio + ' até ' + resultado.dados.periodo.fim,
+                    subtitle: 'Horas esperadas/trabalhadas e taxa de presença',
+                }
+            };
+
+            var chart = new google.charts.Bar(document.getElementById('columnchart_material'));
+            chart.draw(data, google.charts.Bar.convertOptions(options));
+            
+        } catch (error) {
+            console.error('Erro ao carregar gráfico:', error);
+        }
+    }
+
+    google.charts.setOnLoadCallback(carregar_grafico_bar2);
     </script>
 </html>

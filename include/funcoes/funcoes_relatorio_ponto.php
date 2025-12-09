@@ -46,7 +46,7 @@ function dados_grafico ($conn) {
     // if ($linha = $result->fetch_assoc()) {
     //     $numero_pausa = (int)$linha['total_pausa'];
     // } else {
-        $numero_pausa = 0;
+    $numero_pausa = 0;
     // }
     
     // pesquisa horario completo
@@ -168,10 +168,25 @@ function coleta_usuarios($conn) {
 
 
 // fazer o SUM de todos as horas extras independente de tipo de turno por enquanto
-function filtrar_usuario($conn, $id_usuario) {
+function filtrar_usuario($conn, $id_usuario = null) {
+    if (!is_null($id_usuario)) {
+        $coleta_usuario = $conn->prepare("
+        SELECT sum(minutos) as total_extra
+        FROM horas_extras WHERE id_usuario = ?;
+        ");
+        $coleta_usuario->bind_param("i", $id_usuario);
+        $coleta_usuario->execute();
+        
+        $result = $coleta_usuario->get_result();
+        $linha = $result->fetch_assoc();
+    
+        return $linha['total_extra'] ?? 0;
+    }
+
     $coleta_usuario = $conn->prepare("
-    SELECT sum(minutos) as total_extra
-    FROM horas_extras WHERE id_usuario = ?;
+    SELECT saldo_minutos, nome_usuario
+    FROM banco_horas
+    JOIN usuario ON banco_horas.id_usuario = usuario.id_usuario;
     ");
     $coleta_usuario->bind_param("i", $id_usuario);
     $coleta_usuario->execute();

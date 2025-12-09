@@ -25,7 +25,7 @@ if ($acao) {
             echo json_encode(coleta_usuarios($conn));
             exit;
         } else if ($acao_formatada === 'filtrar_usuario') {
-            echo json_encode(filtrar_usuario($conn, $input['id_usuario'] ?? 0));
+            echo json_encode(filtrar_usuario($conn, $input['id_usuario'] ?? null));
             exit;
         } else if ($acao_formatada === 'filtrar_tabela_hora') {
             echo json_encode(relatorio_ponto_filtrado($conn, $input['id_usuario']));
