@@ -102,6 +102,9 @@ $stmt->execute();
 // Recupera resultados
 $batidas = $stmt->get_result();
 
+
+
+// pegar todas as pausas (CÓDIGO ANTIGO)
 $sql = "
     SELECT 
         ps.*,
@@ -111,35 +114,10 @@ $sql = "
     FROM pausa ps
     LEFT JOIN pausa_config pc ON pc.id_config = ps.id_config
     LEFT JOIN usuario u ON u.id_usuario = ps.id_usuario
-    WHERE ps.id_usuario = ?
     ORDER BY ps.inicio ASC
 ";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id_usuario);
-$stmt->execute();
-$res = $stmt->get_result();
-if ($res->num_rows > 0) {
-    $users = [];
-    while($rowP = $res -> fetch_assoc()) $users[] = $rowP;
-}
-
-// pegar todas as pausas
-$sql = "
-    SELECT 
-        ps.*,
-        pc.descricao_pausa,
-        pc.id_config,
-        u.nome_usuario
-    FROM pausa ps
-    LEFT JOIN pausa_config pc ON pc.id_config = ps.id_config
-    LEFT JOIN usuario u ON u.id_usuario = ps.id_usuario
-    WHERE ps.id_usuario = ?
-    ORDER BY ps.inicio ASC
-";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id_usuario);
 $stmt->execute();
 $res = $stmt->get_result();
 if ($res->num_rows > 0) {
@@ -223,15 +201,13 @@ if ($res->num_rows > 0) {
 
                 <!-- Pausas -->
                 <td>
-                    <ul style="list-style-type : none; padding: 0; margin: 0;">
-                        <?php foreach($users as $user):
-                        if ($r['data_ponto'] == $user['data']){
-                            $pausa_inicio = ($user['inicio'] ? date("H:i", strtotime($user['inicio'] )) : '--');
-                            $pausa_fim = ($user['fim'] ? date("H:i", strtotime($user['fim'] )) : '--');
-                            echo "<li>".$user['descricao_pausa'] . ": " . $pausa_inicio . ":" . $pausa_fim . "</li><br>";}
-                        ?>
-                        <?php endforeach?>
-                    </ul>
+                    <?php foreach($users as $user):
+                    if ($r['data_ponto'] == $user['data'] && $r['id_usuario'] == $user['id_usuario']){
+                        $pausa_inicio = ($user['inicio'] ? date("H:i", strtotime($user['inicio'] )) : '--');
+                        $pausa_fim = ($user['fim'] ? date("H:i", strtotime($user['fim'] )) : '--');
+                        echo $user['descricao_pausa'] . ": " . $pausa_inicio . ":" . $pausa_fim . "<br>";}
+                    ?>
+                    <?php endforeach?>
                 </td>
 
                 <!-- Status -->

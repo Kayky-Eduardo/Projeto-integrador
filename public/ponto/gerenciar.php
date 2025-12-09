@@ -56,8 +56,6 @@ if (isset($_GET['aprovar'])) {
     // Impede aprovação de ponto incompleto
     if (
         !$check['inicio_ponto'] ||
-        !$check['inicio_almoco'] ||
-        !$check['fim_almoco']  ||
         !$check['fim_ponto']
     ) {
         die("Não é possível aprovar: ponto incompleto.");
