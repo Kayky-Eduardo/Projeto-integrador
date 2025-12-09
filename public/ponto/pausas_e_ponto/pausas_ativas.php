@@ -60,7 +60,7 @@ $res = $stmt->get_result();
                 if ($inicio) {
                     $t1 = strtotime($row['inicio']);
                     $t2 = time();
-                    $minutos = floor(($t2 - $t1) / 60) - 240;
+                    $minutos = ($t2 - $t1);
                 }
             ?>
                 <tr>
@@ -76,7 +76,7 @@ $res = $stmt->get_result();
                     <td><?= $row['data'] ?></td>
 
                     <!-- minutos decorridos -->
-                    <td><?= $minutos ?></td>
+                    <td><?= date("i:s", $minutos) ?></td>
 
                     <!-- tempo máximo definido na config -->
                     <td><?= $row['tempo_max'] ?></td>
