@@ -3,32 +3,42 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-switch ($_SESSION['nivel']) {
-    case $_SESSION['nivel'] >= 4:
-        echo '
-        <nav>
-            <a href="usuario/lista.php">Usuario</a>
-            <a href="ponto/relatorio_ponto.php">Ponto</a>
-            <a href="relatorio/online.php">Relatórios</a>
-            <a href="logout.php">Sair</a>
-        </nav>
-        ';
-        break;
-    case 3:
-        echo '
-        <nav>
-            <a href="usuario/lista.php">Usuario</a>
-            <a href="logout.php">Sair</a>
-        </nav>';
-        break;
-    default:
-        echo '  
-        <nav>
-            <a href="usuario/lista.php">Usuario</a>
-            <a href="ponto/relatorio_ponto.php">Ponto</a>
-            <a href="logout.php">Sair</a>
-        </nav>
-        ';
-        break;
+$nivel = $_SESSION['nivel'];
+
+echo '<nav>';
+echo '<a href="/PROJETO-INTEGRADOR/public/index.php">Início</a>';
+
+if ($nivel >= 3) {
+    echo '
+        <a href="/PROJETO-INTEGRADOR/public/usuario/lista.php">Usuários</a>
+        <a href=#>Controle de Usuários</a>
+        <a href=#>Banco de Horas</a>
+        <a href=#>Indicadores</a>
+        <a href="/PROJETO-INTEGRADOR/public/ponto/gerenciar.php">Gerenciar Pontos</a>
+        <a href="/PROJETO-INTEGRADOR/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
+        <a href="/PROJETO-INTEGRADOR/public/ponto/historico.php">Histórico</a>
+        <a href="/PROJETO-INTEGRADOR/public/config/config.php">Configurações</a>
+    ';
+} elseif ($nivel == 2) {
+    echo '
+        <a href="/PROJETO-INTEGRADOR/public/usuario/lista.php">Usuários</a>
+        <a href=#>Controle de Usuários</a>
+        <a href=#>Banco de Horas</a>
+        <a href=#>Indicadores</a>
+        <a href="/PROJETO-INTEGRADOR/public/ponto/status.php">Bater Ponto / Status</a>
+        <a href="/PROJETO-INTEGRADOR/public/ponto/gerenciar.php">Gerenciar Pontos</a>
+        <a href="/PROJETO-INTEGRADOR/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
+        <a href="/PROJETO-INTEGRADOR/public/ponto/historico.php">Histórico</a>
+        <a href="/PROJETO-INTEGRADOR/public/ponto/notificacoes.php">Notificações</a>
+        <a href="/PROJETO-INTEGRADOR/public/config/config.php">Configurações</a>    ';
+} else {
+    echo '
+        <a href="/PROJETO-INTEGRADOR/public/ponto/status.php">Bater Ponto / Status</a>
+        <a href=#>Banco de Horas</a>
+        <a href="/PROJETO-INTEGRADOR/public/ponto/historico.php">Histórico</a>
+        <a href="/PROJETO-INTEGRADOR/public/ponto/notificacoes.php">Notificações</a>
+';
 }
-?>
+
+echo '<a href="/PROJETO-INTEGRADOR/public/logout.php">Sair</a>';
+echo '</nav>';
