@@ -76,7 +76,7 @@ $res = $stmt->get_result();
                     <td><?= $row['data'] ?></td>
 
                     <!-- minutos decorridos -->
-                    <td><?= date("i:s", $minutos) ?></td>
+                    <td class="minutos" data-inicio="<?= $row['data'] .'T'. $row['inicio'] ?>"></td>
 
                     <!-- tempo máximo definido na config -->
                     <td><?= $row['tempo_max'] ?></td>
@@ -85,4 +85,18 @@ $res = $stmt->get_result();
             </tbody>
         </table>
     <?php endif; ?>
+    <script>
+        function atualizarCronometros() {
+            document.querySelectorAll("[data-inicio]").forEach(el => {
+                const inicio = new Date(el.dataset.inicio).getTime();
+                const atual = Date.now();
+                const minutos = Math.floor((atual - inicio) / 60000);
+                const segundos = Math.floor(((atual - inicio) % 60000) / 1000);
+                el.textContent = minutos.toString().padStart(2, '0') + ":" + segundos.toString().padStart(2, '0');
+            });
+        }
+
+        setInterval(atualizarCronometros, 1000);
+        atualizarCronometros();
+    </script>
 </div>

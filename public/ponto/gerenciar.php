@@ -257,6 +257,7 @@ while ($row = $result->fetch_assoc()) {
             <th>Funcionário</th>
             <th>Entrada</th>
             <th>Saída</th>
+            <th>Pausas</th>
             <th>Status</th>
             <th>Ações</th>
         </tr>
