@@ -202,7 +202,7 @@ function filtrar_usuario($conn, $id_usuario = null) {
     while ($usuario = $result->fetch_assoc()) {
         $dados_grafico[] = [
             'nome_usuario' => $usuario['nome_usuario'],
-            'saldo_minutos' => $usuario['saldo_minutos'],
+            'saldo_horas' => $usuario['saldo_minutos'] / 60,
             'data' => $usuario['ultima_atualizacao']
         ];
     }

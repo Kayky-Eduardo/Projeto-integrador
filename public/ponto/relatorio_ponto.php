@@ -32,7 +32,7 @@ include "../../include/navbar.php";
     </div>
 
     <div class="caixa-grafico">
-        <h2>Hora Extra</h2>
+        <h2>Hora extra</h2>
         <div id="columnchart_material2" style="width: 800px; height: 500px;"></div>
     </div>
     <div id="resultado-caixa-grafico">
@@ -485,7 +485,6 @@ include "../../include/navbar.php";
 
     async function carregar_grafico_bar1() {
         try {
-            // Busca dados da API
             const response = await fetch('../../api/api_jornada.php?acao=taxa_presenca_geral');
             const resultado = await response.json();
             
@@ -495,43 +494,57 @@ include "../../include/navbar.php";
             }
             
             const usuarios = resultado.dados.usuarios;
-            
+
+            // Cabeçalho do gráfico
             const dadosGrafico = [
-                ['Funcionários', 'Horas Trabalhadas', 'Horas Esperadas', 'Taxa de Presença']
+                [
+                    'Funcionário',  
+                    'Horas Trabalhadas', 
+                    'Horas Esperadas', 
+                    'Taxa de Presença (%)'
+                ]
             ];
 
             usuarios.forEach(usuario => {
                 dadosGrafico.push([
                     usuario.nome,
-                    usuario.horas_trabalhadas,
-                    usuario.horas_esperadas,
-                    parseFloat(usuario.taxa_presenca.toFixed(2))
+                    parseFloat(usuario.horas_trabalhadas),
+                    parseFloat(usuario.horas_esperadas),
+                    parseFloat(usuario.taxa_presenca) // porcentagem
                 ]);
             });
-            
+
             var data = google.visualization.arrayToDataTable(dadosGrafico);
 
             var options = {
-                chart: {
-                    title: 'Taxa de Presença - ' + resultado.dados.periodo.inicio + ' até ' + resultado.dados.periodo.fim,
-                    subtitle: 'Horas esperadas/trabalhadas e taxa de presença',
-                }
+                title: 'Taxa de Presença — ' + resultado.dados.periodo.inicio + ' até ' + resultado.dados.periodo.fim,
+                hAxis: { title: 'Funcionários' },
+                vAxes: {
+                    0: { title: 'Horas' }, // esquerda
+                    1: { title: 'Taxa de Presença (%)' } // direita
+                },
+                seriesType: 'bars',
+                series: { 2: { type: 'line', targetAxisIndex: 1 } },
+                colors: ['#3b82f6', '#10b981', '#f43f5e'],
+                legend: { position: 'bottom' }
             };
 
-            var chart = new google.charts.Bar(document.getElementById('columnchart_material'));
-            chart.draw(data, google.charts.Bar.convertOptions(options));
-            
+            var chart = new google.visualization.ComboChart(
+                document.getElementById('columnchart_material')
+            );
+
+            chart.draw(data, options);
+
         } catch (error) {
             console.error('Erro ao carregar gráfico:', error);
         }
     }
 
-    google.charts.setOnLoadCallback(carregar_grafico_bar1);
+google.charts.setOnLoadCallback(carregar_grafico_bar1);
 
     async function carregar_grafico_bar2() {
         try {
-            // Busca dados da API
-            const response = await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_usuario")
+            const response = await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_usuario");
             const resultado = await response.json();
             
             if (!resultado.sucesso) {
@@ -542,29 +555,48 @@ include "../../include/navbar.php";
             const usuarios = resultado.dados.usuarios;
             
             const dadosGrafico = [
-                ['Funcionários', 'Hora Extra']
+                ['Funcionários', 'Saldo (Horas)', { role: 'style' }] // esta 3° coluna serve para definir qual vai ser a cor 
             ];
-
+            
             usuarios.forEach(usuario => {
+                const horas = parseFloat((usuario.saldo_horas).toFixed(0)); 
+                
+                // trocando a cor de acordo com o tipo de horas (+ ou -)
+                let corBarra = '#3b82f6';
+                if (horas < 0) {
+                    corBarra = '#f59e0b'; 
+                } 
+                
+                // inserindo os dados no grafico
                 dadosGrafico.push([
                     usuario.nome_usuario,
-                    usuario.saldo_minutos,
-                    
+                    horas,
+                    corBarra 
                 ]);
             });
             
             var data = google.visualization.arrayToDataTable(dadosGrafico);
-
+            
+            // estrutura gráfico
             var options = {
-                chart: {
-                    title: 'Hora extra - ' + resultado.dados.periodo.inicio + ' até ' + resultado.dados.periodo.fim,
-                    subtitle: 'Tabela de Hora extras dos funcionários',
+                
+                title: 'Banco de Horas - ' + resultado.dados.periodo.inicio + ' até ' + resultado.dados.periodo.fim,
+                subtitle: 'Saldo de horas dos funcionários',
+                
+                // texto de baixo
+                hAxis: {
+                    title: 'Funcionários',
+                },
+
+                // texto do lado
+                vAxis: {
+                    title: 'Horas'
                 }
             };
-
-            var chart = new google.charts.Bar(document.getElementById('columnchart_material2'));
-            chart.draw(data, google.charts.Bar.convertOptions(options));
             
+            var chart = new google.visualization.ColumnChart(document.getElementById('columnchart_material2'));
+            chart.draw(data, options);
+        
         } catch (error) {
             console.error('Erro ao carregar gráfico:', error);
         }
