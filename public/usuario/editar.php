@@ -119,20 +119,17 @@ if (isset($_POST['editar_usuario'])) {
 
     <main class="perfil">
 
-        <!-- PERFIL VISUAL -->
         <section class="perfil-header">
             <img src="../../assets/img/avatar-padrao.png" class="perfil-foto">
-
             <h2><?= $usuario['nome_usuario'] ?></h2>
 
-            <span class="<?= $usuario['conta_ativa'] ? 'ativo' : 'inativo' ?>">
+            <span class="<?= $usuario['conta_ativa'] ? 'status-ativo' : 'status-inativo' ?>">
                 <?= $usuario['conta_ativa'] ? 'Usuário Ativo' : 'Usuário Inativo' ?>
             </span>
 
             <p class="perfil-cargo">Cargo ID: <?= $usuario['id_cargo'] ?></p>
         </section>
 
-        <!-- INFORMAÇÕES -->
         <section class="perfil-dados">
 
             <article>
@@ -156,15 +153,15 @@ if (isset($_POST['editar_usuario'])) {
             </article>
 
             <section class="acoes-empresa">
-                <button onclick="document.getElementById('form-edicao').style.display='block'">
+                <button class="btn-padrao"
+                    onclick="document.getElementById('form-edicao').style.display='block'">
                     Editar Perfil
                 </button>
 
-                <a href="deletar_usuario.php?id=<?= $usuario['id_usuario'] ?>"
-                    onclick="return confirm('Confirma excluir este usuário?')"
-                    class="btn-excluir">
-                    Excluir Usuário
-                </a>
+                <form action="deletar_usuario.php" method="POST" class="form-excluir">
+                    <input type="hidden" name="id_usuario" value="<?= $usuario['id_usuario'] ?>">
+                    <button type="submit" class="btn-excluir">Excluir Usuário</button>
+                </form>
             </section>
 
             <section class="voltar-final">
@@ -172,7 +169,6 @@ if (isset($_POST['editar_usuario'])) {
             </section>
         </section>
 
-        <!-- FORMULÁRIO INLINE -->
         <section id="form-edicao" style="display:none;">
 
             <h3>Editar Dados</h3>
@@ -181,22 +177,24 @@ if (isset($_POST['editar_usuario'])) {
 
                 <input type="hidden" name="id_usuario" value="<?= $usuario['id_usuario'] ?>">
 
-                <label>Nome</label>
-                <input name="nome_usuario" value="<?= $usuario['nome_usuario'] ?>" required>
+                <label class="label-padrao">Nome</label>
+                <input class="input-padrao" name="nome_usuario" value="<?= $usuario['nome_usuario'] ?>" required>
 
-                <label>Email</label>
-                <input name="email_usuario" value="<?= $usuario['email_usuario'] ?>" required>
+                <label class="label-padrao">Email</label>
+                <input class="input-padrao" name="email_usuario" value="<?= $usuario['email_usuario'] ?>" required>
 
-                <label>Telefone</label>
-                <input name="telefone" value="<?= $usuario['telefone'] ?>">
+                <label class="label-padrao">Telefone</label>
+                <input class="input-padrao" name="telefone" value="<?= $usuario['telefone'] ?>">
 
-                <label>Senha</label>
-                <input type="password" name="senha_usuario" placeholder="Nova senha (opcional)">
+                <label class="label-padrao">Senha</label>
+                <input class="input-padrao" type="password" name="senha_usuario" placeholder="Nova senha (opcional)">
 
-                <button name="editar_usuario">Salvar alterações</button>
+                <button class="btn-padrao" name="editar_usuario">Salvar alterações</button>
             </form>
         </section>
+
     </main>
+
 </body>
 
 </html>

@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const dots = document.querySelectorAll(".dot");
     const area = document.querySelector(".carrossel");
 
+    if (!slides.length) return;
+
     let index = 0;
     let interval;
 
@@ -32,11 +34,11 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInterval(interval);
     }
 
-    next.addEventListener("click", () => {
+    next?.addEventListener("click", () => {
         mostrarSlide((index + 1) % slides.length);
     });
 
-    prev.addEventListener("click", () => {
+    prev?.addEventListener("click", () => {
         mostrarSlide((index - 1 + slides.length) % slides.length);
     });
 
@@ -48,8 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    area.addEventListener("mouseenter", pararAuto);
-    area.addEventListener("mouseleave", iniciarAuto);
+    area?.addEventListener("mouseenter", pararAuto);
+    area?.addEventListener("mouseleave", iniciarAuto);
 
     iniciarAuto();
 });
@@ -61,7 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const campoBusca = document.getElementById("busca");
     const container = document.getElementById("tabelaUsuarios");
 
-    // Se não estiver na página de lista, ignora
     if (!campoBusca || !container) return;
 
     campoBusca.addEventListener("keyup", () => {
@@ -72,5 +73,43 @@ document.addEventListener("DOMContentLoaded", () => {
             const texto = card.innerText.toLowerCase();
             card.style.display = texto.includes(termo) ? "" : "none";
         });
+    });
+});
+
+// ====================
+// USUARIO/CADASTRO.PHP
+// ====================
+document.addEventListener("DOMContentLoaded", () => {
+    const cpf = document.querySelector('[name="cpf_usuario"]');
+    const rg = document.querySelector('[name="rg_usuario"]');
+    const telefone = document.querySelector('[name="telefone"]');
+    const cep = document.querySelector('[name="cep"]');
+
+    if (!cpf && !rg && !telefone && !cep) return;
+
+    if (cpf) IMask(cpf, { mask: '000.000.000-00' });
+    if (rg) IMask(rg, { mask: '00.000.000-0' });
+    if (telefone) IMask(telefone, { mask: '(00) 00000-0000' });
+    if (cep) IMask(cep, { mask: '00000-000' });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const inputFoto = document.getElementById("input-foto");
+    const preview = document.getElementById("preview-foto");
+
+    if (!inputFoto || !preview) return;
+
+    inputFoto.addEventListener("change", () => {
+        const file = inputFoto.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            preview.src = e.target.result;
+        };
+
+        reader.readAsDataURL(file);
     });
 });

@@ -39,9 +39,20 @@ include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
 
-$sql = "SELECT u.id_usuario, u.nome_usuario, u.cpf_usuario, u.rg_usuario, u.genero,
-               u.email_usuario, u.telefone, u.cep, c.nome_cargo, u.assiduidade,
-               u.data_admissao, u.conta_ativa
+$sql = "SELECT 
+          u.id_usuario, 
+          u.nome_usuario, 
+          u.cpf_usuario, 
+          u.rg_usuario, 
+          u.genero,
+          u.email_usuario, 
+          u.telefone, 
+          u.cep, 
+          c.nome_cargo, 
+          u.assiduidade,
+          u.data_admissao, 
+          u.conta_ativa,
+          u.foto_usuario
         FROM usuario u
         LEFT JOIN cargo c ON u.id_cargo = c.id_cargo
         ORDER BY u.id_usuario ASC";
@@ -84,9 +95,18 @@ $result = $conn->query($sql);
           <article class="usuario-card" aria-label="Usuário">
 
             <!-- FOTO -->
+            <?php
+            $caminho = '../../assets/img/user_padrao.png';
+
+            if (!empty($row['foto_usuario']) && file_exists("../../assets/img/usuarios/" . $row['foto_usuario'])) {
+              $caminho = "../../assets/img/usuarios/" . $row['foto_usuario'];
+            }
+            ?>
+
             <figure class="usuario-foto">
-              <img src="../../assets/img/user_padrao.png" alt="Foto do usuário">
+              <img src="<?= $caminho ?>" alt="Foto do usuário">
             </figure>
+
 
             <!-- NOME -->
             <h3><?= $row['nome_usuario'] ?></h3>
