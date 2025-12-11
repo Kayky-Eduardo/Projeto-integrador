@@ -3,42 +3,47 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-switch ($_SESSION['nivel']) {
-    case $_SESSION['nivel'] >= 4:
-        echo '
-        <nav>
-            <a href="/Projeto-integrador/public/index.php">Home</a>
-            <a href="/Projeto-integrador/public/usuario/lista.php">Usuario</a>
-            <a href="/Projeto-integrador/public/ponto/relatorio_ponto.php">Ponto</a>
-            <a href="/Projeto-integrador/public/relatorio/online.php">Relatórios</a>
-            <a href="/Projeto-integrador/config/config_tempo_login.php">Jornada</a>
-            <a href="/Projeto-integrador/public/meu_banco_horas.php">Meu banco</a>
-            <a href="/Projeto-integrador/public/logout.php">Sair</a>
-            <a href="">'. $_SESSION["nome_usuario"] .' </a>
-        </nav>
-        ';
-        break;
-    case 3:
-        echo '
-        <nav>
-            <a href="/Projeto-integrador/public/index.php">Home</a>
-            <a href="/Projeto-integrador/public/usuario/lista.php">Usuario</a>
-            <a href="/Projeto-integrador/public/meu_banco_horas.php">Meu banco</a>
-            <a href="/Projeto-integrador/public/logout.php">Sair</a>
-            <a href="">'. $_SESSION["nome_usuario"] .' </a>
-        </nav>';
-        break;
-    default:
-        echo '  
-        <nav>
-            <a href="/Projeto-integrador/public/index.php">Home</a>
-            <a href="/Projeto-integrador/public/usuario/lista.php">Usuario</a>
-            <a href="/Projeto-integrador/public/ponto/relatorio_ponto.php">Ponto</a>
-            <a href="/Projeto-integrador/public/meu_banco_horas.php">Meu banco</a>
-            <a href="/Projeto-integrador/public/logout.php">Sair</a>
-            <a href="">'. $_SESSION["nome_usuario"] .' </a>
-        </nav>
-        ';
-        break;
+$nivel = $_SESSION['nivel'];
+
+echo '<nav>';
+echo '<a href="/projeto-integrador/public/index.php">Início</a>';
+
+if ($nivel >= 3) {
+    echo '
+        <a href="/projeto-integrador/public/usuario/lista.php">Usuários</a>
+        <a href="/projeto-integrador/public/relatorio/online.php">Controle de usuarios</a>
+        <a href="/projeto-integrador/public/meu_banco_horas.php">Banco de Horas</a>
+        <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
+        <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
+        <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
+        <a href="/projeto-integrador/public/ponto/historico.php">Histórico</a>
+        <a href="/projeto-integrador/public/config/config.php">Configurações</a>
+    ';
+} elseif ($nivel == 2) {
+    echo '
+        <a href="/projeto-integrador/public/usuario/lista.php">Usuários</a>
+        <a href="/projeto-integrador/public/relatorio/online.php">Controle de usuarios</a>
+        <a href="/projeto-integrador/public/meu_banco_horas.php">Banco de Horas</a>
+        <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
+        <a href="/projeto-integrador/public/ponto/status.php">Bater Ponto / Status</a>
+        <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
+        <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
+        <a href="/projeto-integrador/public/ponto/historico.php">Histórico</a>
+        <a href="/projeto-integrador/public/ponto/notificacoes.php">Notificações</a>
+        <a href="/projeto-integrador/public/config/config.php">Configurações</a>
+    ';
+        
+} else {
+    echo '
+        <a href="/projeto-integrador/public/ponto/status.php">Bater Ponto / Status</a>
+        <a href="/projeto-integrador/public/meu_banco_horas.php">Banco de Horas</a>
+        <a href="/projeto-integrador/public/ponto/historico.php">Histórico</a>
+        <a href="/projeto-integrador/public/ponto/notificacoes.php">Notificações</a>
+    ';
 }
-?>
+
+echo '
+    <a href="">'. $_SESSION["nome_usuario"] .' </a>
+    <a href="/projeto-integrador/public/logout.php">Sair</a>
+';
+echo '</nav>';
