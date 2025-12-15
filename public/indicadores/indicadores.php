@@ -577,7 +577,7 @@ google.charts.setOnLoadCallback(carregar_grafico_bar1);
             
             var data = google.visualization.arrayToDataTable(dadosGrafico);
             
-            // estrutura gráfico
+            // estrutura do gráfico
             var options = {
                 
                 title: 'Banco de Horas - ' + resultado.dados.periodo.inicio + ' até ' + resultado.dados.periodo.fim,

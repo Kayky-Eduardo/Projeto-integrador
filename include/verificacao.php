@@ -19,17 +19,30 @@ function verificar_login($conn) {
     $stmt->bind_param("ii", $id_login, $id_usuario);
     $stmt->execute();
     $result = $stmt->get_result();
+    
+    $ativo = $conn->execute("
+        SELECT conta_ativa
+        FROM usuario
+        WHERE id_usuario = ?
+    ");
+
+    $ativo->bind_param("i", $id_usuario);
+    $ativo->execute();
+    $result_ativo = $ativo->get_result();
+    $resposta = $result_ativo->fetch_assoc();
+
     if ($result->num_rows === 0) {
         header("Location: /Projeto-integrador/public/logout.php");
         exit;
     }
 
     $row = $result->fetch_assoc();
-    if (!is_null($row['data_fim'])) {
+    if (!is_null($row['data_fim'] || $resposta['conta_ativa'] == 0)) {
         header("Location: /Projeto-integrador/public/logout.php");
         exit;
     }
     
+
     verificar_tempo_logado($conn, $id_usuario, $id_login);
 }
 
