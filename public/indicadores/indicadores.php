@@ -35,6 +35,12 @@ include "../../include/navbar.php";
         <h2>Hora extra</h2>
         <div id="columnchart_material2" style="width: 800px; height: 500px;"></div>
     </div>
+
+    <div class="caixa-grafico">
+        <h2>Evolução de Presença</h2>
+    <div id="linechart_presenca" style="width: 900px; height: 500px;"></div>
+    </div>
+
     <div id="resultado-caixa-grafico">
         <table>
             <thead>
@@ -152,7 +158,7 @@ include "../../include/navbar.php";
 
         setInterval(carregar_dados, 5000);
         
-        google.charts.load("current", {packages:['corechart', 'bar']});
+        google.charts.load("current", {packages:['corechart', 'bar', 'line']});
         google.charts.setOnLoadCallback(carregar_dados);
 
         // função para dar forma ao gráfico.
@@ -181,7 +187,7 @@ include "../../include/navbar.php";
                     const tipo = dadosDoGrafico.getValue(indiceLinha, 0);
                     
                     async function exibir_tipo(tipo) {
-                        window.location.replace('/Projeto-integrador/public/ponto/relatorio_ponto.php#resultado-caixa-grafico')
+                        window.location.replace('/projeto-integrador/public/indicadores/indicadores.php#resultado-caixa-grafico')
                         // pegando a tabela
                         const resultado_relatorio = document.getElementById('resposta-tbody')
                         
@@ -444,7 +450,6 @@ include "../../include/navbar.php";
         const dataInicio = document.getElementById('dataInicio').value;
         const dataFim = document.getElementById('dataFim').value;
         
-        // Validações
         if (!usuarioId || !dataInicio || !dataFim) {
             console.log('Preencha todos os campos!');
             return;
@@ -454,10 +459,8 @@ include "../../include/navbar.php";
             limparResultados();
             
         try {
-            // Chama a API
             const resultado = await verificarJornada(usuarioId, dataInicio, dataFim);
             
-            // Exibe resultados
             exibirResultado(resultado, 'resultado');
             
         } catch (error) {
@@ -561,7 +564,7 @@ google.charts.setOnLoadCallback(carregar_grafico_bar1);
             usuarios.forEach(usuario => {
                 const horas = parseFloat((usuario.saldo_horas).toFixed(0)); 
                 
-                // trocando a cor de acordo com o tipo de horas (+ ou -)
+                // trocando a cor de acordo com o valor se é + ou -
                 let corBarra = '#3b82f6';
                 if (horas < 0) {
                     corBarra = '#f59e0b'; 
@@ -577,9 +580,7 @@ google.charts.setOnLoadCallback(carregar_grafico_bar1);
             
             var data = google.visualization.arrayToDataTable(dadosGrafico);
             
-            // estrutura do gráfico
             var options = {
-                
                 title: 'Banco de Horas - ' + resultado.dados.periodo.inicio + ' até ' + resultado.dados.periodo.fim,
                 subtitle: 'Saldo de horas dos funcionários',
                 
@@ -603,5 +604,72 @@ google.charts.setOnLoadCallback(carregar_grafico_bar1);
     }
 
     google.charts.setOnLoadCallback(carregar_grafico_bar2);
+
+    function nome_do_mes(numero) {
+        const meses = [
+            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        ];
+
+        return meses[numero - 1];
+    }
+
+    async function carregar_grafico_linha() {
+        try {
+            const response = await fetch('../../api/api_relatorio_ponto.php?acao=evolucao_presenca');
+            const resultado = await response.json();
+            
+            if (!resultado.sucesso) {
+                console.error('Erro ao buscar evolução:', resultado.mensagem);
+                return;
+            }
+            
+            const dados = resultado.dados.dados;
+            let primeiraData = resultado.dados.primeira_data;
+            let ultimaData = resultado.dados.ultima_data;
+            
+            function formatarData(data, apenasDia = false) {
+                if (!data) return '';
+                const [ano, mes, dia] = data.split('-');
+                return apenasDia ? dia : `${dia}/${mes}`
+            };
+
+            primeiraData = formatarData(primeiraData, true);
+            ultimaData = formatarData(ultimaData, true);
+
+            const dadosGrafico = [['Data', 'Presentes', 'Ausentes']];
+            
+            const [ano, mes, dia] = resultado.dados.periodo.fim.split('-');
+
+            dados.forEach(dia => {
+                const dataFormatada = formatarData(dia.data);
+                dadosGrafico.push([dataFormatada, dia.presentes, dia.ausentes]);
+            });
+            
+            const data = google.visualization.arrayToDataTable(dadosGrafico);
+            
+            const options = {
+                title: `Evolução de Presença - ${primeiraData} até ${ultimaData} no mês de ${nome_do_mes(mes)}`,
+                legend: { position: 'bottom' },
+                colors: ['#10b981', '#ef4444'],
+                areaOpacity: 0.050,
+                hAxis: {
+                    title: 'Data',
+                },
+                vAxis: {
+                    title: 'Quantidade',
+                },
+                pointSize: 4,
+            };
+            
+            const chart = new google.visualization.AreaChart(document.getElementById('linechart_presenca'));
+            chart.draw(data, options);
+            
+        } catch (error) {
+            console.error('Erro ao carregar gráfico:', error);
+        }
+    }
+
+    google.charts.setOnLoadCallback(carregar_grafico_linha);
     </script>
 </html>

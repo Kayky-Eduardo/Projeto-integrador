@@ -9,7 +9,7 @@ function verificar_login($conn) {
     $id_usuario = $_SESSION['id_usuario'];
 
     if (!isset($id_login) || !isset($id_usuario)) {
-        header("Location: /Projeto-integrador/public/logout.php");
+        header("Location: /projeto-integrador/public/logout.php");
         exit;
     }
     $stmt = $conn->prepare("
@@ -20,25 +20,26 @@ function verificar_login($conn) {
     $stmt->execute();
     $result = $stmt->get_result();
     
-    $ativo = $conn->execute("
+    $ativo = $conn->prepare("
         SELECT conta_ativa
         FROM usuario
         WHERE id_usuario = ?
+        LIMIT 1
     ");
 
     $ativo->bind_param("i", $id_usuario);
     $ativo->execute();
     $result_ativo = $ativo->get_result();
-    $resposta = $result_ativo->fetch_assoc();
-
-    if ($result->num_rows === 0) {
-        header("Location: /Projeto-integrador/public/logout.php");
+    
+    if ($result->num_rows === 0 || $result_ativo->num_rows === 0) {
+        header("Location: /projeto-integrador/public/logout.php");
         exit;
     }
-
+    
+    $resposta = $result_ativo->fetch_assoc();
     $row = $result->fetch_assoc();
-    if (!is_null($row['data_fim'] || $resposta['conta_ativa'] == 0)) {
-        header("Location: /Projeto-integrador/public/logout.php");
+    if ($row['data_fim'] !== null || $resposta['conta_ativa'] == 0) {
+        header("Location: /projeto-integrador/public/logout.php");
         exit;
     }
     

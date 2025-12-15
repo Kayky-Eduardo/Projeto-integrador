@@ -14,7 +14,7 @@ $white_list = [
     'ausentes', 'pausa', 'horario',
     'presentes', 'usuarios', 'filtrar_usuario',
     'filtrar_tabela_hora', 'get_logados', 'deslogar',
-    'verificar_jornada'
+    'verificar_jornada', 'evolucao_presenca'
 ];
 
 if ($acao) {
@@ -47,6 +47,20 @@ if ($acao) {
             exit;
         } else if ($acao_formatada === 'deslogar') {
             echo json_encode(deslogar_usuario($conn, $input['id_login'] ?? 0));
+            exit;
+        } else if ($acao_formatada === 'evolucao_presenca') {
+            try {
+                $resultado = evolucao_presenca($conn);
+                echo json_encode([
+                    'sucesso' => true,
+                    'dados' => $resultado
+                ]);
+            } catch (Exception $e) {
+                echo json_encode([
+                    'sucesso' => false,
+                    'mensagem' => 'Erro ao buscar evolução: ' . $e->getMessage()
+                ]);
+            }
             exit;
         //} else if ($acao_formatada === 'verificar_jornada') {
             // echo json_encode(verificar_jornada($conn, $usuario_id, $data_inicio, $data_fim));
