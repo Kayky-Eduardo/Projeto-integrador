@@ -90,19 +90,10 @@ function dados_grafico ($conn) {
     } else {
         $numero_presente = 0;
     }
-    
-    // $pesquisa_ausentes = $conn->prepare("
-    //     SELECT COUNT(*) AS total_usuarios
-    //     FROM usuario
-    // ");
-    // $pesquisa_ausentes->execute();
-    // $result = $pesquisa_ausentes->get_result();
+  
     $total_usuarios = calculo_total_usuarios($conn);
-    // if ($linha = $result->fetch_assoc()) {
+
     $numero_ausentes = $total_usuarios - (int)$numero_presente;
-    // } else {
-    //     $numero_ausentes = 0;
-    // }
     
     // Pesquisa de pausa( incompleto porque depende de outro código),
     // irei retornar aqui assim que o código de ponto/pausas estiverem feito

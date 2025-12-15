@@ -280,7 +280,6 @@ include "../../include/navbar.php";
             select.innerHTML = `<option value="">Selecione um usuario</option>`
             const coleta_usuarios = await fetch("../../api/api_relatorio_ponto.php?acao=usuarios");
             const resposta_usuarios = await coleta_usuarios.json();
-            // console.log(resposta_usuarios);
             resposta_usuarios.forEach(u => {
                 const tag_option = document.createElement("option");
                 tag_option.value = u.id_usuario;
