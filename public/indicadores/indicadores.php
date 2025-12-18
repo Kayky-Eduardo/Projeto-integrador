@@ -542,7 +542,7 @@ include "../../include/navbar.php";
         }
     }
 
-google.charts.setOnLoadCallback(carregar_grafico_bar1);
+    google.charts.setOnLoadCallback(carregar_grafico_bar1);
 
     async function carregar_grafico_bar2() {
         try {

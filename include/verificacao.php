@@ -3,6 +3,25 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 // função para verificar se o login do usuário é válido
+/*
+    Consulta do tempo de jornada de acordo com o grupo e o plano de horário dele 
+    mudar mais tarde
+
+
+    SELECT 
+        TIME_TO_SEC(tj.jornada) AS segundos_jornada,
+        TIME_TO_SEC(ADDTIME(tj.jornada, tj.maximo_hora_extra)) AS segundos_maximos,
+        TIMESTAMPDIFF(SECOND, login.data_inicio, NOW()) AS segundos_logado
+    FROM login
+    JOIN grupo_setor gs 
+        ON gs.id_usuario = login.id_usuario
+    JOIN tempo_jornada tj 
+        ON tj.id_tempo = gs.id_tempo
+    WHERE login.id_login = ?
+        AND login.id_usuario = ?
+        AND login.data_fim IS NULL
+    LIMIT 1;
+*/
 
 function verificar_login($conn) {
     $id_login = $_SESSION['id_login'];

@@ -99,6 +99,19 @@ CREATE TABLE jornadas_trabalho (
     created_at TIMESTAMP
 );
 
+create table grupo_setor (
+    id_setor INT,
+    id_usuario INT,
+    PRIMARY KEY (id_setor, id_usuario),
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario),
+	FOREIGN KEY (id_setor) REFERENCES setor(id_setor)
+);
+
+create table setor (
+    id_setor INT PRIMARY KEY AUTO_INCREMENT,
+    nome_setor char(50)
+);
+
 insert into cargo (nome_cargo, salario_bruto, nivel)
 values (“adm”, 10, 1);
 
