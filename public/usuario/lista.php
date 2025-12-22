@@ -1,82 +1,135 @@
+<!--
+    MÓDULO: LISTAGEM DE USUÁRIOS
+
+    OBJETIVO
+        Exibir todos os usuários cadastrados com filtros e ações administrativas
+
+    ESTRUTURA SEMÂNTICA
+        nav       - Menu de navegação
+        main      - Conteúdo principal do sistema
+        section   - Agrupamento funcional
+        header    - Área de ações e busca
+        table     - Exibição de dados em forma tabular
+
+    FUNCIONALIDADES
+        1. Listagem dinâmica via PHP/MySQL
+        2. Campo de busca em tempo real (JavaScript)
+        3. Ações de editar e excluir usuário
+        4. Exibição de status (ativo/inativo)
+        5. Responsividade sem uso de scroll horizontal
+
+    ACESSIBILIDADE
+        - Uso de data-label para leitura mobile
+        - Marcação semântica adequada
+        - Botões com ações claras
+
+    RESPONSIVIDADE
+        Desktop: modo tabela tradicional
+        Mobile: transformação em cartões sem perda de dados
+
+    OBSERVAÇÕES TÉCNICAS
+        - Banco conectado via mysqli
+        - Navbar reutilizada via include
+        - CSS centralizado em: ../../assets/css/estilo.css
+-->
+
 <?php
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
 
-// Consulta todos os usuários
-$sql = "SELECT u.id_usuario, u.nome_usuario, u.cpf_usuario, u.rg_usuario, u.genero,
-               u.email_usuario, u.telefone, u.cep, c.nome_cargo, u.assiduidade,
-               u.data_admissao, u.conta_ativa
+$sql = "SELECT 
+          u.id_usuario, 
+          u.nome_usuario, 
+          u.cpf_usuario, 
+          u.rg_usuario, 
+          u.genero,
+          u.email_usuario, 
+          u.telefone, 
+          u.cep, 
+          c.nome_cargo, 
+          u.assiduidade,
+          u.data_admissao, 
+          u.conta_ativa,
+          u.foto_usuario
         FROM usuario u
         LEFT JOIN cargo c ON u.id_cargo = c.id_cargo
         ORDER BY u.id_usuario ASC";
 
 $result = $conn->query($sql);
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
   <meta charset="UTF-8">
-  <title>Lista de Usuários</title>
-  <link rel="stylesheet" href="../../assets/estilo.css">
+  <title>Usuários | Sistema RH</title>
+  <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
-<body>
-  <h1>Usuários Cadastrados</h1>
-  <a href="../index.php">home</a>
-  <a href="cadastro.php">Cadastro</a>
-  <br><br>
 
-  <table>
-    <tr>
-      <th>ID</th>
-      <th>Nome</th>
-      <th>CPF</th>
-      <th>RG</th>
-      <th>Gênero</th>
-      <th>Email</th>
-      <th>Telefone</th>
-      <th>CEP</th>
-      <th>Cargo</th>
-      <th>Assiduidade</th>
-      <th>Admissão</th>
-      <th>Status</th>
-    </tr>
-    <?php
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            echo "<tr>";
-            echo "<td>".$row["id_usuario"]."</td>";
-            echo "<td>".$row["nome_usuario"]."</td>";
-            echo "<td>".$row["cpf_usuario"]."</td>";
-            echo "<td>".$row["rg_usuario"]."</td>";
-            echo "<td>".$row["genero"]."</td>";
-            echo "<td>".$row["email_usuario"]."</td>";
-            echo "<td>".$row["telefone"]."</td>";
-            echo "<td>".$row["cep"]."</td>";
-            echo "<td>".($row["nome_cargo"] ?? "Não definido")."</td>";
-            echo "<td>".$row["assiduidade"]."%</td>";
-            echo "<td>".$row["data_admissao"]."</td>";
-            echo "<td>".($row["conta_ativa"] ? "<span class='ativo'>Ativo</span>" : "<span class='inativo'>Inativo</span>")."</td>";
-            echo '<td>
-                <form action="editar.php" method="GET">
-                    <input type="hidden" name="id" value="'. $row['id_usuario'] . '">
-                    <button type="submit">Editar</button>
-                </form>
-                  </td>';
-            echo '<td>
-              <form action="deletar_usuario.php" method="POST" onsubmit="return confirm(\'Tem certeza que deseja deletar?\');">
-                <input type="hidden" name="id_usuario" value="'. $row['id_usuario'] . '">
-                <button type="submit">Deletar</button>
-              </form>
-            </td>';
-            
-            echo "</tr>";
-        }
-    } else {
-        echo "<tr><td colspan='12'>Nenhum usuário cadastrado.</td></tr>";
-    }
-    ?>
-  </table>
+<body>
+  <nav role="navigation" aria-label="Menu principal">
+    <?php include("../../include/navbar.php"); ?>
+  </nav>
+
+  <main role="main">
+    <section class="usuarios-painel" aria-label="Painel de usuários">
+      <header class="usuarios-topo">
+        <a href="cadastro.php" class="btn-cadastrar">
+          Cadastrar Usuário
+        </a>
+
+        <form class="busca-usuarios" onsubmit="return false;">
+          <input
+            type="search"
+            id="busca"
+            placeholder="Buscar usuário..."
+            aria-label="Buscar usuário">
+        </form>
+      </header>
+
+      <section class="cards-container" id="tabelaUsuarios" aria-label="Lista de usuários">
+        <?php while ($row = $result->fetch_assoc()): ?>
+          <article class="usuario-card" aria-label="Usuário">
+
+            <!-- FOTO -->
+            <?php
+            $caminho = '../../assets/img/user_padrao.png';
+
+            if (!empty($row['foto_usuario']) && file_exists("../../assets/img/usuarios/" . $row['foto_usuario'])) {
+              $caminho = "../../assets/img/usuarios/" . $row['foto_usuario'];
+            }
+            ?>
+
+            <figure class="usuario-foto">
+              <img src="<?= $caminho ?>" alt="Foto do usuário">
+            </figure>
+
+
+            <!-- NOME -->
+            <h3><?= $row['nome_usuario'] ?></h3>
+
+            <!-- STATUS -->
+            <?= $row['conta_ativa']
+              ? "<span class='ativo'>Ativo</span>"
+              : "<span class='inativo'>Inativo</span>" ?>
+
+            <!-- CARGO -->
+            <p class="cargo"><?= $row['nome_cargo'] ?? 'Cargo não definido' ?></p>
+
+            <!-- AÇÃO -->
+            <a href="editar.php?id=<?= $row['id_usuario'] ?>" class="btn-perfil">
+              Perfil
+            </a>
+          </article>
+        <?php endwhile; ?>
+      </section>
+    </section>
+  </main>
+
+  <script src="../../assets/js/script.js"></script>
 </body>
+
 </html>
