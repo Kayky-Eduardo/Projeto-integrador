@@ -12,7 +12,7 @@ $nivel = $_SESSION['nivel'];
 // REDIRECIONAMENTO DO RH
 // ======================
 // Se for RH/Admin, redireciona para tela de ajustes pendentes
-if ($nivel >= 3) {
+if ($nivel <= 2) {
     header("Location: ../rh/ajustes_pendentes.php");
     exit;
 }

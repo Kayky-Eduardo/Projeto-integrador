@@ -73,7 +73,7 @@ $res = $conn->query($sql);
             <th>Campo</th>
             <th>Antes</th>
             <th>Depois</th>
-            <th>Justificativa</th>
+            <th>Motivo</th>
             <th>Ação</th>
         </tr>
 
@@ -99,8 +99,8 @@ $res = $conn->query($sql);
                 <!-- Novo horário solicitado -->
                 <td><?= htmlspecialchars($r['valor_novo']) ?></td>
 
-                <!-- Justificativa do ajuste -->
-                <td><?= htmlspecialchars($r['justificativa']) ?></td>
+                <!-- Motivo do ajuste -->
+                <td><?= htmlspecialchars($r['motivo']) ?></td>
 
                 <!-- Ações do RH -->
                 <td>

@@ -6,38 +6,44 @@ if (session_status() === PHP_SESSION_NONE) {
 $nivel = $_SESSION['nivel'];
 
 echo '<nav>';
+echo '<a href="/projeto-integrador/public/index.php">Início</a>';
 
-// Nível 3 - ADM
 if ($nivel >= 3) {
     echo '
-        <a href="usuario/lista.php">Usuários</a>
-        <a href="ponto/gerenciar.php">Gerenciar Solicitações</a>
-        <a href="ponto/historico.php">Histórico</a>
+        <a href="/projeto-integrador/public/usuario/lista.php">Usuários</a>
+        <a href="/projeto-integrador/public/relatorio/online.php">Controle de usuarios</a>
+        <a href="/projeto-integrador/public/meu_banco_horas.php">Banco de Horas</a>
+        <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
+        <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
+        <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
+        <a href="/projeto-integrador/public/ponto/historico.php">Histórico</a>
+        <a href="/projeto-integrador/public/config/config.php">Configurações</a>
     ';
-}
-// Nível 2 - RH
-elseif ($nivel == 2) {
+} elseif ($nivel == 2) {
     echo '
-        <a href="usuario/lista.php">Usuários</a>
-        <a href="ponto/pausas_e_ponto/registrar_ponto.php">Bater Ponto</a>
-        <a href="ponto/pausas_e_ponto/pausa_config.php">Pausas</a>
-        <a href="ponto/gerenciar.php">Gerenciar Pontos</a>
-        <a href="rh/ajustes_pendentes.php">Ajustes Pendentes</a>
-        <a href="ponto/historico.php">Histórico</a>
-        <a href="ponto/notificacoes.php">Notificações</a>
+        <a href="/projeto-integrador/public/usuario/lista.php">Usuários</a>
+        <a href="/projeto-integrador/public/relatorio/online.php">Controle de usuarios</a>
+        <a href="/projeto-integrador/public/meu_banco_horas.php">Banco de Horas</a>
+        <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
+        <a href="/projeto-integrador/public/ponto/status.php">Bater Ponto / Status</a>
+        <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
+        <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
+        <a href="/projeto-integrador/public/ponto/historico.php">Histórico</a>
+        <a href="/projeto-integrador/public/ponto/notificacoes.php">Notificações</a>
+        <a href="/projeto-integrador/public/config/config.php">Configurações</a>
     ';
-}
-// Nível 1 - Funcionário
-else {
+        
+} else {
     echo '
-        <a href="ponto/pausas_e_ponto/registrar_ponto.php">Bater Ponto</a>
-        <a href="ponto/pausas_e_ponto/pausa_config.php">Pausas</a>
-        <a href="ponto/historico.php">Histórico</a>
-        <a href="ponto/notificacoes.php">Notificações</a>
+        <a href="/projeto-integrador/public/ponto/status.php">Bater Ponto / Status</a>
+        <a href="/projeto-integrador/public/meu_banco_horas.php">Banco de Horas</a>
+        <a href="/projeto-integrador/public/ponto/historico.php">Histórico</a>
+        <a href="/projeto-integrador/public/ponto/notificacoes.php">Notificações</a>
     ';
 }
 
-echo '<a href="logout.php">Sair</a>';
-echo '<a style="pointer-events: none;">'. $_SESSION["nome_usuario"] .' </a>';
+echo '
+    <a href="">'. $_SESSION["nome_usuario"] .' </a>
+    <a href="/projeto-integrador/public/logout.php">Sair</a>
+';
 echo '</nav>';
-?>

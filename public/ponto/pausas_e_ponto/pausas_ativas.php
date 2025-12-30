@@ -34,7 +34,7 @@ $res = $stmt->get_result();
 
 <!-- mudei o html para uma div para exibir pausas ativas -->
 <div>
-    <h2>Pausas Ativas</h2>
+    <h2>Pausa Ativa</h2>
     <?php if (!$res || $res->num_rows === 0): ?>
         <div>Nenhuma pausa ativa no momento.</div>
     <?php else: ?>
