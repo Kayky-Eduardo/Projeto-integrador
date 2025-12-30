@@ -6,39 +6,44 @@ if (session_status() === PHP_SESSION_NONE) {
 $nivel = $_SESSION['nivel'];
 
 echo '<nav>';
-echo '<a href="/PROJETO-INTEGRADOR/public/index.php">Início</a>';
+echo '<a href="/projeto-integrador/public/index.php">Início</a>';
 
 if ($nivel >= 3) {
     echo '
-        <a href="/PROJETO-INTEGRADOR/public/usuario/lista.php">Usuários</a>
-        <a href="/Projeto-integrador/public/relatorio/online.php">Controle de usuarios</a>
-        <a href="/Projeto-integrador/public/meu_banco_horas.php">Banco de Horas</a>
-        <a href=#>Indicadores</a>
-        <a href="/PROJETO-INTEGRADOR/public/ponto/gerenciar.php">Gerenciar Pontos</a>
-        <a href="/PROJETO-INTEGRADOR/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
-        <a href="/PROJETO-INTEGRADOR/public/ponto/historico.php">Histórico</a>
-        <a href="/PROJETO-INTEGRADOR/public/config/config.php">Configurações</a>
+        <a href="/projeto-integrador/public/usuario/lista.php">Usuários</a>
+        <a href="/projeto-integrador/public/relatorio/online.php">Controle de usuarios</a>
+        <a href="/projeto-integrador/public/meu_banco_horas.php">Banco de Horas</a>
+        <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
+        <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
+        <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
+        <a href="/projeto-integrador/public/ponto/historico.php">Histórico</a>
+        <a href="/projeto-integrador/public/config/config.php">Configurações</a>
     ';
 } elseif ($nivel == 2) {
     echo '
-        <a href="/PROJETO-INTEGRADOR/public/usuario/lista.php">Usuários</a>
-        <a href="/Projeto-integrador/public/relatorio/online.php">Controle de usuarios</a>
-        <a href="/Projeto-integrador/public/meu_banco_horas.php">Banco de Horas</a>
-        <a href=#>Indicadores</a>
-        <a href="/PROJETO-INTEGRADOR/public/ponto/status.php">Bater Ponto / Status</a>
-        <a href="/PROJETO-INTEGRADOR/public/ponto/gerenciar.php">Gerenciar Pontos</a>
-        <a href="/PROJETO-INTEGRADOR/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
-        <a href="/PROJETO-INTEGRADOR/public/ponto/historico.php">Histórico</a>
-        <a href="/PROJETO-INTEGRADOR/public/ponto/notificacoes.php">Notificações</a>
-        <a href="/PROJETO-INTEGRADOR/public/config/config.php">Configurações</a>    ';
+        <a href="/projeto-integrador/public/usuario/lista.php">Usuários</a>
+        <a href="/projeto-integrador/public/relatorio/online.php">Controle de usuarios</a>
+        <a href="/projeto-integrador/public/meu_banco_horas.php">Banco de Horas</a>
+        <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
+        <a href="/projeto-integrador/public/ponto/status.php">Bater Ponto / Status</a>
+        <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
+        <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
+        <a href="/projeto-integrador/public/ponto/historico.php">Histórico</a>
+        <a href="/projeto-integrador/public/ponto/notificacoes.php">Notificações</a>
+        <a href="/projeto-integrador/public/config/config.php">Configurações</a>
+    ';
+        
 } else {
     echo '
-        <a href="/PROJETO-INTEGRADOR/public/ponto/status.php">Bater Ponto / Status</a>
-        <a href="/Projeto-integrador/public/meu_banco_horas.php">Banco de Horas</a>
-        <a href="/PROJETO-INTEGRADOR/public/ponto/historico.php">Histórico</a>
-        <a href="/PROJETO-INTEGRADOR/public/ponto/notificacoes.php">Notificações</a>
-';
+        <a href="/projeto-integrador/public/ponto/status.php">Bater Ponto / Status</a>
+        <a href="/projeto-integrador/public/meu_banco_horas.php">Banco de Horas</a>
+        <a href="/projeto-integrador/public/ponto/historico.php">Histórico</a>
+        <a href="/projeto-integrador/public/ponto/notificacoes.php">Notificações</a>
+    ';
 }
 
-echo '<a href="/PROJETO-INTEGRADOR/public/logout.php">Sair</a>';
+echo '
+    <a href="">'. $_SESSION["nome_usuario"] .' </a>
+    <a href="/projeto-integrador/public/logout.php">Sair</a>
+';
 echo '</nav>';
