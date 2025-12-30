@@ -2,7 +2,7 @@
 include(__DIR__ . "/../BD/conexao.php");
 require_once '../include/funcoes/funcoes_relatorio_ponto.php';
 require_once '../include/funcoes/funcoes_jornada.php';
-
+require_once '../include/funcoes/funcoes_banco_horas.php';
 header("Content-Type: application/json");
 
 
@@ -14,7 +14,7 @@ $white_list = [
     'ausentes', 'pausa', 'horario',
     'presentes', 'usuarios', 'filtrar_usuario',
     'filtrar_tabela_hora', 'get_logados', 'deslogar',
-    'verificar_jornada', 'evolucao_presenca'
+    'verificar_jornada', 'evolucao_presenca', 'get_horas'
 ];
 
 if ($acao) {
@@ -41,6 +41,21 @@ if ($acao) {
             exit;
         } else if ($acao_formatada === 'filtrar_tabela_hora') {
             echo json_encode(relatorio_ponto_filtrado($conn, $input['id_usuario']));
+            exit;
+        } else if($acao_formatada == 'get_horas') {
+            try {
+                $resultado = get_banco_horas($conn, $input['id_usuario'] ?? null);
+                
+                echo json_encode([
+                    'sucesso' => true,
+                    'dados' => $resultado
+                ]);
+            } catch (Exception $e) {
+                echo json_encode([
+                    'sucesso' => false,
+                    'mensagem' => 'Erro ao buscar dados: ' . $e->getMessage()
+            ]);
+            }
             exit;
         } else if ($acao_formatada === 'get_logados') {
             echo json_encode(get_logados($conn));

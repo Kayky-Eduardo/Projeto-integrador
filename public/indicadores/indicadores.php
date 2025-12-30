@@ -287,37 +287,38 @@ include "../../include/navbar.php";
                 select.appendChild(tag_option);
             })
         }
-
-        select.addEventListener("change", async function() {
+        
+        select.addEventListener("change", async function () {
             const exibicao_hora_extra = document.getElementById("exibicao-hora-extra");
-            const tag_h1_hora_extra = document.createElement("h1")
-            const tag_h2_hora_extra = document.createElement("h2")
-         
-            exibicao_hora_extra.textContent = "";
 
-            let id_usuario = this.value;
-         
-            const coleta_hora_extra = await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_usuario", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({id_usuario})
-            })
-            const resposta_hora_extra = await coleta_hora_extra.json();
-            let hora = resposta_hora_extra;
-            let min = 0;
-            tag_h1_hora_extra.textContent = "Hora Extra";
-            
-            if (resposta_hora_extra >= 60) {
-                hora = Math.floor(resposta_hora_extra / 60);
-                min = resposta_hora_extra % 60;
-            }
-            
-            tag_h2_hora_extra.textContent = `${hora} horas e ${min.toString().padStart(2,'0')} minutos`;
+            exibicao_hora_extra.innerHTML = "";
 
-            exibicao_hora_extra.appendChild(tag_h1_hora_extra);
-            exibicao_hora_extra.appendChild(tag_h2_hora_extra);
-            filtrar_tabela_hora(id_usuario)
-        })
+            const id_usuario = this.value;
+
+            const coleta_hora_extra = await fetch(
+                "../../api/api_relatorio_ponto.php?acao=get_horas",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id_usuario })
+                }
+            );
+
+            const resposta = await coleta_hora_extra.json();
+
+            const tag_h1 = document.createElement("h1");
+            const tag_h2 = document.createElement("h2");
+
+            tag_h1.textContent = "Hora Extra";
+
+            // Usa direto o valor retornado pela API
+            tag_h2.textContent = resposta.dados.saldo_formatado ?? "00:00";
+
+            exibicao_hora_extra.appendChild(tag_h1);
+            exibicao_hora_extra.appendChild(tag_h2);
+
+            filtrar_tabela_hora(id_usuario);
+        });
         exibicao_usuarios_option();
 
         async function verificarJornada(usuarioId, dataInicio, dataFim) {
