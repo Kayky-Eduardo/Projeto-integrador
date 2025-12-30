@@ -226,6 +226,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <header>
         <?php include("../../include/navbar.php");?>
     </header>
+
     <h1>Cadastro de Usuário</h1>
 
     <?php
@@ -289,26 +290,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </form>
 
     <br>
-    <a href="lista.php">Voltar</a>
+    <a href="setores.php">Voltar</a>
 
     <!-- Máscaras automáticas com JS -->
-    <script src="https://unpkg.com/imask"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            IMask(document.querySelector('[name="cpf_usuario"]'), {
-                mask: '000.000.000-00'
-            });
-            IMask(document.querySelector('[name="rg_usuario"]'), {
-                mask: '00.000.000-0'
-            });
-            IMask(document.querySelector('[name="telefone"]'), {
-                mask: '(00) 00000-0000'
-            });
-            IMask(document.querySelector('[name="cep"]'), {
-                mask: '00000-000'
-            });
-        });
-    </script>
 </body>
 
 </html>

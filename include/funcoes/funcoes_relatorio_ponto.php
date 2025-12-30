@@ -1,5 +1,77 @@
 <?php
+function evolucao_presenca($conn) {
+    $data_inicio = date('Y-m-01'); // Primeiro dia do mês
+    $data_fim = date('Y-m-d'); // Hoje
+    
+    $total_usuarios = calculo_total_usuarios($conn);
 
+    $stmt = $conn->prepare("
+        SELECT 
+            data_ponto,
+            COUNT(DISTINCT id_usuario) AS presentes
+        FROM ponto_dia
+        WHERE status = 'aprovado'
+        AND data_ponto BETWEEN ? AND ?
+        GROUP BY data_ponto
+        ORDER BY data_ponto ASC
+    ");
+    
+    $stmt->bind_param("ss", $data_inicio, $data_fim);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $dados = [];
+    
+    $primeira_data = null;
+    $ultima_data = null;
+
+    
+    while ($row = $result->fetch_assoc()) {
+        $presentes = (int)$row['presentes'];
+        $ausentes = $total_usuarios - $presentes;
+        $dados[] = [
+            'data' => $row['data_ponto'],
+            'presentes' => $presentes,
+            'ausentes' => $ausentes,
+            'total' => $total_usuarios
+        ];
+    }
+    
+    if (!empty($dados)) {
+        $ultima_data = end($dados)['data']; // pega a data do último 
+        $primeira_data = $dados[0]['data']; // inverso
+    }
+    
+    $stmt->close();
+    
+    return [
+        'periodo' => [
+            'inicio' => $data_inicio,
+            'fim' => $data_fim
+        ],
+        'primeira_data' => $primeira_data,
+        'ultima_data' => $ultima_data,
+        'dados' => $dados
+    ];
+}
+
+function calculo_total_usuarios($conn) {
+    // Total de usuários
+    $stmt_total = $conn->prepare("
+        SELECT COUNT(*) AS total_usuarios
+        FROM usuario
+    ");
+    $stmt_total->execute();
+    $result_total = $stmt_total->get_result();
+    $total_usuarios = 0;
+    
+    if ($linha_total = $result_total->fetch_assoc()) {
+       return $total_usuarios = (int)$linha_total['total_usuarios'];
+    }
+    $stmt_total->close();
+    
+    return $total_usuarios;
+}
 
 // realizando as pesquisas do status do funcionário
 // no banco de dados
@@ -18,19 +90,10 @@ function dados_grafico ($conn) {
     } else {
         $numero_presente = 0;
     }
-    
-    $pesquisa_ausentes = $conn->prepare("
-        SELECT COUNT(*) AS total_usuarios
-        FROM usuario
-        
-    ");
-    $pesquisa_ausentes->execute();
-    $result = $pesquisa_ausentes->get_result();
-    if ($linha = $result->fetch_assoc()) {
-        $numero_ausentes = (int)$linha['total_usuarios'] - (int)$numero_presente;
-    } else {
-        $numero_ausentes = 0;
-    }
+  
+    $total_usuarios = calculo_total_usuarios($conn);
+
+    $numero_ausentes = $total_usuarios - (int)$numero_presente;
     
     // Pesquisa de pausa( incompleto porque depende de outro código),
     // irei retornar aqui assim que o código de ponto/pausas estiverem feito
@@ -54,8 +117,7 @@ function dados_grafico ($conn) {
         SELECT COUNT(*) AS total_completo
         FROM ponto_dia
         WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NOT NULL AND fim_ponto != '00:00:00')
-        AND data_ponto = CURDATE()
-        ;
+        AND data_ponto = CURDATE();
     ");
     $pesquisa_horario_completo->execute();
 
@@ -183,18 +245,39 @@ function filtrar_usuario($conn, $id_usuario = null) {
         return $linha['total_extra'] ?? 0;
     }
 
+    $data_inicio = date('Y-m-01'); // Primeiro dia do mes
+    $data_fim = date('Y-m-d'); // hoje
+
     $coleta_usuario = $conn->prepare("
-    SELECT saldo_minutos, nome_usuario
+    SELECT saldo_minutos, nome_usuario, ultima_atualizacao
     FROM banco_horas
-    JOIN usuario ON banco_horas.id_usuario = usuario.id_usuario;
+    JOIN usuario ON banco_horas.id_usuario = usuario.id_usuario
+    WHERE ultima_atualizacao between ? AND ?;
     ");
-    $coleta_usuario->bind_param("i", $id_usuario);
+    $coleta_usuario->bind_param("ss", $data_inicio, $data_fim);
     $coleta_usuario->execute();
     
     $result = $coleta_usuario->get_result();
-    $linha = $result->fetch_assoc();
+    
+    $dados_grafico = [];
 
-    return $linha['total_extra'] ?? 0;
+    while ($usuario = $result->fetch_assoc()) {
+        $dados_grafico[] = [
+            'nome_usuario' => $usuario['nome_usuario'],
+            'saldo_horas' => $usuario['saldo_minutos'] / 60,
+            'data' => $usuario['ultima_atualizacao']
+        ];
+    }
+
+    $coleta_usuario->close();
+
+    return [
+        'periodo' => [
+            'inicio' => $data_inicio,
+            'fim' => $data_fim
+        ],
+        'usuarios' => $dados_grafico
+    ];
 }
 
 function relatorio_ponto_filtrado($conn, $id_usuario) {
