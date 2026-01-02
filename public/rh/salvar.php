@@ -58,70 +58,27 @@ $saida         = montarDateTime($data, $saida_time);
 
 // Início do código do Davi
 
-if ($campo_editavel === 'inicio_pausa' || $campo_editavel === 'fim_pausa') {
-    // Atualiza a tabela pausa
-    $stmt = $conn->prepare("
-        UPDATE pausa SET 
-            inicio = ?,
-            fim = ?
-        WHERE id_pausa = ?
-    ");
+// 1. Atualiza os horários principais do ponto
+$stmt1 = $conn->prepare("UPDATE ponto_dia SET inicio_ponto = ?, fim_ponto = ?, status = 'Finalizado' WHERE id_ponto = ?");
+$stmt1->bind_param("ssi", $entrada, $saida, $id_ponto);
+$stmt1->execute();
 
-    $stmt->bind_param("ssi", 
-        $inicio_pausa, 
-        $fim_pausa, 
-        $id_pausa
-    );
-    $stmt->execute();
-} else {
-    // fim do código do Davi (o else faz parte do código do Davi também)
-
-    // ========================
-    // ATUALIZA SOMENTE O PONTO
-    // ========================
-    // Não apaga registros
-    // Atualiza APENAS esse ponto
-    $stmt = $conn->prepare("
-        UPDATE ponto_dia SET 
-            inicio_ponto  = ?,
-            inicio_pausa = ?,
-            fim_pausa    = ?,
-            fim_ponto     = ?,
-            status        = 'Finalizado'
-        WHERE id_ponto = ?
-    ");
-
-    $stmt->bind_param("ssssi", 
-        $entrada, 
-        $inicio_pausa, 
-        $fim_pausa, 
-        $saida,
-        $id_ponto
-    );
-    $stmt->execute();
+// 2. Se houver ID de pausa, atualiza a pausa também (Sem exclusividade lógica)
+if ($id_pausa > 0) {
+    $stmt2 = $conn->prepare("UPDATE pausa SET inicio = ?, fim = ? WHERE id_pausa = ?");
+    $stmt2->bind_param("ssi", $inicio_pausa, $fim_pausa, $id_pausa);
+    $stmt2->execute();
 }
-// ===========================
-// MARCAR AJUSTE COMO APROVADO
-// ===========================
-$stmt = $conn->prepare("
-    UPDATE ajustes_ponto 
-    SET status='Aprovado', motivo=?, data_resposta=NOW(), id_rh=?
-    WHERE id_ajuste=?
-");
 
-$stmt->bind_param("sii", $motivo, $_SESSION['id_usuario'], $id_ajuste);
-$stmt->execute();
+// 3. Marca o ajuste como APROVADO
+$stmt3 = $conn->prepare("UPDATE ajustes_ponto SET status='Aprovado', motivo=?, data_resposta=NOW(), id_rh=? WHERE id_ajuste=?");
+$stmt3->bind_param("sii", $motivo, $_SESSION['id_usuario'], $id_ajuste);
+$stmt3->execute();
 
-// ==========================
-// NOTIFICAÇÃO AO FUNCIONÁRIO
-// ==========================
-$stmt = $conn->prepare("
-    INSERT INTO notificacoes_ponto (id_usuario, id_ponto, mensagem, data_notificacao) 
-    VALUES (?, ?, 'Seu ajuste foi aprovado e atualizado com sucesso.', NOW())
-");
-
-$stmt->bind_param("ii", $id_usuario, $id_ponto);
-$stmt->execute();
+// 4. Notificação
+$stmt4 = $conn->prepare("INSERT INTO notificacoes_ponto (id_usuario, id_ponto, mensagem, data_notificacao) VALUES (?, ?, 'Seu ajuste foi aprovado.', NOW())");
+$stmt4->bind_param("ii", $id_usuario, $id_ponto);
+$stmt4->execute();
 
 // ============
 // REDIRECIONAR
