@@ -19,7 +19,7 @@ $result = $conn->query($sql);
 <head>
   <meta charset="UTF-8">
   <title>Lista de Usuários</title>
-  <link rel="stylesheet" href="../../assets/estilo.css">
+  <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
 <body>
     <header>
