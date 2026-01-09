@@ -34,8 +34,8 @@ $valor_novo_ponto = $_POST['valor_novo_ponto'] ?? '';
 
 // Variáveis específicas para AJUSTE DE PAUSA
 $id_pausa       = intval($_POST['id_pausa'] ?? 0);
-$inicio_pausa_novo = $_POST['inicio_pausa_novo'] ?? '';
-$fim_pausa_novo = $_POST['fim_pausa_novo'] ?? '';
+$campo_pausa = $_POST['campo_pausa'] ?? '';
+$pausa_nova = $_POST['pausa_nova'] ?? '';
 
 
 /* =================
@@ -114,18 +114,18 @@ if ($tipo_ajuste === 'ponto') {
 elseif ($tipo_ajuste === 'pausa') {
     
     // 1. Validação de dados de pausa
-    if ($id_pausa <= 0 || (empty($inicio_pausa_novo) && empty($fim_pausa_novo))) {
+    if ($id_pausa <= 0 || (empty($campo_pausa) && empty($pausa_nova))) {
         die("Selecione a pausa e preencha o novo início ou fim.");
     }
 
     // 2. BUSCA VALOR ANTIGO DA PAUSA (Segurança: Garante que a pausa pertence ao ponto)
     $busca_pausa = $conn->prepare("
-        SELECT id_pausa, inicio, fim, id_usuario, data
+        SELECT id_pausa, ?, id_usuario, data
         FROM pausa 
         WHERE id_pausa = ? AND id_usuario = ? AND data = ?
     ");
     // O id_usuario e a data são recuperados do ponto já validado
-    $busca_pausa->bind_param("iss", $id_pausa, $reg_ponto['id_usuario'], $data);
+    $busca_pausa->bind_param("isss", $campo_pausa, $id_pausa, $reg_ponto['id_usuario'], $data);
     $busca_pausa->execute();
     $reg_pausa = $busca_pausa->get_result()->fetch_assoc();
 
@@ -134,43 +134,6 @@ elseif ($tipo_ajuste === 'pausa') {
     }
 
     // 3. Processar e Inserir Ajustes para INÍCIO e/ou FIM
-    
-    // Sub-rotina para INÍCIO da Pausa
-    if (!empty($inicio_pausa_novo)) {
-        $campo_pausa_inicio = 'inicio_pausa'; 
-        $valor_antigo_inicio = $reg_pausa['inicio'] 
-            ? date('Y-m-d H:i:s', strtotime($reg_pausa['inicio'])) 
-            : null;
-        $valor_novo_inicio = $data . ' ' . $inicio_pausa_novo . ':00';
-
-        // NOTE: ESTA QUERY REQUER A COLUNA id_pausa NA TABELA ajustes_ponto
-        $stmt_inicio = $conn->prepare("
-            INSERT INTO ajustes_ponto 
-                (id_ponto, id_pausa, id_usuario, campo, valor_antigo, valor_novo, motivo, status, data_solicitacao)
-            VALUES 
-                (?, ?, ?, ?, ?, ?, ?, 'Pendente', NOW())
-        ");
-        $stmt_inicio->bind_param(
-            "iiissss",
-            $id_ponto,
-            $id_pausa,
-            $id_usuario,
-            $campo_pausa_inicio,
-            $valor_antigo_inicio,
-            $valor_novo_inicio,
-            $motivo
-        );
-        $ajuste_executado = $stmt_inicio->execute();
-    }
-
-    // Sub-rotina para FIM da Pausa
-    if (!empty($fim_pausa_novo)) {
-        $campo_pausa_fim = 'fim_pausa'; 
-        $valor_antigo_fim = $reg_pausa['fim'] 
-            ? date('Y-m-d H:i:s', strtotime($reg_pausa['fim'])) 
-            : null;
-        $valor_novo_fim = $data . ' ' . $fim_pausa_novo . ':00';
-
         $stmt_fim = $conn->prepare("
             INSERT INTO ajustes_ponto 
                 (id_ponto, id_pausa, id_usuario, campo, valor_antigo, valor_novo, motivo, status, data_solicitacao)
@@ -182,14 +145,13 @@ elseif ($tipo_ajuste === 'pausa') {
             $id_ponto,
             $id_pausa,
             $id_usuario,
-            $campo_pausa_fim,
-            $valor_antigo_fim,
-            $valor_novo_fim,
+            $campo_pausa,
+            $valor_antigo = $reg_pausa['$campo_pausa'] ? date('Y-m-d H:i:s', strtotime($reg_pausa[$campo_pausa])) : null,
+            $valor_novo = $pausa_nova,
             $motivo
         );
         // Usa OR lógico para manter a execução se o ajuste de início foi bem-sucedido
         $ajuste_executado = $stmt_fim->execute() || $ajuste_executado;
-    }
 }
 
 /* =================
