@@ -107,7 +107,6 @@ $result = $conn->query($sql);
               <img src="<?= $caminho ?>" alt="Foto do usuário">
             </figure>
 
-
             <!-- NOME -->
             <h3><?= $row['nome_usuario'] ?></h3>
 

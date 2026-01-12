@@ -861,7 +861,7 @@ a:focus {
     color: white;
     padding: 10px 16px;
     border-radius: 8px;
-    border: none;
+    border: 1px solid var(--cor-principal);
     cursor: pointer;
 }
 
@@ -877,6 +877,9 @@ a:focus {
     border-radius: 8px;
     text-decoration: none;
     font-size: 0.85rem;
+    border: none;
+    border: 1px solid var(--cor-perigo);
+    cursor: pointer;
 }
 
 /* AÇÕES EMPRESA */
@@ -979,32 +982,6 @@ a:focus {
     text-decoration: none;
 }
 
-/* ======================
-   RESPONSIVO
-====================== */
-@media (max-width: 900px) {
-
-    .perfil-acoes {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-    }
-
-    .form-padrao button {
-        grid-column: span 1;
-    }
-}
-
-@media (max-width: 900px) {
-    .perfil-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .perfil-header {
-        height: auto;
-    }
-}
-
 .foto-upload {
     display: flex;
     flex-direction: column;
@@ -1045,6 +1022,15 @@ a:focus {
     display: none;
 }
 
+.perfil-edicao h4 {
+    color: var(--cor-principal);
+}
+
+.perfil-edicao .label-padrao {
+    text-align: left;
+    display: block;
+}
+
 .perfil-edicao.ativo {
     display: block;
 }
@@ -1077,7 +1063,7 @@ a:focus {
 .voltar-final a {
     display: block;
     width: 100%;
-    padding: 10px 14px;
+    padding: 10px;
     border-radius: 8px;
     background: #f1f5f9;
     color: var(--cor-principal);
@@ -1085,4 +1071,67 @@ a:focus {
     border: 1px solid var(--borda-padrao);
     font-size: 0.85rem;
     font-weight: 500;
+}
+
+/* =========================
+   PERFIL / GRID
+========================= */
+.perfil-artigo {
+    grid-column: span 3;
+}
+
+/* =========================
+   CAIXA DE ERROS
+========================= */
+.box-erros {
+    border-left: 4px solid #dc2626;
+    padding: 10px;
+    margin-bottom: 12px;
+    background-color: #fee2e2;
+    border-radius: 4px;
+}
+
+.box-erros strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #7f1d1d;
+}
+
+.box-erros ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+/* =========================
+   FORMULÁRIO
+========================= */
+.form-padrao {
+    display: grid;
+    gap: 8px;
+}
+
+/* ======================
+   RESPONSIVO
+====================== */
+@media (max-width: 900px) {
+
+    .perfil-acoes {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .form-padrao button {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 900px) {
+    .perfil-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .perfil-header {
+        height: auto;
+    }
 }

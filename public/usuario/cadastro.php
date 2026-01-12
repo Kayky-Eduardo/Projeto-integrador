@@ -229,11 +229,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <!-- COLUNA FORMULÁRIO -->
             <section class="perfil-dados">
-                <article style="grid-column: span 3;">
+                <article class="perfil-artigo">
 
                     <!-- ERROS -->
                     <?php if (!empty($erros)): ?>
-                        <div style="border-left:4px solid #dc2626; padding-left:10px; margin-bottom:12px;">
+                        <div class="box-erros">
                             <strong>Erros encontrados:</strong>
                             <ul class="lista-erro erro">
                                 <?php foreach ($erros as $erro): ?>
@@ -250,10 +250,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <input class="input-padrao" name="nome_usuario" value="<?= $_POST['nome_usuario'] ?? '' ?>" required>
 
                         <label class="label-padrao">CPF</label>
-                        <input class="input-padrao" name="cpf_usuario" value="<?= $_POST['cpf_usuario'] ?? '' ?>" required>
+                        <input class="input-padrao" id="cpf" name="cpf_usuario" value="<?= $_POST['cpf_usuario'] ?? '' ?>" required>
 
                         <label class="label-padrao">RG</label>
-                        <input class="input-padrao" name="rg_usuario" value="<?= $_POST['rg_usuario'] ?? '' ?>" required>
+                        <input class="input-padrao" id="rg" name="rg_usuario" value="<?= $_POST['rg_usuario'] ?? '' ?>" required>
 
                         <label class="label-padrao">Gênero</label>
                         <select class="input-padrao" name="genero" required>
@@ -271,10 +271,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <input class="input-padrao" type="password" name="senha_usuario" required>
 
                         <label class="label-padrao">Telefone</label>
-                        <input class="input-padrao" name="telefone" value="<?= $_POST['telefone'] ?? '' ?>" required>
+                        <input class="input-padrao" id="telefone" name="telefone" value="<?= $_POST['telefone'] ?? '' ?>" required>
 
                         <label class="label-padrao">CEP</label>
-                        <input class="input-padrao" name="cep" value="<?= $_POST['cep'] ?? '' ?>" required>
+                        <input class="input-padrao" id="cep" name="cep" value="<?= $_POST['cep'] ?? '' ?>" required>
 
                         <label class="label-padrao">Cargo</label>
                         <select class="input-padrao" name="id_cargo" required>
@@ -295,8 +295,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <section class="voltar-final">
                         <a href="lista.php">Voltar</a>
                     </section>
+
                 </article>
             </section>
+
         </form>
     </main>
 

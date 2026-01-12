@@ -10,7 +10,6 @@ if (!isset($_POST['id_usuario']) || empty($_POST['id_usuario'])) {
 
 $id = intval($_POST['id_usuario']);
 
-// ✅ evita excluir a si mesmo
 if ($id === $_SESSION['id_usuario']) {
     die("Você não pode excluir a si mesmo.");
 }
