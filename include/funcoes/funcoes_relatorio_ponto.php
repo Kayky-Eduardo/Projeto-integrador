@@ -233,8 +233,8 @@ function coleta_usuarios($conn) {
 function filtrar_usuario($conn, $id_usuario = null) {
 
     $data_inicio = date('Y-m-01'); // Primeiro dia do mes
-    $data_fim = date('Y-m-d'); // hoje
-
+    $data_fim = date('Y-m-d 23:59:59'); // hoje
+    
     $coleta_usuario = $conn->prepare("
     SELECT saldo_minutos, nome_usuario, ultima_atualizacao
     FROM banco_horas
