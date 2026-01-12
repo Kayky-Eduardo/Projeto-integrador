@@ -291,11 +291,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                         <button class="btn-padrao">Cadastrar Usuário</button>
                     </section>
-                </article>
 
-                <section class="voltar-final">
-                    <a href="lista.php">← Voltar</a>
-                </section>
+                    <section class="voltar-final">
+                        <a href="lista.php">Voltar</a>
+                    </section>
+                </article>
             </section>
         </form>
     </main>

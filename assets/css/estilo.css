@@ -749,7 +749,8 @@ a:focus {
     display: grid;
     grid-template-columns: 300px 1fr;
     gap: 20px;
-    align-items: stretch; /* força mesma altura */
+    align-items: stretch;
+    /* força mesma altura */
 }
 
 /* FOTO ocupa toda a coluna */
@@ -1024,4 +1025,64 @@ a:focus {
 
 .foto-upload input {
     display: none;
+}
+
+.perfil-grid-editar {
+    display: grid;
+    grid-template-columns: 280px 1fr 1fr;
+    gap: 20px;
+}
+
+.perfil-visualizacao,
+.perfil-edicao {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+.perfil-edicao {
+    display: none;
+}
+
+.perfil-edicao.ativo {
+    display: block;
+}
+
+.info-bloco {
+    margin-bottom: 12px;
+}
+
+.info-bloco span {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.acoes-perfil {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.acoes-perfil .btn-excluir {
+    order: 1;
+}
+
+.voltar-final {
+    order: 2;
+    margin-top: 0;
+    text-align: center;
+}
+
+.voltar-final a {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: var(--cor-principal);
+    text-decoration: none;
+    border: 1px solid var(--borda-padrao);
+    font-size: 0.85rem;
+    font-weight: 500;
 }
