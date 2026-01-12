@@ -57,13 +57,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: pausa_config.php");
         exit;
     }
+    // altera o estado da pausa para inativo em vez de excluir(soft delete por questão do histórico)
+    if ($_POST['acao'] === 'excluir') {
+        $id = intval($_POST['id_config']);
+
+        if ($id > 0) {
+            // Mudamos de DELETE para UPDATE
+            $sql = "UPDATE pausa_config SET ativo = 0 WHERE id_config = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $id);
+            
+            if ($stmt->execute()) {
+                $_SESSION['msg'] = 'Pausa desativada com sucesso.';
+            } else {
+                $_SESSION['msg'] = 'Erro ao desativar: ' . $conn->error;
+            }
+        }
+
+        header("Location: pausa_config.php");
+        exit;
+    }
 }
 
 
 // ----------------------------------------------
 // LISTA TODOS OS TIPOS DE PAUSA CADASTRADOS
 // ----------------------------------------------
-$listSql = "SELECT * FROM pausa_config ORDER BY id_config DESC";
+$listSql = "SELECT * FROM pausa_config WHERE ativo = 1 ORDER BY id_config ASC ";
 $listRes = $conn->query($listSql);
 ?>
 <!DOCTYPE html>
@@ -122,6 +142,7 @@ $listRes = $conn->query($listSql);
                 <th>Min</th>
                 <th>Max</th>
                 <th>Limite diário</th><!-- novo codigin -->
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -134,6 +155,15 @@ $listRes = $conn->query($listSql);
                 <td><?= $row['tempo_min'] ?></td>
                 <td><?= $row['tempo_max'] ?></td>
                 <td><?php echo (intval($row['limite_pausa_diario']) == 0 ? "ilimitado" : intval($row['limite_pausa_diario'])) ?></td><!-- novo codigin -->
+                <td>
+                    <form method="POST" onsubmit="return confirm('ATENÇÃO: Isso apagará a pausa e seus dados permanentemente. Deseja Continuar?');">
+                        <input type="hidden" name="acao" value="excluir">
+                        <input type="hidden" name="id_config" value="<?= $row['id_config'] ?>">
+                        <button type="submit" style="background:none; border:none; color:red; cursor:pointer;">
+                            deletar
+                        </button>
+                    </form>
+                </td>
             </tr>
         <?php endwhile; ?>
 

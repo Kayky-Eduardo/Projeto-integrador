@@ -36,6 +36,7 @@ $valor_novo_ponto = $_POST['valor_novo_ponto'] ?? '';
 $id_pausa       = intval($_POST['id_pausa'] ?? 0);
 $campo_pausa = $_POST['campo_pausa'] ?? '';
 $pausa_nova = $_POST['pausa_nova'] ?? '';
+$valor_novo = $pausa_nova;
 
 
 /* =================
@@ -112,6 +113,11 @@ if ($tipo_ajuste === 'ponto') {
 // ajuste de pausa caso seja selecionado ↓
 
 elseif ($tipo_ajuste === 'pausa') {
+
+    $camposPermitidosPausa = ['inicio_pausa', 'fim_pausa'];
+    if (!in_array($campo_pausa, $camposPermitidosPausa)) {
+        die("Campo de pausa inválido.");
+    }
     
     // 1. Validação de dados de pausa
     if ($id_pausa <= 0 || (empty($campo_pausa) && empty($pausa_nova))) {
@@ -120,14 +126,16 @@ elseif ($tipo_ajuste === 'pausa') {
 
     // 2. BUSCA VALOR ANTIGO DA PAUSA (Segurança: Garante que a pausa pertence ao ponto)
     $busca_pausa = $conn->prepare("
-        SELECT id_pausa, ?, id_usuario, data
+        SELECT inicio, fim
         FROM pausa 
         WHERE id_pausa = ? AND id_usuario = ? AND data = ?
     ");
     // O id_usuario e a data são recuperados do ponto já validado
-    $busca_pausa->bind_param("isss", $campo_pausa, $id_pausa, $reg_ponto['id_usuario'], $data);
+    $busca_pausa->bind_param("iss", $id_pausa, $reg_ponto['id_usuario'], $data);
     $busca_pausa->execute();
     $reg_pausa = $busca_pausa->get_result()->fetch_assoc();
+    $valor_antigo = $reg_pausa ? date('Y-m-d H:i:s', strtotime($reg_pausa[$campo_pausa])) : null;
+    $valor_novo = $data . ' ' . $pausa_nova . ':00';
 
     if (!$reg_pausa) {
         die("Pausa não encontrada ou não pertence ao ponto selecionado.");
@@ -146,8 +154,8 @@ elseif ($tipo_ajuste === 'pausa') {
             $id_pausa,
             $id_usuario,
             $campo_pausa,
-            $valor_antigo = $reg_pausa['$campo_pausa'] ? date('Y-m-d H:i:s', strtotime($reg_pausa[$campo_pausa])) : null,
-            $valor_novo = $pausa_nova,
+            $valor_antigo,
+            $valor_novo,
             $motivo
         );
         // Usa OR lógico para manter a execução se o ajuste de início foi bem-sucedido

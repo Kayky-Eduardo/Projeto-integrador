@@ -157,8 +157,8 @@ while ($pausa_row = $pausas->fetch_assoc()) {
 
             <label for="campo_pausa">Campo a ajustar:</label>
             <select name="campo_pausa" id="campo_pausa">
-                <option value="inicio">Início</option>
-                <option value="fim">Fim</option>
+                <option value="inicio_pausa">Início</option>
+                <option value="fim_pausa">Fim</option>
             </select>
             <br><br>
 
