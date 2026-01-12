@@ -18,12 +18,13 @@ if (isset($_SESSION['id_usuario'], $_SESSION['id_login'])) {
         retirar_horas($conn, $id_usuario, $coleta_tempo);
     }
 }
-
-$data = new datetime();
-$agora = $data->format('Y-m-d H:i:s');
-$update = $conn->prepare("UPDATE login SET data_fim = ? WHERE id_login = ?");
-$update->bind_param("si", $agora, $id_login);
-$update->execute();
+if (isset($id_login)) {
+    $data = new datetime();
+    $agora = $data->format('Y-m-d H:i:s');
+    $update = $conn->prepare("UPDATE login SET data_fim = ? WHERE id_login = ?");
+    $update->bind_param("si", $agora, $id_login);
+    $update->execute();
+}
 
 // Destroi todas as variáveis de sessão
 session_unset();

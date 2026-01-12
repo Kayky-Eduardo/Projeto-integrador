@@ -231,19 +231,6 @@ function coleta_usuarios($conn) {
 
 // fazer o SUM de todos as horas extras independente de tipo de turno por enquanto
 function filtrar_usuario($conn, $id_usuario = null) {
-    if (!is_null($id_usuario)) {
-        $coleta_usuario = $conn->prepare("
-        SELECT sum(minutos) as total_extra
-        FROM horas_extras WHERE id_usuario = ?;
-        ");
-        $coleta_usuario->bind_param("i", $id_usuario);
-        $coleta_usuario->execute();
-        
-        $result = $coleta_usuario->get_result();
-        $linha = $result->fetch_assoc();
-    
-        return $linha['total_extra'] ?? 0;
-    }
 
     $data_inicio = date('Y-m-01'); // Primeiro dia do mes
     $data_fim = date('Y-m-d'); // hoje

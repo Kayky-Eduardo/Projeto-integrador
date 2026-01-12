@@ -17,7 +17,7 @@ function adicionar_horas($conn, $id_usuario, $minutos, $tipo = 'hora_extra', $de
     
     if ($result_verificacao->num_rows === 0) {
         $stmt_criar_banco = $conn->prepare("
-        INSERT INTO banco_horas(id_usuario, saldo_minutos)
+        INSERT INTO banco_horas (id_usuario, saldo_minutos)
         VALUES (?, ?);
         ");
         $stmt_criar_banco->bind_param('ii', $id_usuario, $minutos);
