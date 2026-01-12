@@ -8,67 +8,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ----------------------------------------------
     // CRIA UM NOVO TIPO DE PAUSA
     // ----------------------------------------------
-    if ($_POST['acao'] === 'criar') {
+    if ($_POST['pausa'] === 'criar') {
         // Pega os dados do formulário
         $descricao = trim($_POST['descricao']);
         $tempo_min = intval($_POST['tempo_min']);
         $tempo_max = intval($_POST['tempo_max']);
-            $limite_pausa_diario = intval($_POST['limite_pausa_diario'] ?? 0);
+        $limite_pausa_diario = intval($_POST['limite_pausa_diario'] ?? 0);
 
         // Validação simples
         if ($descricao === '' || $tempo_min < 0 || $tempo_max < 0) {
             $_SESSION['msg'] = 'Preencha os campos corretamente.';
+        }else if ($tempo_min > $tempo_max){
+            $_SESSION['msg'] = 'Tempo Máximo deve ser maior que Tempo Mínimo.';
         } else {
-            // Insere no banco
+            try {
                 $sql = "INSERT INTO pausa_config (descricao_pausa, tempo_min, tempo_max, limite_pausa_diario)
-                    VALUES (?, ?, ?, ?)";
+                        VALUES (?, ?, ?, ?)";
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param("siii", $descricao, $tempo_min, $tempo_max, $limite_pausa_diario);
-                $stmt->execute();
-
-            $_SESSION['msg'] = 'Tipo de pausa criado.';
+                
+                if ($stmt->execute()) {
+                    $_SESSION['msg'] = 'Tipo de pausa criado.';
+                }
+            } catch (mysqli_sql_exception $e) {
+                // Código 1062 é o erro de Duplicate Entry no MySQL
+                if ($e->getCode() === 1062) {
+                    $_SESSION['msg'] = '⚠Erro: Este nome já está registrado.';
+                } else {
+                    $_SESSION['msg'] = 'Erro inesperado ao salvar.';
+                }
+            }
         }
-
         // Atualiza a página para limpar o POST
         header("Location: pausa_config.php");
         exit;
     }
 
-    // ----------------------------------------------
-    // EDITA UM TIPO DE PAUSA EXISTENTE
-    // ----------------------------------------------
-    if ($_POST['acao'] === 'editar') {
-        $id = intval($_POST['id_config']);
-        $descricao = trim($_POST['descricao']);
-        $tempo_min = intval($_POST['tempo_min']);
-        $tempo_max = intval($_POST['tempo_max']);
-            $limite_pausa_diario = intval($_POST['limite_pausa_diario'] ?? 0);
-
-        // Atualiza no banco
-        $sql = "UPDATE pausa_config 
-            SET descricao_pausa = ?, tempo_min = ?, tempo_max = ?, limite_pausa_diario = ?
-            WHERE id_config = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("siiii", $descricao, $tempo_min, $tempo_max, $limite_pausa_diario, $id);
-        $stmt->execute();
-
-        $_SESSION['msg'] = 'Tipo de pausa atualizado.';
-
-        header("Location: pausa_config.php");
-        exit;
-    }
-    // altera o estado da pausa para inativo em vez de excluir(soft delete por questão do histórico)
-    if ($_POST['acao'] === 'excluir') {
+    // altera o estado da pausa em vez de excluir(soft delete por questão do histórico)
+    if ($_POST['acao']) {
+        $ativo = ($_POST['acao'] == 'desativar') ? 0 : 1;
         $id = intval($_POST['id_config']);
 
         if ($id > 0) {
             // Mudamos de DELETE para UPDATE
-            $sql = "UPDATE pausa_config SET ativo = 0 WHERE id_config = ?";
+            $sql = "UPDATE pausa_config SET ativo = ? WHERE id_config = ?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("i", $id);
+            $stmt->bind_param("ii", $ativo, $id);
             
             if ($stmt->execute()) {
-                $_SESSION['msg'] = 'Pausa desativada com sucesso.';
+                $_SESSION['msg'] = ($_POST['acao'] == 'desativar') ? 'Pausa desativada com sucesso.' : 'Pausa ativada com sucesso.';
             } else {
                 $_SESSION['msg'] = 'Erro ao desativar: ' . $conn->error;
             }
@@ -79,13 +67,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-
 // ----------------------------------------------
 // LISTA TODOS OS TIPOS DE PAUSA CADASTRADOS
 // ----------------------------------------------
 $listSql = "SELECT * FROM pausa_config WHERE ativo = 1 ORDER BY id_config ASC ";
 $listRes = $conn->query($listSql);
+
+// lista as pausas inativas
+$listSql = "SELECT * FROM pausa_config WHERE ativo = 0 ORDER BY id_config ASC ";
+$listInative = $conn->query($listSql);
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -106,7 +98,7 @@ $listRes = $conn->query($listSql);
 
     <!-- Formulário para criar novo tipo de pausa -->
     <form method="POST">
-        <input type="hidden" name="acao" value="criar">
+        <input type="hidden" name="pausa" value="criar">
 
         <p>
             <label>Descrição:</label><br>
@@ -141,31 +133,51 @@ $listRes = $conn->query($listSql);
                 <th>Descrição</th>
                 <th>Min</th>
                 <th>Max</th>
-                <th>Limite diário</th><!-- novo codigin -->
+                <th>Limite diário</th>
                 <th>Ações</th>
             </tr>
         </thead>
         <tbody>
 
-        <!-- Loop que mostra cada registro da tabela -->
+        <!-- Loop que mostra cada registro ATIVO da tabela -->
         <?php while ($row = $listRes->fetch_assoc()): ?>
             <tr>
                 <td><?= $row['id_config'] ?></td>
                 <td><?= htmlspecialchars($row['descricao_pausa']) ?></td>
                 <td><?= $row['tempo_min'] ?></td>
                 <td><?= $row['tempo_max'] ?></td>
-                <td><?php echo (intval($row['limite_pausa_diario']) == 0 ? "ilimitado" : intval($row['limite_pausa_diario'])) ?></td><!-- novo codigin -->
+                <td><?php echo (intval($row['limite_pausa_diario']) == 0 ? "ilimitado" : intval($row['limite_pausa_diario'])) ?></td><!-- novo codigin ↓ -->
                 <td>
-                    <form method="POST" onsubmit="return confirm('ATENÇÃO: Isso apagará a pausa e seus dados permanentemente. Deseja Continuar?');">
-                        <input type="hidden" name="acao" value="excluir">
+                    </form>
+                    <form method="POST">
+                        <input type="hidden" name="acao" value="desativar">
                         <input type="hidden" name="id_config" value="<?= $row['id_config'] ?>">
                         <button type="submit" style="background:none; border:none; color:red; cursor:pointer;">
-                            deletar
+                            desativar
                         </button>
                     </form>
                 </td>
             </tr>
         <?php endwhile; ?>
+        <!-- INATIVOS ↓ -->
+        <?php while ($rowInative = $listInative->fetch_assoc()): ?>
+            <tr>
+                <td><?= $rowInative['id_config'] ?></td>
+                <td><?= htmlspecialchars($rowInative['descricao_pausa']) ?></td>
+                <td><?= $rowInative['tempo_min'] ?></td>
+                <td><?= $rowInative['tempo_max'] ?></td>
+                <td><?php echo (intval($rowInative['limite_pausa_diario']) == 0 ? "ilimitado" : intval($rowInative['limite_pausa_diario'])) ?></td><!-- novo codigin ↓ -->
+                <td>
+                    <form method="POST">
+                        <input type="hidden" name="acao" value="ativar">
+                        <input type="hidden" name="id_config" value="<?= $rowInative['id_config'] ?>">
+                        <button type="submit" style="background:none; border:none; color:green; cursor:pointer;">
+                            ativar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        <?php endwhile?>
 
         </tbody>
     </table>

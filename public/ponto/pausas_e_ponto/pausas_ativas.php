@@ -55,7 +55,7 @@ $res = $stmt->get_result();
             // ----------------------------------------------------------
             // CALCULA QUANTOS MINUTOS DE PAUSA JÁ SE PASSARAM
             // ----------------------------------------------------------
-                $inicio = $row['inicio']; // mudei $row['data'] para $row['inicio']
+                $inicio = $row['inicio'];
                 $minutos = 0;
                 if ($inicio) {
                     $t1 = strtotime($row['inicio']);

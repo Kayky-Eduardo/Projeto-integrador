@@ -46,7 +46,7 @@ if ($row = $res->fetch_assoc()) {
 }
 
 // carrega todos os tipos de pausa
-$sql = "SELECT id_config, descricao_pausa, limite_pausa_diario FROM pausa_config ORDER BY id_config";
+$sql = "SELECT id_config, descricao_pausa, limite_pausa_diario FROM pausa_config WHERE ativo = 1 ORDER BY id_config";
 $res = $conn->query($sql);
 $hoje = date('Y-m-d');
 while ($t = $res->fetch_assoc()) {
