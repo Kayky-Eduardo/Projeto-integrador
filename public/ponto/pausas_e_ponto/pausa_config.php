@@ -144,13 +144,11 @@ $listInative = $conn->query($listSql);
                 <td><?= htmlspecialchars($row['descricao_pausa']) ?></td>
                 <td><?= $row['tempo_min'] ?></td>
                 <td><?= $row['tempo_max'] ?></td>
-                <td><?php echo (intval($row['limite_pausa_diario']) == 0 ? "ilimitado" : intval($row['limite_pausa_diario'])) ?></td><!-- novo codigin ↓ -->
+                <td><?php echo (intval($row['limite_pausa_diario']) == 0 ? "ilimitado" : intval($row['limite_pausa_diario'])) ?></td>
                 <td>
-                    </form>
                     <form method="POST">
-                        <input type="hidden" name="acao" value="desativar">
                         <input type="hidden" name="id_config" value="<?= $row['id_config'] ?>">
-                        <button type="submit" style="background:none; border:none; color:red; cursor:pointer;">
+                        <button type="submit" name="acao" value="desativar" style="background:none; border:none; color:red; cursor:pointer;">
                             desativar
                         </button>
                     </form>
@@ -164,12 +162,11 @@ $listInative = $conn->query($listSql);
                 <td><?= htmlspecialchars($rowInative['descricao_pausa']) ?></td>
                 <td><?= $rowInative['tempo_min'] ?></td>
                 <td><?= $rowInative['tempo_max'] ?></td>
-                <td><?php echo (intval($rowInative['limite_pausa_diario']) == 0 ? "ilimitado" : intval($rowInative['limite_pausa_diario'])) ?></td><!-- novo codigin ↓ -->
+                <td><?php echo (intval($rowInative['limite_pausa_diario']) == 0 ? "ilimitado" : intval($rowInative['limite_pausa_diario'])) ?></td>
                 <td>
                     <form method="POST">
-                        <input type="hidden" name="acao" value="ativar">
                         <input type="hidden" name="id_config" value="<?= $rowInative['id_config'] ?>">
-                        <button type="submit" style="background:none; border:none; color:green; cursor:pointer;">
+                        <button type="submit" name="acao" value="ativar" style="background:none; border:none; color:green; cursor:pointer;">
                             ativar
                         </button>
                     </form>
