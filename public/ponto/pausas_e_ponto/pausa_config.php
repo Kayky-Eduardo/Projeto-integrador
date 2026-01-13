@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ----------------------------------------------
     if ($_POST['pausa'] === 'criar') {
         // Pega os dados do formulário
-        $descricao = trim($_POST['descricao']);
+        $descricao = strtolower(trim($_POST['descricao']));
         $tempo_min = intval($_POST['tempo_min']);
         $tempo_max = intval($_POST['tempo_max']);
         $limite_pausa_diario = intval($_POST['limite_pausa_diario'] ?? 0);
