@@ -130,11 +130,11 @@ function get_banco_horas($conn, $id_usuario) {
         SELECT
             saldo_anterior
         FROM banco_horas_historico 
-        WHERE id_banco = ?
+        WHERE id_usuario = ?
         order by criado_em desc
         limit 1;
     ");
-    $stmt_saldo_anterior->bind_param("i", $dados['id_banco']);
+    $stmt_saldo_anterior->bind_param("i", $id_usuario);
     $stmt_saldo_anterior->execute();
 
     $result_saldo = $stmt_saldo_anterior->get_result();
@@ -149,7 +149,7 @@ function get_banco_horas($conn, $id_usuario) {
 
     $stmt_saldo_anterior->close();
     
-    $mins_antigo = abs($saldo_antigo) % 60; 
+    $mins_antigo = $saldo_antigo; 
 
     $minutos = $dados['saldo_minutos'];
 

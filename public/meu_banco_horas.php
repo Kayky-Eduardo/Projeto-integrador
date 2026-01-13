@@ -118,7 +118,7 @@ function entregar_dados($dados) {
                 const exibicao_resultado = document.getElementById('resposta-tbody');
 
                 if (resposta_historico.length === 0) {
-                    exibicao_resultado.innerHTML = `<tr><td colspan="4">Erro ao procurar</td></tr>`;
+                    exibicao_resultado.innerHTML = `<tr><td colspan="4">Não encontrado</td></tr>`;
                     return;
                 }
 
