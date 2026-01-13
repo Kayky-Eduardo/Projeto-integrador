@@ -30,6 +30,49 @@ function buscar_jornada_usuario($conn, $usuario_id, $data = null) {
     return $jornada;
 }
 
+function verificar_jornada_todos_usuarios($conn) {
+    $data_inicio = date('Y-m-01'); // Primeiro dia do mes
+    $data_fim = date('Y-m-d'); // hoje
+    
+    $stmt_usuarios = $conn->prepare("
+        SELECT id_usuario, nome_usuario 
+        FROM usuario 
+        WHERE conta_ativa = 1
+        ORDER BY nome_usuario
+    ");
+    $stmt_usuarios->execute();
+    $result_usuarios = $stmt_usuarios->get_result();
+    
+    $dados_grafico = [];
+    
+    while ($usuario = $result_usuarios->fetch_assoc()) {
+        $usuario_id = $usuario['id_usuario'];
+        $nome = $usuario['nome_usuario'];
+        
+        // Calcula jornada para este usuário
+        $jornada = verificar_jornada($conn, $usuario_id, $data_inicio, $data_fim);
+        
+        $dados_grafico[] = [
+            'id_usuario' => $usuario_id,
+            'nome' => $nome,
+            'horas_trabalhadas' => $jornada['horas_trabalhadas'],
+            'horas_esperadas' => $jornada['horas_esperadas'],
+            'taxa_presenca' => $jornada['taxa_presenca'],
+            'percentual' => $jornada['percentual']
+        ];
+    }
+    
+    $stmt_usuarios->close();
+    
+    return [
+        'periodo' => [
+            'inicio' => $data_inicio,
+            'fim' => $data_fim
+        ],
+        'usuarios' => $dados_grafico
+    ];
+}
+
 // Soma todas as horas que o usuário trabalhou em um período
 // (baseado nos registros da tabela ponto).
 function calcular_horas_trabalhadas($conn, $usuario_id, $data_inicio, $data_fim) { 
@@ -73,25 +116,36 @@ function calcular_horas_trabalhadas($conn, $usuario_id, $data_inicio, $data_fim)
 
 // Calcula quantos minutos o usuário trabalhou em um dia específico, descontando o almoço.
 function calcular_minutos_dia($ponto) {
-    // Se não tem entrada ou saída, não trabalhou
     if (!$ponto['inicio_ponto'] || !$ponto['fim_ponto']) {
         return 0;
     }
     
-    $entrada = strtotime($ponto['inicio_ponto']);
-    $saida = strtotime($ponto['fim_ponto']);
+    // Combina a data do ponto com a hora de início
+    $data_inicio_completa = $ponto['data_ponto'] . ' ' . $ponto['inicio_ponto'];
+    $entrada = new DateTime($data_inicio_completa);
     
-    $minutos_total = ($saida - $entrada) / 60;
+    $data_fim_completa = $ponto['data_ponto'] . ' ' . $ponto['fim_ponto'];
+    $saida = new DateTime($data_fim_completa);
     
-    // Desconta intervalo de almoço se houver
-    // if ($ponto['hora_almoco_saida'] && $ponto['hora_almoco_retorno']) {
-    //     $almoco_saida = strtotime($ponto['hora_almoco_saida']);
-    //     $almoco_retorno = strtotime($ponto['hora_almoco_retorno']);
-    //     $minutos_almoco = ($almoco_retorno - $almoco_saida) / 60;
-    //     $minutos_total -= $minutos_almoco;
-    // }
+    // virada de noite
+    if ($saida < $entrada) {
+        $saida->modify('+1 day');
+    }
     
-    return max(0, $minutos_total); // garantindo que não é 0
+    // pegando a diferença
+    $intervalo = $saida->diff($entrada);
+
+    // se a diferença for de dias faz o calculo para transformar em minutos
+    $minutos_total = $intervalo->days * 24 * 60; 
+
+    // mesma coisa
+    $minutos_total += $intervalo->h * 60;        
+
+    // caso for minutos só recebe o valor mesmo
+    $minutos_total += $intervalo->i;             
+    
+    
+    return max(0, $minutos_total);
 }
 
 // Calcula quantas horas o usuário DEVERIA ter trabalhado no período,
@@ -162,10 +216,12 @@ function verificar_jornada($conn, $usuario_id, $data_inicio, $data_fim) {
     $percentual = $esperadas['total_horas'] > 0 ?
     ($trabalhadas['total_horas'] / $esperadas['total_horas']) * 100 : 0;
     
+    $taxa_presenca = $trabalhadas['total_horas'] / $esperadas['total_horas'];
     return [
         'usuario_id' => $usuario_id,
         'horas_trabalhadas' => $trabalhadas['total_horas'],
         'horas_esperadas' => $esperadas['total_horas'],
+        'taxa_presenca' => $taxa_presenca,
         'diferenca' => round($diferenca, 2),
         'percentual' => round($percentual, 2),
     ];
