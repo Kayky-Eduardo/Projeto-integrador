@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     area?.addEventListener("mouseleave", iniciarAuto);
 
     iniciarAuto();
-
+    
     /* =====================
        MÁSCARAS
     ====================== */
