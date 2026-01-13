@@ -1,8 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* =====================
-       CARROSSEL
-    ====================== */
     const slides = document.querySelectorAll(".slide");
     const prev = document.querySelector(".prev");
     const next = document.querySelector(".next");
@@ -16,17 +13,16 @@ document.addEventListener("DOMContentLoaded", () => {
         slides.forEach(slide => slide.classList.remove("ativo"));
         dots.forEach(dot => dot.classList.remove("ativo"));
 
-        slides[i]?.classList.add("ativo");
-        dots[i]?.classList.add("ativo");
+        slides[i].classList.add("ativo");
+        dots[i].classList.add("ativo");
 
         index = i;
     }
 
     function iniciarAuto() {
-        if (!slides.length) return;
-
         interval = setInterval(() => {
-            mostrarSlide((index + 1) % slides.length);
+            let novoIndex = (index + 1) % slides.length;
+            mostrarSlide(novoIndex);
         }, 6000);
     }
 
@@ -34,11 +30,11 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInterval(interval);
     }
 
-    next?.addEventListener("click", () => {
+    next.addEventListener("click", () => {
         mostrarSlide((index + 1) % slides.length);
     });
 
-    prev?.addEventListener("click", () => {
+    prev.addEventListener("click", () => {
         mostrarSlide((index - 1 + slides.length) % slides.length);
     });
 
@@ -50,67 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    area?.addEventListener("mouseenter", pararAuto);
-    area?.addEventListener("mouseleave", iniciarAuto);
+    area.addEventListener("mouseenter", pararAuto);
+    area.addEventListener("mouseleave", iniciarAuto);
 
     iniciarAuto();
-    
-    /* =====================
-       MÁSCARAS
-    ====================== */
-    if (document.getElementById("cpf")) {
-        IMask(document.getElementById("cpf"), {
-            mask: "000.000.000-00"
-        });
-    }
-
-    if (document.getElementById("rg")) {
-        IMask(document.getElementById("rg"), {
-            mask: "00.000.000-0"
-        });
-    }
-
-    if (document.getElementById("telefone")) {
-        IMask(document.getElementById("telefone"), {
-            mask: "(00) 00000-0000"
-        });
-    }
-
-    if (document.getElementById("cep")) {
-        IMask(document.getElementById("cep"), {
-            mask: "00000-000"
-        });
-    }
-
-    /* =====================
-       PREVIEW DA FOTO
-    ====================== */
-    const inputFoto = document.getElementById("input-foto");
-    const previewFoto = document.getElementById("preview-foto");
-
-    if (inputFoto && previewFoto) {
-        inputFoto.addEventListener("change", () => {
-            const file = inputFoto.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = () => {
-                previewFoto.src = reader.result;
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-
-    /* =====================
-       BOTÃO EDITAR (PAINEL)
-    ====================== */
-    const btnEditar = document.getElementById("btn-editar");
-    const painelEdicao = document.getElementById("painel-edicao");
-
-    if (btnEditar && painelEdicao) {
-        btnEditar.addEventListener("click", () => {
-            painelEdicao.classList.toggle("ativo");
-        });
-    }
-
 });
