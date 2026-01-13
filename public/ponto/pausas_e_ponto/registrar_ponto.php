@@ -81,7 +81,7 @@ verificar_login($conn);
                     });
 
                     // atualizar botões conforme estado
-                    if (data.aberta) {
+                    if (data.pausa_aberta) {
                         btnPausa.textContent = 'Finalizar Pausa';
                         btnPausa.disabled = false;
                         selectPausa.disabled = true;

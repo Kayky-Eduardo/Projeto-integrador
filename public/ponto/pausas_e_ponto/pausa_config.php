@@ -55,9 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("ii", $ativo, $id);
             
-            if ($stmt->execute()) {
-                $_SESSION['msg'] = ($_POST['acao'] == 'desativar') ? 'Pausa desativada com sucesso.' : 'Pausa ativada com sucesso.';
-            } else {
+            if (!$stmt->execute()) {
                 $_SESSION['msg'] = 'Erro ao desativar: ' . $conn->error;
             }
         }

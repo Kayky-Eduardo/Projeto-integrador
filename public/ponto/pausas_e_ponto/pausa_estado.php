@@ -8,7 +8,7 @@ $id_usuario = $_SESSION['id_usuario'];
 
 // Resultado padrão
 $response = [
-    'aberta' => false,
+    'pausa_aberta' => false,
     'tipo' => null,
     'descricao_aberta' => null,
     'inicio' => null,
@@ -39,7 +39,7 @@ $stmt->bind_param("i", $id_usuario);
 $stmt->execute();
 $res = $stmt->get_result();
 if ($row = $res->fetch_assoc()) {
-    $response['aberta'] = true;
+    $response['pausa_aberta'] = true;
     $response['tipo'] = 'pausa';
     $response['descricao_aberta'] = $row['descricao_pausa'];
     $response['inicio'] = date('H:i:s', strtotime($row['inicio']));
