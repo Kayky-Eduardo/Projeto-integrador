@@ -85,7 +85,7 @@ $listInative = $conn->query($listSql);
 <body>
     <a href="../../index.php">Voltar</a>
 
-    <h2>Gerenciar Tipos de Pausa</h2>
+    <h2>Gerenciar Tipo de Pausas</h2>
 
     <!-- Mostra mensagem de sucesso/erro (se existir) -->
     <?php if (!empty($_SESSION['msg'])): ?>
@@ -112,7 +112,7 @@ $listInative = $conn->query($listSql);
             <label>Tempo máximo (min):</label><br>
             <input type="number" name="tempo_max" required>
         </p>
-        <!-- novo codigin ↓ -->
+        
         <p>
             <label>Limite diário(0 = ilimitado):</label><br>
             <input type="number" name="limite_pausa_diario" required>
@@ -146,33 +146,15 @@ $listInative = $conn->query($listSql);
                 <td><?= $row['tempo_max'] ?></td>
                 <td><?php echo (intval($row['limite_pausa_diario']) == 0 ? "ilimitado" : intval($row['limite_pausa_diario'])) ?></td>
                 <td>
-                    <form method="POST">
+                    <form method="POST" action="pausa_edit.php">
                         <input type="hidden" name="id_config" value="<?= $row['id_config'] ?>">
-                        <button type="submit" name="acao" value="desativar" style="background:none; border:none; color:red; cursor:pointer;">
-                            desativar
+                        <button style="background:none; border:none; color:blue; cursor:pointer;">
+                            editar
                         </button>
                     </form>
                 </td>
             </tr>
         <?php endwhile; ?>
-        <!-- INATIVOS ↓ -->
-        <?php while ($rowInative = $listInative->fetch_assoc()): ?>
-            <tr>
-                <td><?= $rowInative['id_config'] ?></td>
-                <td><?= htmlspecialchars($rowInative['descricao_pausa']) ?></td>
-                <td><?= $rowInative['tempo_min'] ?></td>
-                <td><?= $rowInative['tempo_max'] ?></td>
-                <td><?php echo (intval($rowInative['limite_pausa_diario']) == 0 ? "ilimitado" : intval($rowInative['limite_pausa_diario'])) ?></td>
-                <td>
-                    <form method="POST">
-                        <input type="hidden" name="id_config" value="<?= $rowInative['id_config'] ?>">
-                        <button type="submit" name="acao" value="ativar" style="background:none; border:none; color:green; cursor:pointer;">
-                            ativar
-                        </button>
-                    </form>
-                </td>
-            </tr>
-        <?php endwhile?>
 
         </tbody>
     </table>
