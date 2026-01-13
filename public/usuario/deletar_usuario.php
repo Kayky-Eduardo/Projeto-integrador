@@ -1,28 +1,29 @@
 <?php
-
+require "../../include/verificacao.php";
 include "../../BD/conexao.php";
+verificar_login($conn);
 
-if (isset($_POST['id_usuario'])) {
-    $id = $_POST['id_usuario'];
+if (!isset($_POST['id_usuario']) || empty($_POST['id_usuario'])) {
+    header("Location: lista.php");
+    exit;
 }
 
-// Consulta SQL para deletar o cadastro
-$sqld = "DELETE FROM usuario WHERE id_usuario = ?";
-$stmt = $conn->prepare($sqld);
+$id = intval($_POST['id_usuario']);
+
+if ($id === $_SESSION['id_usuario']) {
+    die("Você não pode excluir a si mesmo.");
+}
+
+$stmt = $conn->prepare("DELETE FROM usuario WHERE id_usuario = ?");
 $stmt->bind_param("i", $id);
 
-//Executa a consulta e verifica se foi bem-sucedida
-if ($stmt->execute()) {
-    if ($stmt->affected_rows > 0) {
-        header("Location: ../../public/usuario/lista.php");
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Nenhum cadastro encontrado com o ID fornecido.']);
-    }
+$stmt->execute();
+
+if ($stmt->affected_rows > 0) {
+    header("Location: lista.php");
 } else {
-    echo json_encode(['success' => false, 'message' => 'Erro ao deletar o cadastro: ' . $stmt->error]);
+    echo "Usuário não encontrado.";
 }
 
-// Fecha o statement e a conexão
 $stmt->close();
 $conn->close();
-?>

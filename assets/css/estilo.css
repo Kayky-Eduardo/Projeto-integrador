@@ -20,9 +20,7 @@ body {
     flex-direction: column;
 }
 
-/* =========
-    INDEX.PHP
-========= */
+/* BANNER */
 header {
     object-fit: cover;
     padding: 0;
@@ -35,9 +33,7 @@ header img {
     height: auto;
 }
 
-/* =========
-   NAVBAR
-========= */
+/* NAVBAR */
 nav {
     background-color: #020617;
     display: flex;
@@ -63,9 +59,7 @@ nav a:focus {
     transform: translateY(-2px);
 }
 
-/* ===========
-   CONTEÚDO
-=========== */
+/* CONTEÚDO PRINCIPAL (MAIN) */
 main {
     flex: 1;
     padding: 2rem;
@@ -74,9 +68,7 @@ main {
     justify-content: center;
 }
 
-/* =========
-   FOOTER
-========= */
+/* FOOTER */
 footer {
     background-color: #020617;
     color: #F2F2F2;
@@ -94,10 +86,8 @@ footer a {
     color: #38bdf8;
 }
 
-/* =================
-   RESPONSIVIDADE
-================= */
-@media (max-width: 600px) {
+/* RESPONSIVIDADE */
+@media (max-width: 768px) {
 
     header {
         text-align: center;
@@ -113,9 +103,7 @@ footer a {
     }
 }
 
-/* =================
-   ACESSIBILIDADE
-================= */
+/* ACESSIBILIDADE */
 
 a:focus {
     outline: 2px solid #38bdf8;
@@ -146,9 +134,12 @@ a:focus {
     }
 }
 
+
 /* ============
-   CARROSSEL
+   INDEX.PHP
 ============ */
+
+/* CARROSSEL */
 .carrossel {
     max-width: 900px;
     width: 100%;
@@ -223,9 +214,7 @@ a:focus {
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
 }
 
-/* =========
-   BOTÕES
-========= */
+/* BOTÕES */
 .btn {
     position: absolute;
     top: 50%;
@@ -252,10 +241,7 @@ a:focus {
     background-color: rgba(15, 23, 42, 1);
 }
 
-/* ===========================
-   INDICADORES DO CARROSSEL
-=========================== */
-
+/* INDICADORES DO CARROSSEL */
 .indicadores {
     background: transparent;
     position: absolute;
@@ -290,10 +276,9 @@ a:focus {
     transform: scale(1.3);
 }
 
-/* =============
-   LOGIN PAGE
-============= */
-
+/* ============
+   LOGIN.PHP
+============ */
 .pagina-login {
     background: url(../img/fundo_login.jpg) no-repeat center center fixed;
     background-size: cover;
@@ -396,10 +381,9 @@ a:focus {
     margin-bottom: 1rem;
 }
 
-/* =====================
-   CONFIGURAÇÕES GUI
-===================== */
-
+/* ====================
+   CONFIG/CONFIG.PHP
+==================== */
 .configuracoes {
     display: flex;
     gap: 1.5rem;
@@ -469,9 +453,7 @@ a:focus {
     }
 }
 
-/* ================
-   CONFIGURAÇÕES
-================ */
+/* CONFIGURAÇÕES */
 
 .configuracoes {
     display: flex;
@@ -525,9 +507,7 @@ a:focus {
     margin-bottom: 1.4rem;
 }
 
-/* =============
-   FORMULÁRIO
-============= */
+/* FORMULÁRIO */
 
 .painel-config fieldset {
     border: none;
@@ -595,9 +575,7 @@ a:focus {
     font-size: 0.9rem;
 }
 
-/* =================
-   RESPONSIVIDADE
-================= */
+/* RESPONSIVIDADE */
 @media (max-width: 600px) {
 
     .configuracoes {
@@ -621,9 +599,8 @@ a:focus {
 }
 
 /* ========================
-    USUARIOS/LISTA.PHP
+    USUARIO/LISTA.PHP
 ======================== */
-
 .usuarios-topo {
     width: 100%;
     display: flex;
@@ -656,145 +633,505 @@ a:focus {
     width: 260px;
 }
 
-
-/* CONTAINER TABELA */
-.tabela-container {
+/* CARDS DE USUÁRIOS */
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
     width: 100%;
-    overflow-x: hidden;
-    border-radius: 8px;
 }
 
-
-/* TABELA */
-table {
-    width: 100%;
-    min-width: auto;
-    border-collapse: collapse;
-    background-color: white;
-    border-radius: 8px;
-    font-size: 0.85rem;
+/* CARD INDIVIDUAL */
+.usuario-card {
+    align-items: center;
+    background: white;
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid #e5e7eb;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 260px;
+    max-width: 100%;
 }
 
-thead {
-    background-color: #020617;
-    color: white;
+.usuario-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
-th {
-    padding: 10px;
-    font-weight: 600;
-    text-align: left;
-    white-space: nowrap;
+/* FOTO */
+.usuario-foto img {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    object-fit: cover;
+    align-self: center;
 }
 
-td {
-    padding: 10px;
-    border-bottom: 1px solid #e5e7eb;
-    white-space: nowrap;
+/* NOME */
+.usuario-card h3 {
+    font-size: 1rem;
+    color: #020617;
+    text-align: center;
 }
-
-tbody tr:hover {
-    background-color: #f1f5f9;
-}
-
 
 /* STATUS */
 .ativo {
     color: #22c55e;
     font-weight: bold;
+    text-align: center;
 }
 
 .inativo {
     color: #ef4444;
     font-weight: bold;
+    text-align: center;
 }
 
-
-/* BOTÕES */
-.acoes {
-    display: flex;
-    gap: 6px;
+/* CARGO */
+.cargo {
+    font-weight: 600;
+    color: #475569;
+    text-align: center;
+    font-size: 0.85rem;
 }
 
-.btn-editar,
-.btn-excluir {
-    padding: 0.45rem 0.7rem;
-    font-size: 0.75rem;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-}
-
-.btn-editar {
-    background-color: #38bdf8;
-    color: #020617;
-}
-
-.btn-excluir {
-    background-color: #ef4444;
+/* BOTÃO PERFIL */
+.btn-perfil {
+    margin-top: auto;
+    padding: 0.55rem;
+    text-align: center;
+    background-color: #020617;
     color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    transition: background 0.2s ease;
+    width: 100%;
 }
 
+.btn-perfil:hover {
+    background-color: #020617e8;
+}
 
-/* RESPONSIVIDADE */
-@media (max-width: 1100px) {
+/* RESPONSIVO FINO */
+@media (max-width: 500px) {
 
     .usuarios-topo {
-        flex-direction: row;
+        flex-direction: column;
         align-items: stretch;
-        gap: 10px;
     }
 
     #busca {
         width: 100%;
     }
 
-    table,
-    thead,
-    tbody,
-    tr,
-    td,
-    th {
-        display: block;
+    .usuario-card {
         width: 100%;
     }
+}
 
-    thead {
-        display: none;
-    }
+/* ============================================
+   USUARIO/CADASTRO.PHP E USUARIO/EDITAR.PHP
+============================================ */
 
-    table {
-        min-width: unset;
-        background: transparent;
-    }
+:root {
+    --cor-principal: #020617;
+    --cor-perigo: #dc2626;
+    --borda-padrao: #cbd5e1;
+}
 
-    tr {
-        background: white;
-        border-radius: 10px;
-        margin-bottom: 12px;
-        padding: 12px;
-        border: 1px solid #e5e7eb;
-    }
+/* GRID PERFIL */
+.perfil-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+    align-items: stretch;
+    /* força mesma altura */
+}
 
-    td {
-        display: flex;
-        justify-content: space-between;
-        padding: 6px 0;
-        border: none;
-    }
+/* FOTO ocupa toda a coluna */
+.perfil-header {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-    td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #475569;
-    }
+/* BASE PERFIL */
+.perfil {
+    max-width: 1100px;
+    margin: auto;
+    padding: 20px;
+}
 
-    .acoes {
+.perfil-header {
+    background: linear-gradient(135deg, var(--cor-principal), #020617cc);
+    color: white;
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+}
+
+.perfil-foto {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid white;
+    object-fit: cover;
+    margin-top: 50px;
+}
+
+.perfil-header h2 {
+    margin-top: 15px;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.perfil-cargo {
+    margin-top: 10px;
+    opacity: 0.8;
+    font-size: 0.9rem;
+}
+
+/* STATUS */
+.status-ativo,
+.status-inativo {
+    display: inline-block;
+    padding: 4px 10px;
+    margin: 6px 0;
+    border-radius: 999px;
+    font-size: 0.75rem;
+}
+
+.status-ativo {
+    background: #22c55e;
+    color: white;
+}
+
+.status-inativo {
+    background: #ef4444;
+    color: white;
+}
+
+/* CONTAINERS */
+.perfil-dados {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 30px;
+}
+
+.perfil-dados article {
+    background: white;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+.perfil-dados h4 {
+    margin-bottom: 6px;
+    color: var(--cor-principal);
+    font-size: 0.9rem;
+}
+
+.perfil-dados p {
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+}
+
+/* AÇÕES */
+.perfil-acoes {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.perfil-acoes a {
+    text-decoration: none;
+    color: var(--cor-principal);
+    font-weight: bold;
+}
+
+/* BOTÕES PADRÃO */
+.btn-padrao {
+    background: var(--cor-principal);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--cor-principal);
+    cursor: pointer;
+}
+
+.btn-padrao:hover {
+    background: color-mix(in srgb, var(--cor-principal) 90%, black);
+}
+
+.btn-excluir {
+    background: var(--cor-perigo);
+    color: white;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border: none;
+    border: 1px solid var(--cor-perigo);
+    cursor: pointer;
+}
+
+/* AÇÕES EMPRESA */
+.acoes-empresa {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ==============
+   FORMULÁRIOS
+============== */
+
+/* campos */
+.input-padrao {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--borda-padrao);
+    width: 100%;
+    font-size: 0.9rem;
+}
+
+.input-padrao:focus {
+    outline: none;
+    border-color: var(--cor-principal);
+}
+
+/* labels */
+.label-padrao {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--cor-principal);
+}
+
+/* ====================
+   FORMULÁRIO EDITAR
+==================== */
+#form-edicao {
+    margin-top: 20px;
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+#form-edicao h3 {
+    margin-bottom: 10px;
+}
+
+#form-edicao form {
+    display: grid;
+    gap: 10px;
+}
+
+/* ======================
+   FORMULÁRIO CADASTRO
+====================== */
+.form-padrao {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+/* ERROS */
+.erro {
+    color: var(--cor-perigo);
+}
+
+.lista-erro {
+    margin-left: 18px;
+}
+
+/* BOTÃO EXCLUIR */
+.form-excluir {
+    width: 100%;
+}
+
+.form-excluir button {
+    width: 100%;
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+
+/* BOTÃO VOLTAR */
+.voltar-final {
+    text-align: center;
+}
+
+.voltar-final a {
+    color: var(--cor-principal);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.foto-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    gap: 8px;
+}
+
+.foto-upload span {
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    text-decoration: underline;
+}
+
+.foto-upload:hover span {
+    color: #fff;
+}
+
+.foto-upload input {
+    display: none;
+}
+
+.perfil-grid-editar {
+    display: grid;
+    grid-template-columns: 280px 1fr 1fr;
+    gap: 20px;
+}
+
+.perfil-visualizacao,
+.perfil-edicao {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+.perfil-edicao {
+    display: none;
+}
+
+.perfil-edicao h4 {
+    color: var(--cor-principal);
+}
+
+.perfil-edicao .label-padrao {
+    text-align: left;
+    display: block;
+}
+
+.perfil-edicao.ativo {
+    display: block;
+}
+
+.info-bloco {
+    margin-bottom: 12px;
+}
+
+.info-bloco span {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.acoes-perfil {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.acoes-perfil .btn-excluir {
+    order: 1;
+}
+
+.voltar-final {
+    order: 2;
+    margin-top: 0;
+    text-align: center;
+}
+
+.voltar-final a {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: var(--cor-principal);
+    text-decoration: none;
+    border: 1px solid var(--borda-padrao);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* =========================
+   PERFIL / GRID
+========================= */
+.perfil-artigo {
+    grid-column: span 3;
+}
+
+/* =========================
+   CAIXA DE ERROS
+========================= */
+.box-erros {
+    border-left: 4px solid #dc2626;
+    padding: 10px;
+    margin-bottom: 12px;
+    background-color: #fee2e2;
+    border-radius: 4px;
+}
+
+.box-erros strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #7f1d1d;
+}
+
+.box-erros ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+/* =========================
+   FORMULÁRIO
+========================= */
+.form-padrao {
+    display: grid;
+    gap: 8px;
+}
+
+/* ======================
+   RESPONSIVO
+====================== */
+@media (max-width: 900px) {
+
+    .perfil-acoes {
         flex-direction: column;
+        gap: 10px;
+        text-align: center;
     }
 
-    .btn-editar,
-    .btn-excluir {
-        width: 100%;
+    .form-padrao button {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 900px) {
+    .perfil-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .perfil-header {
+        height: auto;
     }
 }
