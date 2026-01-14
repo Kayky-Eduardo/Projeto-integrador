@@ -110,7 +110,7 @@ h1 { text-align: center; }
 </head>
 <body>
 
-<h1>HOLERITE – <?php echo date("m/Y", strtotime($mes_comp)); ?></h1>
+<h1>HOLERITE <?php echo date("m/Y", strtotime($mes_comp)); ?></h1>
 
 <table> 
     <tr class="titulo"><td colspan="2">Empresa</td></tr>
@@ -130,7 +130,7 @@ h1 { text-align: center; }
 <?php else: ?>
     <?php foreach ($eventos as $e): ?>
         <tr>
-            <td><?php echo strtoupper($e["tipo"]) . " – " . $e["descricao"]; ?></td>
+            <td><?php echo strtoupper($e["tipo"]) . " - " . $e["descricao"]; ?></td>
             <td>R$ <?php echo number_format($e["valor"], 2, ',', '.'); ?></td>
         </tr>
     <?php endforeach; ?>

@@ -15,19 +15,39 @@ $mes_padrao = $mes . "-01";
 $sql = "SELECT id_usuario, nome_usuario 
         FROM usuario 
         WHERE conta_ativa = 1";
-
 $result = $conn->query($sql);
-
 $usuarios = [];
 while ($row = $result->fetch_assoc()) {
     $usuarios[] = $row;
 }
 
 // --------------------------
-// 3. Função para gerar folha de um usuário
+// 3. Adicionar evento (form separado)
+// --------------------------
+$mensagem_evento = '';
+if (isset($_POST['add_evento'])) {
+    $id_usuario_evento = $_POST['id_usuario_evento'] ?? null;
+    $tipo = $_POST['tipo'] ?? '';
+    $descricao = $_POST['descricao'] ?? 'Não Informado';
+    $valor = floatval($_POST['valor'] ?? 0);
+
+    if ($id_usuario_evento && $tipo && $valor > 0) {
+        $stmt = $conn->prepare("
+            INSERT INTO eventos (id_usuario, tipo, descricao, valor, mes_competencia)
+            VALUES (?, ?, ?, ?, ?)
+        ");
+        $stmt->bind_param("issds", $id_usuario_evento, $tipo, $descricao, $valor, $mes_padrao);
+        $stmt->execute();
+        $mensagem_evento = "Evento adicionado com sucesso!";
+    } else {
+        $mensagem_evento = "Preencha todos os campos corretamente.";
+    }
+}
+
+// --------------------------
+// 4. Função para gerar folha de um usuário
 // --------------------------
 function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn) {
-
     $id_usuario = $usuario['id_usuario'];
 
     // --- Buscar salário ---
@@ -107,10 +127,10 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn) {
 }
 
 // --------------------------
-// 4. Gerar folhas se botão foi clicado
+// 5. Gerar folhas se botão foi clicado
 // --------------------------
 $folhas_geradas = [];
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (isset($_POST['gerar_folhas'])) {
     foreach ($usuarios as $usuario) {
         $folha = gerarFolhaUsuario($usuario, $mes_padrao, $conn);
         if ($folha) $folhas_geradas[] = $folha;
@@ -123,25 +143,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <meta charset="UTF-8">
 <title>Gerar Folhas de Pagamento</title>
-<style>
-body { font-family: Arial; padding: 20px; }
-button { padding: 8px 16px; margin-top: 10px; }
-ul { margin-top: 20px; }
-li { margin-bottom: 8px; }
-</style>
+
 </head>
 <body>
 
 <h1>Gerar Folhas de Pagamento</h1>
 
+<!-- Form para adicionar evento -->
+<form method="POST">
+    <fieldset>
+        <legend>Adicionar Provento/Desconto</legend>
+
+        <label>Mês:</label>
+        <input type="month" name="mes" value="<?= $mes ?>"><br>
+
+        <label>Usuário:</label>
+        <select name="id_usuario_evento" required>
+            <option value="">-- Selecione --</option>
+            <?php foreach ($usuarios as $u): ?>
+                <option value="<?= $u['id_usuario'] ?>"><?= $u['nome_usuario'] ?></option>
+            <?php endforeach; ?>
+        </select><br>
+
+        <label>Tipo:</label>
+        <select name="tipo" required>
+            <option value="provento">Provento</option>
+            <option value="desconto">Desconto</option>
+        </select><br>
+
+        <label>Descrição:</label>
+        <input type="text" name="descricao" placeholder="Descrição do evento"><br>
+
+        <label>Valor:</label>
+        <input type="number" step="0.01" name="valor" placeholder="0.00"><br>
+
+        <button type="submit" name="add_evento">Adicionar Evento</button>
+    </fieldset>
+</form>
+
+<?php if ($mensagem_evento): ?>
+    <p style="color:green;"><?= $mensagem_evento ?></p>
+<?php endif; ?>
+
+<!-- Form para gerar folhas -->
 <form method="POST">
     <label>Mês:</label>
     <input type="month" name="mes" value="<?= $mes ?>">
-    <button type="submit">Gerar Todas as Folhas</button>
+    <button type="submit" name="gerar_folhas">Gerar Todas as Folhas</button>
 </form>
 
 <?php if (!empty($folhas_geradas)): ?>
-    <h2>Folhas Geradas – <?= $mes ?></h2>
+    <h2>Folhas Geradas <?= $mes ?></h2>
     <ul>
     <?php foreach ($folhas_geradas as $f): ?>
         <li>
