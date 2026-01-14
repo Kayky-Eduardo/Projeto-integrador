@@ -865,15 +865,11 @@ a:focus {
     cursor: pointer;
 }
 
-.btn-padrao:hover {
-    background: color-mix(in srgb, var(--cor-principal) 90%, black);
-}
-
 .btn-excluir {
     background: var(--cor-perigo);
     color: white;
     text-align: center;
-    padding: 10px;
+    padding: 10px 16px;
     border-radius: 8px;
     text-decoration: none;
     font-size: 0.85rem;
@@ -954,25 +950,11 @@ a:focus {
     margin-left: 18px;
 }
 
-/* BOTÃO EXCLUIR */
-.form-excluir {
-    width: 100%;
-}
-
-.form-excluir button {
-    width: 100%;
-    background: #dc2626;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.85rem;
-}
-
-
 /* BOTÃO VOLTAR */
 .voltar-final {
+    text-align: center;
+    order: 2;
+    margin-top: 0;
     text-align: center;
 }
 
@@ -980,6 +962,14 @@ a:focus {
     color: var(--cor-principal);
     font-weight: bold;
     text-decoration: none;
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    border: 1px solid var(--borda-padrao);
+    font-size: 0.85rem;
+    font-weight: 400;
 }
 
 .foto-upload {
@@ -1054,25 +1044,6 @@ a:focus {
     order: 1;
 }
 
-.voltar-final {
-    order: 2;
-    margin-top: 0;
-    text-align: center;
-}
-
-.voltar-final a {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    background: #f1f5f9;
-    color: var(--cor-principal);
-    text-decoration: none;
-    border: 1px solid var(--borda-padrao);
-    font-size: 0.85rem;
-    font-weight: 500;
-}
-
 /* =========================
    PERFIL / GRID
 ========================= */
@@ -1088,7 +1059,7 @@ a:focus {
     padding: 10px;
     margin-bottom: 12px;
     background-color: #fee2e2;
-    border-radius: 4px;
+    border-radius: 8px;
 }
 
 .box-erros strong {
@@ -1107,12 +1078,48 @@ a:focus {
 ========================= */
 .form-padrao {
     display: grid;
-    gap: 8px;
+    gap: 10px;
 }
 
-/* ======================
+/* Botão SALVAR FOTO */
+.hidden {
+    display: none;
+}
+
+.btn-salvar-foto {
+    background-color: #f1f5f9;
+    color: var(--cor-principal);
+    margin-top: 10px;
+}
+
+/* Botão ativar/desativar usuário */
+.form-status-usuario {
+    margin-top: 10px;
+}
+
+.btn-status {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    width: 100%;
+}
+
+.btn-ativar {
+    background-color: #2ecc71;
+    border: 1px solid #2ecc71
+}
+
+.btn-desativar {
+    background-color: #f97316;;
+    border: 1px solid #f97316;;
+}
+
+/* =============
    RESPONSIVO
-====================== */
+============= */
 @media (max-width: 900px) {
 
     .perfil-acoes {

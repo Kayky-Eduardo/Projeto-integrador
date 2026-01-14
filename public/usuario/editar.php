@@ -11,9 +11,9 @@ if (isset($_GET['id'])) {
     $id_usuario = $_GET['id'];
 
     $sql = "SELECT u.*, c.nome_cargo 
-        FROM usuario u
-        LEFT JOIN cargo c ON u.id_cargo = c.id_cargo
-        WHERE u.id_usuario = ?";
+            FROM usuario u
+            LEFT JOIN cargo c ON u.id_cargo = c.id_cargo
+            WHERE u.id_usuario = ?";
 
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id_usuario);
@@ -27,6 +27,35 @@ if (isset($_GET['id'])) {
     }
 } else {
     die("<h3>Erro: nenhum usuário selecionado.<br><a href='lista.php'>Voltar</a></h3>");
+}
+
+/* =======================
+   ERROS PADRONIZADOS
+======================= */
+$erros = [];
+
+if (isset($_SESSION['erros'])) {
+    $erros = $_SESSION['erros'];
+    unset($_SESSION['erros']);
+}
+
+/* =======================
+   ATIVAR / DESATIVAR USUÁRIO
+======================= */
+if (isset($_POST['toggle_status'], $_POST['id_usuario'])) {
+
+    $id = intval($_POST['id_usuario']);
+    $novo_status = intval($_POST['toggle_status']); // 0 ou 1
+
+    $stmt = $conn->prepare(
+        "UPDATE usuario SET conta_ativa = ? WHERE id_usuario = ?"
+    );
+    $stmt->bind_param("ii", $novo_status, $id);
+    $stmt->execute();
+    $stmt->close();
+
+    header("Location: editar.php?id=" . $id);
+    exit;
 }
 
 /* =======================
@@ -48,24 +77,30 @@ if (!empty($usuario['foto_usuario']) && file_exists("../../assets/img/usuarios/"
 ======================= */
 function formatarCPF($cpf)
 {
-    return (strlen($cpf) === 11) ? preg_replace("/(\d{3})(\d{3})(\d{3})(\d{2})/", "$1.$2.$3-$4", $cpf) : $cpf;
+    return (strlen($cpf) === 11)
+        ? preg_replace("/(\d{3})(\d{3})(\d{3})(\d{2})/", "$1.$2.$3-$4", $cpf)
+        : $cpf;
 }
 
 function formatarRG($rg)
 {
-    return (strlen($rg) === 9) ? preg_replace("/(\d{2})(\d{3})(\d{3})(\d{1})/", "$1.$2.$3-$4", $rg) : $rg;
+    return (strlen($rg) === 9)
+        ? preg_replace("/(\d{2})(\d{3})(\d{3})(\d{1})/", "$1.$2.$3-$4", $rg)
+        : $rg;
 }
 
 function formatarCEP($cep)
 {
-    return (strlen($cep) === 8) ? preg_replace("/(\d{5})(\d{3})/", "$1-$2", $cep) : $cep;
+    return (strlen($cep) === 8)
+        ? preg_replace("/(\d{5})(\d{3})/", "$1-$2", $cep)
+        : $cep;
 }
 
 function formatarTelefone($tel)
 {
-    if (strlen($tel) === 10) { // telefone fixo
+    if (strlen($tel) === 10) {
         return preg_replace("/(\d{2})(\d{4})(\d{4})/", "($1) $2-$3", $tel);
-    } elseif (strlen($tel) === 11) { // celular
+    } elseif (strlen($tel) === 11) {
         return preg_replace("/(\d{2})(\d{5})(\d{4})/", "($1) $2-$3", $tel);
     }
     return $tel;
@@ -75,6 +110,7 @@ function formatarTelefone($tel)
    ATUALIZAÇÃO DE DADOS
 ======================= */
 if (isset($_POST['editar_usuario'])) {
+
     $foto_nova = $usuario['foto_usuario'];
 
     if (!empty($_FILES['foto_usuario']['name'])) {
@@ -106,6 +142,46 @@ if (isset($_POST['editar_usuario'])) {
     $id_cargo = $_POST['id_cargo'] ?? $usuario['id_cargo'];
     $assiduidade = $_POST['assiduidade'] ?? $usuario['assiduidade'];
     $data_admissao = $_POST['data_admissao'] ?? $usuario['data_admissao'];
+
+    /* ============================
+        VALIDAÇÃO DE DUPLICIDADE
+    ============================ */
+
+    // CPF
+    $sql = "SELECT id_usuario FROM usuario 
+        WHERE cpf_usuario = ? AND id_usuario != ?";
+    $stmtCheck = $conn->prepare($sql);
+    $stmtCheck->bind_param("si", $cpf, $id);
+    $stmtCheck->execute();
+    $stmtCheck->store_result();
+    if ($stmtCheck->num_rows > 0) {
+        $erros[] = "CPF já cadastrado.";
+    }
+    $stmtCheck->close();
+
+    // RG
+    $sql = "SELECT id_usuario FROM usuario 
+        WHERE rg_usuario = ? AND id_usuario != ?";
+    $stmtCheck = $conn->prepare($sql);
+    $stmtCheck->bind_param("si", $rg, $id);
+    $stmtCheck->execute();
+    $stmtCheck->store_result();
+    if ($stmtCheck->num_rows > 0) {
+        $erros[] = "RG já cadastrado.";
+    }
+    $stmtCheck->close();
+
+    // Email
+    $sql = "SELECT id_usuario FROM usuario 
+        WHERE email_usuario = ? AND id_usuario != ?";
+    $stmtCheck = $conn->prepare($sql);
+    $stmtCheck->bind_param("si", $email, $id);
+    $stmtCheck->execute();
+    $stmtCheck->store_result();
+    if ($stmtCheck->num_rows > 0) {
+        $erros[] = "Email já cadastrado.";
+    }
+    $stmtCheck->close();
 
     if (!empty($senha)) {
         $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
@@ -158,11 +234,14 @@ if (isset($_POST['editar_usuario'])) {
         );
     }
 
-    if ($stmt->execute()) {
-        header("Location: editar.php?id=" . $id);
-        exit();
-    } else {
-        echo "Erro ao atualizar: " . $stmt->error;
+    if (empty($erros)) {
+        try {
+            $stmt->execute();
+            header("Location: editar.php?id=" . $id);
+            exit();
+        } catch (mysqli_sql_exception $e) {
+            $erros[] = "Erro ao atualizar os dados do usuário.";
+        }
     }
 
     $stmt->close();
@@ -184,6 +263,7 @@ if (isset($_POST['editar_usuario'])) {
     </nav>
 
     <main class="perfil">
+
         <form class="perfil-grid perfil-grid-editar" method="POST" enctype="multipart/form-data">
             <section class="perfil-header">
                 <label class="foto-upload">
@@ -197,9 +277,29 @@ if (isset($_POST['editar_usuario'])) {
                     <?= $usuario['conta_ativa'] ? 'Usuário Ativo' : 'Usuário Inativo' ?>
                 </span>
                 <p class="perfil-cargo"><?= $usuario['nome_cargo'] ?? 'Cargo não definido' ?></p>
+
+                <button type="submit"
+                    class="btn-padrao btn-salvar-foto hidden"
+                    name="editar_usuario"
+                    id="btn-salvar-foto">
+                    Salvar foto
+                </button>
             </section>
 
             <section class="perfil-visualizacao">
+
+                <!-- CAIXA DE ERROS (MESMO PADRÃO DO CADASTRO) -->
+                <?php if (!empty($erros)): ?>
+                    <article class="box-erros">
+                        <strong>Erros encontrados:</strong>
+                        <ul class="lista-erro erro">
+                            <?php foreach ($erros as $erro): ?>
+                                <li><?= $erro ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </article>
+                <?php endif; ?>
+
                 <h4>Informações do Funcionário</h4>
 
                 <article class="info-bloco">
@@ -244,7 +344,31 @@ if (isset($_POST['editar_usuario'])) {
 
                 <section class="acoes-perfil">
                     <button type="button" class="btn-padrao" id="btn-editar">Editar</button>
-                    <button type="submit" class="btn-excluir" formaction="deletar_usuario.php" formmethod="POST">Excluir</button>
+
+                    <input type="hidden" name="id_usuario" value="<?= $usuario['id_usuario'] ?>">
+
+                    <?php if ($usuario['conta_ativa']): ?>
+                        <button
+                            type="submit"
+                            name="toggle_status"
+                            value="0"
+                            class="btn-status btn-desativar">
+                            Desativar usuário
+                        </button>
+                    <?php else: ?>
+                        <button
+                            type="submit"
+                            name="toggle_status"
+                            value="1"
+                            class="btn-status btn-ativar">
+                            Ativar usuário
+                        </button>
+                    <?php endif; ?>
+
+                    <button type="submit" class="btn-excluir" formaction="deletar_usuario.php" formmethod="POST">
+                        Excluir
+                    </button>
+                    
                     <section class="voltar-final"><a href="lista.php">Voltar</a></section>
                 </section>
             </section>

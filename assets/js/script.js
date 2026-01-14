@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     area?.addEventListener("mouseleave", iniciarAuto);
 
     iniciarAuto();
-    
+
     /* =====================
        MÁSCARAS
     ====================== */
@@ -84,11 +84,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* =====================
        PREVIEW DA FOTO
-    ====================== */
+    ===================== */
     const inputFoto = document.getElementById("input-foto");
     const previewFoto = document.getElementById("preview-foto");
+    const btnSalvarFoto = document.getElementById("btn-salvar-foto");
 
-    if (inputFoto && previewFoto) {
+    if (inputFoto && previewFoto && btnSalvarFoto) {
         inputFoto.addEventListener("change", () => {
             const file = inputFoto.files[0];
             if (!file) return;
@@ -98,6 +99,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 previewFoto.src = reader.result;
             };
             reader.readAsDataURL(file);
+
+            // mostra o botão "Salvar ajustes"
+            btnSalvarFoto.classList.remove("hidden");
         });
     }
 

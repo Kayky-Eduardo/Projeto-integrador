@@ -290,10 +290,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <input class="input-padrao" type="date" name="data_admissao" required>
 
                         <button class="btn-padrao">Cadastrar Usuário</button>
-                    </section>
 
-                    <section class="voltar-final">
-                        <a href="lista.php">Voltar</a>
+                        <section class="voltar-final">
+                            <a href="lista.php">Voltar</a>
+                        </section>
                     </section>
 
                 </article>
