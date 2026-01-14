@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Validação simples
         if ($descricao === '' || $tempo_min < 0 || $tempo_max < 0) {
             $_SESSION['msg'] = 'Preencha os campos corretamente.';
-        }else if ($tempo_min > $tempo_max){
+        }else if ($tempo_min > $tempo_max  || $tempo_max === $tempo_min){
             $_SESSION['msg'] = 'Tempo Máximo deve ser maior que Tempo Mínimo.';
         } else {
             try {
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (mysqli_sql_exception $e) {
                 // Código 1062 é o erro de Duplicate Entry no MySQL
                 if ($e->getCode() === 1062) {
-                    $_SESSION['msg'] = '⚠Erro: Este nome já está registrado.';
+                    $_SESSION['msg'] = 'Erro: Este nome já está registrado.';
                 } else {
                     $_SESSION['msg'] = 'Erro inesperado ao salvar.';
                 }
@@ -43,37 +43,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: pausa_config.php");
         exit;
     }
-
-    // altera o estado da pausa em vez de excluir(soft delete por questão do histórico)
-    if ($_POST['acao']) {
-        $ativo = ($_POST['acao'] == 'desativar') ? 0 : 1;
-        $id = intval($_POST['id_config']);
-
-        if ($id > 0) {
-            // Mudamos de DELETE para UPDATE
-            $sql = "UPDATE pausa_config SET ativo = ? WHERE id_config = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ii", $ativo, $id);
-            
-            if (!$stmt->execute()) {
-                $_SESSION['msg'] = 'Erro ao desativar: ' . $conn->error;
-            }
-        }
-
-        header("Location: pausa_config.php");
-        exit;
-    }
 }
 
 // ----------------------------------------------
 // LISTA TODOS OS TIPOS DE PAUSA CADASTRADOS
 // ----------------------------------------------
-$listSql = "SELECT * FROM pausa_config WHERE ativo = 1 ORDER BY id_config ASC ";
+$listSql = "SELECT * FROM pausa_config ORDER BY ativo DESC, id_config ASC";
 $listRes = $conn->query($listSql);
 
-// lista as pausas inativas
-$listSql = "SELECT * FROM pausa_config WHERE ativo = 0 ORDER BY id_config ASC ";
-$listInative = $conn->query($listSql);
 ?>
 
 <!DOCTYPE html>
@@ -138,7 +115,7 @@ $listInative = $conn->query($listSql);
         </thead>
         <tbody>
 
-        <!-- Loop que mostra cada registro ATIVO da tabela -->
+        <!-- Loop que mostra cada registro da tabela -->
         <?php while ($row = $listRes->fetch_assoc()): ?>
             <tr>
                 <td><?= $row['id_config'] ?></td>
