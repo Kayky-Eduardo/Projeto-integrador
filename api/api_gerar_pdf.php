@@ -144,13 +144,12 @@ h1 { text-align: center; }
         <td>R$ <?php echo number_format($folha["total_proventos"],2,',','.'); ?></td></tr>
     <tr><td>Total Descontos:</td>
         <td>R$ <?php echo number_format($folha["total_descontos"],2,',','.'); ?></td></tr>
+    <tr><td>VT:</td>
+        <td>R$ <?php echo number_format($folha["vt"],2,',','.'); ?></td></tr>
     <tr><td>INSS:</td>
         <td>R$ <?php echo number_format($folha["inss"],2,',','.'); ?></td></tr>
-    <tr><td>FGTS:</td>
-        <td>R$ <?php echo number_format($folha["fgts"],2,',','.'); ?></td></tr>
     <tr><td>IRRF:</td>
         <td>R$ <?php echo number_format($folha["irrf"],2,',','.'); ?></td></tr>
-
     <tr class="titulo">
         <td><b>Salário Líquido</b></td>
         <td><b>R$ <?php echo number_format($folha["salario_liquido"],2,',','.'); ?></b></td>

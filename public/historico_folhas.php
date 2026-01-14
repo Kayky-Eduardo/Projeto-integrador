@@ -3,8 +3,9 @@
 require_once "../BD/conexao.php";
 
 // Recebe filtros do formulário (caso existam)
-$filtroMes = $_GET["mes"] ?? "";      // Mês no formato YYYY-MM
-$filtroUser = $_GET["usuario"] ?? ""; // ID do usuário selecionado
+$filtroInicio = $_GET["inicio"] ?? "";    // Data de início no formato YYYY-MM
+$filtroFim    = $_GET["fim"] ?? "";       // Data de fim no formato YYYY-MM
+$filtroUser   = $_GET["usuario"] ?? "";   // ID do usuário selecionado
 
 // Busca todos os usuários para preencher o <select>
 $users = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY nome_usuario");
@@ -17,21 +18,22 @@ $sql = "
     LEFT JOIN usuario u ON u.id_usuario = f.id_usuario
     WHERE 1
 ";
-// WHERE 1 facilita adicionar filtros condicionais depois
 
 // ----------------------
-// Filtro por mês
+// Filtro por período
 // ----------------------
-if (!empty($filtroMes)) {
-    // Usa real_escape_string para evitar SQL Injection
-    $sql .= " AND f.mes_competencia = '" . $conn->real_escape_string($filtroMes . "-01") . "'";
+if (!empty($filtroInicio)) {
+    $sql .= " AND f.mes_competencia >= '" . $conn->real_escape_string($filtroInicio . "-01") . "'";
+}
+
+if (!empty($filtroFim)) {
+    $sql .= " AND f.mes_competencia <= '" . $conn->real_escape_string($filtroFim . "-01") . "'";
 }
 
 // ----------------------
 // Filtro por funcionário
 // ----------------------
 if (!empty($filtroUser)) {
-    // intval() garante que só números sejam usados
     $sql .= " AND f.id_usuario = " . intval($filtroUser);
 }
 
@@ -47,7 +49,6 @@ $result = $conn->query($sql);
 <meta charset="UTF-8">
 <title>Histórico de Folhas</title>
 
-<!-- fiz o arroz com feijão pq sem isso fica muito feioKKKKKK -->
 <style> 
 table {border-collapse: collapse; width: 100%; margin-top: 20px;}
 td, th {border: 1px solid #444; padding: 8px;}
@@ -61,8 +62,11 @@ td, th {border: 1px solid #444; padding: 8px;}
 <!-- Formulário de filtros -->
 <form method="GET">
 
-    <label>Mês:</label>
-    <input type="month" name="mes" value="<?= $filtroMes ?>">
+    <label>Início:</label>
+    <input type="month" name="inicio" value="<?= $filtroInicio ?>">
+
+    <label>Fim:</label>
+    <input type="month" name="fim" value="<?= $filtroFim ?>">
 
     <label>Funcionário:</label>
     <select name="usuario">
@@ -95,23 +99,13 @@ td, th {border: 1px solid #444; padding: 8px;}
     <tbody>
 
 <?php if ($result->num_rows == 0): ?>
-        <!-- Caso nenhum dado seja encontrado -->
         <tr><td colspan="4">Nenhuma folha encontrada.</td></tr>
-
 <?php else: ?>
-    <!-- Loop pelos registros encontrados -->
     <?php while ($f = $result->fetch_assoc()): ?>
         <tr>
-            <!-- Exibe o mês sem o dia -->
             <td><?= substr($f["mes_competencia"], 0, 7) ?></td>
-
-            <!-- Nome do funcionário -->
             <td><?= $f["nome_usuario"] ?></td>
-
-            <!-- Salário líquido formatado -->
             <td>R$ <?= number_format($f["salario_liquido"], 2, ',', '.') ?></td>
-
-            <!-- Leva pra api gerar o 'PDF' -->
             <td>
                 <a href="../api/api_gerar_pdf.php?mes=<?= substr($f["mes_competencia"], 0, 7) ?>&id_usuario=<?= $f['id_usuario'] ?>" 
                 target="_blank">
