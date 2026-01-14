@@ -4,17 +4,13 @@ include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
 
-/* ===============================
-   BUSCA DO SETOR
-=================================*/
 if (!isset($_GET['id'])) {
     die("Setor não informado.");
 }
 
-$id_setor = intval($_GET['id']);
+$id_setor = $_GET['id'];
 
-$sqlSetor = "SELECT * FROM setor WHERE id_setor = ?";
-$stmt = $conn->prepare($sqlSetor);
+$stmt = $conn->prepare("SELECT * FROM setor WHERE id_setor = ?");
 $stmt->bind_param("i", $id_setor);
 $stmt->execute();
 $setor = $stmt->get_result()->fetch_assoc();
@@ -23,17 +19,9 @@ if (!$setor) {
     die("Setor não encontrado.");
 }
 
-/* ===============================
-   BUSCA TODOS OS USUÁRIOS
-=================================*/
-$sqlUsuarios = "SELECT id_usuario, nome_usuario FROM usuario ORDER BY nome_usuario";
-$usuarios = $conn->query($sqlUsuarios);
+$usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY nome_usuario");
 
-/* ===============================
-   BUSCA USUÁRIOS JÁ NO SETOR
-=================================*/
-$sqlVinculos = "SELECT id_usuario FROM grupo_setor WHERE id_setor = ?";
-$stmt = $conn->prepare($sqlVinculos);
+$stmt = $conn->prepare("SELECT id_usuario FROM grupo_setor WHERE id_setor = ?");
 $stmt->bind_param("i", $id_setor);
 $stmt->execute();
 $res = $stmt->get_result();
@@ -43,29 +31,23 @@ while ($row = $res->fetch_assoc()) {
     $usuarios_no_setor[] = $row['id_usuario'];
 }
 
-/* ===============================
-   SALVAR ALTERAÇÕES
-=================================*/
 if (isset($_POST['salvar_setor'])) {
 
     $nome_setor = $_POST['nome_setor'];
     $usuarios_selecionados = $_POST['usuarios'] ?? [];
 
     // Atualiza nome do setor
-    $sqlUpdate = "UPDATE setor SET nome_setor = ? WHERE id_setor = ?";
-    $stmt = $conn->prepare($sqlUpdate);
+    $stmt = $conn->prepare("UPDATE setor SET nome_setor = ? WHERE id_setor = ?");
     $stmt->bind_param("si", $nome_setor, $id_setor);
     $stmt->execute();
 
     // Remove vínculos antigos
-    $sqlDelete = "DELETE FROM grupo_setor WHERE id_setor = ?";
-    $stmt = $conn->prepare($sqlDelete);
+    $stmt = $conn->prepare("DELETE FROM grupo_setor WHERE id_setor = ?");
     $stmt->bind_param("i", $id_setor);
     $stmt->execute();
 
     // Insere novos vínculos
-    $sqlInsert = "INSERT INTO grupo_setor (id_setor, id_usuario) VALUES (?, ?)";
-    $stmt = $conn->prepare($sqlInsert);
+    $stmt = $conn->prepare("INSERT INTO grupo_setor (id_setor, id_usuario) VALUES (?, ?)");
 
     foreach ($usuarios_selecionados as $id_usuario) {
         $stmt->bind_param("ii", $id_setor, $id_usuario);
@@ -73,6 +55,18 @@ if (isset($_POST['salvar_setor'])) {
     }
 
     echo "<p>Setor atualizado com sucesso!</p>";
+
+    function mostrar_usuarios() {
+        while ($u = $usuarios->fetch_assoc())
+            echo "<label>
+                <input type='checkbox'
+                    name='usuarios[]'
+                    value=" . $u['id_usuario'] .
+                    in_array($u['id_usuario'], $usuarios_no_setor) ? 'checked' : '' .
+                    "onchange=" . atualizarContador() .">
+                    " .htmlspecialchars($u['nome_usuario']) .
+            "</label>";
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -99,13 +93,13 @@ if (isset($_POST['salvar_setor'])) {
 
         <div class="select-box">
             <div class="select-header" onclick="toggleSelect()">
-                <span id="contador">
-                    <?= count($usuarios_no_setor) ?>
-                </span> pessoas
+                <span id="contador"> <?= count($usuarios_no_setor) ?></span> pessoas
             </div>
 
             <div class="select-options" id="selectOptions">
-
+                <!-- testando -->
+            <button type="button" onclick="<?php mostrar_usuarios() ?>">clicar</button>
+                <!-- pra funcionar só tirar o de cima -->
                 <?php while ($u = $usuarios->fetch_assoc()): ?>
                     <label>
                         <input type="checkbox"
@@ -116,7 +110,6 @@ if (isset($_POST['salvar_setor'])) {
                         <?= htmlspecialchars($u['nome_usuario']) ?>
                     </label>
                 <?php endwhile; ?>
-
             </div>
         </div>
 

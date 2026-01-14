@@ -10,7 +10,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 // Processa requisição
 if ($method === 'GET') {
-     $acao = $_GET['acao'] ?? 'verificar_individual';
+    $acao = $_GET['acao'] ?? 'verificar_individual';
     
     // NOVA ROTA: Para o gráfico de taxa de presença
     if ($acao === 'taxa_presenca_geral') {
