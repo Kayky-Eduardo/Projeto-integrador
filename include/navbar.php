@@ -11,6 +11,9 @@ switch ($_SESSION['nivel']) {
             <a href="ponto/relatorio_ponto.php">Ponto</a>
             <a href="relatorio/online.php">Relatórios</a>
             <a href="logout.php">Sair</a>
+            <a href="gerar_folha.php">Ver Folha</a>
+            <a href="historico_folhas.php">Historico folha</a>
+            <a href="gerar_folhas_todos.php">Ver Folha todos</a>
         </nav>
         ';
         break;

@@ -113,9 +113,9 @@ td, th {border: 1px solid #444; padding: 8px;}
 
             <!-- Leva pra api gerar o 'PDF' -->
             <td>
-                <a href="../api/api_gerar_pdf.php?mes=<?= substr($f["mes_competencia"], 0, 7) ?>"
-                   target="_blank">
-                   Abrir PDF
+                <a href="../api/api_gerar_pdf.php?mes=<?= substr($f["mes_competencia"], 0, 7) ?>&id_usuario=<?= $f['id_usuario'] ?>" 
+                target="_blank">
+                Abrir PDF
                 </a>
             </td>
         </tr>

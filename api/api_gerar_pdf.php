@@ -13,11 +13,47 @@ if (!$mes) { die("Mês não informado."); }
 // Formato padrão da tabela (YYYY-MM-01)
 $mes_comp = $mes . "-01";
 
-// Pega o id do usuário logado
-$id_usuario = $_SESSION['id_usuario'];
+// -----------------------------
+// 2. Pega ID do usuário alvo
+// -----------------------------
+$id_usuario_logado = $_SESSION['id_usuario'];
+$id_usuario = $_GET['id_usuario'] ?? $id_usuario_logado;
 
 // -----------------------------
-// 2. Buscar dados do usuário
+// 3. Verifica nível do usuário logado
+// -----------------------------
+$sql_nivel_logado = $conn->prepare("
+    SELECT c.nivel 
+    FROM usuario u
+    LEFT JOIN cargo c ON u.id_cargo = c.id_cargo
+    WHERE u.id_usuario = ?
+");
+$sql_nivel_logado->bind_param("i", $id_usuario_logado);
+$sql_nivel_logado->execute();
+$nivel_logado = $sql_nivel_logado->get_result()->fetch_assoc()['nivel'] ?? 0;
+
+// -----------------------------
+// 4. Verifica nível do usuário alvo
+// -----------------------------
+$sql_nivel_alvo = $conn->prepare("
+    SELECT c.nivel 
+    FROM usuario u
+    LEFT JOIN cargo c ON u.id_cargo = c.id_cargo
+    WHERE u.id_usuario = ?
+");
+$sql_nivel_alvo->bind_param("i", $id_usuario);
+$sql_nivel_alvo->execute();
+$nivel_alvo = $sql_nivel_alvo->get_result()->fetch_assoc()['nivel'] ?? 0;
+
+// -----------------------------
+// 5. Verifica permissão de acesso
+// -----------------------------
+if ($id_usuario != $id_usuario_logado && $nivel_logado <= $nivel_alvo) {
+    die("Acesso negado: você não tem permissão para visualizar este holerite.");
+}
+
+// -----------------------------
+// 6. Buscar dados do usuário
 // -----------------------------
 $sql_user = $conn->prepare("
     SELECT u.nome_usuario, u.cpf_usuario, u.data_admissao,
@@ -30,9 +66,8 @@ $sql_user->bind_param("i", $id_usuario);
 $sql_user->execute();
 $user = $sql_user->get_result()->fetch_assoc();
 
-
 // -----------------------------
-// 3. Buscar folha gerada no mês
+// 7. Buscar folha gerada no mês
 // -----------------------------
 $sql_folha = $conn->prepare("
     SELECT *
@@ -43,9 +78,8 @@ $sql_folha->bind_param("is", $id_usuario, $mes_comp);
 $sql_folha->execute();
 $folha = $sql_folha->get_result()->fetch_assoc();
 
-
 // -----------------------------
-// 4. Buscar eventos (proventos/descontos)
+// 8. Buscar eventos (proventos/descontos)
 // -----------------------------
 $sql_eventos = $conn->prepare("
     SELECT tipo, descricao, valor 
@@ -66,7 +100,6 @@ $eventos = $sql_eventos->get_result()->fetch_all(MYSQLI_ASSOC);
 <title>Holerite <?php echo $mes; ?></title>
 
 <style>
-/* Deixei aqui pra nn ficar tão feio, o bruno pode arrancar daqui quando for mexer no css */
 body { font-family: Arial; padding: 25px; }
 table { width: 100%; border-collapse: collapse; margin-top: 15px; }
 td, th { border: 1px solid #444; padding: 8px; }
@@ -77,16 +110,12 @@ h1 { text-align: center; }
 </head>
 <body>
 
-<!-- Mês da folha de pagamento -->
 <h1>HOLERITE – <?php echo date("m/Y", strtotime($mes_comp)); ?></h1>
 
 <table> 
-
-    <!-- Aqui vai ficar o nome da empresa, mas como a gente nao tem deixei um valor aleatorio -->
     <tr class="titulo"><td colspan="2">Empresa</td></tr>
     <tr><td>Nome:</td><td>Sem nome</td></tr>
 
-    <!-- Dados do funcionário -->
     <tr class="titulo"><td colspan="2">Funcionário</td></tr>
     <tr><td>Nome:</td><td><?php echo $user["nome_usuario"]; ?></td></tr>
     <tr><td>CPF:</td><td><?php echo $user["cpf_usuario"]; ?></td></tr>
@@ -94,15 +123,11 @@ h1 { text-align: center; }
     <tr><td>Admissão:</td>
         <td><?php echo date("d/m/Y", strtotime($user["data_admissao"])); ?></td></tr>
 
-    <!-- Pega os proventos/descontos -->
     <tr class="titulo"><td colspan="2">Proventos e Descontos</td></tr>
 
 <?php if (count($eventos) == 0): ?>
-    <!-- Se não tem eventos -->
     <tr><td colspan="2">Nenhum evento cadastrado.</td></tr>
-
 <?php else: ?>
-    <!-- Lista cada evento cadastrado -->
     <?php foreach ($eventos as $e): ?>
         <tr>
             <td><?php echo strtoupper($e["tipo"]) . " – " . $e["descricao"]; ?></td>
@@ -111,38 +136,29 @@ h1 { text-align: center; }
     <?php endforeach; ?>
 <?php endif; ?>
 
-    <!-- Resumo financeiro da folha -->
     <tr class="titulo"><td colspan="2">Resumo</td></tr>
 
     <tr><td>Salário Bruto:</td>
-        <td>R$ <?php echo $folha["salario_bruto"]; ?></td></tr>
-
+        <td>R$ <?php echo number_format($folha["salario_bruto"],2,',','.'); ?></td></tr>
     <tr><td>Total Proventos:</td>
-        <td>R$ <?php echo $folha["total_proventos"]; ?></td></tr>
-
+        <td>R$ <?php echo number_format($folha["total_proventos"],2,',','.'); ?></td></tr>
     <tr><td>Total Descontos:</td>
-        <td>R$ <?php echo $folha["total_descontos"]; ?></td></tr>
-
+        <td>R$ <?php echo number_format($folha["total_descontos"],2,',','.'); ?></td></tr>
     <tr><td>INSS:</td>
-        <td>R$ <?php echo $folha["inss"]; ?></td></tr>
-
+        <td>R$ <?php echo number_format($folha["inss"],2,',','.'); ?></td></tr>
     <tr><td>FGTS:</td>
-        <td>R$ <?php echo $folha["fgts"]; ?></td></tr>
-
+        <td>R$ <?php echo number_format($folha["fgts"],2,',','.'); ?></td></tr>
     <tr><td>IRRF:</td>
-        <td>R$ <?php echo $folha["irrf"]; ?></td></tr>
+        <td>R$ <?php echo number_format($folha["irrf"],2,',','.'); ?></td></tr>
 
-    <!-- Salário líquido destacado -->
     <tr class="titulo">
         <td><b>Salário Líquido</b></td>
-        <td><b>R$ <?php echo $folha["salario_liquido"]; ?></b></td>
+        <td><b>R$ <?php echo number_format($folha["salario_liquido"],2,',','.'); ?></b></td>
     </tr>
 
 </table>
 
 <br><br>
-
-<!-- Rodapé simples -->
 <div style="text-align:center;">Gerado automaticamente</div>
 
 </body>
