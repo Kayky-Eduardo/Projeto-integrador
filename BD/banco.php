@@ -194,6 +194,16 @@ create table tempo_jornada(
     maximo_hora_extra time not null default '02:00:00'
 );
 
+set global event_scheduler = ON;
+
+create event limpar_tempo
+	on schedule
+    every 30 day
+    starts (timestamp(current_date() + interval 30 day))
+DO
+	update banco_horas
+    set saldo_minutos = 0;
+
 ");
 $conn->query($sql);
 

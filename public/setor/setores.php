@@ -13,7 +13,7 @@ $result = $conn->query("SELECT * FROM setor");
 <head>
   <meta charset="UTF-8">
   <title>Setores</title>
-  <link rel="stylesheet" href="../../assets/estilo.css">
+  <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
 <body>
     <header>
@@ -21,15 +21,18 @@ $result = $conn->query("SELECT * FROM setor");
     </header>
 
   <table>
-    <tr>
-      <th>ID setor</th>
-      <th>Nome setor</th>
-      <th>Edição</th>
-      <th>Deletar</th>
-    </tr>
-    <?php
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
+    <thead>
+      <tr>
+        <th>ID setor</th>
+        <th>Nome setor</th>
+        <th>Edição</th>
+        <th>Deletar</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php
+        if ($result->num_rows > 0) {
+          while ($row = $result->fetch_assoc()) {
             echo "<tr>";
             echo "<td>".$row["id_setor"]."</td>";
             echo "<td>".$row["nome_setor"]."</td>";
@@ -50,11 +53,12 @@ $result = $conn->query("SELECT * FROM setor");
             </td>';
             
             echo "</tr>";
-        }
-    } else {
-        echo "<tr><td colspan='12'>Nenhum setor cadastrado.</td></tr>";
-    }
+          }
+      } else {
+          echo "<tr><th colspan='12'>Nenhum setor cadastrado.</th></tr>";
+      }
     ?>
+  </tbody>
   </table>
 </body>
 </html>
