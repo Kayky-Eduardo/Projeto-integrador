@@ -17,7 +17,6 @@ if (!isset($_SESSION["id_usuario"])) {
 
 $id_usuario = $_SESSION["id_usuario"];
 
-
 // -----------------------------
 // 2. Recebe o mês (competência)
 // -----------------------------
@@ -33,7 +32,6 @@ if (!$mes_competencia) {
 
 // Converte para formato válido do BD (primeiro dia do mês)
 $mes_competencia_padrao = $mes_competencia . "-01";
-
 
 // -----------------------------
 // 3. Buscar dados do usuário (nome + salário base/bruto)
@@ -61,7 +59,6 @@ if (!$usuario) {
 $salario_bruto = floatval($usuario["salario_bruto"]);
 $nome_usuario  = $usuario["nome_usuario"];
 
-
 // -----------------------------
 // 4. Buscar proventos e descontos adicionais cadastrados no mês
 // -----------------------------
@@ -86,7 +83,6 @@ while ($evt = $resEventos->fetch_assoc()) {
     }
 }
 
-
 // -----------------------------
 // 5. Cálculos legais (INSS, FGTS, IRRF, VT)
 // -----------------------------
@@ -104,7 +100,6 @@ $salario_liquido = calcularSalarioLiquido(
     $total_proventos,
     $total_descontos
 );
-
 
 // -----------------------------
 // 6. Insere ou atualiza a folha no banco
@@ -142,7 +137,6 @@ $stmt3->bind_param(
 
 $stmt3->execute();
 
-
 // -----------------------------
 // 7. Converte o mês para texto (Ex.: 2025-01 → Janeiro de 2025)
 // -----------------------------
@@ -156,30 +150,5 @@ $ano = substr($mes_competencia, 0, 4);
 $mes_num = substr($mes_competencia, 5, 2);
 
 $mes_formatado = $meses_pt[$mes_num] . " de " . $ano;
-
-
-// -----------------------------
-// 8. Monta o texto final do holerite (modo simples)
-// -----------------------------
-$texto = 
-"Folha de Pagamento — {$mes_formatado}
---------------------------------
-Colaborador: {$nome_usuario}
-Salário bruto: R$ " . number_format($salario_bruto, 2, ',', '.') . "
-Proventos: R$ " . number_format($total_proventos, 2, ',', '.') . "
-Descontos totais: R$ " . number_format($total_descontos, 2, ',', '.') . "
-   • INSS: R$ " . number_format($inss, 2, ',', '.') . "
-   • IRRF: R$ " . number_format($irrf, 2, ',', '.') . "
-   • VT: R$ " . number_format($vt, 2, ',', '.') . "
-FGTS: R$ " . number_format($fgts, 2, ',', '.') . "
-Salário Líquido: R$ " . number_format($salario_liquido, 2, ',', '.');
-
-
-// -----------------------------
-// 9. Retorna texto puro
-// -----------------------------
-header("Content-Type: text/plain; charset=utf-8");
-echo $texto;
-exit;
 
 ?>
