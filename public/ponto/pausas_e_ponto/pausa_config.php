@@ -61,7 +61,6 @@ $listRes = $conn->query($listSql);
 </head>
 <body>
     <a href="../../index.php">Voltar</a>
-    <a href="teste.php">Teste</a>
 
     <h2>Gerenciar Tipo de Pausas</h2>
 

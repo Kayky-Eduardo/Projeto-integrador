@@ -10,7 +10,7 @@ if (!$id_usuario) die("Acesso negado.");
 $hoje = date("Y-m-d");
 $erro = "";
 
-// --- 1. LÓGICA DE AUTO-FECHAMENTO (BACKEND) ---
+// LÓGICA DE AUTO-FECHAMENTO (BACKEND)
 // Fecha pausas que excederam o tempo_max caso o usuário tenha fechado o navegador
 $conn->query("UPDATE pausa p 
               JOIN pausa_config c ON p.id_config = c.id_config 
@@ -19,7 +19,7 @@ $conn->query("UPDATE pausa p
               WHERE p.fim IS NULL AND p.id_usuario = $id_usuario 
               AND TIMESTAMPDIFF(SECOND, p.inicio, NOW()) >= (c.tempo_max * 60)");
 
-// --- 2. PROCESSAMENTO DE AÇÕES (POST) ---
+// PROCESSAMENTO DE AÇÕES VIA POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $acao = $_POST['acao'] ?? '';
 
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$erro) { header("Location: " . $_SERVER['PHP_SELF']); exit; }
 }
 
-// --- 3. DADOS PARA A INTERFACE ---
+// DADOS PARA A INTERFACE
 $statusPonto = $conn->query("SELECT * FROM ponto_dia WHERE id_usuario = $id_usuario AND data_ponto = '$hoje'")->fetch_assoc();
 $pausaAtiva = $conn->query("SELECT p.*, c.descricao_pausa, c.tempo_max, c.tempo_min FROM pausa p 
                             JOIN pausa_config c ON p.id_config = c.id_config 
@@ -81,6 +81,8 @@ $tiposPausa = $conn->query("SELECT * FROM pausa_config WHERE ativo = 1");
 
 $pontoIniciado = ($statusPonto && !empty($statusPonto['inicio_ponto']));
 $pontoFinalizado = ($statusPonto && !empty($statusPonto['fim_ponto']));
+
+
 ?>
 
 <!DOCTYPE html>
@@ -107,8 +109,17 @@ $pontoFinalizado = ($statusPonto && !empty($statusPonto['fim_ponto']));
     <form method="POST" id="formPausa">
         <label>Tipo de pausa:</label>
         <select name="id_config" <?= (!$pontoIniciado || $pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
-            <?php while($t = $tiposPausa->fetch_assoc()): ?>
-                <option value="<?= $t['id_config'] ?>"><?= $t['descricao_pausa'] ?></option>
+            <?php while($t = $tiposPausa->fetch_assoc()):
+                $stmt = $conn->prepare("SELECT COUNT(*) FROM pausa WHERE id_config = ? AND DATA = CURDATE()");
+                $stmt->bind_param("i", $t['id_config']);
+                $stmt->execute();
+                $resultCount = $stmt->get_result();
+                $row = $resultCount->fetch_row();
+                $totalRealizado = $row[0];
+                ?>
+                <option value="<?= $t['id_config'] ?>" <?php ($totalRealizado === $t['limite_pausa_diario']) ? 'disabled' : '' ?>>
+                    <?= $t['descricao_pausa'] ?> (<?=  $totalRealizado .'/'. $t['limite_pausa_diario'] ?>)
+                </option>
             <?php endwhile; ?>
         </select>
 
@@ -191,6 +202,7 @@ $pontoFinalizado = ($statusPonto && !empty($statusPonto['fim_ponto']));
         if (decorridoSegundos >= maxSegundos) {
             alert("Tempo máximo de pausa atingido! Finalizando automaticamente.");
             document.getElementById('formPausa').submit();
+            window.location.reload;
         }
     }
 
