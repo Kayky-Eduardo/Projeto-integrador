@@ -1,8 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-
-    /* =====================
-       CARROSSEL
-    ====================== */
+    /* CARROSSEL */
     const slides = document.querySelectorAll(".slide");
     const prev = document.querySelector(".prev");
     const next = document.querySelector(".next");
@@ -55,9 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     iniciarAuto();
 
-    /* =====================
-       MÁSCARAS
-    ====================== */
+    /* MÁSCARAS */
     if (document.getElementById("cpf")) {
         IMask(document.getElementById("cpf"), {
             mask: "000.000.000-00"
@@ -82,14 +77,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    /* =====================
-       PREVIEW DA FOTO
-    ===================== */
+    /* PREVIEW DA FOTO */
     const inputFoto = document.getElementById("input-foto");
     const previewFoto = document.getElementById("preview-foto");
     const btnSalvarFoto = document.getElementById("btn-salvar-foto");
 
-    if (inputFoto && previewFoto && btnSalvarFoto) {
+    if (inputFoto && previewFoto) {
         inputFoto.addEventListener("change", () => {
             const file = inputFoto.files[0];
             if (!file) return;
@@ -100,14 +93,13 @@ document.addEventListener("DOMContentLoaded", () => {
             };
             reader.readAsDataURL(file);
 
-            // mostra o botão "Salvar ajustes"
-            btnSalvarFoto.classList.remove("hidden");
+            if (btnSalvarFoto) {
+                btnSalvarFoto.classList.remove("hidden");
+            }
         });
     }
 
-    /* =====================
-       BOTÃO EDITAR (PAINEL)
-    ====================== */
+    /* EDIÇÃO DE USUÁRIO */
     const btnEditar = document.getElementById("btn-editar");
     const painelEdicao = document.getElementById("painel-edicao");
 

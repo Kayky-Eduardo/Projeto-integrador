@@ -18,6 +18,8 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    margin: 0;
+    padding: 0;
 }
 
 /* BANNER */
@@ -59,11 +61,10 @@ nav a:focus {
     transform: translateY(-2px);
 }
 
-/* CONTEÚDO PRINCIPAL (MAIN) */
+/* CONTEÚDO PRINCIPAL */
 main {
     flex: 1;
     padding: 2rem;
-
     display: flex;
     justify-content: center;
 }
@@ -876,6 +877,7 @@ a:focus {
     border: none;
     border: 1px solid var(--cor-perigo);
     cursor: pointer;
+
 }
 
 /* AÇÕES EMPRESA */
@@ -1113,8 +1115,10 @@ a:focus {
 }
 
 .btn-desativar {
-    background-color: #f97316;;
-    border: 1px solid #f97316;;
+    background-color: #f97316;
+    ;
+    border: 1px solid #f97316;
+    ;
 }
 
 /* =============
@@ -1141,4 +1145,123 @@ a:focus {
     .perfil-header {
         height: auto;
     }
+}
+
+/* =================
+   BANCO DE HORAS
+================= */
+.banco-horas {
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+}
+
+/* Resumo */
+.bh-resumo {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.bh-resumo article {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+}
+
+.bh-resumo h2 {
+    font-size: 1.8rem;
+    color: var(--cor-principal);
+}
+
+.bh-resumo p {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+/* Filtro */
+.bh-filtro {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.bh-filtro form {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.bh-filtro article {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+}
+
+.bh-filtro label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.bh-filtro input {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    font-size: 0.85rem;
+}
+
+.bh-filtro button {
+    padding: 8px 18px;
+    background-color: var(--cor-principal);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Histórico */
+.bh-historico {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.bh-historico table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.bh-historico thead {
+    background: #f1f5f9;
+}
+
+.bh-historico th,
+.bh-historico td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.bh-historico tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.bh-historico p {
+    text-align: center;
+    color: #64748b;
 }
