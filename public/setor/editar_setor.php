@@ -56,18 +56,7 @@ if (isset($_POST['salvar_setor'])) {
 
     echo "<p>Setor atualizado com sucesso!</p>";
 
-    function mostrar_usuarios() {
-        while ($u = $usuarios->fetch_assoc())
-            echo "<label>
-                <input type='checkbox'
-                    name='usuarios[]'
-                    value=" . $u['id_usuario'] .
-                    in_array($u['id_usuario'], $usuarios_no_setor) ? 'checked' : '' .
-                    "onchange=" . atualizarContador() .">
-                    " .htmlspecialchars($u['nome_usuario']) .
-            "</label>";
     }
-}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -92,14 +81,18 @@ if (isset($_POST['salvar_setor'])) {
 
 
         <div class="select-box">
-            <div class="select-header" onclick="toggleSelect()">
+            <!-- <div class="select-header" onclick="ativar_select()">
                 <span id="contador"> <?= count($usuarios_no_setor) ?></span> pessoas
-            </div>
+            </div> -->
 
-            <div class="select-options" id="selectOptions">
-                <!-- testando -->
-            <button type="button" onclick="<?php mostrar_usuarios() ?>">clicar</button>
-                <!-- pra funcionar só tirar o de cima -->
+             <button class="btn-ativar" type="button" onclick="ativar_select()">
+                <span id="contador"><?= count($usuarios_no_setor) ?></span> selecionados
+            </button>
+            <!--
+            pegar essa div e prencher desta mesma forma só que com os dados da api,
+            dessa forma da pra fazer somente ao click do botão btn-ativar
+            -->
+            <div id="selectOptions">
                 <?php while ($u = $usuarios->fetch_assoc()): ?>
                     <label>
                         <input type="checkbox"
@@ -108,7 +101,7 @@ if (isset($_POST['salvar_setor'])) {
                             <?= in_array($u['id_usuario'], $usuarios_no_setor) ? 'checked' : '' ?>
                             onchange="atualizarContador()">
                         <?= htmlspecialchars($u['nome_usuario']) ?>
-                    </label>
+                    </label><br>
                 <?php endwhile; ?>
             </div>
         </div>
@@ -119,17 +112,20 @@ if (isset($_POST['salvar_setor'])) {
 
     </form>
 <script>
-function toggleSelect() {
-    const box = document.getElementById('selectOptions');
-    box.style.display = box.style.display === 'block' ? 'none' : 'block';
-}
+// fazer um novo caminho na api para pegar as pessoas que estão no setor
+// e colocar conteudo no select options só quando tiver essa resposta
 
-function atualizarContador() {
-    const checkboxes = document.querySelectorAll(
-        'input[name="usuarios[]"]:checked'
-    );
-    document.getElementById('contador').innerText = checkboxes.length;
-}
+    function ativar_select() {
+        const box = document.getElementById('selectOptions');
+        box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function atualizar_contador() {
+        const checkboxes = document.querySelectorAll(
+            'input[name="usuarios[]"]:checked'
+        );
+        document.getElementById('contador').innerText = checkboxes.length;
+    }
 </script>
 </body>
 </html>
