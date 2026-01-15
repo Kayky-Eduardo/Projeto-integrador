@@ -3,172 +3,202 @@ session_start();
 date_default_timezone_set('America/Sao_Paulo');
 include __DIR__ . '/../../../BD/conexao.php';
 require_once __DIR__ . '/../../../include/verificacao.php';
-verificar_login($conn);
+
+$id_usuario = $_SESSION['id_usuario'] ?? null;
+if (!$id_usuario) die("Acesso negado.");
+
+$hoje = date("Y-m-d");
+$erro = "";
+
+// --- 1. LÓGICA DE AUTO-FECHAMENTO (BACKEND) ---
+// Fecha pausas que excederam o tempo_max caso o usuário tenha fechado o navegador
+$conn->query("UPDATE pausa p 
+              JOIN pausa_config c ON p.id_config = c.id_config 
+              SET p.fim = DATE_ADD(p.inicio, INTERVAL c.tempo_max MINUTE), 
+                  p.duracao_minutos = c.tempo_max 
+              WHERE p.fim IS NULL AND p.id_usuario = $id_usuario 
+              AND TIMESTAMPDIFF(SECOND, p.inicio, NOW()) >= (c.tempo_max * 60)");
+
+// --- 2. PROCESSAMENTO DE AÇÕES (POST) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $acao = $_POST['acao'] ?? '';
+
+    if ($acao === 'registrar_ponto') {
+        $res = $conn->query("SELECT id_ponto, inicio_ponto, fim_ponto FROM ponto_dia WHERE id_usuario = $id_usuario AND data_ponto = '$hoje'");
+        $ponto = $res->fetch_assoc();
+
+        if (!$ponto) {
+            $stmt = $conn->prepare("INSERT INTO ponto_dia (id_usuario, data_ponto, inicio_ponto) VALUES (?, ?, NOW())");
+            $stmt->bind_param("is", $id_usuario, $hoje);
+            $stmt->execute();
+        } elseif (empty($ponto['fim_ponto'])) {
+            // Regra: Não encerra ponto com pausa aberta
+            $checkPausa = $conn->query("SELECT id_pausa FROM pausa WHERE id_usuario = $id_usuario AND fim IS NULL");
+            if ($checkPausa->num_rows > 0) {
+                $erro = "Encerre a pausa ativa antes de finalizar o ponto.";
+            } else {
+                $conn->query("UPDATE ponto_dia SET fim_ponto = NOW() WHERE id_ponto = " . $ponto['id_ponto']);
+            }
+        }
+    } 
+    
+    elseif ($acao === 'pausa_iniciar') {
+        $id_config = intval($_POST['id_config']);
+        // Valida se já existe pausa aberta
+        $check = $conn->query("SELECT id_pausa FROM pausa WHERE id_usuario = $id_usuario AND fim IS NULL");
+        if ($check->num_rows == 0) {
+            $stmt = $conn->prepare("INSERT INTO pausa (id_usuario, id_config, inicio, data) VALUES (?, ?, NOW(), ?)");
+            $stmt->bind_param("iis", $id_usuario, $id_config, $hoje);
+            $stmt->execute();
+        }
+    } 
+    
+    elseif ($acao === 'pausa_finalizar') {
+        $resP = $conn->query("SELECT p.id_pausa, p.inicio, c.tempo_min FROM pausa p 
+                              JOIN pausa_config c ON p.id_config = c.id_config 
+                              WHERE p.id_usuario = $id_usuario AND p.fim IS NULL LIMIT 1");
+        if ($pausa = $resP->fetch_assoc()) {
+            $segundos_decorridos = time() - strtotime($pausa['inicio']);
+            if ($segundos_decorridos < ($pausa['tempo_min'] * 60)) {
+                $erro = "Tempo mínimo de " . $pausa['tempo_min'] . " minutos não atingido.";
+            } else {
+                $minutos = floor($segundos_decorridos / 60);
+                $stmt = $conn->prepare("UPDATE pausa SET fim = NOW(), duracao_minutos = ? WHERE id_pausa = ?");
+                $stmt->bind_param("ii", $minutos, $pausa['id_pausa']);
+                $stmt->execute();
+            }
+        }
+    }
+    if (!$erro) { header("Location: " . $_SERVER['PHP_SELF']); exit; }
+}
+
+// --- 3. DADOS PARA A INTERFACE ---
+$statusPonto = $conn->query("SELECT * FROM ponto_dia WHERE id_usuario = $id_usuario AND data_ponto = '$hoje'")->fetch_assoc();
+$pausaAtiva = $conn->query("SELECT p.*, c.descricao_pausa, c.tempo_max, c.tempo_min FROM pausa p 
+                            JOIN pausa_config c ON p.id_config = c.id_config 
+                            WHERE p.id_usuario = $id_usuario AND p.fim IS NULL LIMIT 1")->fetch_assoc();
+$tiposPausa = $conn->query("SELECT * FROM pausa_config WHERE ativo = 1");
+
+$pontoIniciado = ($statusPonto && !empty($statusPonto['inicio_ponto']));
+$pontoFinalizado = ($statusPonto && !empty($statusPonto['fim_ponto']));
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Registrar Ponto</title>
-    <style>
-      button:disabled { opacity: 0.5; cursor: not-allowed; }
-    </style>
+    <title>Ponto e Pausas</title>
 </head>
 <body>
-    <a href="../../index.php">voltar</a>
+    <a href="../../index.php">Voltar</a>
     <h2>Registro de Ponto</h2>
 
-    <div id='controles'>
-        <!-- Botão registrar ponto diário -->
-        <button id="btnPonto">Iniciar Ponto</button>
+    <?php if ($erro): ?> <div style="color:red"><strong>Erro:</strong> <?= $erro ?></div> <?php endif; ?>
 
-        <!-- Pausa comum: select + botão -->
-        <label for="pausa_tipo">Tipo de pausa:</label>
-        <select id="pausa_tipo"></select>
-        <button id="btnPausa">Carregando...</button>
-    </div>
+    <form method="POST">
+        <input type="hidden" name="acao" value="registrar_ponto">
+        <button type="submit" <?= ($pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
+            <?= !$pontoIniciado ? 'Iniciar Ponto' : 'Finalizar Ponto' ?>
+        </button>
+    </form>
 
-    <p id="resultado"></p>
+    <hr>
 
-    <!-- Inserindo lista de pausas ativas (será atualizada dinamicamente) -->
-    <div id="pausas_ativas_container">
-        <?php include __DIR__ . '/pausas_ativas.php'; ?>
-    </div>
+    <form method="POST" id="formPausa">
+        <label>Tipo de pausa:</label>
+        <select name="id_config" <?= (!$pontoIniciado || $pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
+            <?php while($t = $tiposPausa->fetch_assoc()): ?>
+                <option value="<?= $t['id_config'] ?>"><?= $t['descricao_pausa'] ?></option>
+            <?php endwhile; ?>
+        </select>
+
+        <?php if (!$pausaAtiva): ?>
+            <input type="hidden" name="acao" value="pausa_iniciar">
+            <button type="submit" <?= (!$pontoIniciado || $pontoFinalizado) ? 'disabled' : '' ?>>Iniciar Pausa</button>
+        <?php else: ?>
+            <input type="hidden" name="acao" value="pausa_finalizar">
+            <button type="submit" id="btnFinalizarPausa">Finalizar Pausa</button>
+            <div id="statusTempo" style="font-weight:bold; color: blue; margin-top:5px;"></div>
+        <?php endif; ?>
+    </form>
+
+    <hr>
+
+    <h3>Pausa Ativa</h3>
+    <?php if ($pausaAtiva): ?>
+        <table border="1" cellpadding="5">
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Início</th>
+                    <th>Tempo Decorrido</th>
+                    <th>Limites (Mín/Máx)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><?= htmlspecialchars($pausaAtiva['descricao_pausa']) ?></td>
+                    <td><?= date('H:i:s', strtotime($pausaAtiva['inicio'])) ?></td>
+                    <td id="cronometro" 
+                        data-inicio="<?= $pausaAtiva['data'] . 'T' . $pausaAtiva['inicio'] ?>"
+                        data-min="<?= $pausaAtiva['tempo_min'] ?>"
+                        data-max="<?= $pausaAtiva['tempo_max'] ?>">
+                        00:00
+                    </td>
+                    <td><?= $pausaAtiva['tempo_min'] ?> min / <?= $pausaAtiva['tempo_max'] ?> min</td>
+                </tr>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <p>Nenhuma pausa ativa no momento.</p>
+    <?php endif; ?>
 
     <script>
-        const controles = document.getElementById('controles');
-        const btnPonto = document.getElementById('btnPonto');
-        const btnPausa = document.getElementById('btnPausa');
-        const selectPausa = document.getElementById('pausa_tipo');
-        const resultado = document.getElementById('resultado');
+    function atualizarInterfacePausa() {
+        const el = document.getElementById('cronometro');
+        const statusMsg = document.getElementById('statusTempo');
+        const btnFinalizar = document.getElementById('btnFinalizarPausa');
+        if (!el) return;
 
-        // Carrega estado inicial e popula select
-        // clearResultado: se true (padrão) apaga a mensagem em `resultado`; se false preserva a mensagem atual
-        async function carregarEstado(clearResultado = true) {
-            try {
-                const res = await fetch('pausa_estado.php');
-                if (!res.ok) throw new Error('Erro ao obter estado');
-                const data = await res.json();
+        // Cálculo de tempo decorrido
+        const inicio = new Date(el.dataset.inicio).getTime();
+        const agora = new Date().getTime();
+        const decorridoSegundos = Math.floor((agora - inicio) / 1000);
+        
+        const minSegundos = parseInt(el.dataset.min) * 60;
+        const maxSegundos = parseInt(el.dataset.max) * 60;
 
-                // Se ponto finalizado, desabilita todos os controles de ponto/pausa
-                if (data.fim_ponto === true) {
-                    btnPausa.disabled = true;
-                    selectPausa.disabled = true;
-                    btnPonto.disabled = true;
-                    btnPonto.textContent = 'Finalizar Ponto';
-                    if (clearResultado) resultado.textContent = 'Ponto diário finalizado. Não é possível iniciar pausas.';
-                }
-                // se ponto ainda não for registrado, desabilita select e botão de pausa
-                else if (data.ponto_registrado === false) {
-                    btnPausa.disabled = true;
-                    selectPausa.disabled = true;
-                    btnPonto.disabled = false;
-                    btnPonto.textContent = 'Iniciar Ponto';
-                    if (clearResultado) resultado.textContent = 'Registre o ponto diário antes de iniciar uma pausa.';
-                } else {
-                    // ponto iniciado e não finalizado
-                    btnPonto.disabled = false;
-                    btnPonto.textContent = 'Finalizar Ponto';
-                    // popula select
-                    selectPausa.innerHTML = '';
-                    (data.tipos_comuns || []).forEach(t => {
-                        const opt = document.createElement('option');
-                        opt.value = t.id_config;
-                        opt.textContent = t.descricao_pausa + (t.usado ? ' (já usado hoje)' : '');
-                        opt.disabled = !!t.usado;
-                        selectPausa.appendChild(opt);
-                    });
+        // Atualiza Cronômetro na tabela
+        const m = Math.floor(decorridoSegundos / 60).toString().padStart(2, '0');
+        const s = (decorridoSegundos % 60).toString().padStart(2, '0');
+        el.textContent = `${m}:${s}`;
 
-                    // atualizar botões conforme estado
-                    if (data.pausa_aberta) {
-                        btnPausa.textContent = 'Finalizar Pausa';
-                        btnPausa.disabled = false;
-                        selectPausa.disabled = true;
-                        btnPonto.disabled =true;
-                        resultado.textContent = `Pausa aberta: ${data.descricao_aberta}`;
-                    } else {
-                        // sem pausa aberta
-                            btnPausa.textContent = 'Iniciar Pausa';
-                            btnPausa.disabled = false;
-                            btnPonto.disabled = false;
-                            selectPausa.disabled = false;
-
-                        if (clearResultado) resultado.textContent = '';
-                    }
-                }
-            } catch (err) {
-                if (clearResultado) resultado.textContent = 'Erro ao carregar estado';
-                console.error(err);
-            }
-
-            // Atualiza a lista de pausas ativas (fragmento HTML)
-            try {
-                const container = document.getElementById('pausas_ativas_container');
-                const r2 = await fetch('pausas_ativas.php', { credentials: 'same-origin' });
-                if (r2.ok) {
-                    const html = await r2.text();
-                    container.innerHTML = html;
-                }
-            } catch (e) {
-                console.error('Erro ao atualizar pausas ativas', e);
-            }
+        // Lógica de Tempo Mínimo (Atualização em tempo real da mensagem)
+        if (decorridoSegundos < minSegundos) {
+            const faltamSegundos = minSegundos - decorridoSegundos;
+            const minFaltam = Math.floor(faltamSegundos / 60);
+            const segFaltam = faltamSegundos % 60;
+            statusMsg.textContent = `Aguarde: faltam ${minFaltam}min ${segFaltam}s para poder finalizar.`;
+            statusMsg.style.color = "red";
+            btnFinalizar.disabled = true;
+        } else {
+            statusMsg.textContent = "Tempo mínimo atingido. Você já pode voltar ao trabalho.";
+            statusMsg.style.color = "green";
+            btnFinalizar.disabled = false;
         }
 
-        // Iniciar / finalizar pausa comum
-        btnPausa.addEventListener('click', async () => {
-            if (btnPausa.disabled) return;
-            if (btnPausa.textContent.toLowerCase().includes('finalizar')) {
-                await fetch('pausa_finalizar.php', { method: 'POST' })
-                    .then(r => r.json())
-                    .then(j => resultado.textContent = j.message || JSON.stringify(j))
-                    .catch(e => resultado.textContent = 'Erro ao finalizar pausa');
-            } else {
-                const idConfig = selectPausa.value;
-                if (!idConfig) { resultado.textContent = 'Selecione o tipo de pausa.'; return; }
+        // Lógica de Auto-fechamento (Tempo Máximo)
+        if (decorridoSegundos >= maxSegundos) {
+            alert("Tempo máximo de pausa atingido! Finalizando automaticamente.");
+            document.getElementById('formPausa').submit();
+        }
+    }
 
-                await fetch('pausa_iniciar.php', {
-                    method: 'POST',
-                    headers: {'Content-Type':'application/x-www-form-urlencoded'},
-                    body: 'tipo=pausa&id_config=' + encodeURIComponent(idConfig)
-                })
-                .then(r => r.json())
-                .then(j => resultado.textContent = j.message || JSON.stringify(j))
-                .catch(e => resultado.textContent = 'Erro ao iniciar pausa');
-            }
-            await carregarEstado(false);
-        });
-
-        // Registrar ponto diário (entrada/saída)
-        btnPonto.addEventListener('click', async () => {
-            try {
-                const r = await fetch('sql_registrar_ponto.php', {
-                    method: 'POST',
-                    headers: {'Content-Type':'application/x-www-form-urlencoded'},
-                    body: ''
-                });
-                const text = await r.text();
-                resultado.textContent = text;
-            } catch (e) {
-                resultado.textContent = 'Erro ao registrar ponto';
-            }
-            await carregarEstado(false);
-        });
-
-        // inicializa
-        window.onload = () => {
-            // corrige quaisquer links relativos para logout que venham do navbar incluído externamente
-            try {
-                const anchors = document.querySelectorAll('a[href$="logout.php"], a[href="logout.php"]');
-                anchors.forEach(a => {
-                    // ajusta para o caminho correto relativo a esta página
-                    a.href = '../../logout.php';
-                });
-            } catch (e) {
-                console.error('Erro ao ajustar links de logout', e);
-            }
-            carregarEstado();
-        };
+    // Executa a cada 1 segundo se houver pausa ativa
+    if (document.getElementById('cronometro')) {
+        setInterval(atualizarInterfacePausa, 1000);
+        atualizarInterfacePausa();
+    }
     </script>
 </body>
 </html>
