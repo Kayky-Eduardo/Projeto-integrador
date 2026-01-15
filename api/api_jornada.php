@@ -6,10 +6,10 @@ include("../BD/conexao.php");
 
 
 // Pega o método da requisição
-$method = $_SERVER['REQUEST_METHOD'];
+$metodo = $_SERVER['REQUEST_METHOD'];
 
 // Processa requisição
-if ($method === 'GET') {
+if ($metodo === 'GET') {
     $acao = $_GET['acao'] ?? 'verificar_individual';
     
     // NOVA ROTA: Para o gráfico de taxa de presença
@@ -56,7 +56,7 @@ if ($method === 'GET') {
         ]);
     }
     
-} elseif ($method === 'POST') {
+} elseif ($metodo === 'POST') {
     $acao = $_GET['acao'] ?? null;
     $input = json_decode(file_get_contents('php://input'), true);
 

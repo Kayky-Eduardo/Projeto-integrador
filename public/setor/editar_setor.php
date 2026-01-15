@@ -31,32 +31,36 @@ while ($row = $res->fetch_assoc()) {
     $usuarios_no_setor[] = $row['id_usuario'];
 }
 
-if (isset($_POST['salvar_setor'])) {
 
-    $nome_setor = $_POST['nome_setor'];
-    $usuarios_selecionados = $_POST['usuarios'] ?? [];
+// já fiz uma função para isso
+// adaptar para chamar essa função por intermédio da api
 
-    // Atualiza nome do setor
-    $stmt = $conn->prepare("UPDATE setor SET nome_setor = ? WHERE id_setor = ?");
-    $stmt->bind_param("si", $nome_setor, $id_setor);
-    $stmt->execute();
+// if (isset($_POST['salvar_setor'])) {
 
-    // Remove vínculos antigos
-    $stmt = $conn->prepare("DELETE FROM grupo_setor WHERE id_setor = ?");
-    $stmt->bind_param("i", $id_setor);
-    $stmt->execute();
+//     $nome_setor = $_POST['nome_setor'];
+//     $usuarios_selecionados = $_POST['usuarios'] ?? [];
 
-    // Insere novos vínculos
-    $stmt = $conn->prepare("INSERT INTO grupo_setor (id_setor, id_usuario) VALUES (?, ?)");
+//     // Atualiza nome do setor
+//     $stmt = $conn->prepare("UPDATE setor SET nome_setor = ? WHERE id_setor = ?");
+//     $stmt->bind_param("si", $nome_setor, $id_setor);
+//     $stmt->execute();
 
-    foreach ($usuarios_selecionados as $id_usuario) {
-        $stmt->bind_param("ii", $id_setor, $id_usuario);
-        $stmt->execute();
-    }
+//     // Remove vínculos antigos
+//     $stmt = $conn->prepare("DELETE FROM grupo_setor WHERE id_setor = ?");
+//     $stmt->bind_param("i", $id_setor);
+//     $stmt->execute();
 
-    echo "<p>Setor atualizado com sucesso!</p>";
+//     // Insere novos vínculos
+//     $stmt = $conn->prepare("INSERT INTO grupo_setor (id_setor, id_usuario) VALUES (?, ?)");
 
-    }
+//     foreach ($usuarios_selecionados as $id_usuario) {
+//         $stmt->bind_param("ii", $id_setor, $id_usuario);
+//         $stmt->execute();
+//     }
+
+//     echo "<p>Setor atualizado com sucesso!</p>";
+
+//     }
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -74,7 +78,8 @@ if (isset($_POST['salvar_setor'])) {
     <form method="POST">
 
         <label>Nome do Setor:</label><br>
-        <input type="text" name="nome_setor"
+        <input type="text" name="nome_setor" data-id="<?= $id_setor ?>"
+            data-nome="<?= $setor['nome_setor'] ?>"
             value="<?= htmlspecialchars($setor['nome_setor']) ?>"
             required>
         <br><br>
@@ -92,15 +97,12 @@ if (isset($_POST['salvar_setor'])) {
             pegar essa div e prencher desta mesma forma só que com os dados da api,
             dessa forma da pra fazer somente ao click do botão btn-ativar
             -->
-            <div id="selectOptions">
+            <div id="opcoes_select">
                 <?php while ($u = $usuarios->fetch_assoc()): ?>
                     <label>
-                        <input type="checkbox"
-                            name="usuarios[]"
-                            value="<?= $u['id_usuario'] ?>"
-                            <?= in_array($u['id_usuario'], $usuarios_no_setor) ? 'checked' : '' ?>
-                            onchange="atualizarContador()">
-                        <?= htmlspecialchars($u['nome_usuario']) ?>
+                        <input type="checkbox" name="usuarios[]" value="<?= $u['id_usuario'] ?>"
+                        <?= in_array($u['id_usuario'], $usuarios_no_setor) ? 'checked' : '' ?>
+                        onchange="atualizar_contador()"> <?= htmlspecialchars($u['nome_usuario']) ?>
                     </label><br>
                 <?php endwhile; ?>
             </div>
@@ -111,21 +113,45 @@ if (isset($_POST['salvar_setor'])) {
         <a href="setores.php">Voltar</a>
 
     </form>
-<script>
-// fazer um novo caminho na api para pegar as pessoas que estão no setor
-// e colocar conteudo no select options só quando tiver essa resposta
+    <script>
+        // fazer um novo caminho na api para pegar as pessoas que estão no setor
+        // e colocar conteudo no select options só quando tiver essa resposta
+        const btn_ativar = document.getElementById('btn-ativar');
+        const opcoes_select = document.getElementById('opcoes_select');
 
-    function ativar_select() {
-        const box = document.getElementById('selectOptions');
-        box.style.display = box.style.display === 'block' ? 'none' : 'block';
-    }
+        btn_ativar.addEventListener("click", () => {
+            let setor = document.getElementByName('nome_setor');
 
-    function atualizar_contador() {
-        const checkboxes = document.querySelectorAll(
-            'input[name="usuarios[]"]:checked'
-        );
-        document.getElementById('contador').innerText = checkboxes.length;
-    }
+            const response = await fetch(`../../api/api_jornada.php?acao=get_pessoas_setor`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: {
+                    id_setor: setor.dataset.id
+                }
+            });
+
+            const resultado = response.json();
+            const usuarios = resultado
+
+            resultado.forEach(u => {
+                
+            });
+            opcoes_select.textContent = ``;
+        })
+
+        function ativar_select() {
+            const caixa = document.getElementById('opcoes_select');
+            caixa.style.display = caixa.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function atualizar_contador() {
+            const checkboxes = document.querySelectorAll(
+                'input[name="usuarios[]"]:checked'
+            );
+            document.getElementById('contador').innerText = checkboxes.length;
+        }
 </script>
 </body>
 </html>

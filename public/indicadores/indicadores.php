@@ -339,7 +339,7 @@ include "../../include/navbar.php";
                 const resultado = await response.json();
                 
                 if (!resultado.sucesso) {
-                    throw new Error(resultado.mensagem);
+                    console.log(resultado.mensagem);
                 }
                 
                 return resultado.dados;

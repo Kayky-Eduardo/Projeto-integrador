@@ -265,4 +265,48 @@ function set_jornada($conn, $jornada, $hora_extra) {
     }
 }
 
+function get_pessoas_setor($conn, $id_setor) {
+    $stmt = $conn->prepare("SELECT id_usuario FROM grupo_setor WHERE id_setor = ?");
+    
+    $stmt->bind_param("i", $id_setor);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $usuarios_no_setor = [];
+    $dados = [];
+
+    while ($row = $result->fetch_assoc()) {
+        $id_usuario = $row['id_usuario'];
+        $usuarios_no_setor[] = $id_usuario;
+        $usuarios = $conn->query("SELECT nome_usuario FROM usuario where id_usuario = $id_usuario");
+        $resultado = $usuarios->fetch_assoc();
+        $dados[] = [
+            'id_usuario' => $id_usuario,
+            'nome_usuario' => $resultado['nome_usuario'],
+        ];
+    }
+
+    return $dados;
+}
+
+function set_setor($conn, $usuarios_selecionados, $nome_setor, $id_setor) {
+    // Atualiza nome do setor
+    $stmt = $conn->prepare("UPDATE setor SET nome_setor = ? WHERE id_setor = ?");
+    $stmt->bind_param("si", $nome_setor, $id_setor);
+    $stmt->execute();
+
+    // Remove vínculos antigos
+    $stmt = $conn->prepare("DELETE FROM grupo_setor WHERE id_setor = ?");
+    $stmt->bind_param("i", $id_setor);
+    $stmt->execute();
+
+    // Insere novos vínculos
+    $stmt = $conn->prepare("INSERT INTO grupo_setor (id_setor, id_usuario) VALUES (?, ?)");
+
+    foreach ($usuarios_selecionados as $id_usuario) {
+        $stmt->bind_param("ii", $id_setor, $id_usuario);
+        $stmt->execute();
+    }
+
+}
 ?>
