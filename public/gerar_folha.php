@@ -1,3 +1,13 @@
+<?php
+
+session_start();
+include(__DIR__ . "/../BD/conexao.php");
+
+$nome_usuario = $_SESSION['nome_usuario'];
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -8,7 +18,7 @@
 
 <div class="card">
     <h2>Gerar Folha de Pagamento</h2>
-
+    <h2>Olá, <?php echo $nome_usuario; ?></h2>
     <label>Mês:</label>
 
     <!-- Input do tipo month já valida mês/ano.
