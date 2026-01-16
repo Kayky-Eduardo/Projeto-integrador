@@ -266,26 +266,26 @@ function set_jornada($conn, $jornada, $hora_extra) {
 }
 
 function get_pessoas_setor($conn, $id_setor) {
-    $stmt = $conn->prepare("SELECT id_usuario FROM grupo_setor WHERE id_setor = ?");
+    $stmt = $conn->prepare("
+        SELECT grupo_setor.id_usuario, u.nome_usuario 
+        FROM grupo_setor
+        INNER JOIN usuario u ON grupo_setor.id_usuario = u.id_usuario
+        WHERE grupo_setor.id_setor = ?
+        ORDER BY u.nome_usuario
+    ");
     
     $stmt->bind_param("i", $id_setor);
     $stmt->execute();
     $result = $stmt->get_result();
     
-    $usuarios_no_setor = [];
     $dados = [];
-
     while ($row = $result->fetch_assoc()) {
-        $id_usuario = $row['id_usuario'];
-        $usuarios_no_setor[] = $id_usuario;
-        $usuarios = $conn->query("SELECT nome_usuario FROM usuario where id_usuario = $id_usuario");
-        $resultado = $usuarios->fetch_assoc();
         $dados[] = [
-            'id_usuario' => $id_usuario,
-            'nome_usuario' => $resultado['nome_usuario'],
+            'id_usuario' => $row['id_usuario'],
+            'nome_usuario' => $row['nome_usuario']
         ];
     }
-
+    
     return $dados;
 }
 
