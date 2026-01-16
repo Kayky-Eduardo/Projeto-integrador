@@ -77,11 +77,24 @@ $statusPonto = $conn->query("SELECT * FROM ponto_dia WHERE id_usuario = $id_usua
 $pausaAtiva = $conn->query("SELECT p.*, c.descricao_pausa, c.tempo_max, c.tempo_min FROM pausa p 
                             JOIN pausa_config c ON p.id_config = c.id_config 
                             WHERE p.id_usuario = $id_usuario AND p.fim IS NULL LIMIT 1")->fetch_assoc();
-$tiposPausa = $conn->query("SELECT * FROM pausa_config WHERE ativo = 1");
 
 $pontoIniciado = ($statusPonto && !empty($statusPonto['inicio_ponto']));
 $pontoFinalizado = ($statusPonto && !empty($statusPonto['fim_ponto']));
 
+// Busca os tipos de pausa e já conta quantas o usuário fez hoje
+$sqlTipos = "SELECT 
+                pc.*, 
+                (SELECT COUNT(*) FROM pausa p 
+                 WHERE p.id_config = pc.id_config 
+                 AND p.id_usuario = ? 
+                 AND p.data = CURDATE()) as total_realizado
+             FROM pausa_config pc
+             WHERE pc.ativo = 1";
+
+$stmtTipos = $conn->prepare($sqlTipos);
+$stmtTipos->bind_param("i", $id_usuario);
+$stmtTipos->execute();
+$tiposPausa = $stmtTipos->get_result();
 
 ?>
 
@@ -110,15 +123,10 @@ $pontoFinalizado = ($statusPonto && !empty($statusPonto['fim_ponto']));
         <label>Tipo de pausa:</label>
         <select name="id_config" <?= (!$pontoIniciado || $pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
             <?php while($t = $tiposPausa->fetch_assoc()):
-                $stmt = $conn->prepare("SELECT COUNT(*) FROM pausa WHERE id_config = ? AND DATA = CURDATE()");
-                $stmt->bind_param("i", $t['id_config']);
-                $stmt->execute();
-                $resultCount = $stmt->get_result();
-                $row = $resultCount->fetch_row();
-                $totalRealizado = $row[0];
-                ?>
-                <option value="<?= $t['id_config'] ?>" <?php ($totalRealizado === $t['limite_pausa_diario']) ? 'disabled' : '' ?>>
-                    <?= $t['descricao_pausa'] ?> (<?=  $totalRealizado .'/'. $t['limite_pausa_diario'] ?>)
+                $limiteAtingido = ($t['limite_pausa_diario'] > 0 && $t['total_realizado'] >= $t['limite_pausa_diario']);?>
+                <option value="<?= $t['id_config'] ?>" <?= $limiteAtingido ? 'disabled' : '' ?>>
+                    <?= htmlspecialchars($t['descricao_pausa']) ?> 
+                    (<?= $t['total_realizado'] ?>/<?= $t['limite_pausa_diario'] == 0 ? '∞' : $t['limite_pausa_diario'] ?>)
                 </option>
             <?php endwhile; ?>
         </select>
@@ -165,52 +173,55 @@ $pontoFinalizado = ($statusPonto && !empty($statusPonto['fim_ponto']));
     <?php endif; ?>
 
     <script>
-    function atualizarInterfacePausa() {
-        const el = document.getElementById('cronometro');
-        const statusMsg = document.getElementById('statusTempo');
-        const btnFinalizar = document.getElementById('btnFinalizarPausa');
-        if (!el) return;
+        let intervalId = null;
+        function atualizarInterfacePausa() {
+            const el = document.getElementById('cronometro');
+            const statusMsg = document.getElementById('statusTempo');
+            const btnFinalizar = document.getElementById('btnFinalizarPausa');
+            if (!el) return;
 
-        // Cálculo de tempo decorrido
-        const inicio = new Date(el.dataset.inicio).getTime();
-        const agora = new Date().getTime();
-        const decorridoSegundos = Math.floor((agora - inicio) / 1000);
-        
-        const minSegundos = parseInt(el.dataset.min) * 60;
-        const maxSegundos = parseInt(el.dataset.max) * 60;
+            // Cálculo de tempo decorrido
+            const inicio = new Date(el.dataset.inicio).getTime();
+            const agora = new Date().getTime();
+            const decorridoSegundos = Math.floor((agora - inicio) / 1000);
+            
+            const minSegundos = parseInt(el.dataset.min) * 60;
+            const maxSegundos = parseInt(el.dataset.max) * 60;
 
-        // Atualiza Cronômetro na tabela
-        const m = Math.floor(decorridoSegundos / 60).toString().padStart(2, '0');
-        const s = (decorridoSegundos % 60).toString().padStart(2, '0');
-        el.textContent = `${m}:${s}`;
+            // Atualiza Cronômetro na tabela
+            const m = Math.floor(decorridoSegundos / 60).toString().padStart(2, '0');
+            const s = (decorridoSegundos % 60).toString().padStart(2, '0');
+            el.textContent = `${m}:${s}`;
 
-        // Lógica de Tempo Mínimo (Atualização em tempo real da mensagem)
-        if (decorridoSegundos < minSegundos) {
-            const faltamSegundos = minSegundos - decorridoSegundos;
-            const minFaltam = Math.floor(faltamSegundos / 60);
-            const segFaltam = faltamSegundos % 60;
-            statusMsg.textContent = `Aguarde: faltam ${minFaltam}min ${segFaltam}s para poder finalizar.`;
-            statusMsg.style.color = "red";
-            btnFinalizar.disabled = true;
-        } else {
-            statusMsg.textContent = "Tempo mínimo atingido. Você já pode voltar ao trabalho.";
-            statusMsg.style.color = "green";
-            btnFinalizar.disabled = false;
+            // Lógica de Tempo Mínimo (Atualização em tempo real da mensagem)
+            if (decorridoSegundos < minSegundos) {
+                const faltamSegundos = minSegundos - decorridoSegundos;
+                const minFaltam = Math.floor(faltamSegundos / 60);
+                const segFaltam = faltamSegundos % 60;
+                statusMsg.textContent = `Aguarde: faltam ${minFaltam}min ${segFaltam}s para poder finalizar.`;
+                statusMsg.style.color = "red";
+                btnFinalizar.disabled = true;
+            } else {
+                statusMsg.textContent = "Tempo mínimo atingido. Você já pode voltar ao trabalho.";
+                statusMsg.style.color = "green";
+                btnFinalizar.disabled = false;
+            }
+
+            // Lógica de Auto-fechamento (Tempo Máximo)
+            if (decorridoSegundos >= maxSegundos) {
+                if (intervalId) clearInterval(intervalId);
+                document.getElementById('formPausa').submit();
+                window.location.reload();
+                alert("Tempo máximo de pausa atingido! Finalizando automaticamente.");
+                
+            }
         }
 
-        // Lógica de Auto-fechamento (Tempo Máximo)
-        if (decorridoSegundos >= maxSegundos) {
-            alert("Tempo máximo de pausa atingido! Finalizando automaticamente.");
-            document.getElementById('formPausa').submit();
-            window.location.reload;
+        // Executa a cada 1 segundo se houver pausa ativa
+        if (document.getElementById('cronometro')) {
+            intervalId = setInterval(atualizarInterfacePausa, 1000);
+            atualizarInterfacePausa();
         }
-    }
-
-    // Executa a cada 1 segundo se houver pausa ativa
-    if (document.getElementById('cronometro')) {
-        setInterval(atualizarInterfacePausa, 1000);
-        atualizarInterfacePausa();
-    }
     </script>
 </body>
 </html>
