@@ -8,7 +8,34 @@ if (!isset($_GET['id'])) {
     die("Setor não informado.");
 }
 
-$id_setor = $_GET['id'];
+
+
+
+if(isset($_GET['id'])) {
+    $id_setor = $_GET['id'];
+}
+
+function excluir_usuario() {
+
+}
+// Consulta SQL para deletar o cadastro
+$stmt = $conn->prepare("DELETE FROM setor WHERE id_setor = ?");
+$stmt->bind_param("i", $id_setor);
+
+//Executa a consulta e verifica se foi bem-sucedida
+if ($stmt->execute()) {
+    if ($stmt->affected_rows > 0) {
+        header("Location: ../../public/setor/setores.php");
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Nenhum setor encontrado com o ID fornecido.']);
+    }
+} else {
+    echo json_encode(['success' => false, 'message' => 'Erro ao deletar o setor: ' . $stmt->error]);
+}
+
+// Fecha o statement e a conexão
+$stmt->close();
+$conn->close();
 
 $stmt = $conn->prepare("SELECT * FROM setor WHERE id_setor = ?");
 $stmt->bind_param("i", $id_setor);
@@ -182,12 +209,9 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
                 const resultado = await response.json();
 
                 if (resultado.sucesso) {
+
                     mostrar_mensagem('Setor atualizado com sucesso!', 'sucesso');
-                    
-                    // Redirecionar após 2 segundos
-                    setTimeout(() => {
-                        window.location.href = 'setores.php';
-                    }, 2000);
+                
                 } else {
                     mostrar_mensagem('Erro: ' + resultado.mensagem, 'erro');
                 }
