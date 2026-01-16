@@ -20,6 +20,7 @@ $result = $conn->query("SELECT * FROM setor");
         <?php include("../../include/navbar.php");?>
     </header>
 
+  <button type="submit"><a href="cadastro_setor.php">Novo</a></button>
   <table>
     <tr>
       <th>ID setor</th>

@@ -59,9 +59,6 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
     <header>
         <?php include("../../include/navbar.php");?>
     </header>
-    <button type="submit">Salvar</button>
-    <a href="setores.php">Voltar</a>
-
 
     <h2>Editar Setor</h2>
 
@@ -95,6 +92,11 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
             </div>
         </div>
 
+        <button type="submit">Salvar</button>
+        <button type="submit" class="btn-excluir" formmethod="GET">
+            <a href="deletar_setor.php?setor=<?= $id_setor ?>">Excluir</a>
+        </button>
+        <a href="setores.php">Voltar</a>
         <br>
     </form>
 

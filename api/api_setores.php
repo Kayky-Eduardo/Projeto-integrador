@@ -23,17 +23,8 @@ try {
     }
     
     // Ler e decodificar input JSON
-    $inputRaw = file_get_contents('php://input');
-    
-    if (empty($inputRaw)) {
-        throw new Exception("Body da requisição está vazio");
-    }
-    
-    $input = json_decode($inputRaw, true);
-    
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new Exception("Erro ao decodificar JSON: " . json_last_error_msg());
-    }
+    $input = json_decode(file_get_contents('php://input'), true);
+
     
     // Obter ação da query string
     $acao = $_GET['acao'] ?? null;

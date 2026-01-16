@@ -308,21 +308,4 @@ function set_setor($conn, $usuarios_selecionados, $nome_setor, $id_setor) {
         $stmt->execute();
     }
 }
-
-function excluir_setor($id) {
-    $stmt = $conn->prepare("DELETE FROM setor WHERE id_setor = ?");
-    $stmt->bind_param("i", $id);
-    
-    $stmt->execute();
-    
-    if ($stmt->affected_rows > 0) {
-        header("Location: setores.php");
-    } else {
-        echo "Setor não encontrado.";
-    }
-    
-    // Fecha o statement e a conexão
-    $stmt->close();
-    $conn->close();
-}
 ?>
