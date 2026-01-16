@@ -11,39 +11,164 @@ echo '<a href="/projeto-integrador/public/index.php">Início</a>';
 if ($nivel >= 3) {
     echo '
         <a href="/projeto-integrador/public/usuario/lista.php">Usuários</a>
-        <a href="/projeto-integrador/public/relatorio/online.php">Controle de usuarios</a>
-        <a href="/projeto-integrador/public/relatorio/meu_banco_horas.php">Banco de Horas</a>
-        <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
+        <a href="#">Indicadores</a>
         <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
         <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
-        <a href="/projeto-integrador/public/ponto/historico.php">Histórico</a>
-        <a href="/projeto-integrador/public/config/config.php">Configurações</a>
+
+
+        <ul class="nav-dropdown">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">
+                    Relatórios ▾
+                </a>
+
+                <ul class="dropdown-menu left">
+                    <li>
+                        <a href="/projeto-integrador/public/relatorio/online.php">
+                            Controle de Usuários
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/ponto/historico.php">
+                            Histórico de Pontos
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul class="nav-dropdown usuario">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">
+                    ' . $_SESSION["nome_usuario"] . ' ▾
+                </a>
+
+                <ul class="dropdown-menu left">
+                    <li>
+                        <a href="/projeto-integrador/public/ponto/notificacoes.php">
+                            Notificações
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/config/config.php">
+                            Configurações
+                        </a>
+                    </li>
+
+                    <li class="separador"></li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/logout.php" class="sair">
+                            Sair
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
     ';
 } elseif ($nivel == 2) {
     echo '
         <a href="/projeto-integrador/public/usuario/lista.php">Usuários</a>
-        <a href="/projeto-integrador/public/relatorio/online.php">Controle de usuarios</a>
-        <a href="/projeto-integrador/public/relatorio/meu_banco_horas.php">Banco de Horas</a>
-        <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
+        <a href="#">Indicadores</a>
         <a href="/projeto-integrador/public/ponto/status.php">Bater Ponto / Status</a>
         <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
         <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
-        <a href="/projeto-integrador/public/ponto/historico.php">Histórico</a>
-        <a href="/projeto-integrador/public/ponto/notificacoes.php">Notificações</a>
-        <a href="/projeto-integrador/public/config/config.php">Configurações</a>
+
+
+        <ul class="nav-dropdown">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">
+                    Relatórios ▾
+                </a>
+
+                <ul class="dropdown-menu left">
+                    <li>
+                        <a href="/projeto-integrador/public/relatorio/online.php">
+                            Controle de Usuários
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/ponto/historico.php">
+                            Histórico de Pontos
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul class="nav-dropdown usuario">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">
+                    ' . $_SESSION["nome_usuario"] . ' ▾
+                </a>
+
+                <ul class="dropdown-menu left">
+                    <li>
+                        <a href="/projeto-integrador/public/relatorio/meu_banco_horas.php">
+                            Banco de Horas
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/ponto/notificacoes.php">
+                            Notificações
+                        </a>
+                    </li>
+
+                    <li class="separador"></li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/logout.php" class="sair">
+                            Sair
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
     ';
-        
 } else {
     echo '
         <a href="/projeto-integrador/public/ponto/status.php">Bater Ponto / Status</a>
-        <a href="/projeto-integrador/public//relatorio/meu_banco_horas.php">Banco de Horas</a>
-        <a href="/projeto-integrador/public/ponto/historico.php">Histórico</a>
-        <a href="/projeto-integrador/public/ponto/notificacoes.php">Notificações</a>
+
+        <ul class="nav-dropdown usuario">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">
+                    ' . $_SESSION["nome_usuario"] . ' ▾
+                </a>
+
+                <ul class="dropdown-menu right">
+                    <li>
+                        <a href="/projeto-integrador/public/relatorio/meu_banco_horas.php">
+                            Banco de Horas
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/ponto/historico.php">
+                            Meu Histórico
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/ponto/notificacoes.php">
+                            Notificações
+                        </a>
+                    </li>
+
+                    <li class="separador"></li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/logout.php" class="sair">
+                            Sair
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
     ';
 }
 
-echo '
-    <a href="">'. $_SESSION["nome_usuario"] .' </a>
-    <a href="/projeto-integrador/public/logout.php">Sair</a>
-';
 echo '</nav>';
