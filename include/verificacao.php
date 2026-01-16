@@ -9,14 +9,14 @@ if (session_status() === PHP_SESSION_NONE) {
 
 
     SELECT 
-        TIME_TO_SEC(tj.jornada) AS segundos_jornada,
-        TIME_TO_SEC(ADDTIME(tj.jornada, tj.maximo_hora_extra)) AS segundos_maximos,
+        TIME_TO_SEC(tempo_jornada.jornada) AS segundos_jornada,
+        TIME_TO_SEC(ADDTIME(tempo_jornada.jornada, tempo_jornada.maximo_hora_extra)) AS segundos_maximos,
         TIMESTAMPDIFF(SECOND, login.data_inicio, NOW()) AS segundos_logado
     FROM login
-    JOIN grupo_setor gs 
-        ON gs.id_usuario = login.id_usuario
-    JOIN tempo_jornada tj 
-        ON tj.id_tempo = gs.id_tempo
+    JOIN grupo_setor 
+        ON grupo_setor.id_usuario = login.id_usuario
+    JOIN tempo_jornada 
+        ON tempo_jornada.id_tempo = grupo_setor.id_tempo
     WHERE login.id_login = ?
         AND login.id_usuario = ?
         AND login.data_fim IS NULL

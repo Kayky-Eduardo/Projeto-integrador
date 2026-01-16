@@ -52,6 +52,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
     iniciarAuto();
 
+    /* BUSCA + FILTRO DE STATUS - LISTA DE USUÁRIOS */
+    const campoBusca = document.getElementById("busca");
+    const filtroStatus = document.getElementById("filtro-status");
+    const cardsUsuarios = document.querySelectorAll(".usuario-card");
+
+    if (campoBusca && cardsUsuarios.length) {
+
+        campoBusca.addEventListener("input", aplicarFiltros);
+        filtroStatus?.addEventListener("change", aplicarFiltros);
+
+        function aplicarFiltros() {
+            const termo = campoBusca.value.toLowerCase().trim();
+            const statusSelecionado = filtroStatus?.value || "ativos";
+
+            cardsUsuarios.forEach(card => {
+                const nome = card.querySelector("h3")?.textContent.toLowerCase() || "";
+                const cargo = card.querySelector(".cargo")?.textContent.toLowerCase() || "";
+                const isAtivo = card.querySelector("span")?.classList.contains("ativo");
+
+                let visivel = true;
+
+                // filtro por texto
+                if (!nome.includes(termo) && !cargo.includes(termo)) {
+                    visivel = false;
+                }
+
+                // filtro por status
+                if (statusSelecionado === "ativos" && !isAtivo) {
+                    visivel = false;
+                }
+
+                if (statusSelecionado === "inativos" && isAtivo) {
+                    visivel = false;
+                }
+
+                card.classList.toggle("hidden", !visivel);
+            });
+        }
+
+        // filtro inicial: somente ativos
+        aplicarFiltros();
+    }
+
     /* MÁSCARAS */
     if (document.getElementById("cpf")) {
         IMask(document.getElementById("cpf"), {
@@ -108,5 +151,4 @@ document.addEventListener("DOMContentLoaded", () => {
             painelEdicao.classList.toggle("ativo");
         });
     }
-
 });
