@@ -15,27 +15,6 @@ if(isset($_GET['id'])) {
     $id_setor = $_GET['id'];
 }
 
-function excluir_usuario() {
-
-}
-// Consulta SQL para deletar o cadastro
-$stmt = $conn->prepare("DELETE FROM setor WHERE id_setor = ?");
-$stmt->bind_param("i", $id_setor);
-
-//Executa a consulta e verifica se foi bem-sucedida
-if ($stmt->execute()) {
-    if ($stmt->affected_rows > 0) {
-        header("Location: ../../public/setor/setores.php");
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Nenhum setor encontrado com o ID fornecido.']);
-    }
-} else {
-    echo json_encode(['success' => false, 'message' => 'Erro ao deletar o setor: ' . $stmt->error]);
-}
-
-// Fecha o statement e a conexão
-$stmt->close();
-$conn->close();
 
 $stmt = $conn->prepare("SELECT * FROM setor WHERE id_setor = ?");
 $stmt->bind_param("i", $id_setor);
@@ -82,6 +61,10 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
     <header>
         <?php include("../../include/navbar.php");?>
     </header>
+    <button type="submit">Salvar</button>
+    <button type="submit" class="btn-excluir" formaction="deletar_setor.php" formmethod="POST">Excluir</button>
+    <a href="setores.php">Voltar</a>
+
 
     <h2>Editar Setor</h2>
 
@@ -116,8 +99,6 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
         </div>
 
         <br>
-        <button type="submit">Salvar</button>
-        <a href="setores.php">Voltar</a>
     </form>
 
     <script>
