@@ -9,8 +9,6 @@ if (!isset($_GET['id'])) {
 }
 
 
-
-
 if(isset($_GET['id'])) {
     $id_setor = $_GET['id'];
 }
@@ -62,7 +60,6 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
         <?php include("../../include/navbar.php");?>
     </header>
     <button type="submit">Salvar</button>
-    <button type="submit" class="btn-excluir" formaction="deletar_setor.php" formmethod="POST">Excluir</button>
     <a href="setores.php">Voltar</a>
 
 
