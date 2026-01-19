@@ -34,7 +34,7 @@ try {
     }
     
     // Lista de ações permitidas
-    $white_list = ['set_setor', 'get_pessoas_setor'];
+    $white_list = ['set_setor', 'get_pessoas_setor', 'cadastrar_setor'];
     
     if (!in_array($acao, $white_list)) {
         throw new Exception("Ação não permitida: $acao");
@@ -53,7 +53,7 @@ try {
         
         $resultado = get_pessoas_setor($conn, $input['id_setor']);
         
-        $response = [
+        $resposta = [
             'sucesso' => true,
             'dados' => $resultado
         ];
@@ -81,17 +81,37 @@ try {
             $input['id_setor']
         );
         
-        $response = [
+        $resposta = [
             'sucesso' => true,
             'mensagem' => 'Setor atualizado com sucesso!'
         ];
-    }
+    } elseif ($acao === 'cadastrar_setor') {        
+        if (!isset($input['nome_setor']) || trim($input['nome_setor']) === '') {
+            throw new Exception("Parâmetro obrigatório: nome_setor");
+        }
+        
+        if (!isset($input['usuarios_selecionado'])) {
+            throw new Exception("Parâmetro obrigatório: usuarios_selecionado");
+        }
+        
+        // Executar função
+        $resultado = cadastrar_setor(
+            $conn,
+            $input['nome_setor'],
+            $input['usuarios_selecionado'],
+        );
+        
+        $resposta = [
+            'sucesso' => true,
+            'dados' => $resultado
+        ];
+    } 
     
     // Limpar buffer de saída antes de enviar JSON
     ob_clean();
     
     // Enviar resposta
-    echo json_encode($response);
+    echo json_encode($resposta);
     
     // Fechar conexão
     if (isset($conn)) {

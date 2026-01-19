@@ -308,4 +308,32 @@ function set_setor($conn, $usuarios_selecionados, $nome_setor, $id_setor) {
         $stmt->execute();
     }
 }
+
+function cadastrar_setor($conn, $nome_setor, array $usuarios_selecionado) {
+    $stmt = $conn->prepare("INSERT INTO setor (nome_setor) VALUES (?)");
+    $stmt->bind_param("s", $nome_setor);
+    
+    if (!$stmt->execute()) {
+        throw new Exception("Erro ao cadastrar setor: " . $stmt->error);
+    }
+    
+    // Obter ID do setor recém-criado
+    $id_setor = $conn->insert_id;
+    
+    // Inserir vínculos com usuários (se houver)
+    if (count($usuarios_selecionado) > 0) {
+        $stmt = $conn->prepare("INSERT INTO grupo_setor (id_setor, id_usuario) VALUES (?, ?)");
+        
+        foreach ($usuarios_selecionado as $id_usuario) {
+            $stmt->bind_param("ii", $id_setor, $id_usuario);
+            $stmt->execute();
+        }
+    }
+
+    return [
+        'sucesso' => true,
+        'mensagem' => 'Setor cadastrado!',
+        'id_setor' => $id_setor
+    ];
+}
 ?>
