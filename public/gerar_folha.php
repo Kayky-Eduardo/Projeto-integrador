@@ -22,7 +22,7 @@ $nome_usuario = $_SESSION['nome_usuario'];
     <!-- Input do tipo month já valida mês/ano.
          min = menor data permitida.
          max = mês atual, impedindo seleção futura. -->
-    <input type="month" id="mes" min="2005-01" max="<?= date('Y-m'); ?>">
+    <input type="month" id="mes" min="2024-01" max="<?= date('Y-m'); ?>">
 
     <!-- Botão para gerar PDF (abre em nova aba) -->
     <button onclick="gerarPDF()">Gerar PDF</button>

@@ -9,7 +9,7 @@ $filtroUser   = $_GET["usuario"] ?? "";   // ID do usuário selecionado
 
 // Paginação
 $paginaAtual = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1; // Página atual (padrão = 1)
-$registrosPorPagina = 15; // Quantos registros mostrar por página
+$registrosPorPagina = 16; // Quantos registros mostrar por página
 $offset = ($paginaAtual - 1) * $registrosPorPagina; // Calcula o deslocamento (OFFSET) para o SQL
 
 // Busca todos os usuários para preencher o <select> no formulário

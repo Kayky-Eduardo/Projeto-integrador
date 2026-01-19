@@ -77,6 +77,32 @@ $sql_folha->execute();
 $folha = $sql_folha->get_result()->fetch_assoc();
 
 // -----------------------------
+// 7.1 Verifica se a folha existe
+// -----------------------------
+if (!$folha) {
+    ?>
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <title>Holerite não encontrado</title>
+    </head>
+    <body>
+        <div>
+            <h2>Holerite não encontrado</h2>
+            <p>
+                Não existe folha de pagamento para o mês<br>
+                <b><?php echo date("m/Y", strtotime($mes_comp)); ?></b>.
+            </p>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+
+
+// -----------------------------
 // 8. Eventos
 // -----------------------------
 $sql_eventos = $conn->prepare("
