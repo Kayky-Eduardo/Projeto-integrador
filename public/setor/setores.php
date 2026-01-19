@@ -26,7 +26,6 @@ $result = $conn->query("SELECT * FROM setor");
       <th>ID setor</th>
       <th>Nome setor</th>
       <th>Edição</th>
-      <th>Deletar</th>
     </tr>
     <?php
     if ($result->num_rows > 0) {
@@ -40,16 +39,7 @@ $result = $conn->query("SELECT * FROM setor");
                     <input type="hidden" name="id" value="'. $row['id_setor'] . '">
                     <button type="submit">Editar</button>
                 </form>
-            </td>';
-
-            echo '
-            <td>
-              <form action="deletar_setor.php" method="POST" onsubmit="return confirm(\'Tem certeza que deseja deletar?\');">
-                <input type="hidden" name="id_setor" value="'. $row['id_setor'] . '">
-                <button type="submit">Deletar</button>
-              </form>
-            </td>';
-            
+            </td>';            
             echo "</tr>";
         }
     } else {
