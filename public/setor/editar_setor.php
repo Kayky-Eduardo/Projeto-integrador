@@ -189,9 +189,7 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
                 const resultado = await response.json();
 
                 if (resultado.sucesso) {
-
-                    mostrar_mensagem('Setor atualizado com sucesso!', 'sucesso');
-                
+                    window.location.href = "setores.php"
                 } else {
                     mostrar_mensagem('Erro: ' + resultado.mensagem, 'erro');
                 }
@@ -201,7 +199,8 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
             }
         });
 
-        // Mostrar mensagens ao usuário
+        
+        // Mostrar mensagens ao usuário de acordo com o tipo proporcionado. exemplo: erro
         function mostrar_mensagem(texto, tipo) {
             const div = document.getElementById('mensagem');
             div.className = 'mensagem ' + tipo;
