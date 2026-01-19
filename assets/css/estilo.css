@@ -1340,6 +1340,7 @@ a:focus {
         width: 100%;
         flex-direction: column;
         align-items: stretch;
+        text-align: center;
     }
 
     .dropdown-toggle {
@@ -1360,4 +1361,118 @@ a:focus {
         left: auto;
         right: auto;
     }
+}
+
+/* ==========================
+   RELATÓRIO BANCO DE HORAS
+========================== */
+.bh-relatorio {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+/* TÍTULO */
+.bh-relatorio h2 {
+    font-size: 1.3rem;
+    color: var(--cor-principal);
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+/* INPUT DE FILTRO */
+.bh-relatorio > input[type="text"] {
+    display: block;
+    margin: 0 auto 18px auto;
+    width: 320px;
+    max-width: 100%;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background-color: #f8fafc;
+}
+
+.bh-relatorio > input[type="text"]:focus {
+    outline: none;
+    border-color: var(--cor-principal);
+    background-color: #ffffff;
+}
+
+/* TABELA */
+#tabelaBancoHoras {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+#tabelaBancoHoras thead {
+    background-color: #f1f5f9;
+}
+
+#tabelaBancoHoras th {
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+    color: #334155;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#tabelaBancoHoras th:nth-child(1) {
+    text-align: left;
+}
+
+#tabelaBancoHoras td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #020617;
+}
+
+#tabelaBancoHoras tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Alinhamento colunas */
+#tabelaBancoHoras td:nth-child(2) {
+    text-align: center;
+    font-weight: 600;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 600px) {
+    .bh-relatorio h2 {
+        font-size: 1.1rem;
+    }
+
+    .bh-relatorio > input[type="text"] {
+        width: 100%;
+    }
+
+    #tabelaBancoHoras th,
+    #tabelaBancoHoras td {
+        padding: 10px;
+        font-size: 0.8rem;
+    }
+}
+
+/* SELECT PADRÃO */
+.select-padrao {
+    appearance: none;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+
+    padding: 0.6rem 2rem 0.6rem 0.8rem;
+    font-size: 0.85rem;
+    color: #020617;
+
+    cursor: pointer;
+    min-width: 150px;
+
+    background-image: url("../IMG/utils/seta_baixo.svg");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    background-size: 14px;
 }

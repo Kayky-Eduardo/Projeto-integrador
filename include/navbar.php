@@ -24,6 +24,12 @@ if ($nivel >= 3) {
 
                 <ul class="dropdown-menu left">
                     <li>
+                        <a href="/projeto-integrador/public/relatorio/meu_banco_horas.php?relatorio=1">
+                            Banco de Horas
+                        </a>
+                    </li>
+
+                    <li>
                         <a href="/projeto-integrador/public/relatorio/online.php">
                             Controle de Usuários
                         </a>
@@ -45,12 +51,6 @@ if ($nivel >= 3) {
                 </a>
 
                 <ul class="dropdown-menu left">
-                    <li>
-                        <a href="/projeto-integrador/public/ponto/notificacoes.php">
-                            Notificações
-                        </a>
-                    </li>
-
                     <li>
                         <a href="/projeto-integrador/public/config/config.php">
                             Configurações
@@ -85,6 +85,12 @@ if ($nivel >= 3) {
 
                 <ul class="dropdown-menu left">
                     <li>
+                        <a href="/projeto-integrador/public/relatorio/meu_banco_horas.php?relatorio=1">
+                            Banco de Horas Gerais
+                        </a>
+                    </li>
+
+                    <li>
                         <a href="/projeto-integrador/public/relatorio/online.php">
                             Controle de Usuários
                         </a>
@@ -108,7 +114,7 @@ if ($nivel >= 3) {
                 <ul class="dropdown-menu left">
                     <li>
                         <a href="/projeto-integrador/public/relatorio/meu_banco_horas.php">
-                            Banco de Horas
+                            Meu Banco de Horas
                         </a>
                     </li>
 
@@ -142,7 +148,7 @@ if ($nivel >= 3) {
                 <ul class="dropdown-menu right">
                     <li>
                         <a href="/projeto-integrador/public/relatorio/meu_banco_horas.php">
-                            Banco de Horas
+                            Meu Banco de Horas
                         </a>
                     </li>
 

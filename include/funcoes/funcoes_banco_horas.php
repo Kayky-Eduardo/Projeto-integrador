@@ -1,9 +1,10 @@
 <?php
-function adicionar_horas($conn, $id_usuario, $minutos, $tipo = 'hora_extra', $descricao = null) {
+function adicionar_horas($conn, $id_usuario, $minutos, $tipo = 'hora_extra', $descricao = null)
+{
     if ($minutos === null) {
         return;
     }
-   
+
     $stmt_saldo = $conn->prepare("
     SELECT
         id_banco,
@@ -14,7 +15,7 @@ function adicionar_horas($conn, $id_usuario, $minutos, $tipo = 'hora_extra', $de
     $stmt_saldo->bind_param('i', $id_usuario);
     $stmt_saldo->execute();
     $result_verificacao = $stmt_saldo->get_result();
-    
+
     if ($result_verificacao->num_rows === 0) {
         $stmt_criar_banco = $conn->prepare("
         INSERT INTO banco_horas (id_usuario, saldo_minutos)
@@ -42,22 +43,29 @@ function adicionar_horas($conn, $id_usuario, $minutos, $tipo = 'hora_extra', $de
     $stmt_update->bind_param("ii", $saldo_novo, $id_usuario);
     $stmt_update->execute();
     $stmt_update->close();
-    
+
     $stmt_historico = $conn->prepare("
         INSERT INTO banco_horas_historico 
         (id_usuario, id_banco, data, minutos, tipo, descricao, saldo_anterior, saldo_novo)
         VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?)
     ");
-    $stmt_historico->bind_param("iiissii",
-    $id_usuario, $id_banco, $minutos, $tipo, $descricao,
-    $saldo_anterior, $saldo_novo
+    $stmt_historico->bind_param(
+        "iiissii",
+        $id_usuario,
+        $id_banco,
+        $minutos,
+        $tipo,
+        $descricao,
+        $saldo_anterior,
+        $saldo_novo
     );
 
     $stmt_historico->execute();
     $stmt_historico->close();
 }
 
-function get_banco_data($conn, $id_usuario, $inicio, $fim) {
+function get_banco_data($conn, $id_usuario, $inicio, $fim)
+{
     $dados_antigos = [];
 
     $stmt = $conn->prepare("
@@ -70,22 +78,23 @@ function get_banco_data($conn, $id_usuario, $inicio, $fim) {
     $stmt->bind_param("ssi", $inicio, $fim, $id_usuario);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($result->num_rows === 0) {
         return false;
     }
-    
+
     while ($linha = $result->fetch_assoc()) {
         $dados_antigos[] = $linha;
     };
 
     $stmt->close();
-    
+
     return $dados_antigos;
 }
 
 
-function formatar_minutos($minutos) {
+function formatar_minutos($minutos)
+{
     $sinal = $minutos < 0 ? '-' : '+';
     $total = abs($minutos);
 
@@ -102,7 +111,8 @@ function formatar_minutos($minutos) {
     return sprintf('%s%02d:%02d', $sinal, $horas, $mins);
 }
 
-function get_banco_horas($conn, $id_usuario) {
+function get_banco_horas($conn, $id_usuario)
+{
     $stmt = $conn->prepare("
         SELECT
             id_banco,
@@ -114,7 +124,7 @@ function get_banco_horas($conn, $id_usuario) {
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($result->num_rows === 0) {
         return [
             'saldo_minutos' => 0,
@@ -122,10 +132,10 @@ function get_banco_horas($conn, $id_usuario) {
             'saldo_formatado' => '00:00'
         ];
     }
-    
+
     $dados = $result->fetch_assoc();
     $stmt->close();
-    
+
     $stmt_saldo_anterior = $conn->prepare("
         SELECT
             saldo_anterior
@@ -140,20 +150,20 @@ function get_banco_horas($conn, $id_usuario) {
     $result_saldo = $stmt_saldo_anterior->get_result();
     if ($result_saldo->num_rows == 0) {
         return [
-        'saldo_formatado' => "00:00",
-        'ultima_atualizacao' => 'Sem registros'
+            'saldo_formatado' => "00:00",
+            'ultima_atualizacao' => 'Sem registros'
         ];
     }
 
     $saldo_antigo = $result_saldo->fetch_assoc()['saldo_anterior'];
 
     $stmt_saldo_anterior->close();
-    
-    $mins_antigo = $saldo_antigo; 
+
+    $mins_antigo = $saldo_antigo;
 
     $minutos = $dados['saldo_minutos'];
 
-    
+
     return [
         'saldo_antigo' => formatar_minutos($mins_antigo),
         'saldo_formatado' => formatar_minutos($minutos),
@@ -161,11 +171,13 @@ function get_banco_horas($conn, $id_usuario) {
     ];
 }
 
-function retirar_horas($conn, $id_usuario, $minutos, $tipo = 'falta', $descricao = null) {
+function retirar_horas($conn, $id_usuario, $minutos, $tipo = 'falta', $descricao = null)
+{
     adicionar_horas($conn, $id_usuario, -abs($minutos), $tipo, $descricao);
 }
 
-function calcular_debito_falta($conn, $id_usuario, $data) {
+function calcular_debito_falta($conn, $id_usuario, $data)
+{
     // Busca jornada do usuário
     $stmt = $conn->prepare("
         SELECT TIME_TO_SEC(jornada) as segundos_jornada
@@ -174,18 +186,43 @@ function calcular_debito_falta($conn, $id_usuario, $data) {
     ");
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($result->num_rows === 0) {
         return 0;
     }
-    
+
     $jornada = $result->fetch_assoc();
     $stmt->close();
-    
+
     $minutos_jornada = round($jornada['segundos_jornada'] / 60);
-    
+
     // Debita do banco de horas
     retirar_horas($conn, $id_usuario, $minutos_jornada, 'falta', "Falta no dia {$data}");
-    
+
     return $minutos_jornada;
+}
+
+// Função para obter o saldo de banco de horas de todos os usuários
+function get_banco_horas_todos($conn)
+{
+    $dados = [];
+
+    $sql = "
+        SELECT u.id_usuario, u.nome_usuario, bh.saldo_minutos
+        FROM usuario u
+        LEFT JOIN banco_horas bh ON bh.id_usuario = u.id_usuario
+        ORDER BY u.nome_usuario
+    ";
+
+    $result = $conn->query($sql);
+
+    while ($row = $result->fetch_assoc()) {
+        $dados[] = [
+            'id_usuario' => $row['id_usuario'],
+            'nome'       => $row['nome_usuario'],
+            'saldo'      => formatar_minutos($row['saldo_minutos'] ?? 0)
+        ];
+    }
+
+    return $dados;
 }

@@ -151,4 +151,28 @@ document.addEventListener("DOMContentLoaded", () => {
             painelEdicao.classList.toggle("ativo");
         });
     }
+
+    /* FILTRO – BANCO DE HORAS (RELATÓRIO) */
+
+    const filtroBancoHoras = document.getElementById("filtroUsuario");
+    const tabelaBancoHoras = document.getElementById("tabelaBancoHoras");
+
+    if (filtroBancoHoras && tabelaBancoHoras) {
+
+        const linhasBancoHoras = tabelaBancoHoras.querySelectorAll("tbody tr");
+
+        filtroBancoHoras.addEventListener("input", () => {
+            const termo = filtroBancoHoras.value.toLowerCase().trim();
+
+            linhasBancoHoras.forEach(linha => {
+                const nomeUsuario = linha.children[0]
+                    ?.textContent
+                    .toLowerCase() || "";
+
+                linha.style.display = nomeUsuario.includes(termo)
+                    ? ""
+                    : "none";
+            });
+        });
+    }
 });

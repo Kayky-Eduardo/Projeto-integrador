@@ -89,7 +89,7 @@ $result = $conn->query($sql);
             aria-label="Buscar usuário">
         </form>
 
-        <select id="filtro-status" aria-label="Filtrar usuários">
+        <select id="filtro-status" class="select-padrao" aria-label="Filtrar usuários">
           <option value="ativos" selected>Ativos</option>
           <option value="inativos">Inativos</option>
           <option value="todos">Todos</option>
