@@ -14,7 +14,9 @@ if ($_SESSION['nivel'] < 2) {
 // ===================
 // PEGA O ID DO AJUSTE
 // ===================
-$id = intval($_GET['id'] ?? 0);
+if (isset($_GET['id'])) {
+    $id = intval($_GET['id']);
+}
 
 // =======================
 // BUSCA O AJUSTE NO BANCO

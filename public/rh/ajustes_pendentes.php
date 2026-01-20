@@ -105,13 +105,13 @@ $res = $conn->query($sql);
                 <!-- Ações do RH -->
                 <td>
                     <!-- Abre formulário para editar manualmente -->
-                    <a href="editar.php?id=<?= $r['id_ajuste'] ?>">Editar</a> |
+                    <a href="editar.php?id=<?= htmlspecialchars($r['id_ajuste']) ?>">Editar</a> |
 
                     <!-- Aprova e aplica o ajuste -->
-                    <a href="aprovar.php?id=<?= $r['id_ajuste'] ?>">Aprovar</a> |
+                    <a href="aprovar.php?id=<?= htmlspecialchars($r['id_ajuste']) ?>">Aprovar</a> |
 
                     <!-- Recusa o ajuste -->
-                    <a href="recusar.php?id=<?= $r['id_ajuste'] ?>">Recusar</a>
+                    <a href="recusar.php?id=<?= htmlspecialchars($r['id_ajuste']) ?>">Recusar</a>
                 </td>
 
             </tr>

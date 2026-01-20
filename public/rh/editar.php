@@ -35,13 +35,13 @@ ajustes_ponto -> dados da solicitação
 ponto_dia     -> horários reais do ponto
 usuario       -> funcionário solicitante
 */
-
 $sql = "
 SELECT 
     a.campo,                -- Campo que pode ser alterado
     a.motivo,               -- motivo do pedido
     a.id_ajuste,
     a.id_ponto,
+    a.id_pausa,
     ps.inicio as inicio_pausa,
     ps.fim as fim_pausa,
     ps.id_pausa,
@@ -51,8 +51,8 @@ SELECT
     u.nome_usuario          -- Funcionário
 FROM ajustes_ponto a
 INNER JOIN ponto_dia p ON p.id_ponto = a.id_ponto
-INNER JOIN usuario u ON u.id_usuario = a.id_usuario
-INNER JOIN pausa ps ON ps.id_pausa = a.id_pausa
+INNER JOIN usuario u ON u.id_usuario = p.id_usuario
+LEFT JOIN pausa ps ON ps.id_pausa = a.id_pausa
 WHERE a.id_ajuste = ?
 ";
 
@@ -62,7 +62,7 @@ $stmt->execute();
 $ajuste = $stmt->get_result()->fetch_assoc();
 
 if (!$ajuste) {
-    die("Ajuste não encontrado.");
+    die("Ajuste não encontrado." . $id);
 }
 
 // ==============

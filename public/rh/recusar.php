@@ -66,7 +66,7 @@ if ($busca && $busca->num_rows > 0) {
     // REMOVE A SOLICITAÇÃO
     // ====================
     // Exclui o pedido do banco
-    $conn->query("DELETE FROM ajustes_ponto WHERE id_ajuste = $id");
+    $conn->query("UPDATE ajustes_ponto SET status = 'Recusado' WHERE id_ajuste = $id");
 
     // =================
     // ENVIA NOTIFICAÇÃO
