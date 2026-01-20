@@ -36,7 +36,7 @@ SELECT
     a.*, 
     u.nome_usuario AS funcionario,   -- Dono do ponto
     s.nome_usuario AS solicitante,   -- Quem fez a solicitação
-    p.data_reg                      -- Dia do ponto
+    p.data_ponto                      -- Dia do ponto
 FROM ajustes_ponto a
 INNER JOIN ponto_dia p ON p.id_ponto = a.id_ponto
 INNER JOIN usuario u ON u.id_usuario = p.id_usuario   -- FUNCIONÁRIO DO PONTO
@@ -73,7 +73,7 @@ $res = $conn->query($sql);
             <th>Campo</th>
             <th>Antes</th>
             <th>Depois</th>
-            <th>Justificativa</th>
+            <th>Motivo</th>
             <th>Ação</th>
         </tr>
 
@@ -88,7 +88,7 @@ $res = $conn->query($sql);
                 <td><?= htmlspecialchars($r['solicitante']) ?></td>
 
                 <!-- Data do registro de ponto -->
-                <td><?= htmlspecialchars($r['data_reg']) ?></td>
+                <td><?= htmlspecialchars($r['data_ponto']) ?></td>
 
                 <!-- Campo que será alterado -->
                 <td><?= htmlspecialchars($r['campo']) ?></td>
@@ -99,8 +99,8 @@ $res = $conn->query($sql);
                 <!-- Novo horário solicitado -->
                 <td><?= htmlspecialchars($r['valor_novo']) ?></td>
 
-                <!-- Justificativa do ajuste -->
-                <td><?= htmlspecialchars($r['justificativa']) ?></td>
+                <!-- Motivo do ajuste -->
+                <td><?= htmlspecialchars($r['motivo']) ?></td>
 
                 <!-- Ações do RH -->
                 <td>
