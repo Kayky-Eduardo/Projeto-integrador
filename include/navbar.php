@@ -73,7 +73,7 @@ if ($nivel >= 3) {
     echo '
         <a href="/projeto-integrador/public/usuario/lista.php">Usuários</a>
         <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
-        <a href="/projeto-integrador/public/ponto/status.php">Bater Ponto / Status</a>
+        <a href="/projeto-integrador/public/ponto/pausas_e_ponto/registrar_ponto.php">Bater Ponto / Pausa</a>
         <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
         <a href="/projeto-integrador/public/ponto/pausas_e_ponto/pausa_config.php">Gerenciar Pausas</a>
         <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
@@ -138,7 +138,7 @@ if ($nivel >= 3) {
     ';
 } else {
     echo '
-        <a href="/projeto-integrador/public/ponto/status.php">Bater Ponto / Status</a>
+        <a href="/projeto-integrador/public/ponto/pausas_e_ponto/registrar_ponto.php">Bater Ponto / Pausa</a>
 
         <ul class="nav-dropdown usuario">
             <li class="dropdown">
