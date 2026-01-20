@@ -342,7 +342,7 @@ function get_tempo($conn) {
     $dados = [];
     while ($t = $tempo->fetch_assoc()) {
         $dados[] = [
-            "id_tempo" => $t['tempo'],
+            "id_tempo" => $t['id_tempo'],
             "descricao" => $t['descricao'],
             "tempo_jornada" => $t['jornada'],
             "max_hora_extra" => $t['maximo_hora_extra']

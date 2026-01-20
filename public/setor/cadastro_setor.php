@@ -60,7 +60,7 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
             <span id="contador">0</span> selecionados
         </button>
 
-        <select name="" id=""></select>
+        <select id="filtro-jornada">Jornada de trabalho</select>
 
         <div id="opcoes_select" class="oculto">
             <?php while ($u = $usuarios->fetch_assoc()): ?>
@@ -151,6 +151,19 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
                 div.className = '';
                 div.textContent = '';
             }, 5000);
+        }
+
+        async function exibicao_usuarios_option() {
+            select.innerHTML = `<option value="">Selecione uma jornada</option>`
+            const coleta_jornada = await fetch("../../api/api_jornada.php?acao=get_tempo");
+            const resposta = await coleta_jornada.json();
+            const resultado = resposta.dados;
+            resultado.forEach(t => {
+                const tag_option = document.createElement("option");
+                tag_option.value = t.id_tempo;
+                tag_option.textContent = `${t.descricao}\n${t.tempo_jornada}\n${t.max_hora_extra} `  ;
+                select.appendChild(tag_option);
+            })
         }
     </script>
 </body>
