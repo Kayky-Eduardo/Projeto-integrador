@@ -336,4 +336,18 @@ function cadastrar_setor($conn, $nome_setor, array $usuarios_selecionado) {
         'id_setor' => $id_setor
     ];
 }
+
+function get_tempo($conn) {
+    $tempo = $conn->query("SELECT * FROM tempo_jornada ORDER BY id_tempo");
+    $dados = [];
+    while ($t = $tempo->fetch_assoc()) {
+        $dados[] = [
+            "id_tempo" => $t['tempo'],
+            "descricao" => $t['descricao'],
+            "tempo_jornada" => $t['jornada'],
+            "max_hora_extra" => $t['maximo_hora_extra']
+        ];
+    }
+    return $dados;
+}
 ?>

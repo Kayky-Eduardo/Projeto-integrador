@@ -29,6 +29,23 @@ if ($metodo === 'GET') {
         }
         exit;
     }
+
+    if ($acao === 'get_tempo') {
+        try {
+            $resultado = get_tempo($conn);
+            
+            echo json_encode([
+                'sucesso' => true,
+                'dados' => $resultado
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => 'Erro ao buscar Tempos: ' . $e->getMessage()
+            ]);
+        }
+        exit;
+    }
     // GET: Verificar jornada
     $usuario_id = $_GET['usuario_id'] ?? null;
     $data_inicio = $_GET['data_inicio'] ?? null;

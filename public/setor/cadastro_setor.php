@@ -56,19 +56,19 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
 
         <label>Selecionar Usuários:</label><br>
         <div class="select-box">
-            <button class="btn-ativar" type="button" onclick="ativar_select()">
-                <span id="contador">0</span> selecionados
-            </button>
+        <button class="btn-ativar" type="button" onclick="ativar_select()">
+            <span id="contador">0</span> selecionados
+        </button>
 
-            <div id="opcoes_select" class="oculto">
-                <?php while ($u = $usuarios->fetch_assoc()): ?>
-                    <label>
-                        <input type="checkbox" 
-                               name="usuarios[]" 
-                               value="<?= $u['id_usuario'] ?>"
-                               onchange="atualizar_contador()">
-                        <?= htmlspecialchars($u['nome_usuario']) ?>
-                    </label>
+        <select name="" id=""></select>
+
+        <div id="opcoes_select" class="oculto">
+            <?php while ($u = $usuarios->fetch_assoc()): ?>
+                <label>
+                    <input type="checkbox" name="usuarios[]" 
+                    value="<?= $u['id_usuario'] ?>" onchange="atualizar_contador()">
+                    <?= htmlspecialchars($u['nome_usuario']) ?>
+                </label>
                 <?php endwhile; ?>
             </div>
         </div>
