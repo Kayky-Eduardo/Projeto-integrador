@@ -13,26 +13,23 @@ $result = $conn->query("SELECT * FROM setor");
 <head>
   <meta charset="UTF-8">
   <title>Setores</title>
-  <link rel="stylesheet" href="../../assets/css/estilo.css">
+  <link rel="stylesheet" href="../../assets/estilo.css">
 </head>
 <body>
     <header>
         <?php include("../../include/navbar.php");?>
     </header>
 
+  <button type="submit"><a href="cadastro_setor.php">Novo</a></button>
   <table>
-    <thead>
-      <tr>
-        <th>ID setor</th>
-        <th>Nome setor</th>
-        <th>Edição</th>
-        <th>Deletar</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php
-        if ($result->num_rows > 0) {
-          while ($row = $result->fetch_assoc()) {
+    <tr>
+      <th>ID setor</th>
+      <th>Nome setor</th>
+      <th>Edição</th>
+    </tr>
+    <?php
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
             echo "<tr>";
             echo "<td>".$row["id_setor"]."</td>";
             echo "<td>".$row["nome_setor"]."</td>";
@@ -42,23 +39,13 @@ $result = $conn->query("SELECT * FROM setor");
                     <input type="hidden" name="id" value="'. $row['id_setor'] . '">
                     <button type="submit">Editar</button>
                 </form>
-            </td>';
-
-            echo '
-            <td>
-              <form action="deletar_setor.php" method="POST" onsubmit="return confirm(\'Tem certeza que deseja deletar?\');">
-                <input type="hidden" name="id_setor" value="'. $row['id_setor'] . '">
-                <button type="submit">Deletar</button>
-              </form>
-            </td>';
-            
+            </td>';            
             echo "</tr>";
-          }
-      } else {
-          echo "<tr><th colspan='12'>Nenhum setor cadastrado.</th></tr>";
-      }
+        }
+    } else {
+        echo "<tr><td colspan='12'>Nenhum setor cadastrado.</td></tr>";
+    }
     ?>
-  </tbody>
   </table>
 </body>
 </html>

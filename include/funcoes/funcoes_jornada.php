@@ -265,4 +265,75 @@ function set_jornada($conn, $jornada, $hora_extra) {
     }
 }
 
+function get_pessoas_setor($conn, $id_setor) {
+    $stmt = $conn->prepare("
+        SELECT grupo_setor.id_usuario, u.nome_usuario 
+        FROM grupo_setor
+        INNER JOIN usuario u ON grupo_setor.id_usuario = u.id_usuario
+        WHERE grupo_setor.id_setor = ?
+        ORDER BY u.nome_usuario
+    ");
+    
+    $stmt->bind_param("i", $id_setor);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $dados = [];
+    while ($row = $result->fetch_assoc()) {
+        $dados[] = [
+            'id_usuario' => $row['id_usuario'],
+            'nome_usuario' => $row['nome_usuario']
+        ];
+    }
+    
+    return $dados;
+}
+
+function set_setor($conn, $usuarios_selecionados, $nome_setor, $id_setor) {
+    // Atualiza nome do setor
+    $stmt = $conn->prepare("UPDATE setor SET nome_setor = ? WHERE id_setor = ?");
+    $stmt->bind_param("si", $nome_setor, $id_setor);
+    $stmt->execute();
+
+    // Remove vínculos antigos
+    $stmt = $conn->prepare("DELETE FROM grupo_setor WHERE id_setor = ?");
+    $stmt->bind_param("i", $id_setor);
+    $stmt->execute();
+
+    // Insere novos vínculos
+    $stmt = $conn->prepare("INSERT INTO grupo_setor (id_setor, id_usuario) VALUES (?, ?)");
+
+    foreach ($usuarios_selecionados as $id_usuario) {
+        $stmt->bind_param("ii", $id_setor, $id_usuario);
+        $stmt->execute();
+    }
+}
+
+function cadastrar_setor($conn, $nome_setor, array $usuarios_selecionado) {
+    $stmt = $conn->prepare("INSERT INTO setor (nome_setor) VALUES (?)");
+    $stmt->bind_param("s", $nome_setor);
+    
+    if (!$stmt->execute()) {
+        throw new Exception("Erro ao cadastrar setor: " . $stmt->error);
+    }
+    
+    // Obter ID do setor recém-criado
+    $id_setor = $conn->insert_id;
+    
+    // Inserir vínculos com usuários (se houver)
+    if (count($usuarios_selecionado) > 0) {
+        $stmt = $conn->prepare("INSERT INTO grupo_setor (id_setor, id_usuario) VALUES (?, ?)");
+        
+        foreach ($usuarios_selecionado as $id_usuario) {
+            $stmt->bind_param("ii", $id_setor, $id_usuario);
+            $stmt->execute();
+        }
+    }
+
+    return [
+        'sucesso' => true,
+        'mensagem' => 'Setor cadastrado!',
+        'id_setor' => $id_setor
+    ];
+}
 ?>
