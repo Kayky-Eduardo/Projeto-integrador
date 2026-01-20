@@ -88,6 +88,12 @@ $result = $conn->query($sql);
             placeholder="Buscar usuário..."
             aria-label="Buscar usuário">
         </form>
+
+        <select id="filtro-status" class="select-padrao" aria-label="Filtrar usuários">
+          <option value="ativos" selected>Ativos</option>
+          <option value="inativos">Inativos</option>
+          <option value="todos">Todos</option>
+        </select>
       </header>
 
       <section class="cards-container" id="tabelaUsuarios" aria-label="Lista de usuários">

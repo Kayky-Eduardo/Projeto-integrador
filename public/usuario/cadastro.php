@@ -4,7 +4,7 @@ include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
 
-// Buscar cargos
+// BUSCAR CARGOS
 $cargos = [];
 $result = $conn->query("SELECT id_cargo, nome_cargo FROM cargo ORDER BY nome_cargo ASC");
 
@@ -194,6 +194,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Usuário</title>
     <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
@@ -290,10 +291,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <input class="input-padrao" type="date" name="data_admissao" required>
 
                         <button class="btn-padrao">Cadastrar Usuário</button>
-                    </section>
 
-                    <section class="voltar-final">
-                        <a href="lista.php">Voltar</a>
+                        <section class="voltar-final">
+                            <a href="lista.php">Voltar</a>
+                        </section>
                     </section>
 
                 </article>

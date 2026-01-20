@@ -12,7 +12,7 @@ $id_usuario = $_SESSION['id_usuario'];
 $hoje = date("Y-m-d");
 
 // Busca o ponto do usuário no dia de hoje
-$q = $conn->prepare("SELECT * FROM ponto_dia WHERE id_usuario = ? AND data_ponto = ?");
+$q = $conn->prepare("SELECT * FROM ponto_dia WHERE id_usuario = ? AND data_reg = ?");
 $q->bind_param("is", $id_usuario, $hoje);
 $q->execute();
 

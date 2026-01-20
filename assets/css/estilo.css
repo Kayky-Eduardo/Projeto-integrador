@@ -18,6 +18,8 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    margin: 0;
+    padding: 0;
 }
 
 /* BANNER */
@@ -59,11 +61,10 @@ nav a:focus {
     transform: translateY(-2px);
 }
 
-/* CONTEÚDO PRINCIPAL (MAIN) */
+/* CONTEÚDO PRINCIPAL */
 main {
     flex: 1;
     padding: 2rem;
-
     display: flex;
     justify-content: center;
 }
@@ -865,21 +866,18 @@ a:focus {
     cursor: pointer;
 }
 
-.btn-padrao:hover {
-    background: color-mix(in srgb, var(--cor-principal) 90%, black);
-}
-
 .btn-excluir {
     background: var(--cor-perigo);
     color: white;
     text-align: center;
-    padding: 10px;
+    padding: 10px 16px;
     border-radius: 8px;
     text-decoration: none;
     font-size: 0.85rem;
     border: none;
     border: 1px solid var(--cor-perigo);
     cursor: pointer;
+
 }
 
 /* AÇÕES EMPRESA */
@@ -954,25 +952,11 @@ a:focus {
     margin-left: 18px;
 }
 
-/* BOTÃO EXCLUIR */
-.form-excluir {
-    width: 100%;
-}
-
-.form-excluir button {
-    width: 100%;
-    background: #dc2626;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.85rem;
-}
-
-
 /* BOTÃO VOLTAR */
 .voltar-final {
+    text-align: center;
+    order: 2;
+    margin-top: 0;
     text-align: center;
 }
 
@@ -980,6 +964,14 @@ a:focus {
     color: var(--cor-principal);
     font-weight: bold;
     text-decoration: none;
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    border: 1px solid var(--borda-padrao);
+    font-size: 0.85rem;
+    font-weight: 400;
 }
 
 .foto-upload {
@@ -1054,25 +1046,6 @@ a:focus {
     order: 1;
 }
 
-.voltar-final {
-    order: 2;
-    margin-top: 0;
-    text-align: center;
-}
-
-.voltar-final a {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    background: #f1f5f9;
-    color: var(--cor-principal);
-    text-decoration: none;
-    border: 1px solid var(--borda-padrao);
-    font-size: 0.85rem;
-    font-weight: 500;
-}
-
 /* =========================
    PERFIL / GRID
 ========================= */
@@ -1088,7 +1061,7 @@ a:focus {
     padding: 10px;
     margin-bottom: 12px;
     background-color: #fee2e2;
-    border-radius: 4px;
+    border-radius: 8px;
 }
 
 .box-erros strong {
@@ -1107,12 +1080,48 @@ a:focus {
 ========================= */
 .form-padrao {
     display: grid;
-    gap: 8px;
+    gap: 10px;
 }
 
-/* ======================
-   RESPONSIVO
-====================== */
+/* Botão SALVAR FOTO */
+.hidden {
+    display: none;
+}
+
+.btn-salvar-foto {
+    background-color: #f1f5f9;
+    color: var(--cor-principal);
+    margin-top: 10px;
+}
+
+/* Botão ativar/desativar usuário */
+.form-status-usuario {
+    margin-top: 10px;
+}
+
+.btn-status {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    width: 100%;
+}
+
+.btn-ativar {
+    background-color: #2ecc71;
+    border: 1px solid #2ecc71
+}
+
+.btn-desativar {
+    background-color: #f97316;
+    ;
+    border: 1px solid #f97316;
+    ;
+}
+
+/* RESPONSIVO */
 @media (max-width: 900px) {
 
     .perfil-acoes {
@@ -1134,4 +1143,336 @@ a:focus {
     .perfil-header {
         height: auto;
     }
+}
+
+/* BANCO DE HORAS */
+.banco-horas {
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+}
+
+.bh-resumo {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.bh-resumo article {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+}
+
+.bh-resumo h2 {
+    font-size: 1.8rem;
+    color: var(--cor-principal);
+}
+
+.bh-resumo p {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.bh-filtro {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.bh-filtro form {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.bh-filtro article {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+}
+
+.bh-filtro label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.bh-filtro input {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    font-size: 0.85rem;
+}
+
+.bh-filtro button {
+    padding: 8px 18px;
+    background-color: var(--cor-principal);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.bh-historico {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.bh-historico table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.bh-historico thead {
+    background: #f1f5f9;
+}
+
+.bh-historico th,
+.bh-historico td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.bh-historico tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.bh-historico p {
+    text-align: center;
+    color: #64748b;
+}
+
+/* DROPDOWN GENÉRICO (NAV) */
+.nav-dropdown {
+    list-style: none;
+    padding: 0;
+}
+
+.nav-dropdown.usuario {
+    margin-left: auto;
+}
+
+.dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-toggle {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-menu {
+    list-style: none;
+    position: absolute;
+    top: 100%;
+    background-color: #020617;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    min-width: 190px;
+    display: none;
+    padding: 4px 0;
+    z-index: 1000;
+}
+
+.dropdown-menu.left {
+    left: 0;
+}
+
+.dropdown-menu.right {
+    right: 0;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 0.5rem 0.8rem;
+    color: #F2F2F2;
+    font-size: 0.85rem;
+}
+
+.dropdown-menu a:hover {
+    background-color: #334155;
+}
+
+.dropdown-menu .separador {
+    height: 1px;
+    background-color: #334155;
+    margin: 4px 0;
+}
+
+.dropdown-menu .sair {
+    color: #f87171;
+    font-weight: 600;
+}
+
+.dropdown:hover .dropdown-menu,
+.dropdown:focus-within .dropdown-menu {
+    display: block;
+}
+
+@media (max-width: 1100px) {
+
+    /* dropdown ocupa largura total */
+    .nav-dropdown {
+        width: 100%;
+    }
+
+    .dropdown {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .dropdown-toggle {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* menu deixa de ser flutuante */
+    .dropdown-menu {
+        position: static;
+        min-width: 100%;
+        border-radius: 0 0 6px 6px;
+        margin-top: 4px;
+    }
+
+    /* remove alinhamento left/right */
+    .dropdown-menu.right {
+        left: auto;
+        right: auto;
+    }
+}
+
+/* ==========================
+   RELATÓRIO BANCO DE HORAS
+========================== */
+.bh-relatorio {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+/* TÍTULO */
+.bh-relatorio h2 {
+    font-size: 1.3rem;
+    color: var(--cor-principal);
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+/* INPUT DE FILTRO */
+.bh-relatorio > input[type="text"] {
+    display: block;
+    margin: 0 auto 18px auto;
+    width: 320px;
+    max-width: 100%;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background-color: #f8fafc;
+}
+
+.bh-relatorio > input[type="text"]:focus {
+    outline: none;
+    border-color: var(--cor-principal);
+    background-color: #ffffff;
+}
+
+/* TABELA */
+#tabelaBancoHoras {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+#tabelaBancoHoras thead {
+    background-color: #f1f5f9;
+}
+
+#tabelaBancoHoras th {
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+    color: #334155;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#tabelaBancoHoras th:nth-child(1) {
+    text-align: left;
+}
+
+#tabelaBancoHoras td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #020617;
+}
+
+#tabelaBancoHoras tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Alinhamento colunas */
+#tabelaBancoHoras td:nth-child(2) {
+    text-align: center;
+    font-weight: 600;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 600px) {
+    .bh-relatorio h2 {
+        font-size: 1.1rem;
+    }
+
+    .bh-relatorio > input[type="text"] {
+        width: 100%;
+    }
+
+    #tabelaBancoHoras th,
+    #tabelaBancoHoras td {
+        padding: 10px;
+        font-size: 0.8rem;
+    }
+}
+
+/* SELECT PADRÃO */
+.select-padrao {
+    appearance: none;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+
+    padding: 0.6rem 2rem 0.6rem 0.8rem;
+    font-size: 0.85rem;
+    color: #020617;
+
+    cursor: pointer;
+    min-width: 150px;
+
+    background-image: url("../IMG/utils/seta_baixo.svg");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    background-size: 14px;
 }

@@ -25,16 +25,6 @@ function evolucao_presenca($conn) {
     $primeira_data = null;
     $ultima_data = null;
 
-    if ($result->num_rows === 0) {
-        $presentes = 0;
-        $ausentes = 0;
-        $dados[] = [
-            'data' => "0000-00-00",
-            'presentes' => 0,
-            'ausentes' => 0,
-            'total' => 0
-        ];
-    }
     
     while ($row = $result->fetch_assoc()) {
         $presentes = (int)$row['presentes'];
@@ -46,6 +36,7 @@ function evolucao_presenca($conn) {
             'total' => $total_usuarios
         ];
     }
+    
     if (!empty($dados)) {
         $ultima_data = end($dados)['data']; // pega a data do último 
         $primeira_data = $dados[0]['data']; // inverso
@@ -256,14 +247,6 @@ function filtrar_usuario($conn, $id_usuario = null) {
     $result = $coleta_usuario->get_result();
     
     $dados_grafico = [];
-
-    if ($result->num_rows === 0) {
-        $dados_grafico[] = [
-            'nome_usuario' => "",
-            'saldo_horas' => "",
-            'data' => "0000-00-00"
-        ];
-    }
 
     while ($usuario = $result->fetch_assoc()) {
         $dados_grafico[] = [

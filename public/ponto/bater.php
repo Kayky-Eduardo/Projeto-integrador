@@ -29,7 +29,7 @@ $agora = date("Y-m-d H:i:s");
 // ==============================
 
 // Prepara consulta
-$q = $conn->prepare("SELECT * FROM ponto_dia WHERE id_usuario = ? AND data_ponto = ?");
+$q = $conn->prepare("SELECT * FROM ponto_dia WHERE id_usuario = ? AND data_reg = ?");
 
 // Aplica parâmetros na query
 $q->bind_param("is", $id_usuario, $hoje);
@@ -66,7 +66,7 @@ if (!$reg) {
 
     // Insere primeiro ponto como entrada do dia
     $ins = $conn->prepare(
-        "INSERT INTO ponto_dia (id_usuario, data_ponto, inicio_ponto, status)
+        "INSERT INTO ponto_dia (id_usuario, data_reg, inicio_ponto, status)
          VALUES (?, ?, ?, 'Em Andamento')"
     );
 
