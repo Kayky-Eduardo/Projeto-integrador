@@ -74,7 +74,7 @@ $result = $conn->query($sql);
     <?php include("../../include/navbar.php"); ?>
   </nav>
 
-  <main role="main">
+  <main role="main" class="pagina-lista-usuarios">
     <section class="usuarios-painel" aria-label="Painel de usuários">
       <header class="usuarios-topo">
         <a href="cadastro.php" class="btn-cadastrar">

@@ -235,7 +235,7 @@ if (isset($_POST['editar_usuario'])) {
         <?php include("../../include/navbar.php"); ?>
     </nav>
 
-    <main class="perfil">
+    <main class="container perfil">
         <form class="perfil-grid perfil-grid-editar" method="POST" enctype="multipart/form-data">
             <section class="perfil-header">
                 <label class="foto-upload">
@@ -323,7 +323,7 @@ if (isset($_POST['editar_usuario'])) {
                 </section>
             </section>
 
-            <section class="perfil-edicao" id="painel-edicao">
+            <section class="perfil-edicao hidden" id="painel-edicao">
                 <h4>Editar Funcionário</h4>
 
                 <section class="form-padrao">

@@ -146,14 +146,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnEditar = document.getElementById("btn-editar");
     const painelEdicao = document.getElementById("painel-edicao");
 
-    if (btnEditar && painelEdicao) {
-        btnEditar.addEventListener("click", () => {
-            painelEdicao.classList.toggle("ativo");
-        });
-    }
+    btnEditar.addEventListener("click", () => {
+        painelEdicao.classList.toggle("hidden");
+    });
 
     /* FILTRO – BANCO DE HORAS (RELATÓRIO) */
-
     const filtroBancoHoras = document.getElementById("filtroUsuario");
     const tabelaBancoHoras = document.getElementById("tabelaBancoHoras");
 

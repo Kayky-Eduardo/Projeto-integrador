@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 
 <body class="pagina-login">
-    <main role="main" aria-label="Tela de acesso">
+    <main role="main" aria-label="Tela de acesso" class="main-center">
         <section class="login-sistema" aria-label="Área de autenticação">
             <h2>Acesso ao Sistema</h2>
             <p>Utilize suas credenciais corporativas</p>

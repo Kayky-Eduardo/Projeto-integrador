@@ -107,7 +107,7 @@ if ($modoRelatorio && $ehRH) {
     </nav>
 
     <main role="main">
-        <section class="banco-horas" aria-label="Banco de horas do usuário">
+        <section class="container banco-horas" aria-label="Banco de horas do usuário">
 
             <!-- RELATÓRIO GERAL -->
             <?php if ($modoRelatorio && $ehRH): ?>
