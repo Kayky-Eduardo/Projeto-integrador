@@ -72,13 +72,34 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
                 <?php endwhile; ?>
             </div>
         </div>
-
+        
         <br>
         <button type="submit">Cadastrar</button>
         <a href="setores.php">Voltar</a>
     </form>
-
+    
     <script>
+        const select = document.getElementById("filtro-jornada") 
+        
+        async function exibicao_usuarios_option() {
+            select.innerHTML = `<option value="">Selecione uma jornada</option>`
+            const coleta_jornada = await fetch("../../api/api_jornada.php?acao=get_tempo");
+            const resposta = await coleta_jornada.json();
+            const resultado = resposta.dados;
+            resultado.forEach(t => {
+                const tag_option = document.createElement("option");
+                tag_option.value = t.id_tempo;
+                tag_option.textContent = `${t.descricao} | ${t.tempo_jornada} : ${t.max_hora_extra} `  ;
+                select.appendChild(tag_option);
+            })
+        }
+        
+        select.addEventListener("change", () => {
+            const id_setor = this.value;
+        })
+    
+        exibicao_usuarios_option();
+        
         // Função para abrir/fechar select
         function ativar_select() {
             const caixa = document.getElementById('opcoes_select');
@@ -153,18 +174,6 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
             }, 5000);
         }
 
-        async function exibicao_usuarios_option() {
-            select.innerHTML = `<option value="">Selecione uma jornada</option>`
-            const coleta_jornada = await fetch("../../api/api_jornada.php?acao=get_tempo");
-            const resposta = await coleta_jornada.json();
-            const resultado = resposta.dados;
-            resultado.forEach(t => {
-                const tag_option = document.createElement("option");
-                tag_option.value = t.id_tempo;
-                tag_option.textContent = `${t.descricao}\n${t.tempo_jornada}\n${t.max_hora_extra} `  ;
-                select.appendChild(tag_option);
-            })
-        }
     </script>
 </body>
 </html>

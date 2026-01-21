@@ -98,6 +98,7 @@ try {
         $resultado = cadastrar_setor(
             $conn,
             $input['nome_setor'],
+            $input['id_tempo'],
             $input['usuarios_selecionado'],
         );
         
@@ -121,9 +122,6 @@ try {
 } catch (Exception $e) {
     // Em caso de erro, limpar buffer e enviar erro como JSON
     ob_clean();
-    
-    // Log do erro (opcional, para debug)
-    error_log("API Error: " . $e->getMessage());
     
     echo json_encode([
         'sucesso' => false,

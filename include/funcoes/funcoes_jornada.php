@@ -309,9 +309,9 @@ function set_setor($conn, $usuarios_selecionados, $nome_setor, $id_setor) {
     }
 }
 
-function cadastrar_setor($conn, $nome_setor, array $usuarios_selecionado) {
-    $stmt = $conn->prepare("INSERT INTO setor (nome_setor) VALUES (?)");
-    $stmt->bind_param("s", $nome_setor);
+function cadastrar_setor($conn, $nome_setor, $id_tempo = null, array $usuarios_selecionado) {
+    $stmt = $conn->prepare("INSERT INTO setor (nome_setor, id_tempo) VALUES (?, ?)");
+    $stmt->bind_param("si", $nome_setor, $id_tempo);
     
     if (!$stmt->execute()) {
         throw new Exception("Erro ao cadastrar setor: " . $stmt->error);
