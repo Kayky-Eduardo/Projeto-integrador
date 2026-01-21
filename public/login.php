@@ -127,7 +127,170 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Acesso ao Sistema de RH</title>
-    <link rel="stylesheet" href="../assets/css/estilo.css">
+    <style>
+        /* =========================
+   0 - VARIÁVEIS DO SISTEMA
+========================= */
+        :root {
+            --cor-principal: #020617;
+            --cor-principal-hover: #020617e8;
+            --cor-destaque: #38bdf8;
+        }
+
+        /* =========================
+   1 - RESET GLOBAL
+========================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 100%;
+        }
+
+        body {
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background-color: #F2F2F2;
+            color: #0D0D0D;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* =========================
+   2 - LAYOUT GLOBAL
+========================= */
+        main {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .main-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* =========================
+   5 - FORMULÁRIOS (LOGIN)
+========================= */
+        .login-sistema input {
+            padding: 0.65rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            background-color: #f8fafc;
+        }
+
+        .login-sistema input::placeholder {
+            color: #94a3b8;
+        }
+
+        .login-sistema input:focus {
+            outline: none;
+            border-color: #020617;
+        }
+
+        /* =========================
+   LOGIN.PHP
+========================= */
+        .pagina-login {
+            background: url(../assets/IMG/fundo_login.jpg) no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .pagina-login::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.55);
+            z-index: -1;
+        }
+
+        .login-sistema {
+            max-width: 460px;
+            width: 100%;
+            background-color: #ffffff;
+            padding: 2.4rem;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            box-shadow:
+                0 20px 50px rgba(0, 0, 0, 0.35),
+                0 3px 10px rgba(0, 0, 0, 0.12);
+        }
+
+        /* título */
+        .login-sistema h2 {
+            font-size: 1.4rem;
+            color: #020617;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+        }
+
+        /* subtítulo */
+        .login-sistema p {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 1.6rem;
+        }
+
+        /* fieldset */
+        .login-sistema fieldset {
+            border: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        /* labels */
+        .login-sistema label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #334155;
+        }
+
+        /* botão */
+        .login-sistema button {
+            margin-top: 1.2rem;
+            padding: 0.75rem;
+            background-color: #020617;
+            color: white;
+            border: none;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            cursor: pointer;
+            letter-spacing: 0.4px;
+            transition: background-color 0.2s ease;
+        }
+
+        .login-sistema button:hover {
+            background-color: var(--cor-principal-hover);
+        }
+
+        /* erro */
+        .erro-login {
+            background-color: #fee2e2;
+            color: #7f1d1d;
+            border: 1px solid #fecaca;
+            border-radius: 4px;
+            padding: 0.7rem 0.9rem;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        /* =========================
+   RESPONSIVIDADE
+========================= */
+        @media (max-width: 1000px) {
+            main {
+                padding: 1.2rem;
+            }
+        }
+    </style>
+
+    <!-- <link rel="stylesheet" href="../assets/css/estilo.css"> -->
 </head>
 
 <body class="pagina-login">

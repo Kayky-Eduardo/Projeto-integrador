@@ -319,7 +319,10 @@ if (isset($_POST['editar_usuario'])) {
                     <?php endif; ?>
 
                     <button type="submit" class="btn-excluir" formaction="deletar_usuario.php" formmethod="POST">Excluir</button>
-                    <section class="voltar-final"><a href="lista.php">Voltar</a></section>
+
+                    <section class="voltar-final">
+                        <a href="lista.php" class="link-simples">Voltar</a>
+                    </section>
                 </section>
             </section>
 

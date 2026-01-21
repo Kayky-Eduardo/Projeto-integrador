@@ -1,19 +1,35 @@
 /*
     SUMÁRIO
+    0. VARIÁVEIS DO SISTEMA
     1. RESET GLOBAL
-        1.1. Banner
-        1.2. Navbar
-        1.3. Conteúdo Principal
-
-    2. INDEX.PHP
+    2. LAYOUT GLOBAL
+    3. COMPONENTES GENÉRICOS
+        3.1. Botões base
+    4. NAVEGAÇÃO
+    5. FORMULÁRIOS
+    6. PÁGINAS
+    7. ESTADOS E UTILITÁRIOS
+    8. RESPONSIVIDADE
 */
 
 
-/* 1 - RESET GLOBAL */
+/* 0 - VARIÁVEIS DO SISTEMA */
+:root {
+    --cor-principal: #020617;
+    --cor-principal-hover: #020617e8;
+    --cor-perigo: #dc2626;
+    --cor-destaque: #38bdf8;
+    --borda-padrao: #cbd5e1;
+}
 
+
+/* 1 - RESET GLOBAL */
 * {
     margin: 0;
     padding: 0;
+}
+
+*, *::before, *::after {
     box-sizing: border-box;
 }
 
@@ -30,13 +46,82 @@ body {
     flex-direction: column;
 }
 
-/* 1.1 - Banner */
+
+/* 2 - LAYOUT GLOBAL */
 header img {
     display: block;
     width: 100%;
 }
 
-/* 1.2 - Navbar */
+main {
+    flex: 1;
+    padding: 2rem;
+}
+
+.container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.main-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+footer {
+    background-color: #020617;
+    color: #F2F2F2;
+    text-align: center;
+    padding: 1.2rem;
+    font-size: 0.85rem;
+}
+
+footer ul {
+    list-style-type: none;
+}
+
+footer a {
+    text-decoration: none;
+    color: var(--cor-destaque);
+}
+
+
+/* 3 - COMPONENTES GENÉRICOS */
+
+/* 3.1 - Botões base */
+.btn-padrao,
+.btn-cadastrar,
+.btn-perfil,
+.btn-status,
+.btn-excluir,
+.btn-ativar,
+.btn-desativar {
+    font-size: 0.85rem;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: none;
+}
+
+/* Variações */
+.btn-padrao {
+    background-color: var(--cor-principal);
+    color: #fff;
+}
+
+.btn-padrao:hover {
+    background-color: var(--cor-principal-hover);
+}
+
+.btn-excluir {
+    background: var(--cor-perigo);
+    color: #fff;
+}
+
+
+/* 4 - NAVEGAÇÃO */
 nav {
     background-color: #020617;
     display: flex;
@@ -59,49 +144,98 @@ nav a:hover {
     transform: translateY(-2px);
 }
 
-a:focus {
-    outline: 2px solid #38bdf8;
+nav a:focus,
+.dropdown-menu a:focus {
+    outline: 2px solid var(--cor-destaque);
 }
 
-/* 1.3 - Conteúdo Principal */
-main {
-    flex: 1;
-    padding: 2rem;
+.nav-dropdown {
+    list-style: none;
+    padding: 0;
 }
 
-.main-center {
+.nav-dropdown.usuario {
+    margin-left: auto;
+}
+
+.dropdown {
+    position: relative;
     display: flex;
-    justify-content: center;
     align-items: center;
 }
 
-.container {
-    width: 100%;
-    max-width: 1100px;
-    margin: 0 auto;
+.dropdown-toggle {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
 }
 
-/* FOOTER */
-footer {
+.dropdown-menu {
+    list-style: none;
+    position: absolute;
+    top: 100%;
     background-color: #020617;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    min-width: 190px;
+    display: none;
+    padding: 4px 0;
+    z-index: 1000;
+}
+
+.dropdown-menu.left {
+    left: 0;
+}
+
+.dropdown-menu.right {
+    right: 0;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 0.5rem 0.8rem;
     color: #F2F2F2;
-    text-align: center;
-    padding: 1.2rem;
     font-size: 0.85rem;
 }
 
-footer ul {
-    list-style-type: none;
+.dropdown-menu a:hover {
+    background-color: #334155;
 }
 
-footer a {
-    text-decoration: none;
-    color: #38bdf8;
+.dropdown-menu .separador {
+    height: 1px;
+    background-color: #334155;
+    margin: 4px 0;
 }
 
-/* ============
-   INDEX.PHP
-============ */
+.dropdown-menu .sair {
+    color: #f87171;
+    font-weight: 600;
+}
+
+.dropdown:hover .dropdown-menu,
+.dropdown:focus-within .dropdown-menu {
+    display: block;
+}
+
+
+/* 5 - FORMULÁRIOS */
+.login-sistema input {
+    padding: 0.65rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background-color: #f8fafc;
+}
+
+.login-sistema input::placeholder {
+    color: #94a3b8;
+}
+
+.login-sistema input:focus {
+    outline: none;
+    border-color: #020617;
+}
 
 /* CARROSSEL */
 .carrossel {
@@ -216,7 +350,7 @@ footer a {
     gap: 8px;
     z-index: 6;
     border-radius: 10px;
-    flex-direction: row !important;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
 }
@@ -298,24 +432,6 @@ footer a {
     color: #334155;
 }
 
-/* inputs */
-.login-sistema input {
-    padding: 0.65rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    background-color: #f8fafc;
-}
-
-.login-sistema input::placeholder {
-    color: #94a3b8;
-}
-
-.login-sistema input:focus {
-    outline: none;
-    border-color: #020617;
-}
-
 /* botão */
 .login-sistema button {
     margin-top: 1.2rem;
@@ -331,7 +447,7 @@ footer a {
 }
 
 .login-sistema button:hover {
-    background-color: #020617e8;
+    background-color: var(--cor-principal-hover);
 }
 
 .erro-login {
@@ -457,7 +573,7 @@ footer a {
 }
 
 .painel-config button:hover {
-    background-color: #020617e8;
+    background-color: var(--cor-principal-hover);
 }
 
 /* resposta */
@@ -485,18 +601,18 @@ footer a {
 }
 
 .btn-cadastrar {
-    background-color: #020617;
+    background-color: var(--cor-principal);
     color: white;
     text-decoration: none;
-    padding: 0.6rem 1.2rem;
-    font-size: 0.85rem;
+    padding: 10px;
     border-radius: 6px;
     transition: background 0.2s ease;
     white-space: nowrap;
+    border: none;
 }
 
 .btn-cadastrar:hover {
-    background-color: #020617e8;
+    background-color: var(--cor-principal-hover);
 }
 
 #busca {
@@ -530,6 +646,12 @@ footer a {
     max-width: 100%;
 }
 
+.usuario-card .ativo {
+    color: #22c55e;
+    font-weight: bold;
+    text-align: center;
+}
+
 .usuario-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
@@ -548,13 +670,6 @@ footer a {
 .usuario-card h3 {
     font-size: 1rem;
     color: #020617;
-    text-align: center;
-}
-
-/* STATUS */
-.ativo {
-    color: #22c55e;
-    font-weight: bold;
     text-align: center;
 }
 
@@ -581,23 +696,12 @@ footer a {
     color: white;
     text-decoration: none;
     border-radius: 6px;
-    font-size: 0.8rem;
     transition: background 0.2s ease;
     width: 100%;
 }
 
 .btn-perfil:hover {
     background-color: #020617e8;
-}
-
-/* ============================================
-   USUARIO/CADASTRO.PHP E USUARIO/EDITAR.PHP
-============================================ */
-
-:root {
-    --cor-principal: #020617;
-    --cor-perigo: #dc2626;
-    --borda-padrao: #cbd5e1;
 }
 
 /* GRID PERFIL */
@@ -692,42 +796,7 @@ footer a {
     margin-bottom: 4px;
 }
 
-/* AÇÕES */
-.perfil-acoes {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-}
-
-.perfil-acoes a {
-    text-decoration: none;
-    color: var(--cor-principal);
-    font-weight: bold;
-}
-
 /* BOTÕES PADRÃO */
-.btn-padrao {
-    background-color: var(--cor-principal);
-    color: #fff;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-}
-
-.btn-excluir {
-    background: var(--cor-perigo);
-    color: white;
-    text-align: center;
-    padding: 10px 16px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 0.85rem;
-    border: 1px solid var(--cor-perigo);
-    cursor: pointer;
-
-}
 
 /* AÇÕES EMPRESA */
 .acoes-empresa {
@@ -813,7 +882,7 @@ footer a {
     text-decoration: none;
     display: block;
     width: 100%;
-    padding: 10px;
+    padding: 8px;
     border-radius: 8px;
     background: #f1f5f9;
     border: 1px solid var(--borda-padrao);
@@ -934,9 +1003,7 @@ footer a {
 .btn-status {
     padding: 10px 16px;
     border-radius: 8px;
-    font-size: 0.85rem;
     font-weight: 500;
-    cursor: pointer;
     border: 1px solid transparent;
     width: 100%;
 }
@@ -1062,76 +1129,6 @@ footer a {
     color: #64748b;
 }
 
-/* DROPDOWN GENÉRICO (NAV) */
-.nav-dropdown {
-    list-style: none;
-    padding: 0;
-}
-
-.nav-dropdown.usuario {
-    margin-left: auto;
-}
-
-.dropdown {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.dropdown-toggle {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-}
-
-.dropdown-menu {
-    list-style: none;
-    position: absolute;
-    top: 100%;
-    background-color: #020617;
-    border: 1px solid #1e293b;
-    border-radius: 6px;
-    min-width: 190px;
-    display: none;
-    padding: 4px 0;
-    z-index: 1000;
-}
-
-.dropdown-menu.left {
-    left: 0;
-}
-
-.dropdown-menu.right {
-    right: 0;
-}
-
-.dropdown-menu a {
-    display: block;
-    padding: 0.5rem 0.8rem;
-    color: #F2F2F2;
-    font-size: 0.85rem;
-}
-
-.dropdown-menu a:hover {
-    background-color: #334155;
-}
-
-.dropdown-menu .separador {
-    height: 1px;
-    background-color: #334155;
-    margin: 4px 0;
-}
-
-.dropdown-menu .sair {
-    color: #f87171;
-    font-weight: 600;
-}
-
-.dropdown:hover .dropdown-menu,
-.dropdown:focus-within .dropdown-menu {
-    display: block;
-}
-
 /* ==========================
    RELATÓRIO BANCO DE HORAS
 ========================== */
@@ -1229,9 +1226,7 @@ footer a {
     background-size: 14px;
 }
 
-/* ===============================
-   RESPONSIVIDADE (até 1000px)
-=============================== */
+/* RESPONSIVIDADE */
 @media (max-width: 1000px) {
 
     /* Global */
@@ -1292,15 +1287,8 @@ footer a {
         width: 100%;
     }
 
-    /* Perfil */
-    .perfil-acoes {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-    }
-
     .perfil-grid {
-        grid-template-columns: 400px;
+        grid-template-columns: 1fr;
     }
 
     .perfil-header {

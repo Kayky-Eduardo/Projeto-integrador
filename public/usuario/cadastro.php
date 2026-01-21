@@ -290,10 +290,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <label class="label-padrao">Data de admissão</label>
                         <input class="input-padrao" type="date" name="data_admissao" required>
 
-                        <button class="btn-padrao">Cadastrar Usuário</button>
+                        <button class="btn-cadastrar">Cadastrar Usuário</button>
 
                         <section class="voltar-final">
-                            <a href="lista.php">Voltar</a>
+                            <a href="lista.php" class="link-simples">Voltar</a>
                         </section>
                     </section>
 

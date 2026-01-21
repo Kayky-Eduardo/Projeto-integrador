@@ -169,7 +169,7 @@ if ($modoRelatorio && $ehRH) {
                             <input type="date" name="fim" id="fim" required>
                         </article>
 
-                        <button type="submit">Aplicar</button>
+                        <button type="submit" class="btn-padrao">Aplicar</button>
                     </form>
                 </section>
 
