@@ -1,0 +1,227 @@
+<?php
+session_start();
+date_default_timezone_set('America/Sao_Paulo');
+include __DIR__ . '/../../../BD/conexao.php';
+require_once __DIR__ . '/../../../include/verificacao.php';
+
+$id_usuario = $_SESSION['id_usuario'] ?? null;
+if (!$id_usuario) die("Acesso negado.");
+
+$hoje = date("Y-m-d");
+$erro = "";
+
+// LÓGICA DE AUTO-FECHAMENTO (BACKEND)
+// Fecha pausas que excederam o tempo_max caso o usuário tenha fechado o navegador
+$conn->query("UPDATE pausa p 
+              JOIN pausa_config c ON p.id_config = c.id_config 
+              SET p.fim = DATE_ADD(p.inicio, INTERVAL c.tempo_max MINUTE), 
+                  p.duracao_minutos = c.tempo_max 
+              WHERE p.fim IS NULL AND p.id_usuario = $id_usuario 
+              AND TIMESTAMPDIFF(SECOND, p.inicio, NOW()) >= (c.tempo_max * 60)");
+
+// PROCESSAMENTO DE AÇÕES VIA POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $acao = $_POST['acao'] ?? '';
+
+    if ($acao === 'registrar_ponto') {
+        $res = $conn->query("SELECT id_ponto, inicio_ponto, fim_ponto FROM ponto_dia WHERE id_usuario = $id_usuario AND data_ponto = '$hoje'");
+        $ponto = $res->fetch_assoc();
+
+        if (!$ponto) {
+            $stmt = $conn->prepare("INSERT INTO ponto_dia (id_usuario, data_ponto, inicio_ponto) VALUES (?, ?, NOW())");
+            $stmt->bind_param("is", $id_usuario, $hoje);
+            $stmt->execute();
+        } elseif (empty($ponto['fim_ponto'])) {
+            // Regra: Não encerra ponto com pausa aberta
+            $checkPausa = $conn->query("SELECT id_pausa FROM pausa WHERE id_usuario = $id_usuario AND fim IS NULL");
+            if ($checkPausa->num_rows > 0) {
+                $erro = "Encerre a pausa ativa antes de finalizar o ponto.";
+            } else {
+                $conn->query("UPDATE ponto_dia SET fim_ponto = NOW() WHERE id_ponto = " . $ponto['id_ponto']);
+            }
+        }
+    } 
+    
+    elseif ($acao === 'pausa_iniciar') {
+        $id_config = intval($_POST['id_config']);
+        // Valida se já existe pausa aberta
+        $check = $conn->query("SELECT id_pausa FROM pausa WHERE id_usuario = $id_usuario AND fim IS NULL");
+        if ($check->num_rows == 0) {
+            $stmt = $conn->prepare("INSERT INTO pausa (id_usuario, id_config, inicio, data) VALUES (?, ?, NOW(), ?)");
+            $stmt->bind_param("iis", $id_usuario, $id_config, $hoje);
+            $stmt->execute();
+        }
+    } 
+    
+    elseif ($acao === 'pausa_finalizar') {
+        $resP = $conn->query("SELECT p.id_pausa, p.inicio, c.tempo_min FROM pausa p 
+                              JOIN pausa_config c ON p.id_config = c.id_config 
+                              WHERE p.id_usuario = $id_usuario AND p.fim IS NULL LIMIT 1");
+        if ($pausa = $resP->fetch_assoc()) {
+            $segundos_decorridos = time() - strtotime($pausa['inicio']);
+            if ($segundos_decorridos < ($pausa['tempo_min'] * 60)) {
+                $erro = "Tempo mínimo de " . $pausa['tempo_min'] . " minutos não atingido.";
+            } else {
+                $minutos = floor($segundos_decorridos / 60);
+                $stmt = $conn->prepare("UPDATE pausa SET fim = NOW(), duracao_minutos = ? WHERE id_pausa = ?");
+                $stmt->bind_param("ii", $minutos, $pausa['id_pausa']);
+                $stmt->execute();
+            }
+        }
+    }
+    if (!$erro) { header("Location: " . $_SERVER['PHP_SELF']); exit; }
+}
+
+// DADOS PARA A INTERFACE
+$statusPonto = $conn->query("SELECT * FROM ponto_dia WHERE id_usuario = $id_usuario AND data_ponto = '$hoje'")->fetch_assoc();
+$pausaAtiva = $conn->query("SELECT p.*, c.descricao_pausa, c.tempo_max, c.tempo_min FROM pausa p 
+                            JOIN pausa_config c ON p.id_config = c.id_config 
+                            WHERE p.id_usuario = $id_usuario AND p.fim IS NULL LIMIT 1")->fetch_assoc();
+
+$pontoIniciado = ($statusPonto && !empty($statusPonto['inicio_ponto']));
+$pontoFinalizado = ($statusPonto && !empty($statusPonto['fim_ponto']));
+
+// Busca os tipos de pausa e já conta quantas o usuário fez hoje
+$sqlTipos = "SELECT 
+                pc.*, 
+                (SELECT COUNT(*) FROM pausa p 
+                 WHERE p.id_config = pc.id_config 
+                 AND p.id_usuario = ? 
+                 AND p.data = CURDATE()) as total_realizado
+             FROM pausa_config pc
+             WHERE pc.ativo = 1";
+
+$stmtTipos = $conn->prepare($sqlTipos);
+$stmtTipos->bind_param("i", $id_usuario);
+$stmtTipos->execute();
+$tiposPausa = $stmtTipos->get_result();
+
+?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Ponto e Pausas</title>
+</head>
+<body>
+    <a href="../../index.php">Voltar</a>
+    <h2>Registro de Ponto</h2>
+
+    <?php if ($erro): ?> <div style="color:red"><strong>Erro:</strong> <?= $erro ?></div> <?php endif; ?>
+
+    <form method="POST">
+        <input type="hidden" name="acao" value="registrar_ponto">
+        <button type="submit" <?= ($pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
+            <?= !$pontoIniciado ? 'Iniciar Ponto' : 'Finalizar Ponto' ?>
+        </button>
+    </form>
+
+    <hr>
+
+    <form method="POST" id="formPausa">
+        <label>Tipo de pausa:</label>
+        <select name="id_config" <?= (!$pontoIniciado || $pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
+            <?php while($t = $tiposPausa->fetch_assoc()):
+                $limiteAtingido = ($t['limite_pausa_diario'] > 0 && $t['total_realizado'] >= $t['limite_pausa_diario']);?>
+                <option value="<?= $t['id_config'] ?>" <?= $limiteAtingido ? 'disabled' : '' ?>>
+                    <?= htmlspecialchars($t['descricao_pausa']) ?> 
+                    (<?= $t['total_realizado'] ?>/<?= $t['limite_pausa_diario'] == 0 ? '∞' : $t['limite_pausa_diario'] ?>)
+                </option>
+            <?php endwhile; ?>
+        </select>
+
+        <?php if (!$pausaAtiva): ?>
+            <input type="hidden" name="acao" value="pausa_iniciar">
+            <button type="submit" <?= (!$pontoIniciado || $pontoFinalizado) ? 'disabled' : '' ?>>Iniciar Pausa</button>
+        <?php else: ?>
+            <input type="hidden" name="acao" value="pausa_finalizar">
+            <button type="submit" id="btnFinalizarPausa">Finalizar Pausa</button>
+            <div id="statusTempo" style="font-weight:bold; color: blue; margin-top:5px;"></div>
+        <?php endif; ?>
+    </form>
+
+    <hr>
+
+    <h3>Pausa Ativa</h3>
+    <?php if ($pausaAtiva): ?>
+        <table border="1" cellpadding="5">
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Início</th>
+                    <th>Tempo Decorrido</th>
+                    <th>Limites (Mín/Máx)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><?= htmlspecialchars($pausaAtiva['descricao_pausa']) ?></td>
+                    <td><?= date('H:i:s', strtotime($pausaAtiva['inicio'])) ?></td>
+                    <td id="cronometro" 
+                        data-inicio="<?= $pausaAtiva['data'] . 'T' . $pausaAtiva['inicio'] ?>"
+                        data-min="<?= $pausaAtiva['tempo_min'] ?>"
+                        data-max="<?= $pausaAtiva['tempo_max'] ?>">
+                        00:00
+                    </td>
+                    <td><?= $pausaAtiva['tempo_min'] ?> min / <?= $pausaAtiva['tempo_max'] ?> min</td>
+                </tr>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <p>Nenhuma pausa ativa no momento.</p>
+    <?php endif; ?>
+
+    <script>
+        let intervalId = null;
+        function atualizarInterfacePausa() {
+            const el = document.getElementById('cronometro');
+            const statusMsg = document.getElementById('statusTempo');
+            const btnFinalizar = document.getElementById('btnFinalizarPausa');
+            if (!el) return;
+
+            // Cálculo de tempo decorrido
+            const inicio = new Date(el.dataset.inicio).getTime();
+            const agora = new Date().getTime();
+            const decorridoSegundos = Math.floor((agora - inicio) / 1000);
+            
+            const minSegundos = parseInt(el.dataset.min) * 60;
+            const maxSegundos = parseInt(el.dataset.max) * 60;
+
+            // Atualiza Cronômetro na tabela
+            const m = Math.floor(decorridoSegundos / 60).toString().padStart(2, '0');
+            const s = (decorridoSegundos % 60).toString().padStart(2, '0');
+            el.textContent = `${m}:${s}`;
+
+            // Lógica de Tempo Mínimo (Atualização em tempo real da mensagem)
+            if (decorridoSegundos < minSegundos) {
+                const faltamSegundos = minSegundos - decorridoSegundos;
+                const minFaltam = Math.floor(faltamSegundos / 60);
+                const segFaltam = faltamSegundos % 60;
+                statusMsg.textContent = `Aguarde: faltam ${minFaltam}min ${segFaltam}s para poder finalizar.`;
+                statusMsg.style.color = "red";
+                btnFinalizar.disabled = true;
+            } else {
+                statusMsg.textContent = "Tempo mínimo atingido. Você já pode voltar ao trabalho.";
+                statusMsg.style.color = "green";
+                btnFinalizar.disabled = false;
+            }
+
+            // Lógica de Auto-fechamento (Tempo Máximo)
+            if (decorridoSegundos >= maxSegundos) {
+                if (intervalId) clearInterval(intervalId);
+                document.getElementById('formPausa').submit();
+                window.location.reload();
+                alert("Tempo máximo de pausa atingido! Finalizando automaticamente.");
+                
+            }
+        }
+
+        // Executa a cada 1 segundo se houver pausa ativa
+        if (document.getElementById('cronometro')) {
+            intervalId = setInterval(atualizarInterfacePausa, 1000);
+            atualizarInterfacePausa();
+        }
+    </script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 session_start();
 
 // Importa funções de cálculo (INSS, FGTS, IRRF etc.) e conexão com o banco
-require_once(__DIR__ . '/../services/funcoes_calculo.php');
+require_once '../include/funcoes/funcoes_calculo.php';
 require_once(__DIR__ . '/../BD/conexao.php');
 
 
