@@ -59,7 +59,7 @@ if (!empty($filtroFim)) {
     $sql .= " AND f.mes_competencia <= '" . $conn->real_escape_string($filtroFim . "-01") . "'";
 }
 if (!empty($filtroUser)) {
-    $sql .= " AND f.id_usuario = " . intval($filtroUser);
+$sql .= " AND f.id_usuario = " . intval($filtroUser);
 }
 
 // Ordena os resultados do mais recente para o mais antigo
@@ -129,7 +129,7 @@ td, th {border: 1px solid #444; padding: 8px;}
             <td><?= $f["nome_usuario"] ?></td>
             <td>R$ <?= number_format($f["salario_liquido"], 2, ',', '.') ?></td>
             <td>
-                <a href="'../../api/api_gerar_pdf.php?mes=<?= substr($f["mes_competencia"], 0, 7) ?>&id_usuario=<?= $f['id_usuario'] ?>" target="_blank">
+                <a href="../../api/api_gerar_pdf.php?mes=<?= substr($f["mes_competencia"], 0, 7) ?>&id_usuario=<?= $f['id_usuario'] ?>" target="_blank">
                 Abrir PDF
                 </a>
             </td>
