@@ -78,7 +78,8 @@ try {
             $conn,
             $input['usuarios_selecionado'],
             $input['nome_setor'],
-            $input['id_setor']
+            $input['id_setor'],
+            $input['id_tempo']
         );
         
         $resposta = [
@@ -103,7 +104,7 @@ try {
         );
         
         $resposta = [
-            'sucesso' => true,
+            'sucesso' => false,
             'dados' => $resultado
         ];
     } 

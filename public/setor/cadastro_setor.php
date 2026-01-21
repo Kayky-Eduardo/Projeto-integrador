@@ -74,7 +74,7 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
         </div>
         
         <br>
-        <button type="submit">Cadastrar</button>
+        <button id="cadastrar" type="submit">Cadastrar</button>
         <a href="setores.php">Voltar</a>
     </form>
     
@@ -93,27 +93,14 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
                 select.appendChild(tag_option);
             })
         }
-        
-        select.addEventListener("change", () => {
-            const id_setor = this.value;
-        })
-    
-        exibicao_usuarios_option();
-        
-        // Função para abrir/fechar select
-        function ativar_select() {
-            const caixa = document.getElementById('opcoes_select');
-            caixa.classList.toggle('oculto');
-        }
 
-        // Atualizar contador de selecionados
-        function atualizar_contador() {
-            const checkboxes = document.querySelectorAll('input[name="usuarios[]"]:checked');
-            document.getElementById('contador').innerText = checkboxes.length;
-        }
+        exibicao_usuarios_option();        
+        
+        select.addEventListener("change", async function () {
+            let id_tempo = this.value;
 
         // Cadastrar novo setor via API
-        document.getElementById('form-setor').addEventListener('submit', async (e) => {
+        document.getElementById('cadastrar').addEventListener('click', async (e) => {
             e.preventDefault();
 
             const nomeSetor = document.getElementById('nome_setor').value.trim();
@@ -128,7 +115,8 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
 
             const dados = {
                 nome_setor: nomeSetor,
-                usuarios_selecionado: usuariosSelecionados
+                usuarios_selecionado: usuariosSelecionados,
+                id_tempo: id_tempo
             };
 
             try {
@@ -142,36 +130,43 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
 
                 const resultado = await response.json();
 
-                if (resultado.sucesso) {
+                if (resultado.dados.sucesso) {
                     mostrar_mensagem('Setor cadastrado com sucesso!', 'sucesso');
                     
                     // Limpar formulário
                     document.getElementById('nome_setor').value = '';
                     document.querySelectorAll('input[name="usuarios[]"]').forEach(cb => cb.checked = false);
                     atualizar_contador();
-                    
-                    // Redirecionar após 2 segundos
+                
                     window.location.href = 'setores.php';
                 } else {
-                    mostrar_mensagem('Erro: ' + resultado.mensagem, 'erro');
+                    mostrar_mensagem('Erro: ' + resultado.dados.mensagem, 'erro');
                 }
             } catch (error) {
                 console.error('Erro ao cadastrar:', error);
                 mostrar_mensagem('Erro ao cadastrar setor', 'erro');
             }
         });
+        });
+
+        // Função para abrir/fechar select
+        function ativar_select() {
+            const caixa = document.getElementById('opcoes_select');
+            caixa.classList.toggle('oculto');
+        };
+
+        // Atualizar contador de selecionados
+        function atualizar_contador() {
+            const checkboxes = document.querySelectorAll('input[name="usuarios[]"]:checked');
+            document.getElementById('contador').innerText = checkboxes.length;
+        };
 
         // Mostrar mensagens ao usuário
         function mostrar_mensagem(texto, tipo) {
             const div = document.getElementById('mensagem');
             div.className = 'mensagem ' + tipo;
             div.textContent = texto;
-            
-            // Remover mensagem após 5 segundos
-            setTimeout(() => {
-                div.className = '';
-                div.textContent = '';
-            }, 5000);
+        
         }
 
     </script>
