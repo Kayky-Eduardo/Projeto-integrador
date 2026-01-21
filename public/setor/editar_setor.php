@@ -25,6 +25,13 @@ if (!$setor) {
 
 // Buscar todos os usuários para o select
 $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY nome_usuario");
+$atual = $conn->query(
+    "SELECT tempo_jornada.id_tempo, descricao, jornada, maximo_hora_extra
+    FROM tempo_jornada
+    JOIN setor ON setor.id_tempo = tempo_jornada.id_tempo
+    WHERE setor.id_setor = $id_setor;"
+);
+$a = $atual->fetch_assoc();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -79,6 +86,8 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
                 <span id="contador">0</span> selecionados
             </button>
 
+            <select id="filtro-jornada">Jornada de trabalho</select>
+
             <div id="opcoes_select" class="oculto">
                 <?php while ($u = $usuarios->fetch_assoc()): ?>
                     <label>
@@ -92,7 +101,7 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
             </div>
         </div>
 
-        <button type="submit">Salvar</button>
+        <button id="editar" type="submit">Salvar</button>
         <button type="submit" class="btn-excluir" formmethod="GET">
             <a href="deletar_setor.php?setor=<?= $id_setor ?>">Excluir</a>
         </button>
@@ -104,6 +113,69 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
         window.addEventListener('DOMContentLoaded', async () => {
             await carregar_usuarios_setor();
         });
+
+        const select = document.getElementById("filtro-jornada") 
+        
+        async function exibicao_usuarios_option() {
+            select.innerHTML = `
+            <option value="<?=$a['id_tempo']?>"><?=$a['descricao']?> | 
+            <?=$a['jornada']?> | 
+            <?=$a['maximo_hora_extra']?>
+            </option>`
+            const coleta_jornada = await fetch("../../api/api_jornada.php?acao=get_tempo");
+            const resposta = await coleta_jornada.json();
+            const resultado = resposta.dados;
+            resultado.forEach(t => {
+                const tag_option = document.createElement("option");
+                tag_option.value = t.id_tempo;
+                tag_option.textContent = `${t.descricao} | ${t.tempo_jornada} : ${t.max_hora_extra} `  ;
+                select.appendChild(tag_option);
+            })
+        }
+
+        exibicao_usuarios_option();        
+        
+        select.addEventListener("change", async function () {
+            let id_tempo = this.value;
+            console.log(id_tempo);
+                    
+            // Salvar alterações via API
+            document.getElementById('editar').addEventListener('click', async (e) => {
+                e.preventDefault();
+
+                const nomeSetor = document.getElementById('nome_setor').value;
+                const checkboxes = document.querySelectorAll('input[name="usuarios[]"]:checked');
+                const usuariosSelecionados = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+                const dados = {
+                    id_setor: idSetor,
+                    nome_setor: nomeSetor,
+                    usuarios_selecionado: usuariosSelecionados,
+                    id_tempo: id_tempo
+                };
+
+                try {
+                    const response = await fetch(`../../api/api_setores.php?acao=set_setor`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(dados)
+                    });
+
+                    const resultado = await response.json();
+
+                    if (resultado.sucesso) {
+                        window.location.href = "setores.php"
+                    } else {
+                        mostrar_mensagem('Erro: ' + resultado.mensagem, 'erro');
+                    }
+                } catch (error) {
+                    console.error('Erro ao salvar:', error);
+                    mostrar_mensagem('Erro ao salvar alterações', 'erro');
+                }
+            });
+        })
 
         const idSetor = <?= $id_setor ?>;
         let usuariosCarregados = false;
@@ -162,42 +234,6 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
             const checkboxes = document.querySelectorAll('input[name="usuarios[]"]:checked');
             document.getElementById('contador').innerText = checkboxes.length;
         }
-
-        // Salvar alterações via API
-        document.getElementById('form-setor').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const nomeSetor = document.getElementById('nome_setor').value;
-            const checkboxes = document.querySelectorAll('input[name="usuarios[]"]:checked');
-            const usuariosSelecionados = Array.from(checkboxes).map(cb => parseInt(cb.value));
-
-            const dados = {
-                id_setor: idSetor,
-                nome_setor: nomeSetor,
-                usuarios_selecionado: usuariosSelecionados
-            };
-
-            try {
-                const response = await fetch(`../../api/api_setores.php?acao=set_setor`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(dados)
-                });
-
-                const resultado = await response.json();
-
-                if (resultado.sucesso) {
-                    window.location.href = "setores.php"
-                } else {
-                    mostrar_mensagem('Erro: ' + resultado.mensagem, 'erro');
-                }
-            } catch (error) {
-                console.error('Erro ao salvar:', error);
-                mostrar_mensagem('Erro ao salvar alterações', 'erro');
-            }
-        });
 
         
         // Mostrar mensagens ao usuário de acordo com o tipo proporcionado. exemplo: erro

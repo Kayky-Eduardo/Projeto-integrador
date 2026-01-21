@@ -111,7 +111,7 @@ include "../../include/navbar.php";
                 <input type="date" id="dataFim">
             </div>
             
-            <button id="btnVerificar" onclick="buscarJornada()">
+            <button id="btnVerificar" onclick="buscar_jornada()">
                 Verificar Jornada
             </button>
         </div>
@@ -321,7 +321,7 @@ include "../../include/navbar.php";
         });
         exibicao_usuarios_option();
 
-        async function verificarJornada(usuarioId, dataInicio, dataFim) {
+        async function verificar_jornada(usuarioId, dataInicio, dataFim) {
             try {
                 const params = new URLSearchParams({
                     usuario_id: usuarioId,
@@ -339,7 +339,7 @@ include "../../include/navbar.php";
                 const resultado = await response.json();
                 
                 if (!resultado.sucesso) {
-                    console.log(resultado.mensagem);
+                    throw new Error(resultado.mensagem);
                 }
                 
                 return resultado.dados;
@@ -358,7 +358,7 @@ include "../../include/navbar.php";
         return percentual.toFixed(2).replace('.', ',') + '%';
     }
 
-    function exibirResultado(resultado, elementoId) {
+    function exibir_resultado(resultado, elementoId) {
         const elemento = document.getElementById(elementoId);
         
         if (!elemento) {
@@ -398,7 +398,7 @@ include "../../include/navbar.php";
         `;
     }
 
-    function exibirDetalhes(resultado, elementoId) {
+    function exibir_detalhes(resultado, elementoId) {
     const elemento = document.getElementById(elementoId);
     
     if (!elemento) {
@@ -445,7 +445,7 @@ include "../../include/navbar.php";
     
     elemento.innerHTML = html;
     }
-    async function buscarJornada() {
+    async function buscar_jornada() {
         const usuarioId = document.getElementById('usuarioId').value;
         const dataInicio = document.getElementById('dataInicio').value;
         const dataFim = document.getElementById('dataFim').value;
@@ -456,12 +456,12 @@ include "../../include/navbar.php";
         }
             document.getElementById('loading').style.display = 'block';
             document.getElementById('error').style.display = 'none';
-            limparResultados();
+            limpar_resultado();
             
         try {
-            const resultado = await verificarJornada(usuarioId, dataInicio, dataFim);
+            const resultado = await verificar_jornada(usuarioId, dataInicio, dataFim);
             
-            exibirResultado(resultado, 'resultado');
+            exibir_resultado(resultado, 'resultado');
             
         } catch (error) {
             console.log('Erro ao buscar dados: ' + error.message);
@@ -470,7 +470,7 @@ include "../../include/navbar.php";
         }
     }
     
-    function limparResultados() {
+    function limpar_resultado() {
         document.getElementById('resultado').innerHTML = '';
         document.getElementById('detalhes').innerHTML = '';
     }
@@ -480,7 +480,7 @@ include "../../include/navbar.php";
         inputs.forEach(input => {
             input.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
-                    buscarJornada();
+                    buscar_jornada();
                 }
             });
         });

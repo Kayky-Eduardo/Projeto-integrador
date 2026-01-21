@@ -1,32 +1,41 @@
-<!-- 
-    MUDANÇAS
-        1. Refatoração da semântica HTML
-        2. Implementação de tags para melhor organização do layout
-        3. Estrutura preparada para crescimento do sistema
+<!--
+    MÓDULO: PÁGINA PRINCIPAL DO SISTEMA (DASHBOARD)
+
+    OBJETIVO
+        Servir como página inicial após autenticação, organizando conteúdo institucional e informativo.
 
     ESTRUTURA SEMÂNTICA
-        header    - Topo da página (identidade do sistema)
-        nav       - Navegação principal e rotação de páginas
-        main      - Conteúdo principal
-        footer    - Rodapé institucional
-        address   - Informações de contato
+        header  - Cabeçalho institucional (banner)
+        nav     - Barra de navegação geral
+        main    - Conteúdo central da aplicação
+        section - Agrupamento de notícias
+        article - Cada notícia individual
+        footer  - Informações institucionais
+        address - Informações de contato
 
-    ACESSIBILIDADE (ARIA & BOAS PRÁTICAS)
-        role="banner"       - Indica cabeçalho principal para leitores de tela
-        role="navigation"   -   ""   área de navegação
-        role="main"         -   ""   região principal do sistema
-        role="contentinfo"  -   ""   rodapé com informações institucionais
-        aria-label          - Fornece descrição textual contextual para usuários de leitores de tela
+    FUNCIONALIDADES
+        1. Exibição de banner principal
+        2. Inclusão dinâmica do menu
+        3. Apresentação de notícias internas
+        4. Controle de navegação por slides
+        5. Rodapé institucional
+
+    ACESSIBILIDADE
+        role="banner"       - Identifica o cabeçalho
+        role="navigation"   - Área de navegação principal
+        role="main"         - Conteúdo primário da página
+        role="contentinfo"  - Informações institucionais
+        aria-label          - Descrição acessível para leitores de tela
 
     BENEFÍCIOS
-        1. Melhor compreensão por tecnologias assistivas
-        2. Melhor indexação em mecanismos de busca
-        3. Facilidade de manutenção e expansão
+        - Organização semântica moderna
+        - Melhor indexação por buscadores
+        - Experiência otimizada para leitores de tela
 
     OBSERVAÇÕES TÉCNICAS
-        1. Utilização de arquivo separado para o nav: navbar.php
-        2. Estilos visuais centralizados em: ../assets/estilo.css
-        3. Nada mudou da lógica PHP
+        - Navbar carregada via include
+        - Estilo centralizado em ../assets/css/estilo.css
+        - Comportamento dinâmico feito via script.js
 -->
 
 <?php
