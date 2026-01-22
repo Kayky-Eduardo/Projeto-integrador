@@ -75,7 +75,7 @@ function calculo_total_usuarios($conn) {
 
 // realizando as pesquisas do status do funcionário
 // no banco de dados
-function dados_grafico ($conn) {
+function dados_grafico($conn) {
     $pesquisa_trabalhando = $conn->prepare("
         SELECT COUNT(*) AS total_trabalhando
         FROM ponto_dia

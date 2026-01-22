@@ -4,6 +4,8 @@ include("../BD/conexao.php");
 include("../include/funcoes/funcoes_banco_horas.php");
 include("../include/verificacao.php");
 date_default_timezone_set('America/Sao_Paulo');
+$data = new datetime();
+$agora = $data->format('Y-m-d H:i:s');
 
 if (isset($_SESSION['id_usuario'], $_SESSION['id_login'])) {
     $id_usuario = $_SESSION['id_usuario'];
@@ -12,15 +14,16 @@ if (isset($_SESSION['id_usuario'], $_SESSION['id_login'])) {
     //pegar tempo logado
     $coleta_tempo = verificar_tempo_logado($conn, $id_usuario, $id_login);
     
-    if ($coleta_tempo >= 0) {
-        adicionar_horas($conn, $id_usuario, $coleta_tempo);
-    } else {
-        retirar_horas($conn, $id_usuario, $coleta_tempo);
+    if($coleta_tempo['mensagem'] != 'string') {
+        if ($coleta_tempo['resultado'] >= 0) {
+            adicionar_horas($conn, $id_usuario, $coleta_tempo['resultado']);
+        } else {
+            retirar_horas($conn, $id_usuario, $coleta_tempo['resultado']);
+        }
     }
 }
+
 if (isset($id_login)) {
-    $data = new datetime();
-    $agora = $data->format('Y-m-d H:i:s');
     $update = $conn->prepare("UPDATE login SET data_fim = ? WHERE id_login = ?");
     $update->bind_param("si", $agora, $id_login);
     $update->execute();

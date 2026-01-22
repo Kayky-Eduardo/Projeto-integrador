@@ -4,10 +4,6 @@ include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
 
-if (!isset($_GET['id'])) {
-    die("Setor não informado.");
-}
-
 
 if(isset($_GET['id'])) {
     $id_setor = $_GET['id'];
@@ -25,13 +21,16 @@ if (!$setor) {
 
 // Buscar todos os usuários para o select
 $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY nome_usuario");
-$atual = $conn->query(
-    "SELECT tempo_jornada.id_tempo, descricao, jornada, maximo_hora_extra
+
+$atual = $conn->prepare("
+    SELECT tempo_jornada.id_tempo, descricao, jornada, maximo_hora_extra
     FROM tempo_jornada
     JOIN setor ON setor.id_tempo = tempo_jornada.id_tempo
-    WHERE setor.id_setor = $id_setor;"
+    WHERE setor.id_setor = ?;"
 );
-$a = $atual->fetch_assoc();
+$atual->bind_param('i', $id_setor);
+$atual->execute();
+$a = $atual->get_result()->fetch_assoc();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -73,12 +72,8 @@ $a = $atual->fetch_assoc();
 
     <form id="form-setor">
         <label>Nome do Setor:</label><br>
-        <input type="text" 
-               id="nome_setor" 
-               name="nome_setor" 
-               data-id="<?= $id_setor ?>"
-               value="<?= htmlspecialchars($setor['nome_setor']) ?>"
-               required>
+        <input type="text" id="nome_setor" data-id="<?= $id_setor ?>"
+        value="<?= htmlspecialchars($setor['nome_setor']) ?>" required>
         <br><br>
 
         <div class="caixa_select">
@@ -116,12 +111,8 @@ $a = $atual->fetch_assoc();
 
         const select = document.getElementById("filtro-jornada") 
         
-        async function exibicao_usuarios_option() {
-            select.innerHTML = `
-            <option value="<?=$a['id_tempo']?>"><?=$a['descricao']?> | 
-            <?=$a['jornada']?> | 
-            <?=$a['maximo_hora_extra']?>
-            </option>`
+        async function exibicao_jornadas() {
+            select.innerHTML = `<option value="">selecione uma jornada</option>`
             const coleta_jornada = await fetch("../../api/api_jornada.php?acao=get_tempo");
             const resposta = await coleta_jornada.json();
             const resultado = resposta.dados;
@@ -133,11 +124,10 @@ $a = $atual->fetch_assoc();
             })
         }
 
-        exibicao_usuarios_option();        
+        exibicao_jornadas();        
         
         select.addEventListener("change", async function () {
             let id_tempo = this.value;
-            console.log(id_tempo);
                     
             // Salvar alterações via API
             document.getElementById('editar').addEventListener('click', async (e) => {
@@ -153,6 +143,8 @@ $a = $atual->fetch_assoc();
                     usuarios_selecionado: usuariosSelecionados,
                     id_tempo: id_tempo
                 };
+
+                console.log(nomeSetor);
 
                 try {
                     const response = await fetch(`../../api/api_setores.php?acao=set_setor`, {
@@ -241,12 +233,6 @@ $a = $atual->fetch_assoc();
             const div = document.getElementById('mensagem');
             div.className = 'mensagem ' + tipo;
             div.textContent = texto;
-            
-            // Remover mensagem após 5 segundos
-            setTimeout(() => {
-                div.className = '';
-                div.textContent = '';
-            }, 5000);
         }
     </script>
 </body>
