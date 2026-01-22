@@ -175,7 +175,6 @@ if ($ajuste_executado) {
     // Mensagem de sucesso e redirecionamento
     echo "
         <script>
-            alert('Solicitação enviada com sucesso! O ponto está em revisão.');
             window.location.href = '$pagina_voltar';
         </script>
     ";

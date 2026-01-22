@@ -289,10 +289,10 @@ function get_pessoas_setor($conn, $id_setor) {
     return $dados;
 }
 
-function set_setor($conn, $usuarios_selecionados, $nome_setor, $id_setor) {
-    // Atualiza nome do setor
-    $stmt = $conn->prepare("UPDATE setor SET nome_setor = ? WHERE id_setor = ?");
-    $stmt->bind_param("si", $nome_setor, $id_setor);
+function set_setor($conn, $usuarios_selecionados, $nome_setor, $id_setor, $id_tempo = null) {
+    // Atualiza nome do setor e id_tempo
+    $stmt = $conn->prepare("UPDATE setor SET nome_setor = ? AND id_tempo = ? WHERE id_setor = ?");
+    $stmt->bind_param("sii", $nome_setor, $id_tempo, $id_setor);
     $stmt->execute();
 
     // Remove vínculos antigos
@@ -309,10 +309,22 @@ function set_setor($conn, $usuarios_selecionados, $nome_setor, $id_setor) {
     }
 }
 
-function cadastrar_setor($conn, $nome_setor, array $usuarios_selecionado) {
-    $stmt = $conn->prepare("INSERT INTO setor (nome_setor) VALUES (?)");
-    $stmt->bind_param("s", $nome_setor);
+function cadastrar_setor($conn, $nome_setor, $id_tempo = null, array $usuarios_selecionado) {
+    $stmt = $conn->prepare("INSERT INTO setor (nome_setor, id_tempo) VALUES (?, ?)");
+    $stmt->bind_param("si", $nome_setor, $id_tempo);
     
+    $existente = $conn->prepare("SELECT id_setor FROM setor WHERE nome_setor = ?");
+    $existente->bind_param('s', $nome_setor);
+    $existente->execute();
+    $resultado_existente = $existente->get_result();
+
+    if ($resultado_existente->num_rows != 0) {
+        return [
+            'sucesso' => false,
+            'mensagem' => 'já existe um setor com este nome'
+        ];
+    }
+
     if (!$stmt->execute()) {
         throw new Exception("Erro ao cadastrar setor: " . $stmt->error);
     }
@@ -337,12 +349,12 @@ function cadastrar_setor($conn, $nome_setor, array $usuarios_selecionado) {
     ];
 }
 
-function get_tempo($conn) {
+function get_tempo($conn, $tipo = null) {
     $tempo = $conn->query("SELECT * FROM tempo_jornada ORDER BY id_tempo");
     $dados = [];
     while ($t = $tempo->fetch_assoc()) {
         $dados[] = [
-            "id_tempo" => $t['tempo'],
+            "id_tempo" => $t['id_tempo'],
             "descricao" => $t['descricao'],
             "tempo_jornada" => $t['jornada'],
             "max_hora_extra" => $t['maximo_hora_extra']
