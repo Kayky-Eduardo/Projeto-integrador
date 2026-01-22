@@ -1,0 +1,171 @@
+/* =============
+    LOGIN.PHP 
+============= */
+
+/* 0 - VARIÁVEIS DO SISTEMA */
+:root {
+    /* Cores Principais */
+    --cor-principal: #020617;
+    --cor-principal-hover: #020617e8;
+    --cor-fundo-branco: #ffffff;
+    --cor-texto-suave: #64748b;
+    --cor-texto-branco: white;
+    --cor-borda-padrao: #cbd5e1;
+
+    /* Cores de Erro */
+    --cor-fundo-erro: #fee2e2;
+    --cor-texto-erro: #7f1d1d;
+    --cor-borda-erro: #fecaca;
+
+    /* Bordas */
+    --raio-borda-padrao: 4px;
+    --raio-borda-grande: 8px;
+
+    /* Tipografia */
+    --tamanho-texto-padrao: 0.9rem;
+    --tamanho-titulo-padrao: 1.4rem;
+
+    /* Sombras */
+    --sombra-card: 0 20px 50px rgba(0, 0, 0, 0.35), 0 3px 10px rgba(0, 0, 0, 0.12);
+    --sombra-fundo: rgba(2, 6, 23, 0.55);
+}
+
+
+/* 1 - RESET GLOBAL */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 2 - LAYOUT GLOBAL */
+main {
+    flex: 1;
+    padding: 2rem;
+}
+
+.main-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hidden {
+    display: none;
+}
+
+/* 3 - FORMULÁRIOS (LOGIN) */
+.login-sistema input {
+    padding: 0.65rem;
+    border: 1px solid var(--cor-borda-padrao);
+    border-radius: var(--raio-borda-padrao);
+    font-size: var(--tamanho-texto-padrao);
+    background-color: var(--cor-fundo-branco);
+}
+
+.login-sistema input:focus {
+    outline: none;
+    border-color: var(--cor-principal);
+}
+
+/* LOGIN.PHP */
+.pagina-login {
+    background: url(../assets/IMG/fundo_login.jpg) no-repeat center center fixed;
+    background-size: cover;
+}
+
+.pagina-login::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: var(--sombra-fundo);
+    z-index: -1;
+}
+
+.login-sistema {
+    max-width: 460px;
+    width: 100%;
+    background-color: var(--cor-fundo-branco);
+    padding: 2.4rem;
+    border-radius: var(--raio-borda-grande);
+    border: 1px solid var(--cor-borda-padrao);
+    box-shadow: var(--sombra-card);
+}
+
+/* Título */
+.login-sistema h2 {
+    font-size: var(--tamanho-titulo-padrao);
+    color: var(--cor-principal);
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+}
+
+/* Subtítulo */
+.login-sistema p {
+    font-size: var(--tamanho-texto-padrao);
+    color: var(--cor-texto-suave);
+    margin-bottom: 1.6rem;
+}
+
+/* Fieldset */
+.login-sistema fieldset {
+    border: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+/* Labels */
+.login-sistema label {
+    font-weight: 600;
+    font-size: var(--tamanho-texto-padrao);
+    color: var(--cor-principal);
+}
+
+/* Botão */
+.login-sistema button {
+    margin-top: 1.2rem;
+    padding: 0.75rem;
+    background-color: var(--cor-principal);
+    color: var(--cor-texto-branco);
+    border: none;
+    font-size: var(--tamanho-texto-padrao);
+    border-radius: var(--raio-borda-padrao);
+    cursor: pointer;
+    letter-spacing: 0.4px;
+    transition: background-color 0.2s ease;
+}
+
+.login-sistema button:hover {
+    background-color: var(--cor-principal-hover);
+}
+
+/* Erro */
+.erro-login {
+    background-color: var(--cor-fundo-erro);
+    color: var(--cor-texto-erro);
+    border: 1px solid var(--cor-borda-erro);
+    border-radius: var(--raio-borda-padrao);
+    padding: 0.7rem 0.9rem;
+    font-size: var(--tamanho-texto-padrao);
+    margin-bottom: 1rem;
+}
+
+/* 4 - RESPONSIVIDADE */
+@media (max-width: 1000px) {
+    main {
+        padding: 1.2rem;
+    }
+}
+
+
+/* =============
+    INDEX.PHP
+============= */
