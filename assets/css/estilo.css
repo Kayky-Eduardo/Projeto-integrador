@@ -1,8 +1,8 @@
 /*
     SUMÁRIO
     0. VARIÁVEIS DO SISTEMA
-    1. RESET GLOBAL
-    2. LAYOUT GLOBAL
+    1. RESET GERAL
+    2. LAYOUT GERAL
     3. COMPONENTES GENÉRICOS
         3.1. Botões base
     4. NAVEGAÇÃO
@@ -23,7 +23,7 @@
 }
 
 
-/* 1 - RESET GLOBAL */
+/* 1 - RESET GERAL */
 * {
     margin: 0;
     padding: 0;
@@ -47,7 +47,7 @@ body {
 }
 
 
-/* 2 - LAYOUT GLOBAL */
+/* 2 - LAYOUT GERAL */
 header img {
     display: block;
     width: 100%;
