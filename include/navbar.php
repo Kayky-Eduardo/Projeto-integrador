@@ -146,6 +146,7 @@ if ($nivel >= 3) {
     echo '
         <a href="/projeto-integrador/public/ponto/pausas_e_ponto/registrar_ponto.php">Bater Ponto / Pausa</a>
         <a href="/projeto-integrador/public/folha/gerar_folha.php">Ver Folha</a>
+        <a href="/projeto-integrador/public/folha/historico_folhas.php">Historico folha</a>
 
         <ul class="nav-dropdown usuario">
             <li class="dropdown">

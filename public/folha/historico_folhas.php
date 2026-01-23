@@ -1,5 +1,10 @@
 <?php
 include(__DIR__ . "/../../BD/conexao.php");
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$nivel = $_SESSION['nivel'];
 
 // Recebe filtros do formulário (caso existam)
 // Se não houver filtro, usa string vazia
@@ -45,9 +50,11 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina); // Calcula o total 
 // SQL principal para exibir os registros com filtros e paginação
 $sql = "
     SELECT f.id_folha, f.mes_competencia, f.salario_liquido,
-           u.nome_usuario, u.id_usuario
+           u.nome_usuario, u.id_usuario, u.id_cargo,
+           c.nivel
     FROM folhas f
     LEFT JOIN usuario u ON u.id_usuario = f.id_usuario
+    LEFT JOIN cargo c ON u.id_cargo = c.id_cargo
     WHERE 1
 ";
 
@@ -61,6 +68,9 @@ if (!empty($filtroFim)) {
 if (!empty($filtroUser)) {
     $sql .= " AND f.id_usuario = " . intval($filtroUser);
 }
+
+// Garante que o usuário logado só veja o histórico de quem tiver nível inferior ao dele
+$sql .= " AND c.nivel <= " . intval($nivel);
 
 // Ordena os resultados do mais recente para o mais antigo
 $sql .= " ORDER BY f.mes_competencia DESC";
@@ -85,6 +95,7 @@ td, th {border: 1px solid #444; padding: 8px;}
 </head>
 <body>
 
+<a href="../">voltar</a>
 <h2>Histórico de Folhas de Pagamento</h2>
 
 <!-- Formulário de filtros -->
@@ -124,16 +135,16 @@ td, th {border: 1px solid #444; padding: 8px;}
         <tr><td colspan="4">Nenhuma folha encontrada.</td></tr>
 <?php else: ?>
     <?php while ($f = $result->fetch_assoc()): ?>
-        <tr>
-            <td><?= substr($f["mes_competencia"], 0, 7) ?></td>
-            <td><?= $f["nome_usuario"] ?></td>
-            <td>R$ <?= number_format($f["salario_liquido"], 2, ',', '.') ?></td>
-            <td>
-                <a href="'../../api/api_gerar_pdf.php?mes=<?= substr($f["mes_competencia"], 0, 7) ?>&id_usuario=<?= $f['id_usuario'] ?>" target="_blank">
-                Abrir PDF
-                </a>
-            </td>
-        </tr>
+            <tr>
+                <td><?= substr($f["mes_competencia"], 0, 7) ?></td>
+                <td><?= $f["nome_usuario"] ?></td>
+                <td>R$ <?= number_format($f["salario_liquido"], 2, ',', '.') ?></td>
+                <td>
+                    <a href="'../../api/api_gerar_pdf.php?mes=<?= substr($f["mes_competencia"], 0, 7) ?>&id_usuario=<?= $f['id_usuario'] ?>" target="_blank">
+                    Abrir PDF
+                    </a>
+                </td>
+            </tr>
     <?php endwhile; ?>
 <?php endif; ?>
     </tbody>

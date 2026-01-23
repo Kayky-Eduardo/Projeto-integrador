@@ -143,10 +143,14 @@ if (isset($_POST['gerar_folhas'])) {
 <head>
 <meta charset="UTF-8">
 <title>Gerar Folhas de Pagamento</title>
-
+<style> 
+table {border-collapse: collapse; width: 25%; margin-top: 20px;}
+td, th {border: 1px solid #1b1b1b; padding: 8px;}
+</style>
 </head>
 <body>
 
+<a href="../">voltar</a>
 <h1>Gerar Folhas de Pagamento</h1>
 
 <!-- Form para adicionar evento -->
@@ -194,16 +198,28 @@ if (isset($_POST['gerar_folhas'])) {
 
 <?php if (!empty($folhas_geradas)): ?>
     <h2>Folhas Geradas <?= $mes ?></h2>
-    <ul>
-    <?php foreach ($folhas_geradas as $f): ?>
-        <li>
-            <?= $f['nome_usuario'] ?> – R$ <?= number_format($f['salario_liquido'], 2, ',', '.') ?>
-            <a href="../../api/api_gerar_pdf.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>" target="_blank">
-                Abrir PDF
-            </a>
-        </li>
-    <?php endforeach; ?>
-    </ul>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Salário Líquido</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <?php foreach ($folhas_geradas as $f): ?>
+            <tr>
+                <td><?= $f['nome_usuario'] ?></td>
+                <td>R$ <?= number_format($f['salario_liquido'], 2, ',', '.') ?></td>
+                <td>
+                    <a href="../../api/api_gerar_pdf.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>" target="_blank">
+                    Abrir PDF
+                    </a>
+                </td>
+                     
+
+            </tr>
+        <?php endforeach; ?>
+    </table>
 <?php endif; ?>
 
 </body>
