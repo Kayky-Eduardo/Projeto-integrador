@@ -30,7 +30,7 @@ $atual = $conn->prepare("
 );
 $atual->bind_param('i', $id_setor);
 $atual->execute();
-$a = $atual->get_result()->fetch_assoc();
+$jornada_atual = $atual->get_result()->fetch_assoc();  // Nome consistente
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -97,80 +97,115 @@ $a = $atual->get_result()->fetch_assoc();
         </div>
 
         <button id="editar" type="submit">Salvar</button>
-        <button type="submit" class="btn-excluir" formmethod="GET">
-            <a href="deletar_setor.php?setor=<?= $id_setor ?>">Excluir</a>
-        </button>
+        <a class="btn-excluir" href="deletar_setor.php?setor=<?= $id_setor ?>">Excluir</a>
+
         <a href="setores.php">Voltar</a>
         <br>
     </form>
 
     <script>
+        const idSetor = <?= json_encode((int)$id_setor) ?>;
+        const jornadaAtualId = <?= $jornada_atual ? json_encode((int)$jornada_atual['id_tempo']) : 'null' ?>;
+        let usuariosCarregados = false;
+
         window.addEventListener('DOMContentLoaded', async () => {
             await carregar_usuarios_setor();
+            await exibicao_jornadas();
         });
 
-        const select = document.getElementById("filtro-jornada") 
         
         async function exibicao_jornadas() {
-            select.innerHTML = `<option value="">selecione uma jornada</option>`
-            const coleta_jornada = await fetch("../../api/api_jornada.php?acao=get_tempo");
-            const resposta = await coleta_jornada.json();
-            const resultado = resposta.dados;
-            resultado.forEach(t => {
-                const tag_option = document.createElement("option");
-                tag_option.value = t.id_tempo;
-                tag_option.textContent = `${t.descricao} | ${t.tempo_jornada} : ${t.max_hora_extra} `  ;
-                select.appendChild(tag_option);
-            })
+            const select = document.getElementById("filtro-jornada");
+            try {
+                const coleta_jornada = await fetch("../../api/api_jornada.php?acao=get_tempo");
+                const resposta = await coleta_jornada.json();
+                const resultado = resposta.dados;
+    
+                if(resposta.sucesso) {
+                    select.innerHTML = `<option value="">selecione uma jornada</option>`;
+
+                    resultado.forEach(t => {
+    
+                        const option = document.createElement("option");
+                        option.value = t.id_tempo;
+    
+                        const jornada = t.tempo_jornada;
+                        const maxExtra = t.max_hora_extra;
+    
+                        option.textContent = `${t.descricao} | ${t.tempo_jornada} : ${t.max_hora_extra} `  ;
+                        
+                        if (jornadaAtualId && parseInt(t.id_tempo) === parseInt(jornadaAtualId)) {
+                            option.selected = true;
+                            console.log('Jornada pré-selecionada:', t.descricao);
+                        }
+    
+                        select.appendChild(option);
+                    })
+                } else {
+                    console.log("erro: " + resultado.mensagem);
+                    select.innerHTML = '<option value="">Erro ao carregar jornadas</option>';
+                }
+            } catch (erro) {
+                console.log("erro na aquisição:" + erro);
+            }
         }
 
-        exibicao_jornadas();        
         
-        select.addEventListener("change", async function () {
-            let id_tempo = this.value;
+         document.getElementById('form-setor').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nomeSetor = document.getElementById('nome_setor').value.trim();
+            const idTempo = document.getElementById('filtro-jornada').value;
+            const checkboxes = document.querySelectorAll('input[name="usuarios[]"]:checked');
+            const usuariosSelecionados = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+            if (isNaN(idTempo)) {
+                mostrar_mensagem('Jornada inválida!', 'erro');
+                return;
+            }
+
+            if (!nomeSetor) {
+                mostrar_mensagem('O nome do setor é obrigatório!', 'erro');
+                return;
+            }
+
+            if (!idTempo) {
+                mostrar_mensagem('Selecione uma jornada de trabalho!', 'erro');
+                return;
+            }
+
+            const dados = {
+                id_setor: idSetor,
+                nome_setor: nomeSetor,
+                usuarios_selecionado: usuariosSelecionados,
+                id_tempo: parseInt(idTempo)
+            };
+
+            console.log('Enviando dados:', dados);
+
+            try {
+                const response = await fetch(`../../api/api_setores.php?acao=set_setor`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                const resultado = await response.json();
+                console.log('Resposta:', resultado);
+
+                if (resultado.sucesso) {
+                    mostrar_mensagem('Setor atualizado com sucesso!', 'sucesso');
                     
-            // Salvar alterações via API
-            document.getElementById('editar').addEventListener('click', async (e) => {
-                e.preventDefault();
-
-                const nomeSetor = document.getElementById('nome_setor').value;
-                const checkboxes = document.querySelectorAll('input[name="usuarios[]"]:checked');
-                const usuariosSelecionados = Array.from(checkboxes).map(cb => parseInt(cb.value));
-
-                const dados = {
-                    id_setor: idSetor,
-                    nome_setor: nomeSetor,
-                    usuarios_selecionado: usuariosSelecionados,
-                    id_tempo: id_tempo
-                };
-
-                console.log(nomeSetor);
-
-                try {
-                    const response = await fetch(`../../api/api_setores.php?acao=set_setor`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(dados)
-                    });
-
-                    const resultado = await response.json();
-
-                    if (resultado.sucesso) {
-                        window.location.href = "setores.php"
-                    } else {
-                        mostrar_mensagem('Erro: ' + resultado.mensagem, 'erro');
-                    }
-                } catch (error) {
-                    console.error('Erro ao salvar:', error);
-                    mostrar_mensagem('Erro ao salvar alterações', 'erro');
+                } else {
+                    mostrar_mensagem('Erro: ' + resultado.mensagem, 'erro');
                 }
-            });
-        })
-
-        const idSetor = <?= $id_setor ?>;
-        let usuariosCarregados = false;
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                mostrar_mensagem('Erro ao salvar alterações', 'erro');
+            }
+        });
 
         // Carregar usuários do setor ao clicar no botão
         async function ativar_select() {
@@ -229,7 +264,7 @@ $a = $atual->get_result()->fetch_assoc();
 
         
         // Mostrar mensagens ao usuário de acordo com o tipo proporcionado. exemplo: erro
-        function mostrar_mensagem(texto, tipo) {
+        function mostrar_mensagem(texto, tipo = null) {
             const div = document.getElementById('mensagem');
             div.className = 'mensagem ' + tipo;
             div.textContent = texto;

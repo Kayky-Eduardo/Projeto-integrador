@@ -291,7 +291,7 @@ function get_pessoas_setor($conn, $id_setor) {
 
 function set_setor($conn, $usuarios_selecionados, $nome_setor, $id_setor, $id_tempo = null) {
     // Atualiza nome do setor e id_tempo
-    $stmt = $conn->prepare("UPDATE setor SET nome_setor = ? AND id_tempo = ? WHERE id_setor = ?");
+    $stmt = $conn->prepare("UPDATE setor SET nome_setor = ?, id_tempo = ? WHERE id_setor = ?");
     $stmt->bind_param("sii", $nome_setor, $id_tempo, $id_setor);
     $stmt->execute();
 
