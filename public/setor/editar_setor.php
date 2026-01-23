@@ -197,7 +197,7 @@ $jornada_atual = $atual->get_result()->fetch_assoc();  // Nome consistente
 
                 if (resultado.sucesso) {
                     mostrar_mensagem('Setor atualizado com sucesso!', 'sucesso');
-                    
+                    window.location.href = "setores.php"
                 } else {
                     mostrar_mensagem('Erro: ' + resultado.mensagem, 'erro');
                 }
