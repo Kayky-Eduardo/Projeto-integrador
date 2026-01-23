@@ -63,13 +63,44 @@ function verificar_login($conn) {
         exit;
     }
     
-    verificar_tempo_logado($conn, $id_usuario, $id_login);
+    $resultado_tempo = verificar_tempo_logado($conn, $id_usuario, $id_login);
+
+    if ($resultado_tempo['tipo'] === "excedido") {
+        finalizar_pontos($conn, $id_usuario, $id_login);
+        header("Location: /projeto-integrador/public/logout.php");
+        exit;
+    } else if ($resultado_tempo['tipo'] === "bloqueado") {
+        header("Location: /projeto-integrador/public/logout.php");
+        exit;
+    }
 }
 
 function verificar_tempo_logado($conn, $id_usuario, $id_login) {
+    $verificar_historico_ponto = $conn->prepare("
+        SELECT id_ponto
+        FROM ponto_dia
+        WHERE data_ponto = CURDATE() AND fim_ponto IS NOT NULL
+        AND id_usuario = ?;
+    ");
+    $verificar_historico_ponto->bind_param("i", $id_usuario);
+    $verificar_historico_ponto->execute();
+    $resultado = $verificar_historico_ponto->get_result();
+
+    if ($resultado->num_rows > 0) {
+        $id_ponto = $resultado->fetch_assoc()['id_ponto'];
+
+        return [
+            'tipo' => 'bloqueado',
+            'resultado' => 0
+        ];
+    }
+
+
     // Busca tudo de uma vez: jornada, hora extra máxima e tempo logado
+    // Por login
     $stmt = $conn->prepare("
-    SELECT  
+    SELECT 
+        TIME_TO_SEC(tempo_jornada.maximo_hora_extra) as hora_extra,
         TIME_TO_SEC(tempo_jornada.jornada) AS segundos_jornada,
         TIME_TO_SEC(ADDTIME(tempo_jornada.jornada, tempo_jornada.maximo_hora_extra)) AS segundos_maximos,
         TIMESTAMPDIFF(SECOND, login.data_inicio, NOW()) AS segundos_logado
@@ -85,10 +116,33 @@ function verificar_tempo_logado($conn, $id_usuario, $id_login) {
         AND login.data_fim IS NULL
     LIMIT 1;
     ");
-    
     $stmt->bind_param("ii", $id_login, $id_usuario);
     $stmt->execute();
     $result = $stmt->get_result();
+    
+
+    // // ponto
+    // $stmt = $conn->prepare("
+    //  SELECT 
+    //     TIME_TO_SEC(tempo_jornada.maximo_hora_extra) as hora_extra,
+    //     TIME_TO_SEC(tempo_jornada.jornada) AS segundos_jornada,
+    //     TIME_TO_SEC(ADDTIME(tempo_jornada.jornada, tempo_jornada.maximo_hora_extra)) AS segundos_maximos,
+    //     TIMESTAMPDIFF(SECOND, ponto_dia.inicio_ponto, NOW()) AS segundos_trabalhados
+    // FROM ponto_dia
+    // JOIN grupo_setor
+    //     ON grupo_setor.id_usuario = ponto_dia.id_usuario
+    // JOIN setor
+	// 	ON setor.id_setor = grupo_setor.id_setor
+    // JOIN tempo_jornada
+    //     ON tempo_jornada.id_tempo = setor.id_tempo
+    // WHERE ponto_dia.id_ponto = ?
+    //     AND ponto_dia.id_usuario = ?
+    // LIMIT 1;
+    // ");
+    // $stmt->bind_param("ii", $id_ponto, $id_usuario);
+    // $stmt->execute();
+    // $result = $stmt->get_result();
+
     
     if ($result->num_rows === 0) {
         $stmt->close();
@@ -100,33 +154,34 @@ function verificar_tempo_logado($conn, $id_usuario, $id_login) {
     
     $minutos_extra = 0;
 
-    if ($dados['segundos_logado'] > $dados['segundos_maximos']) {
+    if ($dados['segundos_logado'] >= $dados['segundos_maximos']) {
+        $minutos = (int) $dados['hora_extra'];
         return [
-            "resultado" => 0,
-            "mensagem" => 'string'
+            "tipo" => "excedido",
+            "resultado" => $minutos,
         ];
     }
 
     if ($dados['segundos_logado'] >= $dados['segundos_jornada']) {
         $segundos_extra = $dados['segundos_logado'] - $dados['segundos_jornada'];
         if ($segundos_extra > 0) {
-            $minutos_extra = round($segundos_extra / 60);
+            $minutos = round($segundos_extra / 60);
         
             return [
-                "resultado" => $minutos_extra,
-                "mensagem" => 'numero'
+                "tipo" => 'tempo_extra',
+                "resultado" => $minutos,
             ];
         }
     }
-
+    
     if ($dados['segundos_logado'] < $dados['segundos_jornada']) {
         $segundos_faltantes = $dados['segundos_logado'] - $dados['segundos_jornada'];
         if ($segundos_faltantes < 0) {
-            $minutos_faltantes = round($segundos_faltantes / 60);
+            $minutos = round($segundos_faltantes / 60);
 
             return [
-                "resultado" => $minutos_faltantes,
-                "mensagem" => 'numero'
+                "tipo" => "tempo_faltante",
+                "resultado" => $minutos,
             ];
         }
     }
@@ -134,27 +189,59 @@ function verificar_tempo_logado($conn, $id_usuario, $id_login) {
 }
 
 function fechar_pontos_pendentes($conn, $id_usuario) {
-    $verificar_pausas = $conn->prepare("
-    
+    $verificar_pausa = $conn->prepare("
+        SELECT id_pausa
+        FROM pausa
+        WHERE id_usuario = ? AND fim IS NULL
+        LIMIT 1;
     ");
+    $verificar_pausa->bind_param("i", $id_usuario);
+    $verificar_pausa->execute();
+    $resultado_pausa = $verificar_pausa->get_result();
+
+    $verificar_ponto = $conn->prepare("
+        SELECT id_ponto
+        FROM ponto_dia
+        WHERE id_usuario = ? AND fim_ponto IS NULL
+        LIMIT 1;
+    ");
+    $verificar_ponto->bind_param("i", $id_usuario);
+    $verificar_ponto->execute();
+    $resultado_ponto = $verificar_ponto->get_result();
+
+    if ($resultado_pausa->num_rows > 0) {
+        $id_pausa = $resultado_pausa->fetch_assoc()['id_pausa'];
+        $update_pausa = $conn->prepare("
+            UPDATE pausa
+            SET fim = CURTIME()
+            WHERE id_usuario = ? AND id_pausa = ?;
+        ");
+        $update_pausa->bind_param("ii", $id_usuario, $id_pausa);
+        $update_pausa->execute();
+    }
+    
+    if ($resultado_ponto->num_rows > 0) {
+        $id_ponto = $resultado_ponto->fetch_assoc()['id_ponto'];
+        $update_ponto = $conn->prepare("
+            UPDATE ponto_dia
+            SET fim_ponto = CURTIME()
+            WHERE id_usuario = ? AND id_ponto = ?;
+        ");
+        $update_ponto->bind_param("ii", $id_usuario, $id_pausa);
+        $update_ponto->execute();
+    }
+    
 }
 
 function finalizar_pontos($conn, $id_usuario, $id_login) {
     $resposta = verificar_tempo_logado($conn, $id_usuario, $id_login);
-    if ($resposta['mensagem'] === 'numero') {
-        if ($resposta['resultado'] >= 0) {
-            adicionar_horas($conn, $id_usuario, $resposta);
-        } else if ($resposta['resultado'] < 0) {
-            retirar_horas($conn, $id_usuario, $resposta);
-        } else {
 
-        }
-    }
-
-    if ($resposta['mensagem'] === 'string') {
-
+    if ($resposta['tipo'] === 'tempo_extra') {
+        adicionar_horas($conn, $id_usuario, $resposta);
+    } else if ($resposta['tipo'] === 'tempo_faltante') {
+        retirar_horas($conn, $id_usuario, $resposta);
     } else {
-        
+        fechar_pontos_pendentes($conn, $id_usuario);        
     }
 }
 ?>
