@@ -1,32 +1,41 @@
-<!-- 
-    MUDANÇAS
-        1. Refatoração da semântica HTML
-        2. Implementação de tags para melhor organização do layout
-        3. Estrutura preparada para crescimento do sistema
+<!--
+    MÓDULO: PÁGINA PRINCIPAL DO SISTEMA (DASHBOARD)
+
+    OBJETIVO
+        Servir como página inicial após autenticação, organizando conteúdo institucional e informativo.
 
     ESTRUTURA SEMÂNTICA
-        header    - Topo da página (identidade do sistema)
-        nav       - Navegação principal e rotação de páginas
-        main      - Conteúdo principal
-        footer    - Rodapé institucional
-        address   - Informações de contato
+        header  - Cabeçalho institucional (banner)
+        nav     - Barra de navegação geral
+        main    - Conteúdo central da aplicação
+        section - Agrupamento de notícias
+        article - Cada notícia individual
+        footer  - Informações institucionais
+        address - Informações de contato
 
-    ACESSIBILIDADE (ARIA & BOAS PRÁTICAS)
-        role="banner"       - Indica cabeçalho principal para leitores de tela
-        role="navigation"   -   ""   área de navegação
-        role="main"         -   ""   região principal do sistema
-        role="contentinfo"  -   ""   rodapé com informações institucionais
-        aria-label          - Fornece descrição textual contextual para usuários de leitores de tela
+    FUNCIONALIDADES
+        1. Exibição de banner principal
+        2. Inclusão dinâmica do menu
+        3. Apresentação de notícias internas
+        4. Controle de navegação por slides
+        5. Rodapé institucional
+
+    ACESSIBILIDADE
+        role="banner"       - Identifica o cabeçalho
+        role="navigation"   - Área de navegação principal
+        role="main"         - Conteúdo primário da página
+        role="contentinfo"  - Informações institucionais
+        aria-label          - Descrição acessível para leitores de tela
 
     BENEFÍCIOS
-        1. Melhor compreensão por tecnologias assistivas
-        2. Melhor indexação em mecanismos de busca
-        3. Facilidade de manutenção e expansão
+        - Organização semântica moderna
+        - Melhor indexação por buscadores
+        - Experiência otimizada para leitores de tela
 
     OBSERVAÇÕES TÉCNICAS
-        1. Utilização de arquivo separado para o nav: navbar.php
-        2. Estilos visuais centralizados em: ../assets/estilo.css
-        3. Nada mudou da lógica PHP
+        - Navbar carregada via include
+        - Estilo centralizado em ../assets/css/estilo.css
+        - Comportamento dinâmico feito via script.js
 -->
 
 <?php
@@ -42,14 +51,14 @@ verificar_login($conn);
 <head>
     <meta charset="UTF-8">
     <title>Sistema de RH</title>
-    <link rel="stylesheet" href="../assets/CSS/estilo.css">
+    <link rel="stylesheet" href="../assets/css/estilo.css">
 </head>
 
 <body>
 
     <!-- Banner / Topo -->
     <header role="banner">
-        <h1>Sistema de RH</h1>
+        <img src="../assets/img/banner_rh_pi.png" alt="">
     </header>
 
     <!-- Navbar -->
@@ -63,9 +72,15 @@ verificar_login($conn);
         <!-- Carrossel de Notícias -->
         <section class="carrossel" aria-label="Notícias da empresa">
             <ul class="slides">
+                <nav class="indicadores" aria-label="Indicador de slides">
+                    <button class="dot ativo" data-slide="0" aria-label="Slide 1"></button>
+                    <button class="dot" data-slide="1" aria-label="Slide 2"></button>
+                    <button class="dot" data-slide="2" aria-label="Slide 3"></button>
+                </nav>
+
                 <li class="slide ativo">
                     <article>
-                        <img src="../assets/IMG/ambiente_coorporativo.jpg" alt="Ambiente corporativo">
+                        <img src="../assets/img/ambiente_coorporativo.jpg" alt="Ambiente corporativo">
                         <h2>Bem-vindo ao Sistema</h2>
                         <p>Fique por dentro das novidades internas.</p>
                     </article>
@@ -73,7 +88,7 @@ verificar_login($conn);
 
                 <li class="slide">
                     <article>
-                        <img src="../assets/IMG/reuniao.webp" alt="Reunião da equipe">
+                        <img src="../assets/img/reuniao.webp" alt="Reunião da equipe">
                         <h2>Nova política interna</h2>
                         <p>Consulte as atualizações no RH.</p>
                     </article>
@@ -81,7 +96,7 @@ verificar_login($conn);
 
                 <li class="slide">
                     <article>
-                        <img src="../assets/IMG/treinamento.jpg" alt="Treinamento de funcionários">
+                        <img src="../assets/img/treinamento.jpg" alt="Treinamento de funcionários">
                         <h2>Treinamentos disponíveis</h2>
                         <p>Veja os cursos liberados para você.</p>
                     </article>
@@ -111,7 +126,7 @@ verificar_login($conn);
         </address>
     </footer>
 
-    <script src="../assets/JS/script.js"></script>
+    <script src="../assets/js/script.js"></script>
 </body>
 
 </html>
