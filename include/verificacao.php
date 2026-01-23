@@ -102,7 +102,7 @@ function verificar_tempo_logado($conn, $id_usuario, $id_login) {
 
     if ($dados['segundos_logado'] > $dados['segundos_maximos']) {
         return [
-            "resultado" => 'deslogar',
+            "resultado" => 0,
             "mensagem" => 'string'
         ];
     }
@@ -133,23 +133,28 @@ function verificar_tempo_logado($conn, $id_usuario, $id_login) {
     return $minutos_extra;
 }
 
+function fechar_pontos_pendentes($conn, $id_usuario) {
+    $verificar_pausas = $conn->prepare("
+    
+    ");
+}
+
 function finalizar_pontos($conn, $id_usuario, $id_login) {
     $resposta = verificar_tempo_logado($conn, $id_usuario, $id_login);
-    if ($resposta['mensagem'] != 'numero') {
-        if (isset($_SESSION['id_usuario'], $_SESSION['id_login'])) {
-            $id_usuario = $_SESSION['id_usuario'];
-            $id_login = $_SESSION['id_login'];
-           
-            if ($resposta['mensagem'] != 'string') {
-                if ($resposta['resultado'] >= 0) {
-                    adicionar_horas($conn, $id_usuario, $resposta);
-                } else {
-                    retirar_horas($conn, $id_usuario, $resposta);
-                }
-            } else {
-                
-            }
+    if ($resposta['mensagem'] === 'numero') {
+        if ($resposta['resultado'] >= 0) {
+            adicionar_horas($conn, $id_usuario, $resposta);
+        } else if ($resposta['resultado'] < 0) {
+            retirar_horas($conn, $id_usuario, $resposta);
+        } else {
+
         }
+    }
+
+    if ($resposta['mensagem'] === 'string') {
+
+    } else {
+        
     }
 }
 ?>

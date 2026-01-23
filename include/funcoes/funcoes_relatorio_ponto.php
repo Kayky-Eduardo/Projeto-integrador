@@ -95,22 +95,20 @@ function dados_grafico($conn) {
 
     $numero_ausentes = $total_usuarios - (int)$numero_presente;
     
-    // Pesquisa de pausa( incompleto porque depende de outro código),
-    // irei retornar aqui assim que o código de ponto/pausas estiverem feito
-    // validar
-    // $pesquisa_pausa = $conn->prepare("
-    //     SELECT COUNT(*) AS total_pausa
-    //     FROM ponto_dia
-    //     WHERE hora_almoco_saida IS NOT NULL AND (hora_almoco_retorno IS NULL or hora_almoco_retorno = '' or hora_almoco_retorno = '00:00:00')
-    //     AND data_ponto = CURDATE()
-    // ");
-    // $pesquisa_pausa->execute();
-    // $result = $pesquisa_pausa->get_result();
-    // if ($linha = $result->fetch_assoc()) {
-    //     $numero_pausa = (int)$linha['total_pausa'];
-    // } else {
-    $numero_pausa = 0;
-    // }
+    $pesquisa_pausa = $conn->prepare("
+        SELECT COUNT(*) AS total_pausa
+        FROM pausa
+        WHERE inicio IS NOT NULL AND (fim IS NULL or fim = '' or fim = '00:00:00')
+        AND data = CURDATE();
+    ");
+    $pesquisa_pausa->execute();
+    $result = $pesquisa_pausa->get_result();
+
+    if ($linha = $result->fetch_assoc()) {
+        $numero_pausa = (int)$linha['total_pausa'];
+    } else {
+        $numero_pausa = 0;
+     }
     
     // pesquisa horario completo
     $pesquisa_horario_completo = $conn->prepare("
@@ -160,12 +158,13 @@ function filtrar($conn, $tipo) {
     if($tipo == 'ausentes') {
         $ausentes = [];
         $filtro_ausente = $conn->prepare("
-        select 
-            usuario.email_usuario, usuario.id_usuario,
+        SELECT 
+            usuario.email_usuario,
+            usuario.id_usuario,
             IFNULL(TIMESTAMPDIFF(MINUTE, inicio_ponto, NOW()), 0) AS tempo_logado 
-        from usuario
-        left join ponto_dia on usuario.id_usuario = ponto_dia.id_usuario
-        where ponto_dia.id_ponto is null or ponto_dia.inicio_ponto = '00:00:00'
+        FROM usuario
+        LEFT JOIN ponto_dia ON usuario.id_usuario = ponto_dia.id_usuario
+        WHERE ponto_dia.id_ponto IS NULL OR ponto_dia.inicio_ponto = '00:00:00'
         ");
         $filtro_ausente->execute();
         $result = $filtro_ausente->get_result();
@@ -174,32 +173,47 @@ function filtrar($conn, $tipo) {
         }
         return $ausentes;
     }
-    // validar
-    // if($tipo == 'pausa') {
-    //     $pausas = [];
-    //     $filtro_pausa = $conn->prepare("
-    //     select usuario.email_usuario, ponto_dia.*
-    //     from ponto_dia join usuario on ponto_dia.id_usuario = usuario.id_usuario
-    //     WHERE hora_almoco_saida IS NOT NULL AND (hora_almoco_retorno IS NULL or hora_almoco_retorno = ''
-    //     or hora_almoco_retorno = '00:00:00') AND ponto_dia.data_ponto = CURDATE()
-    //     ");
-    //     $filtro_pausa->execute();
-    //     $result = $filtro_pausa->get_result();
-    //     while($linha = $result->fetch_assoc()){
-    //         $pausas[] = $linha;
-    //     }
-    //     return $pausas;
-    // }
+
+    if($tipo == 'pausa') {
+        $pausas = [];
+        $filtro_pausa = $conn->prepare("
+        SELECT 
+			ponto_dia.id_ponto,
+            pausa.id_usuario,
+            ponto_dia.inicio_ponto,
+            usuario.email_usuario,
+            inicio,
+            fim,
+            ponto_dia.data_ponto,
+            descricao_pausa,
+			TIMESTAMPDIFF(MINUTE, inicio_ponto, NOW()) AS tempo_logado
+        FROM pausa
+        JOIN pausa_config on pausa_config.id_config = pausa.id_config 
+        JOIN ponto_dia on ponto_dia.id_usuario = pausa.id_usuario and pausa.data = ponto_dia.data_ponto
+        JOIN usuario on pausa.id_usuario = usuario.id_usuario
+        WHERE inicio IS NOT NULL AND (fim is null or fim = '' or fim = '0000-00-00')
+        AND pausa.data = CURDATE();
+        ");
+        $filtro_pausa->execute();
+        $result = $filtro_pausa->get_result();
+        while($linha = $result->fetch_assoc()){
+            $pausas[] = $linha;
+        }
+        return $pausas;
+    }
     if($tipo == 'horario') {
         $horario_completo = [];
         $filtro_horario_completo = $conn->prepare("
         SELECT 
-            usuario.email_usuario, ponto_dia.*,
+            usuario.email_usuario,
+            ponto_dia.id_ponto,
+            ponto_dia.inicio_ponto,
+            ponto_dia.fim_ponto,
+            ponto_dia.data_ponto,
             TIMESTAMPDIFF(MINUTE, inicio_ponto, fim_ponto) AS tempo_logado 
         FROM ponto_dia JOIN usuario ON ponto_dia.id_usuario = usuario.id_usuario
         WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NOT NULL AND fim_ponto != '00:00:00')
-        AND ponto_dia.data_ponto = CURDATE()
-        ;
+        AND ponto_dia.data_ponto = CURDATE();
     ");
     $filtro_horario_completo->execute();
     $result = $filtro_horario_completo->get_result();

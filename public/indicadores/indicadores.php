@@ -44,7 +44,7 @@ include "../../include/navbar.php";
     <div id="resultado-caixa-grafico">
         <table>
             <thead>
-                <th>ID ponto</th>
+                <th>ID</th>
                 <th>Email</th>
                 <th>Entrada</th>
                 <th>Saida</th>
@@ -208,6 +208,10 @@ include "../../include/navbar.php";
                             let data = r.data_ponto ?? '-';
                             let tempo_logado = '-';
 
+                            if (tipo === 'Pausa') {
+                                entrada = r.inicio;
+                                saida = r.fim ?? '-';
+                            }
                             if (r.tempo_logado) {
                                 const horas = Math.floor(r.tempo_logado / 60);
                                 const minutos = r.tempo_logado % 60;
