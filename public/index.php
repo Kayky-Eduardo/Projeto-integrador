@@ -1,4 +1,122 @@
 <?php
+/*
+ * =============================================================
+ * ARQUIVO: index.php
+ * MÓDULO: Página Inicial do Sistema (Dashboard)
+ * =============================================================
+ * 
+ * DESCRIÇÃO GERAL
+ * -------------------------------------------------------------
+ * Arquivo responsável pela exibição da página inicial do
+ * sistema após a autenticação do usuário.
+ *
+ * Atua como ponto de entrada principal do sistema, exibindo:
+ * - Banner institucional
+ * - Menu de navegação principal
+ * - Conteúdo informativo em formato de carrossel
+ * - Rodapé institucional
+ *
+ * Não executa regras de negócio complexas nem operações diretas
+ * de banco de dados além da verificação de sessão.
+ *
+ *
+ * FLUXO DE EXECUÇÃO
+ * -------------------------------------------------------------
+ * 1. Inicia a sessão PHP
+ * 2. Inclui o arquivo de conexão com o banco de dados
+ * 3. Inclui o arquivo de verificação de autenticação
+ * 4. Valida se o usuário está logado
+ *    - Redireciona para login caso não esteja autenticado
+ * 5. Renderiza a estrutura HTML da página inicial
+ * 6. Carrega:
+ *    - Banner do sistema
+ *    - Navbar dinâmica via include
+ *    - Carrossel de notícias/informações
+ *    - Rodapé institucional
+ * 7. Inicializa os scripts JavaScript do carrossel
+ *
+ *
+ * SEGURANÇA
+ * -------------------------------------------------------------
+ * - Acesso protegido por verificação de sessão ativa
+ * - Usuários não autenticados não acessam esta página
+ * - Includes controlados via caminhos absolutos (__DIR__)
+ * - Nenhum dado sensível é exibido diretamente na tela
+ *
+ *
+ * ACESSIBILIDADE
+ * -------------------------------------------------------------
+ * - Uso de landmarks semânticos (<header>, <nav>, <main>,
+ *   <footer>)
+ * - Menu de navegação com aria-label
+ * - Carrossel com aria-label nos controles
+ * - Botões de navegação com rótulos acessíveis
+ * - Estrutura de lista (<ul>, <li>) para melhor leitura por
+ *   leitores de tela
+ *
+ *
+ * DEPENDÊNCIAS
+ * -------------------------------------------------------------
+ * 1. "../BD/conexao.php"
+ *    - Responsável pela conexão com o banco de dados MySQL
+ *
+ * 2. "../include/verificacao.php"
+ *    - Responsável pela validação da sessão do usuário
+ *
+ * 3. "../include/navbar.php"
+ *    - Renderização do menu de navegação principal
+ *
+ * 4. "../assets/css/estilo_R01.css"
+ *    - Estilos globais e específicos da página inicial
+ *
+ * 5. "../assets/js/script.js"
+ *    - Controle do carrossel (slides, botões e indicadores)
+ *
+ *
+ * COMPONENTES PRESENTES
+ * -------------------------------------------------------------
+ * 1. Header
+ *    - Banner institucional do sistema
+ *
+ * 2. Navbar
+ *    - Menu principal dinâmico
+ *
+ * 3. Main
+ *    - Carrossel de notícias/informações internas
+ *
+ * 4. Footer
+ *    - Informações institucionais
+ *    - Links legais
+ *    - Dados de contato
+ * 
+ *
+ * BOAS PRÁTICAS APLICADAS
+ * -------------------------------------------------------------
+ * - Separação clara entre lógica PHP e marcação HTML
+ * - Controle de acesso centralizado
+ * - Reutilização de componentes via include
+ * - CSS organizado com variáveis globais
+ * - Estrutura HTML semântica
+ *
+ *
+ * OBSERVAÇÕES
+ * -------------------------------------------------------------
+ * - Nenhuma consulta direta é realizada neste arquivo, a 
+ *   conexão com o banco é utilizada apenas para validação de 
+ *   sessão via arquivo de verificação
+ * - Este arquivo não deve conter regras de negócio
+ * - Alterações de conteúdo dinâmico devem ser feitas via
+ *   componentes ou APIs futuras
+ * - A conexão ($conn) não é fechada manualmente, pois o PHP
+ *   encerra automaticamente ao final do script
+ *
+ * 
+ * -------------------------------------------------------------
+ * Data: 23/01/2026
+ * Versão: 1.0
+ * =============================================================
+*/
+
 session_start();
 include(__DIR__ . "/../BD/conexao.php");
 require "../include/verificacao.php";
@@ -11,362 +129,7 @@ verificar_login($conn);
 <head>
     <meta charset="UTF-8">
     <title>Sistema de RH</title>
-
-    <style>
-        /* 0 - VARIÁVEIS DO SISTEMA */
-        :root {
-            /* Cores principais */
-            --cor-principal: #020617;
-            --cor-principal-hover: #020617e8;
-            --cor-destaque: #38bdf8;
-
-            /* Texto */
-            --cor-texto-padrao: #0D0D0D;
-            --cor-texto-branco: #F2F2F2;
-            --cor-texto-suave: #64748b;
-
-            /* Fundos */
-            --cor-fundo-pagina: #F2F2F2;
-            --cor-fundo-card: #ffffff;
-            --cor-fundo-nav-hover: #334155;
-
-            /* Bordas */
-            --raio-borda-padrao: 4px;
-            --raio-borda-grande: 8px;
-
-            /* Tipografia */
-            --tamanho-texto-padrao: 0.9rem;
-            --tamanho-titulo-slide: 1.5rem;
-        }
-
-        /* 1 - RESET GLOBAL */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: "Segoe UI", Tahoma, sans-serif;
-            background-color: var(--cor-fundo-pagina);
-            color: var(--cor-texto-padrao);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* 2 - LAYOUT GLOBAL */
-        main {
-            flex: 1;
-            padding: 2rem;
-        }
-
-        header img {
-            display: block;
-            width: 100%;
-        }
-
-        /* 3 - NAVEGAÇÃO */
-        nav {
-            background-color: var(--cor-principal);
-            display: flex;
-            gap: 8px;
-            padding: 0.6rem 1rem;
-            justify-content: center;
-        }
-
-        nav a {
-            text-decoration: none;
-            color: var(--cor-texto-branco);
-            padding: 0.4rem 0.8rem;
-            border-radius: var(--raio-borda-padrao);
-            font-size: var(--tamanho-texto-padrao);
-            transition: background-color 0.2s ease, transform 0.1s ease;
-        }
-
-        nav a:hover {
-            background-color: var(--cor-fundo-nav-hover);
-            transform: translateY(-2px);
-        }
-
-        nav a:focus {
-            outline: 2px solid var(--cor-destaque);
-        }
-
-        /* Dropdown Navbar */
-        .nav-dropdown {
-            list-style: none;
-            padding: 0;
-        }
-
-        .nav-dropdown.usuario {
-            margin-left: auto;
-        }
-
-        .dropdown {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .dropdown-toggle {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-        }
-
-        .dropdown-menu {
-            list-style: none;
-            position: absolute;
-            top: 100%;
-            background-color: var(--cor-principal);
-            border: 1px solid #1e293b;
-            border-radius: var(--raio-borda-grande);
-            min-width: 190px;
-            display: none;
-            padding: 4px 0;
-            z-index: 1000;
-        }
-
-        .dropdown-menu.left {
-            left: 0;
-        }
-
-        .dropdown-menu.right {
-            right: 0;
-        }
-
-        .dropdown-menu a {
-            display: block;
-            padding: 0.5rem 0.8rem;
-            color: var(--cor-texto-branco);
-            font-size: 0.85rem;
-            text-decoration: none;
-        }
-
-        .dropdown-menu a:hover {
-            background-color: var(--cor-fundo-nav-hover);
-        }
-
-        .dropdown-menu .separador {
-            height: 1px;
-            background-color: var(--cor-fundo-nav-hover);
-            margin: 4px 0;
-        }
-
-        .dropdown-menu .sair {
-            color: #f87171;
-            font-weight: 600;
-        }
-
-        .dropdown:hover .dropdown-menu,
-        .dropdown:focus-within .dropdown-menu {
-            display: block;
-        }
-
-        /* 5 - ESTADOS E UTILS */
-        /* ESTADOS E UTILITÁRIOS */
-        .hidden {
-            display: none !important;
-        }
-
-        /* 4 - CARROSSEL */
-        .carrossel {
-            max-width: 900px;
-            width: 100%;
-            margin: auto;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .slides {
-            list-style: none;
-            position: relative;
-            height: 500px;
-        }
-
-        .slide {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            transition: opacity 0.8s ease-in-out;
-        }
-
-        .slide.ativo {
-            opacity: 1;
-            z-index: 1;
-        }
-
-        .slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: var(--raio-borda-grande);
-        }
-
-        .slide article {
-            position: relative;
-            height: 100%;
-        }
-
-        .slide article::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 90px;
-            background: rgba(15, 23, 42, 0.65);
-            border-radius: 0 0 var(--raio-borda-grande) var(--raio-borda-grande);
-            transition: background 0.4s ease;
-        }
-
-        .carrossel:hover .slide article::after {
-            background: rgba(15, 23, 42, 0.85);
-        }
-
-        .slide h2 {
-            position: absolute;
-            bottom: 44px;
-            left: 16px;
-            color: var(--cor-texto-branco);
-            font-size: var(--tamanho-titulo-slide);
-            z-index: 2;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
-        }
-
-        .slide p {
-            position: absolute;
-            bottom: 14px;
-            left: 16px;
-            color: var(--cor-texto-branco);
-            font-size: var(--tamanho-texto-padrao);
-            z-index: 2;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
-        }
-
-        /* Botões do carrossel */
-        .btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: rgba(15, 23, 42, 0.75);
-            color: var(--cor-texto-branco);
-            border: none;
-            font-size: 1.8rem;
-            padding: 0.3rem 0.8rem;
-            cursor: pointer;
-            border-radius: var(--raio-borda-padrao);
-            z-index: 5;
-        }
-
-        .prev {
-            left: 10px;
-        }
-
-        .next {
-            right: 10px;
-        }
-
-        .btn:hover {
-            background-color: rgba(15, 23, 42, 1);
-        }
-
-        /* Indicadores */
-        .indicadores {
-            position: absolute;
-            top: 18px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 8px;
-            z-index: 6;
-        }
-
-        .dot {
-            width: 12px;
-            height: 12px;
-            background-color: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
-        }
-
-        .dot:hover {
-            transform: scale(1.2);
-        }
-
-        .dot.ativo {
-            background-color: #141640;
-            transform: scale(1.3);
-        }
-
-        /* 5 - FOOTER */
-        footer {
-            background-color: var(--cor-principal);
-            color: var(--cor-texto-branco);
-            text-align: center;
-            padding: 1.2rem;
-            font-size: 0.85rem;
-        }
-
-        footer ul {
-            list-style: none;
-        }
-
-        footer a {
-            text-decoration: none;
-            color: var(--cor-destaque);
-        }
-
-        /* 6 - RESPONSIVIDADE */
-        @media (max-width: 1000px) {
-            main {
-                padding: 1.2rem;
-            }
-
-            nav {
-                flex-direction: column;
-            }
-
-            nav a {
-                text-align: center;
-                border: 1px solid #1e293b;
-            }
-
-            /* Dropdown Navbar - Mobile */
-            .nav-dropdown {
-                width: 100%;
-            }
-
-            .dropdown {
-                width: 100%;
-                flex-direction: column;
-                align-items: stretch;
-                text-align: center;
-            }
-
-            .dropdown-toggle {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .dropdown-menu {
-                position: static;
-                min-width: 100%;
-                border-radius: 0 0 var(--raio-borda-grande) var(--raio-borda-grande);
-                margin-top: 4px;
-            }
-
-            .dropdown-menu.right {
-                left: auto;
-                right: auto;
-            }
-        }
-    </style>
-
-    <!-- <link rel="stylesheet" href="../assets/css/estilo.css"> -->
+    <link rel="stylesheet" href="../assets/css/estilo_R01.css">
 </head>
 
 <body>
@@ -412,8 +175,8 @@ verificar_login($conn);
                 </li>
             </ul>
 
-            <button class="btn prev" aria-label="Notícia anterior">&#10094;</button>
-            <button class="btn next" aria-label="Próxima notícia">&#10095;</button>
+            <button class="btn-carrossel prev" aria-label="Notícia anterior">&#10094;</button>
+            <button class="btn-carrossel next" aria-label="Próxima notícia">&#10095;</button>
         </section>
     </main>
 
