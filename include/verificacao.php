@@ -1,28 +1,10 @@
 <?php
+require "funcoes/funcoes_banco_horas.php";
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-// função para verificar se o login do usuário é válido
-/*
-    Consulta do tempo de jornada de acordo com o grupo e o plano de horário dele 
-    mudar mais tarde
 
-    SELECT 
-        TIME_TO_SEC(tempo_jornada.jornada) AS segundos_jornada,
-        TIME_TO_SEC(ADDTIME(tempo_jornada.jornada, tempo_jornada.maximo_hora_extra)) AS segundos_maximos,
-        TIMESTAMPDIFF(SECOND, login.data_inicio, NOW()) AS segundos_logado
-    FROM login
-    JOIN grupo_setor
-        ON grupo_setor.id_usuario = login.id_usuario
-    JOIN setor
-		ON setor.id_setor = grupo_setor.id_setor
-    JOIN tempo_jornada
-        ON tempo_jornada.id_tempo = setor.id_tempo
-    WHERE login.id_login = ?
-        AND login.id_usuario = ?
-        AND login.data_fim IS NULL
-    LIMIT 1;
-*/
 
 function verificar_login($conn) {
     $id_login = $_SESSION['id_login'];
@@ -63,15 +45,37 @@ function verificar_login($conn) {
         exit;
     }
     
-    $resultado_tempo = verificar_tempo_logado($conn, $id_usuario, $id_login);
+    $resultado_tempo = verificar_tempo_por_ponto($conn, $id_usuario);
 
-    if ($resultado_tempo['tipo'] === "excedido") {
-        finalizar_pontos($conn, $id_usuario, $id_login);
-        header("Location: /projeto-integrador/public/logout.php");
-        exit;
-    } else if ($resultado_tempo['tipo'] === "bloqueado") {
-        header("Location: /projeto-integrador/public/logout.php");
-        exit;
+    verificar_tipo($conn, $id_usuario, $resultado_tempo);
+}
+
+function redirecionar() {
+    header("Location: /projeto-integrador/public/logout.php");
+}
+
+function verificar_tipo($conn, $id_usuario, $resultado_tempo) {
+    $tipo = $resultado_tempo['tipo'];
+    $tempo = $resultado_tempo['resultado'];
+
+    if ($tipo === "bloqueado") {
+        fechar_pontos_pendentes($conn, $id_usuario);
+        redirecionar();
+
+    } else if ($tipo === "excedido") {
+        adicionar_horas($conn, $id_usuario, $tempo);
+        fechar_pontos_pendentes($conn, $id_usuario);
+        redirecionar();
+    
+    } else if ($tipo === "tempo_extra") {
+        adicionar_horas($conn, $id_usuario, $tempo);
+        fechar_pontos_pendentes($conn, $id_usuario);
+        redirecionar();
+
+    } else if ($tipo === "tempo_faltante") {
+        retirar_horas($conn, $id_usuario, $tempo);
+        fechar_pontos_pendentes($conn, $id_usuario);
+        redirecionar();
     }
 }
 
@@ -94,7 +98,6 @@ function verificar_tempo_logado($conn, $id_usuario, $id_login) {
             'resultado' => 0
         ];
     }
-
 
     // Busca tudo de uma vez: jornada, hora extra máxima e tempo logado
     // Por login
@@ -119,29 +122,6 @@ function verificar_tempo_logado($conn, $id_usuario, $id_login) {
     $stmt->bind_param("ii", $id_login, $id_usuario);
     $stmt->execute();
     $result = $stmt->get_result();
-    
-
-    // // ponto
-    // $stmt = $conn->prepare("
-    //  SELECT 
-    //     TIME_TO_SEC(tempo_jornada.maximo_hora_extra) as hora_extra,
-    //     TIME_TO_SEC(tempo_jornada.jornada) AS segundos_jornada,
-    //     TIME_TO_SEC(ADDTIME(tempo_jornada.jornada, tempo_jornada.maximo_hora_extra)) AS segundos_maximos,
-    //     TIMESTAMPDIFF(SECOND, ponto_dia.inicio_ponto, NOW()) AS segundos_trabalhados
-    // FROM ponto_dia
-    // JOIN grupo_setor
-    //     ON grupo_setor.id_usuario = ponto_dia.id_usuario
-    // JOIN setor
-	// 	ON setor.id_setor = grupo_setor.id_setor
-    // JOIN tempo_jornada
-    //     ON tempo_jornada.id_tempo = setor.id_tempo
-    // WHERE ponto_dia.id_ponto = ?
-    //     AND ponto_dia.id_usuario = ?
-    // LIMIT 1;
-    // ");
-    // $stmt->bind_param("ii", $id_ponto, $id_usuario);
-    // $stmt->execute();
-    // $result = $stmt->get_result();
 
     
     if ($result->num_rows === 0) {
@@ -233,20 +213,9 @@ function fechar_pontos_pendentes($conn, $id_usuario) {
     
 }
 
-function finalizar_pontos($conn, $id_usuario, $id_login) {
-    $resposta = verificar_tempo_logado($conn, $id_usuario, $id_login);
-
-    if ($resposta['tipo'] === 'tempo_extra') {
-        adicionar_horas($conn, $id_usuario, $resposta);
-    } else if ($resposta['tipo'] === 'tempo_faltante') {
-        retirar_horas($conn, $id_usuario, $resposta);
-    } else {
-        fechar_pontos_pendentes($conn, $id_usuario);        
-    }
-}
-
 
 function verificar_tempo_por_ponto($conn, $id_usuario) {
+    // verifica se tem ponto em aberto
     $verificar_ponto = $conn->prepare("
         SELECT id_ponto, inicio_ponto
         FROM ponto_dia
@@ -294,6 +263,12 @@ function verificar_tempo_por_ponto($conn, $id_usuario) {
     }
     $verificar_ponto_finalizado->close();
 
+    /* verifica:
+        - quanto tempo de hora extra o setor dele pode ter
+        - tempo da jornada de trabalho
+        - tempo maximo de trabalho
+        - e o tempo trabalhado a partir do inico_ponto até agora
+    */
     $stmt = $conn->prepare("
         SELECT 
             TIME_TO_SEC(tempo_jornada.maximo_hora_extra) AS hora_extra,
@@ -378,37 +353,53 @@ function verificar_tempo_por_ponto($conn, $id_usuario) {
 }
 
 function calcular_tempo_pausas($conn, $id_usuario, $id_ponto) {
+    // pegando o valor total das pausas ativadas hoje
     $stmt_pausas = $conn->prepare("
         SELECT COALESCE(SUM(TIME_TO_SEC(TIMEDIFF(fim, inicio))), 0) AS segundos_pausas
         FROM pausa
         WHERE id_usuario = ?
-        AND id_ponto = ?
-        AND fim IS NOT NULL
+        AND data = CURDATE()
+        AND fim IS NOT NULL;
     ");
-    $stmt_pausas->bind_param("ii", $id_usuario, $id_ponto);
+    $stmt_pausas->bind_param("i", $id_usuario);
     $stmt_pausas->execute();
     $result_pausas = $stmt_pausas->get_result();
     $pausas_finalizadas = $result_pausas->fetch_assoc()['segundos_pausas'];
     $stmt_pausas->close();
-    
-    $stmt_pausa_atual = $conn->prepare("
-        SELECT TIMESTAMPDIFF(SECOND, inicio, NOW()) AS segundos_pausa_atual
-        FROM pausa
-        WHERE id_usuario = ?
-        AND id_ponto = ?
-        AND fim IS NULL
-        LIMIT 1
+
+
+    // pegando o id para calcular o tempo na pausa atual
+    $stmt_id_pausas = $conn->prepare("
+        SELECT id_pausa FROM pausa
+        WHERE id_usuario = ? AND fim is null
     ");
-    $stmt_pausa_atual->bind_param("ii", $id_usuario, $id_ponto);
-    $stmt_pausa_atual->execute();
-    $result_pausa_atual = $stmt_pausa_atual->get_result();
+    $stmt_id_pausas->bind_param("i", $id_usuario);
+    $stmt_id_pausas->execute();
+    $result_id_pausas = $stmt_id_pausas->get_result();
     
-    $pausa_atual = 0;
-    if ($result_pausa_atual->num_rows > 0) {
-        $pausa_atual = $result_pausa_atual->fetch_assoc()['segundos_pausa_atual'];
+    if ($result_id_pausas->num_rows > 0) {
+        $id_pausa = $result_id_pausas->fetch_assoc()['id_pausa'];
+        
+        $stmt_pausa_atual = $conn->prepare("
+            SELECT TIMESTAMPDIFF(SECOND, inicio, NOW()) AS segundos_pausa_atual
+            FROM pausa
+            WHERE id_usuario = ?
+            AND id_pausa = ?
+            AND fim IS NULL
+            LIMIT 1
+        ");
+        $stmt_pausa_atual->bind_param("ii", $id_usuario, $id_pausa);
+        $stmt_pausa_atual->execute();
+        $result_pausa_atual = $stmt_pausa_atual->get_result();
+        
+        $pausa_atual = 0;
+        if ($result_pausa_atual->num_rows > 0) {
+            $pausa_atual = $result_pausa_atual->fetch_assoc()['segundos_pausa_atual'];
+        }
+        $stmt_pausa_atual->close();
+        
+        return $pausas_finalizadas + $pausa_atual;
     }
-    $stmt_pausa_atual->close();
-    
-    return $pausas_finalizadas + $pausa_atual;
+    return $pausas_finalizadas;
 }
 ?>

@@ -79,21 +79,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $verificacao_logado->execute();
                 $verificacao_logado = $verificacao_logado->get_result();
 
-                // impedir ele te tentar logar após completar todo o tempo de trabalho
-                // $verificar_historico_ponto = $conn->prepare("
-                //     SELECT id_ponto
-                //     FROM ponto_dia
-                //     WHERE data_ponto = CURDATE() AND fim_ponto IS NOT NULL
-                //     AND id_usuario = ?;
-                // ");
-                // $verificar_historico_ponto->bind_param("i", $usuario['id_usuario']);
-                // $verificar_historico_ponto->execute();
-                // $resultado = $verificar_historico_ponto->get_result();
+                $verificar_historico_ponto = $conn->prepare("
+                    SELECT id_ponto
+                    FROM ponto_dia
+                    WHERE data_ponto = CURDATE() AND fim_ponto IS NOT NULL
+                    AND id_usuario = ?;
+                ");
+                $verificar_historico_ponto->bind_param("i", $usuario['id_usuario']);
+                $verificar_historico_ponto->execute();
+                $resultado = $verificar_historico_ponto->get_result();
 
-                // if ($resultado->num_rows > 0) {
-                //     $erro_login = "Você já fez o maximo de hora extra por hoje";
-                //     $verificar_historico_ponto->close();
-                // }
+                if ($resultado->num_rows > 0) {
+                    $erro_login = "Você já fez o maximo de hora extra por hoje";
+                    $verificar_historico_ponto->close();
+                }
 
                 if ($verificacao_logado && $verificacao_logado->num_rows > 0) {
                     $row = $verificacao_logado->fetch_assoc();
@@ -172,5 +171,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </section>
     </main>
 </body>
-
 </html>
