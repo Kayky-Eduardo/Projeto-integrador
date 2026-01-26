@@ -8,6 +8,7 @@
     --cor-principal: #020617;
     --cor-principal-hover: #020617e8;
     --cor-destaque: #38bdf8;
+    --cor-perigo: #dc2626;
 
     /* Tipografia */
     --cor-texto-branco: #F2F2F2;
@@ -18,7 +19,7 @@
 
     /* Fundos */
     --cor-fundo-pagina: #F2F2F2;
-    --cor-fundo-card: #F2F2F2;
+    --cor-fundo-card: #ffffff;
     --cor-fundo-nav-hover: #334155;
 
     /* Bordas */
@@ -37,7 +38,6 @@
 /* ====================
     1 - RESET GERAL
 ==================== */
-
 * {
     margin: 0;
     padding: 0;
@@ -48,7 +48,6 @@
 /* =====================
     2 - LAYOUT GERAL 
 ===================== */
-
 body {
     font-family: "Segoe UI", Tahoma, sans-serif;
     min-height: 100vh;
@@ -79,7 +78,6 @@ footer ul,
 /* ==================
     3 - NAVEGAÇÃO
 ================== */
-
 nav {
     display: flex;
     gap: 8px;
@@ -175,6 +173,7 @@ nav a:focus {
     4 - PÁGINAS
 ================ */
 
+/* Página de Login */
 .pagina-login {
     background: url(../../assets/IMG/fundo_login.jpg) no-repeat center center fixed;
     background-size: cover;
@@ -188,10 +187,18 @@ nav a:focus {
     background: var(--sombra-fundo);
 }
 
+/* Centraliza o conteúdo principal */
 .main-center {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+/* Página de Configurações */
+.configuracoes {
+    display: flex;
+    gap: 1.5rem;
+    width: 100%;
 }
 
 
@@ -390,6 +397,101 @@ nav a:focus {
     transform: scale(1.3);
 }
 
+/* Menu lateral de configurações */
+.menu-config {
+    list-style: none;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: var(--cor-principal);
+    border-radius: var(--raio-borda-grande);
+}
+
+.menu-config a {
+    display: block;
+    padding: 0.6rem;
+    text-decoration: none;
+    color: var(--cor-texto-branco);
+    font-size: var(--tamanho-texto-padrao);
+    border-radius: var(--raio-borda-padrao);
+}
+
+.menu-config a:hover,
+.menu-config a.ativo {
+    background-color: var(--cor-fundo-nav-hover);
+}
+
+/* Painel de configurações */
+.painel-config {
+    flex: 1;
+    padding: 1.6rem;
+    border: 1px solid var(--cor-borda-padrao);
+    background-color: var(--cor-fundo-card);
+    border-radius: var(--raio-borda-grande);
+}
+
+.painel-config h1 {
+    margin-bottom: 0.4rem;
+    font-size: var(--tamanho-titulo-padrao);
+}
+
+.painel-config p {
+    margin-bottom: 1.4rem;
+    color: var(--cor-texto-suave);
+    font-size: var(--tamanho-texto-padrao);
+}
+
+/* Formulário de configurações */
+.painel-config fieldset {
+    border: none;
+    display: grid;
+    grid-template-columns: 0.5fr 2fr 0.5fr 2fr;
+    column-gap: 2rem;
+    row-gap: 0.4rem;
+}
+
+.painel-config label {
+    text-align: center;
+    font-weight: 600;
+    color: var(--cor-principal);
+    font-size: var(--tamanho-texto-padrao);
+}
+
+.painel-config input {
+    padding: 8px;
+    width: 100%;
+    border: 1px solid var(--cor-borda-padrao);
+    font-size: var(--tamanho-texto-padrao);
+    border-radius: var(--raio-borda-padrao);
+}
+
+.painel-config input:focus {
+    outline: none;
+    border-color: var(--cor-principal);
+}
+
+.painel-config button {
+    grid-column: span 4;
+    margin-top: 1.2rem;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    background-color: var(--cor-principal);
+    color: var(--cor-texto-branco);
+    font-size: var(--tamanho-texto-padrao);
+    border-radius: var(--raio-borda-padrao);
+}
+
+.painel-config button:hover {
+    background-color: var(--cor-principal-hover);
+}
+
+#resposta {
+    margin-top: 1rem;
+    font-size: var(--tamanho-texto-padrao);
+}
+
 
 /* ================
     6 - ESTADOS
@@ -427,6 +529,7 @@ footer a {
     text-decoration: none;
     color: var(--cor-destaque);
 }
+
 
 /* =======================
     8 - RESPONSIVIDADE
@@ -471,5 +574,24 @@ footer a {
     .dropdown-menu.right {
         left: auto;
         right: auto;
+    }
+
+    /* Página de Configurações */
+    .configuracoes {
+        flex-direction: column;
+    }
+
+    .menu-config {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .painel-config fieldset {
+        grid-template-columns: 1fr;
+    }
+
+    .painel-config button {
+        grid-column: span 1;
     }
 }

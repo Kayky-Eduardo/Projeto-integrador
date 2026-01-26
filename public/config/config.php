@@ -11,7 +11,7 @@ verificar_login($conn);
 <head>
     <meta charset="UTF-8">
     <title>Configurações</title>
-    <link rel="stylesheet" href="../../assets/css/estilo.css">
+    <link rel="stylesheet" href="../../assets/css/estilo_R01.css">
 </head>
 
 <body>
@@ -33,56 +33,23 @@ verificar_login($conn);
             <h1>Definir Jornada de Trabalho</h1>
             <p>Configure a carga horária e o limite diário de horas extras.</p>
 
-            <form onsubmit="setJornada(); return false;">
+            <form id="form-jornada">
                 <fieldset>
-                    <label for="set-jornada">Jornada diária padrão</label>
+                    <label for="set-jornada">Jornada diária padrão:</label>
                     <input id="set-jornada" type="time" required>
 
-                    <label for="set-hora-max">Limite de hora extra</label>
+                    <label for="set-hora-max">Limite de hora extra:</label>
                     <input id="set-hora-max" type="time" required>
 
-                    <button type="submit" class="btn-padrao">Salvar configuração</button>
+                    <button type="submit">Salvar configuração</button>
                 </fieldset>
             </form>
 
-            <p id="resposta" tabindex="0"></p>
+            <p id="resposta" role="alert" aria-live="polite" tabindex="0"></p>
         </section>
     </main>
 
-    <script>
-        async function setJornada() {
-            const jornada = document.getElementById('set-jornada').value;
-            const hora_extra = document.getElementById('set-hora-max').value;
-            const resposta = document.getElementById('resposta');
-
-            if (!jornada || !hora_extra) {
-                resposta.textContent = "Preencha todos os campos.";
-                return;
-            }
-
-            try {
-                const response = await fetch(`../../api/api_jornada.php`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        jornada: jornada,
-                        hora_extra: hora_extra
-                    })
-                });
-
-                if (response.ok) {
-                    resposta.textContent = "Jornada configurada com sucesso!";
-                } else {
-                    resposta.textContent = "Erro ao salvar configuração.";
-                }
-
-            } catch (error) {
-                resposta.textContent = "Falha na comunicação com o servidor.";
-            }
-        }
-    </script>
+    <script src="../../assets/js/script.js"></script>
 </body>
 
 </html>
