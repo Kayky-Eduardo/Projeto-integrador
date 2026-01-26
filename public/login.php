@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $usuario = $result->fetch_assoc();
             $senha_banco = $usuario['senha_usuario'];
 
-            if (password_verify($senha, $senha_banco) || $senha === $senha_banco) {
+            if (password_verify($senha, $senha_banco)) {
                 session_regenerate_id(true);
                 $_SESSION['nivel'] = $usuario['nivel'];
                 $_SESSION['id_usuario'] = $usuario['id_usuario'];
@@ -86,12 +86,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 //     WHERE data_ponto = CURDATE() AND fim_ponto IS NOT NULL
                 //     AND id_usuario = ?;
                 // ");
-                // $verificar_historico_ponto->bind_param("i", $id_usuario);
+                // $verificar_historico_ponto->bind_param("i", $usuario['id_usuario']);
                 // $verificar_historico_ponto->execute();
                 // $resultado = $verificar_historico_ponto->get_result();
 
                 // if ($resultado->num_rows > 0) {
                 //     $erro_login = "Você já fez o maximo de hora extra por hoje";
+                //     $verificar_historico_ponto->close();
                 // }
 
                 if ($verificacao_logado && $verificacao_logado->num_rows > 0) {
