@@ -214,6 +214,9 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
                     <a href="../../api/api_gerar_pdf.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>" target="_blank">
                     Abrir PDF
                     </a>
+                    <a href="editar_folha.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>">
+                    / Editar
+                    </a>
                 </td>
                      
 

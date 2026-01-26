@@ -4,7 +4,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$nivel = $_SESSION['nivel'];
+$id_usuario = $_SESSION['id_usuario'] ?? 0;
+$nivel = $_SESSION['nivel'] ?? 0;
 
 // Recebe filtros do formulário (caso existam)
 // Se não houver filtro, usa string vazia
@@ -50,11 +51,9 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina); // Calcula o total 
 // SQL principal para exibir os registros com filtros e paginação
 $sql = "
     SELECT f.id_folha, f.mes_competencia, f.salario_liquido,
-           u.nome_usuario, u.id_usuario, u.id_cargo,
-           c.nivel
+           u.nome_usuario, u.id_usuario, u.id_cargo
     FROM folhas f
     LEFT JOIN usuario u ON u.id_usuario = f.id_usuario
-    LEFT JOIN cargo c ON u.id_cargo = c.id_cargo
     WHERE 1
 ";
 
@@ -70,7 +69,9 @@ if (!empty($filtroUser)) {
 }
 
 // Garante que o usuário logado só veja o histórico de quem tiver nível inferior ao dele
-$sql .= " AND c.nivel <= " . intval($nivel);
+if ($nivel != 2){
+    $sql .= " AND f.id_usuario = " . intval($id_usuario);
+}
 
 // Ordena os resultados do mais recente para o mais antigo
 $sql .= " ORDER BY f.mes_competencia DESC";
@@ -109,12 +110,15 @@ td, th {border: 1px solid #444; padding: 8px;}
     <label>Funcionário:</label>
     <select name="usuario">
         <option value="">-- Todos --</option>
-        <?php while ($u = $users->fetch_assoc()): ?>
-            <option value="<?= $u['id_usuario'] ?>"
-                <?= ($u['id_usuario'] == $filtroUser) ? 'selected' : '' ?>>
-                <?= $u['nome_usuario'] ?> (ID: <?= $u['id_usuario'] ?>)
-            </option>
-        <?php endwhile; ?>
+        <?php if ($nivel == 2):?>
+            <?php while ($u = $users->fetch_assoc()): ?>
+                <option value="<?= $u['id_usuario'] ?>"
+                    <?= ($u['id_usuario'] == $filtroUser) ? 'selected' : '' ?>>
+                    <?= $u['nome_usuario'] ?> (ID: <?= $u['id_usuario'] ?>)
+                </option>
+            <?php endwhile; ?>
+        <?php endif; ?>
+        
     </select>
 
     <button type="submit">Filtrar</button>
@@ -140,8 +144,8 @@ td, th {border: 1px solid #444; padding: 8px;}
                 <td><?= $f["nome_usuario"] ?></td>
                 <td>R$ <?= number_format($f["salario_liquido"], 2, ',', '.') ?></td>
                 <td>
-                    <a href="'../../api/api_gerar_pdf.php?mes=<?= substr($f["mes_competencia"], 0, 7) ?>&id_usuario=<?= $f['id_usuario'] ?>" target="_blank">
-                    Abrir PDF
+                    <a href="../../api/api_gerar_pdf.php?mes=<?= substr($f["mes_competencia"], 0, 7) ?>&id_usuario=<?= $f['id_usuario'] ?>" target="_blank">
+                        Abrir PDF
                     </a>
                 </td>
             </tr>
