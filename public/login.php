@@ -89,43 +89,44 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $verificar_historico_ponto->execute();
                 $resultado = $verificar_historico_ponto->get_result();
 
-                if ($resultado->num_rows > 0) {
+                if ($resultado->num_rows === 0) {
+                    if ($verificacao_logado && $verificacao_logado->num_rows > 0) {
+                        $row = $verificacao_logado->fetch_assoc();
+                        $logout = $conn->prepare("UPDATE login SET data_fim = NOW() WHERE id_login = ?");
+                        $logout->bind_param("i", $row['id_login']);
+                        $logout->execute();
+                        $logout->close();
+                        $verificacao_logado->close();
+                    }
+    
+                    $update_login = $conn->prepare("
+                        INSERT INTO login (email_login, id_usuario, id_cargo) VALUES
+                        (?, ?, ?)
+                        ");
+                    $update_login->bind_param(
+                        'sii',
+                        $usuario['email_usuario'],
+                        $usuario['id_usuario'],
+                        $usuario['id_cargo']
+                    );
+                    $update_login->execute();
+                    $_SESSION['id_login'] = $update_login->insert_id;
+                    $update_login->close();
+                    if (password_needs_rehash($senha_banco, PASSWORD_DEFAULT)) {
+                            $novo_hash = password_hash($senha, PASSWORD_DEFAULT);
+                            $update = $conn->prepare("UPDATE usuario SET senha_usuario = ? WHERE id_usuario = ?");
+                            $update->bind_param("si", $novo_hash, $usuario['id_usuario']);
+                            $update->execute();
+                            $update->close();
+                    } 
+                    header("Location: index.php");
+                    $conn->close();
+                    exit; 
+                    } else {
+                        
                     $erro_login = "Você já fez o maximo de hora extra por hoje";
                     $verificar_historico_ponto->close();
-                }
-
-                if ($verificacao_logado && $verificacao_logado->num_rows > 0) {
-                    $row = $verificacao_logado->fetch_assoc();
-                    $logout = $conn->prepare("UPDATE login SET data_fim = NOW() WHERE id_login = ?");
-                    $logout->bind_param("i", $row['id_login']);
-                    $logout->execute();
-                    $logout->close();
-                    $verificacao_logado->close();
-                }
-
-                $update_login = $conn->prepare("
-                    INSERT INTO login (email_login, id_usuario, id_cargo) VALUES
-                    (?, ?, ?)
-                    ");
-                $update_login->bind_param(
-                    'sii',
-                    $usuario['email_usuario'],
-                    $usuario['id_usuario'],
-                    $usuario['id_cargo']
-                );
-                $update_login->execute();
-                $_SESSION['id_login'] = $update_login->insert_id;
-                $update_login->close();
-                if ($senha === $senha_banco) {
-                    $novo_hash = password_hash($senha, PASSWORD_DEFAULT);
-
-                    $update = $conn->prepare("UPDATE usuario SET senha_usuario = ? WHERE id_usuario = ?");
-                    $update->bind_param("si", $novo_hash, $usuario['id_usuario']);
-                    $update->execute();
-                    $update->close();
-                    $conn->close();
-                }
-                header("Location: index.php");
+                    }
             } else {
                 $erro_login = "E-mail ou senha incorretos.";
             }
@@ -133,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $erro_login = "E-mail ou senha incorretos.";
         }
     }
+
 }
 ?>
 
