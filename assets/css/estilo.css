@@ -1,159 +1,131 @@
-/*
-    SUMÁRIO
-    0. VARIÁVEIS DO SISTEMA
-    1. RESET GERAL
-    2. LAYOUT GERAL
-    3. COMPONENTES GENÉRICOS
-        3.1. Botões base
-    4. NAVEGAÇÃO
-    5. FORMULÁRIOS
-    6. PÁGINAS
-    7. ESTADOS E UTILITÁRIOS
-    8. RESPONSIVIDADE
-*/
+/* =============================
+    0 - VARIÁVEIS DO SISTEMA
+============================= */
 
-
-/* 0 - VARIÁVEIS DO SISTEMA */
 :root {
+    /* Cores Principais */
     --cor-principal: #020617;
     --cor-principal-hover: #020617e8;
-    --cor-perigo: #dc2626;
     --cor-destaque: #38bdf8;
-    --borda-padrao: #cbd5e1;
+    --cor-perigo: #dc2626;
+
+    /* Tipografia */
+    --cor-texto-branco: #F2F2F2;
+    --cor-texto-erro: #7f1d1d;
+    --cor-texto-suave: #64748b;
+    --tamanho-texto-padrao: 0.9rem;
+    --tamanho-titulo-padrao: 1.4rem;
+
+    /* Fundos */
+    --cor-fundo-pagina: #F2F2F2;
+    --cor-fundo-card: #ffffff;
+    --cor-fundo-nav-hover: #334155;
+
+    /* Bordas */
+    --cor-borda-padrao: #cbd5e1;
+    --cor-borda-erro: #fecaca;
+    --cor-fundo-erro: #fee2e2;
+    --raio-borda-padrao: 4px;
+    --raio-borda-grande: 8px;
+
+    /* Sombras */
+    --sombra-card: 0 20px 50px rgba(0, 0, 0, 0.35), 0 3px 10px rgba(0, 0, 0, 0.12);
+    --sombra-fundo: rgba(2, 6, 23, 0.55);
 }
 
 
-/* 1 - RESET GERAL */
+/* ====================
+    1 - RESET GERAL
+==================== */
+
 * {
     margin: 0;
     padding: 0;
-}
-
-*, *::before, *::after {
     box-sizing: border-box;
 }
 
-html {
-    font-size: 100%;
-}
+
+/* =====================
+    2 - BASE GERAL 
+===================== */
 
 body {
     font-family: "Segoe UI", Tahoma, sans-serif;
-    background-color: #F2F2F2;
-    color: #0D0D0D;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background-color: var(--cor-fundo-pagina);
 }
 
+/* Remover estilos padrão de listas e links */
+.nav-dropdown,
+.slides,
+footer ul,
+.dropdown-menu {
+    list-style: none;
+    padding: 0;
+}
 
-/* 2 - LAYOUT GERAL */
-header img {
+/* Estilos padrão para links */
+nav a,
+.dropdown-menu a,
+.voltar-final a {
+    text-decoration: none;
+    color: var(--cor-texto-branco);
+    font-size: var(--tamanho-texto-padrao);
+}
+
+/* Estilos de hover para links */
+nav a:hover,
+.dropdown-menu a:hover,
+.voltar-final a:hover .menu-config a:hover,
+.menu-config a.ativo {
+    background-color: var(--cor-fundo-nav-hover);
+}
+
+/* Exibir menu dropdown ao passar o mouse ou focar */
+.dropdown:hover .dropdown-menu,
+.dropdown:focus-within .dropdown-menu {
     display: block;
-    width: 100%;
 }
+
+/* =====================
+    3 - LAYOUT GERAL
+===================== */
 
 main {
     flex: 1;
     padding: 2rem;
 }
 
-.container {
-    width: 100%;
-    max-width: 1100px;
-    margin: 0 auto;
-}
-
 .main-center {
     display: flex;
     justify-content: center;
-    align-items: center;
 }
 
-footer {
-    background-color: #020617;
-    color: #F2F2F2;
-    text-align: center;
-    padding: 1.2rem;
-    font-size: 0.85rem;
-}
-
-footer ul {
-    list-style-type: none;
-}
-
-footer a {
-    text-decoration: none;
-    color: var(--cor-destaque);
-}
-
-
-/* 3 - COMPONENTES GENÉRICOS */
-
-/* 3.1 - Botões base */
-.btn-padrao,
-.btn-cadastrar,
-.btn-perfil,
-.btn-status,
-.btn-excluir,
-.btn-ativar,
-.btn-desativar {
-    font-size: 0.85rem;
-    padding: 10px;
-    cursor: pointer;
-    border-radius: 6px;
-    border: none;
-}
-
-/* Variações */
-.btn-padrao {
-    background-color: var(--cor-principal);
-    color: #fff;
-}
-
-.btn-padrao:hover {
-    background-color: var(--cor-principal-hover);
-}
-
-.btn-excluir {
-    background: var(--cor-perigo);
-    color: #fff;
-}
-
-
-/* 4 - NAVEGAÇÃO */
 nav {
-    background-color: #020617;
     display: flex;
     gap: 8px;
     padding: 0.6rem 1rem;
     justify-content: center;
+    background-color: var(--cor-principal);
 }
 
 nav a {
-    text-decoration: none;
-    color: #F2F2F2;
     padding: 0.4rem 0.8rem;
-    border-radius: 4px;
-    font-size: 0.9rem;
     transition: background-color 0.2s ease, transform 0.1s ease;
+    border-radius: var(--raio-borda-padrao);
 }
 
 nav a:hover {
-    background-color: #334155;
     transform: translateY(-2px);
 }
 
-nav a:focus,
-.dropdown-menu a:focus {
+nav a:focus {
     outline: 2px solid var(--cor-destaque);
 }
 
-.nav-dropdown {
-    list-style: none;
-    padding: 0;
-}
-
+/* Dropdown Navbar */
 .nav-dropdown.usuario {
     margin-left: auto;
 }
@@ -170,42 +142,30 @@ nav a:focus,
     align-items: center;
 }
 
+.dropdown-menu a {
+    display: block;
+    padding: 0.5rem 0.8rem;
+}
+
 .dropdown-menu {
-    list-style: none;
     position: absolute;
     top: 100%;
-    background-color: #020617;
     border: 1px solid #1e293b;
-    border-radius: 6px;
     min-width: 190px;
     display: none;
-    padding: 4px 0;
     z-index: 1000;
+    background-color: var(--cor-principal);
+    border-radius: var(--raio-borda-grande);
 }
 
 .dropdown-menu.left {
     left: 0;
 }
 
-.dropdown-menu.right {
-    right: 0;
-}
-
-.dropdown-menu a {
-    display: block;
-    padding: 0.5rem 0.8rem;
-    color: #F2F2F2;
-    font-size: 0.85rem;
-}
-
-.dropdown-menu a:hover {
-    background-color: #334155;
-}
-
 .dropdown-menu .separador {
     height: 1px;
-    background-color: #334155;
     margin: 4px 0;
+    background-color: var(--cor-fundo-nav-hover);
 }
 
 .dropdown-menu .sair {
@@ -213,31 +173,31 @@ nav a:focus,
     font-weight: 600;
 }
 
-.dropdown:hover .dropdown-menu,
-.dropdown:focus-within .dropdown-menu {
+footer {
+    background-color: var(--cor-principal);
+    color: var(--cor-texto-branco);
+    text-align: center;
+    padding: 1.2rem;
+    font-size: var(--tamanho-texto-padrao);
+}
+
+footer a {
+    text-decoration: none;
+    color: var(--cor-destaque);
+}
+
+
+/* ===========================
+    4 - COMPONENTES GERAIS
+=========================== */
+
+/* LOGO RESPONSIVA */
+header img {
     display: block;
+    width: 100%;
 }
 
-
-/* 5 - FORMULÁRIOS */
-.login-sistema input {
-    padding: 0.65rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    background-color: #f8fafc;
-}
-
-.login-sistema input::placeholder {
-    color: #94a3b8;
-}
-
-.login-sistema input:focus {
-    outline: none;
-    border-color: #020617;
-}
-
-/* CARROSSEL */
+/* CARROSSEL DE NOTÍCIAS */
 .carrossel {
     max-width: 900px;
     width: 100%;
@@ -247,7 +207,6 @@ nav a:focus,
 }
 
 .slides {
-    list-style: none;
     position: relative;
     height: 500px;
 }
@@ -257,6 +216,8 @@ nav a:focus,
     inset: 0;
     opacity: 0;
     transition: opacity 0.8s ease-in-out;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+    color: var(--cor-texto-branco);
 }
 
 .slide.ativo {
@@ -268,7 +229,7 @@ nav a:focus,
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: var(--raio-borda-grande);
 }
 
 .slide article {
@@ -285,7 +246,7 @@ nav a:focus,
     height: 90px;
     background: rgba(15, 23, 42, 0.65);
     transition: background 0.4s ease;
-    border-radius: 0 0 8px 8px;
+    border-radius: 0 0 var(--raio-borda-grande) var(--raio-borda-grande);
 }
 
 .carrossel:hover .slide article::after {
@@ -296,34 +257,29 @@ nav a:focus,
     position: absolute;
     bottom: 44px;
     left: 16px;
-    color: #F2F2F2;
-    font-size: 1.5rem;
     z-index: 2;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+    font-size: var(--tamanho-titulo-padrao);
 }
 
 .slide p {
     position: absolute;
     bottom: 14px;
     left: 16px;
-    color: #F2F2F2;
-    font-size: 1rem;
+    font-size: var(--tamanho-texto-padrao);
     z-index: 2;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
 }
 
-/* BOTÕES */
-.btn {
+.btn-carrossel {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     background-color: rgba(15, 23, 42, 0.75);
-    color: #F2F2F2;
+    color: var(--cor-texto-branco);
     border: none;
     font-size: 1.8rem;
     padding: 0.3rem 0.8rem;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--raio-borda-padrao);
     z-index: 5;
 }
 
@@ -335,13 +291,11 @@ nav a:focus,
     right: 10px;
 }
 
-.btn:hover {
+.btn-carrossel:hover {
     background-color: rgba(15, 23, 42, 1);
 }
 
-/* INDICADORES DO CARROSSEL */
 .indicadores {
-    background: transparent;
     position: absolute;
     top: 18px;
     left: 50%;
@@ -349,10 +303,6 @@ nav a:focus,
     display: flex;
     gap: 8px;
     z-index: 6;
-    border-radius: 10px;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
 }
 
 .dot {
@@ -366,7 +316,7 @@ nav a:focus,
 }
 
 .dot:hover {
-    transform: scale(1.2);
+    transform: scale(1.3);
 }
 
 .dot.ativo {
@@ -374,11 +324,40 @@ nav a:focus,
     transform: scale(1.3);
 }
 
-/* ============
-   LOGIN.PHP
-============ */
+/* BOTÕES */
+.btn-padrao,
+.btn-cadastrar,
+.btn-perfil,
+.btn-status,
+.btn-excluir,
+.btn-ativar,
+.btn-desativar {
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+    font-size: var(--tamanho-texto-padrao);
+    border-radius: var(--raio-borda-padrao);
+    background-color: var(--cor-principal);
+    color: var(--cor-texto-branco);
+}
+
+.btn-padrao:hover,
+.painel-config button:hover {
+    background-color: var(--cor-principal-hover);
+}
+
+.btn-excluir {
+    background: var(--cor-perigo);
+    color: var(--cor-texto-branco);
+}
+
+/* ============================
+    5 - PÁGINAS ESPECÍFICAS
+============================ */
+
+/* PÁGINA DE LOGIN */
 .pagina-login {
-    background: url(../img/fundo_login.jpg) no-repeat center center fixed;
+    background: url(../../assets/IMG/fundo_login.jpg) no-repeat center center fixed;
     background-size: cover;
 }
 
@@ -386,38 +365,41 @@ nav a:focus,
     content: "";
     position: fixed;
     inset: 0;
-    background: rgba(2, 6, 23, 0.55);
     z-index: -1;
+    background: var(--sombra-fundo);
 }
 
+.main-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Container do Login */
 .login-sistema {
     max-width: 460px;
     width: 100%;
-    background-color: #ffffff;
     padding: 2.4rem;
-    border-radius: 8px;
-    border: 1px solid #cbd5e1;
-    box-shadow:
-        0 20px 50px rgba(0, 0, 0, 0.35),
-        0 3px 10px rgba(0, 0, 0, 0.12);
+    border: 1px solid var(--cor-borda-padrao);
+    background-color: var(--cor-fundo-card);
+    border-radius: var(--raio-borda-grande);
+    box-shadow: var(--sombra-card);
+    align-items: center;
 }
 
-/* título */
 .login-sistema h2 {
-    font-size: 1.4rem;
-    color: #020617;
     margin-bottom: 0.4rem;
     font-weight: 600;
+    color: var(--cor-principal);
+    font-size: var(--tamanho-titulo-padrao);
 }
 
-/* subtítulo */
 .login-sistema p {
-    font-size: 0.85rem;
-    color: #64748b;
     margin-bottom: 1.6rem;
+    color: var(--cor-texto-suave);
+    font-size: var(--tamanho-texto-padrao);
 }
 
-/* fieldset */
 .login-sistema fieldset {
     border: none;
     display: flex;
@@ -425,174 +407,139 @@ nav a:focus,
     gap: 0.8rem;
 }
 
-/* labels */
 .login-sistema label {
     font-weight: 600;
-    font-size: 0.85rem;
-    color: #334155;
+    color: var(--cor-principal);
+    font-size: var(--tamanho-texto-padrao);
 }
 
-/* botão */
+.login-sistema input {
+    padding: 0.65rem;
+    border: 1px solid var(--cor-borda-padrao);
+    background-color: var(--cor-fundo-card);
+    border-radius: var(--raio-borda-padrao);
+    font-size: var(--tamanho-texto-padrao);
+}
+
+.login-sistema input:focus {
+    outline: none;
+    border-color: var(--cor-principal);
+}
+
 .login-sistema button {
     margin-top: 1.2rem;
     padding: 0.75rem;
-    background-color: #020617;
-    color: white;
     border: none;
-    font-size: 0.9rem;
-    border-radius: 4px;
     cursor: pointer;
-    letter-spacing: 0.4px;
     transition: background-color 0.2s ease;
+    background-color: var(--cor-principal);
+    color: var(--cor-texto-branco);
+    font-size: var(--tamanho-texto-padrao);
+    border-radius: var(--raio-borda-padrao);
 }
 
 .login-sistema button:hover {
     background-color: var(--cor-principal-hover);
 }
 
-.erro-login {
-    background-color: #fee2e2;
-    color: #7f1d1d;
-    border: 1px solid #fecaca;
-    border-radius: 4px;
-    padding: 0.7rem 0.9rem;
-    font-size: 0.85rem;
-    margin-bottom: 1rem;
-}
-
-/* ====================
-   CONFIG/CONFIG.PHP
-==================== */
+/* PÁGINA DE CONFIGURAÇÕES */
 .configuracoes {
     display: flex;
     gap: 1.5rem;
     width: 100%;
 }
 
+/* Menu lateral de configurações */
 .menu-config {
     list-style: none;
-    background-color: #020617;
     padding: 1rem;
-    border-radius: 8px;
-    min-width: 220px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    background-color: var(--cor-principal);
+    border-radius: var(--raio-borda-grande);
 }
 
 .menu-config a {
     display: block;
     padding: 0.6rem;
-    color: #F2F2F2;
     text-decoration: none;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    transition: background-color 0.2s ease;
+    color: var(--cor-texto-branco);
+    font-size: var(--tamanho-texto-padrao);
+    border-radius: var(--raio-borda-padrao);
 }
 
-.menu-config a:hover,
-.menu-config a.ativo {
-    background-color: #334155;
-}
-
+/* Painel de configurações */
 .painel-config {
     flex: 1;
-    background-color: #ffffff;
-    border-radius: 8px;
     padding: 1.6rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--cor-borda-padrao);
+    background-color: var(--cor-fundo-card);
+    border-radius: var(--raio-borda-grande);
 }
 
 .painel-config h1 {
-    font-size: 1.4rem;
     margin-bottom: 0.4rem;
+    font-size: var(--tamanho-titulo-padrao);
 }
 
 .painel-config p {
-    font-size: 0.9rem;
-    color: #64748b;
     margin-bottom: 1.4rem;
+    color: var(--cor-texto-suave);
+    font-size: var(--tamanho-texto-padrao);
 }
 
-/* FORMULÁRIO */
-
+/* Formulário de configurações */
 .painel-config fieldset {
     border: none;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 0.5fr 2fr 0.5fr 2fr;
     column-gap: 2rem;
     row-gap: 0.4rem;
 }
 
-/* Jornada diária */
-.painel-config label:nth-of-type(1) {
-    grid-column: 1;
-    grid-row: 1;
+.painel-config label {
+    text-align: center;
+    font-weight: 600;
+    color: var(--cor-principal);
+    font-size: var(--tamanho-texto-padrao);
 }
 
-.painel-config input:nth-of-type(1) {
-    grid-column: 1;
-    grid-row: 2;
-}
-
-/* Limite hora extra */
-.painel-config label:nth-of-type(2) {
-    grid-column: 2;
-    grid-row: 1;
-}
-
-.painel-config input:nth-of-type(2) {
-    grid-column: 2;
-    grid-row: 2;
-}
-
-/* input */
 .painel-config input {
-    padding: 0.6rem;
-    border-radius: 4px;
-    border: 1px solid #cbd5e1;
-    font-size: 0.9rem;
+    padding: 8px;
     width: 100%;
+    border: 1px solid var(--cor-borda-padrao);
+    font-size: var(--tamanho-texto-padrao);
+    border-radius: var(--raio-borda-padrao);
 }
 
 .painel-config input:focus {
     outline: none;
-    border-color: #020617;
+    border-color: var(--cor-principal);
 }
 
-/* botão */
+/* VAI MUDAR AINDA */
 .painel-config button {
-    grid-column: span 2;
+    grid-column: span 4;
     margin-top: 1.2rem;
-    padding: 0.7rem;
-    background-color: #020617;
-    color: white;
+    padding: 10px;
     border: none;
-    border-radius: 4px;
     cursor: pointer;
+    background-color: var(--cor-principal);
+    color: var(--cor-texto-branco);
+    font-size: var(--tamanho-texto-padrao);
+    border-radius: var(--raio-borda-padrao);
 }
 
-.painel-config button:hover {
-    background-color: var(--cor-principal-hover);
-}
-
-/* resposta */
 #resposta {
     margin-top: 1rem;
-    font-size: 0.9rem;
+    font-size: var(--tamanho-texto-padrao);
 }
 
-/* ========================
-    USUARIO/LISTA.PHP
-======================== */
+/* PÁGINA DE LISTA DE USUÁRIOS */
 
-.pagina-lista-usuarios {
-    display: flex;
-    justify-content: center;
-}
-
-.usuarios-topo {
-    width: 100%;
+/* Ações */
+.usuarios-acoes {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -600,18 +547,109 @@ nav a:focus,
     margin-bottom: 16px;
 }
 
-.btn-cadastrar {
-    background-color: var(--cor-principal);
-    color: white;
+.link-cadastrar {
     text-decoration: none;
     padding: 10px;
-    border-radius: 6px;
-    transition: background 0.2s ease;
-    white-space: nowrap;
-    border: none;
+    background-color: var(--cor-principal);
+    color: var(--cor-texto-branco);
+    font-size: var(--tamanho-texto-padrao);
+    border-radius: var(--raio-borda-padrao);
 }
 
-.btn-cadastrar:hover {
+
+/* ========================
+    6 - ESTADOS E UTILS
+======================== */
+
+/* Erro */
+.erro-login {
+    border: 1px solid var(--cor-borda-erro);
+    background-color: var(--cor-fundo-erro);
+    color: var(--cor-texto-erro);
+    font-size: var(--tamanho-texto-padrao);
+    border-radius: var(--raio-borda-padrao);
+    padding: 0.7rem 0.9rem;
+    margin-bottom: 1rem;
+}
+
+/* Escondido */
+.hidden {
+    display: none;
+}
+
+
+/* =======================
+    8 - RESPONSIVIDADE
+======================= */
+
+@media (max-width: 1000px) {
+    main {
+        padding: 1.2rem;
+    }
+
+    /* Navbar */
+    nav {
+        flex-direction: column;
+    }
+
+    nav a {
+        text-align: center;
+        border: 1px solid #1e293b;
+    }
+
+    .nav-dropdown {
+        width: 100%;
+    }
+
+    .dropdown {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .dropdown-toggle {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .dropdown-menu {
+        position: static;
+        min-width: 100%;
+        border-radius: var(--raio-borda-grande);
+        margin-top: 4px;
+    }
+
+    .dropdown-menu.right {
+        left: auto;
+        right: auto;
+    }
+
+    /* Página de Configurações */
+    .configuracoes {
+        flex-direction: column;
+    }
+
+    .menu-config {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .painel-config fieldset {
+        grid-template-columns: 1fr;
+    }
+
+    .painel-config button {
+        grid-column: span 1;
+    }
+}
+
+/* ========================
+    USUARIO/LISTA.PHP
+======================== */
+
+.link-cadastrar:hover {
     background-color: var(--cor-principal-hover);
 }
 
@@ -795,8 +833,6 @@ nav a:focus,
     font-size: 0.8rem;
     margin-bottom: 4px;
 }
-
-/* BOTÕES PADRÃO */
 
 /* AÇÕES EMPRESA */
 .acoes-empresa {

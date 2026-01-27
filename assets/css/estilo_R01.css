@@ -1,8 +1,9 @@
 /* GLOBAL.CSS */
 
-/* ==========================
+/* =============================
     0 - VARIÁVEIS DO SISTEMA
-================================ */
+============================= */
+
 :root {
     /* Cores Principais */
     --cor-principal: #020617;
@@ -38,6 +39,7 @@
 /* ====================
     1 - RESET GERAL
 ==================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -46,8 +48,9 @@
 
 
 /* =====================
-    2 - LAYOUT GERAL 
+    2 - BASE GERAL 
 ===================== */
+
 body {
     font-family: "Segoe UI", Tahoma, sans-serif;
     min-height: 100vh;
@@ -56,16 +59,7 @@ body {
     background-color: var(--cor-fundo-pagina);
 }
 
-header img {
-    display: block;
-    width: 100%;
-}
-
-main {
-    flex: 1;
-    padding: 2rem;
-}
-
+/* Remover estilos padrão de listas e links */
 .nav-dropdown,
 .slides,
 footer ul,
@@ -74,10 +68,42 @@ footer ul,
     padding: 0;
 }
 
+/* Estilos padrão para links */
+nav a,
+.dropdown-menu a {
+    text-decoration: none;
+    color: var(--cor-texto-branco);
+    font-size: var(--tamanho-texto-padrao);
+}
 
-/* ==================
-    3 - NAVEGAÇÃO
-================== */
+/* Estilos de hover para links */
+nav a:hover,
+.dropdown-menu a:hover {
+    background-color: var(--cor-fundo-nav-hover);
+}
+
+/* Exibir menu dropdown ao passar o mouse ou focar */
+.dropdown:hover .dropdown-menu,
+.dropdown:focus-within .dropdown-menu {
+    display: block;
+}
+
+
+/* =====================
+    3 - LAYOUT GERAL
+===================== */
+
+main {
+    flex: 1;
+    padding: 2rem;
+}
+
+.main-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 nav {
     display: flex;
     gap: 8px;
@@ -102,18 +128,6 @@ nav {
     align-items: center;
 }
 
-nav a,
-.dropdown-menu a {
-    text-decoration: none;
-    color: var(--cor-texto-branco);
-    font-size: var(--tamanho-texto-padrao);
-}
-
-nav a:hover,
-.dropdown-menu a:hover {
-    background-color: var(--cor-fundo-nav-hover);
-}
-
 nav a {
     padding: 0.4rem 0.8rem;
     transition: background-color 0.2s ease, transform 0.1s ease;
@@ -128,6 +142,31 @@ nav a:focus {
     outline: 2px solid var(--cor-destaque);
 }
 
+footer {
+    background-color: var(--cor-principal);
+    color: var(--cor-texto-branco);
+    text-align: center;
+    padding: 1.2rem;
+    font-size: var(--tamanho-texto-padrao);
+}
+
+footer a {
+    text-decoration: none;
+    color: var(--cor-destaque);
+}
+
+
+/* ===========================
+    4 - COMPONENTES GERAIS
+=========================== */
+
+/* Logo Responsiva */
+header img {
+    display: block;
+    width: 100%;
+}
+
+/* Dropdown Navbar */
 .dropdown-menu a {
     display: block;
     padding: 0.5rem 0.8rem;
@@ -148,10 +187,6 @@ nav a:focus {
     left: 0;
 }
 
-.dropdown-menu.right {
-    right: 0;
-}
-
 .dropdown-menu .separador {
     height: 1px;
     margin: 4px 0;
@@ -161,113 +196,6 @@ nav a:focus {
 .dropdown-menu .sair {
     color: #f87171;
     font-weight: 600;
-}
-
-.dropdown:hover .dropdown-menu,
-.dropdown:focus-within .dropdown-menu {
-    display: block;
-}
-
-
-/* ================
-    4 - PÁGINAS
-================ */
-
-/* Página de Login */
-.pagina-login {
-    background: url(../../assets/IMG/fundo_login.jpg) no-repeat center center fixed;
-    background-size: cover;
-}
-
-.pagina-login::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    background: var(--sombra-fundo);
-}
-
-/* Centraliza o conteúdo principal */
-.main-center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Página de Configurações */
-.configuracoes {
-    display: flex;
-    gap: 1.5rem;
-    width: 100%;
-}
-
-
-/* ===============================
-    5 - COMPONENTES PRINCIPAIS
-=============================== */
-
-/* Container do Login */
-.login-sistema {
-    max-width: 460px;
-    width: 100%;
-    padding: 2.4rem;
-    border: 1px solid var(--cor-borda-padrao);
-    background-color: var(--cor-fundo-card);
-    border-radius: var(--raio-borda-grande);
-    box-shadow: var(--sombra-card);
-}
-
-.login-sistema h2 {
-    margin-bottom: 0.4rem;
-    font-weight: 600;
-    color: var(--cor-principal);
-    font-size: var(--tamanho-titulo-padrao);
-}
-
-.login-sistema p {
-    margin-bottom: 1.6rem;
-    color: var(--cor-texto-suave);
-    font-size: var(--tamanho-texto-padrao);
-}
-
-.login-sistema fieldset {
-    border: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-.login-sistema label {
-    font-weight: 600;
-    color: var(--cor-principal);
-}
-
-.login-sistema input {
-    padding: 0.65rem;
-    border: 1px solid var(--cor-borda-padrao);
-    background-color: var(--cor-fundo-card);
-    border-radius: var(--raio-borda-padrao);
-}
-
-.login-sistema input:focus {
-    outline: none;
-    border-color: var(--cor-principal);
-}
-
-.login-sistema button {
-    margin-top: 1.2rem;
-    padding: 0.75rem;
-    border: none;
-    cursor: pointer;
-    letter-spacing: 0.4px;
-    transition: background-color 0.2s ease;
-    background-color: var(--cor-principal);
-    color: var(--cor-texto-branco);
-    border-radius: var(--raio-borda-padrao);
-}
-
-.login-sistema button:hover {
-    background-color: var(--cor-principal-hover);
 }
 
 /* Container do Carrossel */
@@ -397,6 +325,96 @@ nav a:focus {
     transform: scale(1.3);
 }
 
+
+/* ============================
+    5 - PÁGINAS ESPECÍFICAS
+============================ */
+
+/* PÁGINA DE LOGIN */
+.pagina-login {
+    background: url(../../assets/IMG/fundo_login.jpg) no-repeat center center fixed;
+    background-size: cover;
+}
+
+.pagina-login::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: var(--sombra-fundo);
+}
+
+/* Container do Login */
+.login-sistema {
+    max-width: 460px;
+    width: 100%;
+    padding: 2.4rem;
+    border: 1px solid var(--cor-borda-padrao);
+    background-color: var(--cor-fundo-card);
+    border-radius: var(--raio-borda-grande);
+    box-shadow: var(--sombra-card);
+}
+
+.login-sistema h2 {
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    color: var(--cor-principal);
+    font-size: var(--tamanho-titulo-padrao);
+}
+
+.login-sistema p {
+    margin-bottom: 1.6rem;
+    color: var(--cor-texto-suave);
+    font-size: var(--tamanho-texto-padrao);
+}
+
+.login-sistema fieldset {
+    border: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.login-sistema label {
+    font-weight: 600;
+    color: var(--cor-principal);
+}
+
+.login-sistema input {
+    padding: 0.65rem;
+    border: 1px solid var(--cor-borda-padrao);
+    background-color: var(--cor-fundo-card);
+    border-radius: var(--raio-borda-padrao);
+}
+
+.login-sistema input:focus {
+    outline: none;
+    border-color: var(--cor-principal);
+}
+
+.login-sistema button {
+    margin-top: 1.2rem;
+    padding: 0.75rem;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.4px;
+    transition: background-color 0.2s ease;
+    background-color: var(--cor-principal);
+    color: var(--cor-texto-branco);
+    border-radius: var(--raio-borda-padrao);
+}
+
+.login-sistema button:hover {
+    background-color: var(--cor-principal-hover);
+}
+
+/* PÁGINA DE CONFIGURAÇÕES */
+.configuracoes {
+    display: flex;
+    gap: 1.5rem;
+    width: 100%;
+}
+
 /* Menu lateral de configurações */
 .menu-config {
     list-style: none;
@@ -493,9 +511,9 @@ nav a:focus {
 }
 
 
-/* ================
-    6 - ESTADOS
-================ */
+/* ========================
+    6 - ESTADOS E UTILS
+======================== */
 
 /* Erro */
 .erro-login {
@@ -514,31 +532,16 @@ nav a:focus {
 }
 
 
-/* ===============
-    7 - FOOTER 
-=============== */
-footer {
-    background-color: var(--cor-principal);
-    color: var(--cor-texto-branco);
-    text-align: center;
-    padding: 1.2rem;
-    font-size: var(--tamanho-texto-padrao);
-}
-
-footer a {
-    text-decoration: none;
-    color: var(--cor-destaque);
-}
-
-
 /* =======================
     8 - RESPONSIVIDADE
 ======================= */
+
 @media (max-width: 1000px) {
     main {
         padding: 1.2rem;
     }
 
+    /* Navbar */
     nav {
         flex-direction: column;
     }

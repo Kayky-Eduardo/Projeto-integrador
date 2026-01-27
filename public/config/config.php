@@ -11,7 +11,7 @@ verificar_login($conn);
 <head>
     <meta charset="UTF-8">
     <title>Configurações</title>
-    <link rel="stylesheet" href="../../assets/css/estilo_R01.css">
+    <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
 
 <body>

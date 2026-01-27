@@ -212,11 +212,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Acesso ao Sistema de RH</title>
-    <link rel="stylesheet" href="../assets/css/estilo_R01.css">
+    <link rel="stylesheet" href="../assets/css/estilo.css">
 </head>
 
 <body class="pagina-login">
-    <main class="main-center">
+    <main class="main-login">
         <section class="login-sistema">
             <h2>Acesso ao Sistema</h2>
             <p>Utilize suas credenciais corporativas</p>
