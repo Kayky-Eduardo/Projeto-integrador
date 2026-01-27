@@ -107,20 +107,35 @@ if (!$folha) {
 // 8. Eventos
 // -----------------------------
 $sql_eventos = $conn->prepare("
-    SELECT tipo, descricao, valor 
+    SELECT id_evento, tipo, descricao, valor 
     FROM eventos 
     WHERE id_usuario = ? AND mes_competencia = ?
 ");
 $sql_eventos->bind_param("is", $id_usuario, $mes_comp);
 $sql_eventos->execute();
 $eventos = $sql_eventos->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// CODIGUINHO DO DABI
+if ($_SERVER['REQUEST_METHOD'] === 'POST'){
+    $acao = $_POST['acao'] ?? '';
+    $id_evento = $_POST['id_evento'] ?? '';
+
+    //deletando evento
+    if ($acao = 'deletar'){
+        $sql= $conn->prepare("DELETE FROM eventos WHERE id_evento = ?");
+        $sql->bind_param('i', $id_evento);
+        $sql->execute();
+    }
+    header("Refresh:0"); // "0" significa tempo para esperar pra dar refresh
+}
+
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Holerite <?= $mes; ?></title>
+<title>Editar Holerite <?= $mes; ?></title>
 
 <style>
 body { font-family: Arial; padding: 25px; }
@@ -143,11 +158,13 @@ input[type="text"], input[type="email"] {
 
 <div id="holerite">
 
-    <h1>HOLERITE <?= date("m/Y", strtotime($mes_comp)); ?></h1>
+    <h1>EDITAR HOLERITE <?= date("m/Y", strtotime($mes_comp)); ?></h1>
 
     <table>
-        <tr class="titulo"><td colspan="2">Empresa</td></tr>
+        <tr class="titulo"><td colspan="2">Empregador</td></tr>
         <tr><td>Nome:</td><td>Sem nome</td></tr>
+        <tr><td>Endereço:</td><td>Sem endereço</td></tr>
+        <tr><td>CNPJ:</td><td>Sem CNPJ</td></tr>
 
         <tr class="titulo"><td colspan="2">Funcionário</td></tr>
         <tr><td>Nome:</td><td><?= $user["nome_usuario"]; ?></td></tr>
@@ -164,20 +181,24 @@ input[type="text"], input[type="email"] {
             <tr><td colspan="2">Nenhum evento cadastrado.</td></tr>
         <?php else: ?>
             <?php foreach ($eventos as $e): ?>
-                <tr>
-                    <td><?= strtoupper($e["tipo"]) . " - " . $e["descricao"]; ?></td>
-                    <td>R$ <input value="<?= number_format($e["valor"], 2, ',', '.'); ?>"></input></td>
-                </tr>
+                <form method="POST">
+                    <input hidden name="id_evento" value="<?= $e["id_evento"] ?>">
+                    <tr>
+                        <td><?= strtoupper($e["tipo"]) . " - " . $e["descricao"]; ?></td>
+                        <td>R$ <input value="<?= number_format($e["valor"], 2, ',', '.'); ?>"></input>
+                        <input type="submit" name="acao" value="deletar"></td>
+                    </tr>
+                </form>
             <?php endforeach; ?>
         <?php endif; ?>
 
         <tr class="titulo"><td colspan="2">Resumo</td></tr>
-        <tr><td>Salário Bruto:</td><td>R$<input value=" <?= number_format($folha["salario_bruto"],2,',','.'); ?>"></input></td></tr>
-        <tr><td>Total Proventos:</td><td>R$<input value=" <?= number_format($folha["total_proventos"],2,',','.'); ?>"></input></td></tr>
-        <tr><td>Total Descontos:</td><td>R$<input value=" <?= number_format($folha["total_descontos"],2,',','.'); ?>"></input></td></tr>
-        <tr><td>VT:</td><td>R$<input value=" <?= number_format($folha["vt"],2,',','.'); ?>"></input></td></tr>
-        <tr><td>INSS:</td><td>R$<input value=" <?= number_format($folha["inss"],2,',','.'); ?>"></input></td></tr>
-        <tr><td>IRRF:</td><td>R$<input value=" <?= number_format($folha["irrf"],2,',','.'); ?>"></input></td></tr>
+        <tr><td>Salário Bruto:</td><td>R$ <?= number_format($folha["salario_bruto"],2,',','.'); ?></td></tr>
+        <tr><td>Total Proventos:</td><td>R$ <?= number_format($folha["total_proventos"],2,',','.'); ?></td></tr>
+        <tr><td>Total Descontos:</td><td>R$ <?= number_format($folha["total_descontos"],2,',','.'); ?></td></tr>
+        <tr><td>VT:</td><td>R$ <?= number_format($folha["vt"],2,',','.'); ?></td></tr>
+        <tr><td>INSS:</td><td>R$ <?= number_format($folha["inss"],2,',','.'); ?></td></tr>
+        <tr><td>IRRF:</td><td>R$ <?= number_format($folha["irrf"],2,',','.'); ?></td></tr>
         <tr class="titulo">
             <td><b>Salário Líquido</b></td>
             <td><b>R$ <?= number_format($folha["salario_liquido"],2,',','.'); ?></b></td>
