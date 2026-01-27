@@ -50,8 +50,16 @@ function verificar_login($conn) {
     verificar_tipo($conn, $id_usuario, $resultado_tempo);
 }
 
+// include não funciona por que é um arquivo que não existe(por causa do ?s=segundos)
+function teste($segundos) {
+    header("Location: /projeto-integrador/public/ponto/pausas_e_ponto/msg_pop_up.php?s=$segundos");
+    // $segundos = $segundos;
+    // include("/projeto-integrador/public/ponto/pausas_e_ponto/msg_pop_up.php");
+}
+
 function redirecionar() {
     header("Location: /projeto-integrador/public/logout.php");
+    exit;
 }
 
 function verificar_tipo($conn, $id_usuario, $resultado_tempo) {
@@ -212,7 +220,6 @@ function fechar_pontos_pendentes($conn, $id_usuario) {
     }
     
 }
-
 
 function verificar_tempo_por_ponto($conn, $id_usuario) {
     // verifica se tem ponto em aberto

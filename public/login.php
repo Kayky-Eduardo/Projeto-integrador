@@ -125,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     exit; 
                 
                 } else {        
-                    $erro_login = "Você já finalizou um ponto hoje!";
+                    $erro_login = "Você já finalizou o ponto de hoje!";
                     $verificar_historico_ponto->close();
 
                 }
