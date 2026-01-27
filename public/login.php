@@ -50,10 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $senha = $_POST['senha'];
 
         $stmt = $conn->prepare("
-        SELECT usuario.*, cargo.nome_cargo, cargo.nivel, cargo.id_cargo, usuario.senha_usuario
-        FROM usuario
-        JOIN cargo ON usuario.id_cargo = cargo.id_cargo
-        WHERE usuario.email_usuario = ?
+            SELECT usuario.*, cargo.nome_cargo, cargo.nivel, cargo.id_cargo, usuario.senha_usuario
+            FROM usuario
+            JOIN cargo ON usuario.id_cargo = cargo.id_cargo
+            WHERE usuario.email_usuario = ?
         ");
 
         $stmt->bind_param("s", $email);
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     SELECT id_login FROM login
                     WHERE id_usuario = ? AND data_fim IS NULL
                     LIMIT 1
-                    ");
+                ");
 
                 $verificacao_logado->bind_param("i", $usuario['id_usuario']);
                 $verificacao_logado->execute();
@@ -85,6 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     WHERE data_ponto = CURDATE() AND fim_ponto IS NOT NULL
                     AND id_usuario = ?;
                 ");
+
                 $verificar_historico_ponto->bind_param("i", $usuario['id_usuario']);
                 $verificar_historico_ponto->execute();
                 $resultado = $verificar_historico_ponto->get_result();
@@ -113,20 +114,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $_SESSION['id_login'] = $update_login->insert_id;
                     $update_login->close();
                     if (password_needs_rehash($senha_banco, PASSWORD_DEFAULT)) {
-                            $novo_hash = password_hash($senha, PASSWORD_DEFAULT);
-                            $update = $conn->prepare("UPDATE usuario SET senha_usuario = ? WHERE id_usuario = ?");
-                            $update->bind_param("si", $novo_hash, $usuario['id_usuario']);
-                            $update->execute();
-                            $update->close();
+                        $novo_hash = password_hash($senha, PASSWORD_DEFAULT);
+                        $update = $conn->prepare("UPDATE usuario SET senha_usuario = ? WHERE id_usuario = ?");
+                        $update->bind_param("si", $novo_hash, $usuario['id_usuario']);
+                        $update->execute();
+                        $update->close();
                     } 
                     header("Location: index.php");
                     $conn->close();
                     exit; 
-                    } else {
-                        
-                    $erro_login = "Você já fez o maximo de hora extra por hoje";
+                
+                } else {        
+                    $erro_login = "Você já finalizou um ponto hoje!";
                     $verificar_historico_ponto->close();
-                    }
+
+                }
             } else {
                 $erro_login = "E-mail ou senha incorretos.";
             }
@@ -134,7 +136,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $erro_login = "E-mail ou senha incorretos.";
         }
     }
-
 }
 ?>
 
