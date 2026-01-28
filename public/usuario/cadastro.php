@@ -229,7 +229,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </section>
 
             <!-- COLUNA FORMULÁRIO -->
-            <section class="perfil-dados">
+            <section class="perfil-visualizacao">
                 <article class="perfil-artigo">
 
                     <!-- ERROS -->

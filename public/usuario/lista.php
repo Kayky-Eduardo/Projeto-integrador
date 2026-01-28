@@ -101,7 +101,7 @@ $result = $stmt->get_result();
                             <?= e($row['nome_cargo'] ?? 'Cargo não definido') ?>
                         </p>
 
-                        <a href="editar.php?id=<?= (int) $row['id_usuario'] ?>" class="btn-perfil">Perfil</a>
+                        <a href="editar.php?id=<?= (int) $row['id_usuario'] ?>" class="link-perfil">Perfil</a>
                     </article>
                 <?php endwhile; ?>
             </section>

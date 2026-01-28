@@ -346,9 +346,55 @@ header img {
     background-color: var(--cor-principal-hover);
 }
 
+#btn-salvar-foto {
+    margin-top: 20px;
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+    font-size: var(--tamanho-texto-padrao);
+    border-radius: var(--raio-borda-padrao);
+    background-color: var(--cor-fundo-pagina);
+    color: var(--cor-principal);
+}
+
+.btn-status {
+    padding: 10px;
+    border-radius: var(--raio-borda-padrao);
+    font-weight: 400;
+    border: 1px solid transparent;
+    width: 100%;
+}
+
+.btn-ativar {
+    background-color: #2ecc71;
+}
+
+.btn-desativar {
+    background-color: #f97316;
+}
+
 .btn-excluir {
     background: var(--cor-perigo);
     color: var(--cor-texto-branco);
+}
+
+.voltar-final {
+    text-align: center;
+    margin-top: 0;
+    border-radius: var(--raio-borda-padrao);
+}
+
+.voltar-final a {
+    color: var(--cor-principal);
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    padding: 8px;
+    border-radius: var(--raio-borda-padrao);
+    background: var(--cor-borda-padrao);
+    border: 1px solid var(--cor-borda-padrao);
+    font-size: var(--tamanho-texto-padrao);
+    font-weight: 600;
 }
 
 /* ============================
@@ -541,6 +587,7 @@ header img {
 /* Ações */
 .usuarios-acoes {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     gap: 14px;
@@ -549,13 +596,272 @@ header img {
 
 .link-cadastrar {
     text-decoration: none;
-    padding: 10px;
+    padding: 8px;
     background-color: var(--cor-principal);
     color: var(--cor-texto-branco);
     font-size: var(--tamanho-texto-padrao);
     border-radius: var(--raio-borda-padrao);
 }
 
+.link-cadastrar:hover {
+    background-color: var(--cor-principal-hover);
+}
+
+#busca {
+    padding: 10px;
+    border-radius: var(--raio-borda-padrao);
+    border: 1px solid var(--cor-borda-padrao);
+    width: 100%;
+}
+
+/* Cards de usuários */
+.cards-container {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    width: 100%;
+}
+
+.usuario-card {
+    align-items: center;
+    background: var(--cor-fundo-card);
+    border-radius: var(--raio-borda-grande);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid var(--cor-borda-padrao);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 260px;
+    max-width: 100%;
+}
+
+.usuario-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+.usuario-foto img {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    object-fit: cover;
+    align-self: center;
+}
+
+.usuario-card h3 {
+    font-size: var(--tamanho-titulo-padrao);
+    color: var(--cor-principal);
+}
+
+.usuario-card .ativo {
+    color: #22c55e;
+    font-weight: bold;
+    text-align: center;
+}
+
+.inativo {
+    font-weight: bold;
+    text-align: center;
+    color: var(--cor-perigo);
+}
+
+.cargo {
+    font-weight: 600;
+    color: var(--cor-texto-suave);
+    font-size: var(--tamanho-texto-padrao);
+}
+
+.link-perfil {
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    width: 100%;
+    background-color: var(--cor-principal);
+    color: var(--cor-texto-branco);
+    font-size: var(--tamanho-texto-padrao);
+    border-radius: var(--raio-borda-padrao);
+}
+
+.link-perfil:hover {
+    background-color: var(--cor-principal-hover);
+}
+
+/* PÁGINA DE CADASTRO DE USUÁRIO */
+.form-padrao {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.foto-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    gap: 8px;
+}
+
+.foto-upload span {
+    font-size: var(--tamanho-texto-padrao);
+    color: var(--cor-texto-branco);
+    text-decoration: underline;
+}
+
+.foto-upload input {
+    display: none;
+}
+
+/* PÁGINA DE PERFIL DO USUÁRIO */
+.perfil {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding: 20px;
+}
+
+.perfil-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+    align-items: stretch;
+}
+
+.perfil-grid-editar {
+    display: grid;
+    grid-template-columns: 280px 1fr 1fr;
+    gap: 20px;
+}
+
+.perfil-visualizacao,
+.perfil-edicao {
+    background: var(--cor-fundo-card);
+    border-radius: var(--raio-borda-grande);
+    padding: 20px;
+    border: 1px solid var(--cor-borda-padrao);
+}
+
+/* Primeira coluna - Cabeçalho */
+.perfil-header {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(135deg, var(--cor-principal), #020617cc);
+    color: var(--cor-texto-branco);
+    border-radius: var(--raio-borda-grande);
+    padding: 20px;
+}
+
+.perfil-foto {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid var(--cor-borda-padrao);
+    object-fit: cover;
+    margin-top: 50px;
+}
+
+.perfil-header h2 {
+    margin-top: 15px;
+    font-size: var(--tamanho-titulo-padrao);
+    margin-bottom: 10px;
+}
+
+.status-ativo,
+.status-inativo {
+    padding: 4px 10px;
+    margin: 6px 0;
+    border-radius: 999px;
+    font-size: var(--tamanho-texto-padrao);
+    color: var(--cor-texto-branco);
+}
+
+.status-ativo {
+    background: #22c55e;
+}
+
+.status-inativo {
+    background: #ef4444;
+}
+
+.perfil-cargo {
+    margin-top: 10px;
+    color: var(--cor-texto-branco);
+    font-size: var(--tamanho-texto-padrao);
+}
+
+/* Segunda coluna - Informações Principais */
+#painel-visualizacao {
+    background: var(--cor-fundo-card);
+    padding: 16px;
+    border-radius: var(--raio-borda-grande);
+    border: 1px solid var(--cor-borda-padrao);
+}
+
+.perfil-visualizacao article {
+    padding: 10px;
+    font-weight: 400;
+}
+
+.perfil-visualizacao h4 {
+    margin-bottom: 6px;
+    color: var(--cor-principal);
+    font-size: var(--tamanho-titulo-padrao);
+    text-align: center;
+}
+
+.info-bloco span {
+    font-size: var(--tamanho-texto-padrao);
+    color: var(--cor-principal);
+    font-weight: bold;
+}
+
+.perfil-visualizacao p {
+    font-size: var(--tamanho-texto-padrao);
+    margin-bottom: 4px;
+}
+
+.acoes-perfil {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Terceira coluna - Formulário de edição */
+#painel-edicao {
+    background: var(--cor-fundo-card);
+    padding: 16px;
+    border-radius: var(--raio-borda-grande);
+    border: 1px solid var(--cor-borda-padrao);
+}
+
+.perfil-edicao h4 {
+    color: var(--cor-principal);
+    font-size: var(--tamanho-titulo-padrao);
+    text-align: center;
+}
+
+.input-padrao {
+    padding: 8px;
+    border: 1px solid var(--cor-borda-padrao);
+    font-size: var(--tamanho-texto-padrao);
+    border-radius: var(--raio-borda-padrao);
+    width: 100%;
+}
+
+.input-padrao:focus {
+    outline: none;
+    border-color: var(--cor-principal);
+}
+
+.label-padrao {
+    font-size: var(--tamanho-texto-padrao);
+    font-weight: 600;
+    color: var(--cor-principal);
+}
 
 /* ========================
     6 - ESTADOS E UTILS
@@ -570,6 +876,33 @@ header img {
     border-radius: var(--raio-borda-padrao);
     padding: 0.7rem 0.9rem;
     margin-bottom: 1rem;
+}
+
+.erro {
+    color: var(--cor-perigo);
+}
+
+.lista-erro {
+    margin-left: 18px;
+}
+
+.box-erros {
+    border-left: 4px solid var(--cor-perigo);
+    padding: 10px;
+    margin-bottom: 12px;
+    background-color: var(--cor-fundo-erro);
+    border-radius: var(--raio-borda-grande);
+}
+
+.box-erros strong {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--cor-texto-erro);
+}
+
+.box-erros ul {
+    margin: 0;
+    padding-left: 18px;
 }
 
 /* Escondido */
@@ -625,6 +958,47 @@ header img {
         right: auto;
     }
 
+    /* Lista de Usuários */
+    .usuarios-topo {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #busca {
+        width: 100%;
+    }
+
+    .usuario-card {
+        width: 100%;
+    }
+
+    .perfil-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .perfil-header {
+        height: auto;
+    }
+
+    .form-padrao button {
+        grid-column: span 1;
+    }
+
+    /* Relatório Banco de Horas */
+    .bh-relatorio h2 {
+        font-size: 1.1rem;
+    }
+
+    .bh-relatorio>input[type="text"] {
+        width: 100%;
+    }
+
+    #tabelaBancoHoras th,
+    #tabelaBancoHoras td {
+        padding: 10px;
+        font-size: 0.8rem;
+    }
+
     /* Página de Configurações */
     .configuracoes {
         flex-direction: column;
@@ -643,415 +1017,6 @@ header img {
     .painel-config button {
         grid-column: span 1;
     }
-}
-
-/* ========================
-    USUARIO/LISTA.PHP
-======================== */
-
-.link-cadastrar:hover {
-    background-color: var(--cor-principal-hover);
-}
-
-#busca {
-    padding: 0.6rem 0.8rem;
-    border-radius: 6px;
-    border: 1px solid #cbd5e1;
-    width: 260px;
-}
-
-/* CARDS DE USUÁRIOS */
-.cards-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 16px;
-    width: 100%;
-}
-
-/* CARD INDIVIDUAL */
-.usuario-card {
-    align-items: center;
-    background: white;
-    border-radius: 12px;
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    border: 1px solid #e5e7eb;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    width: 260px;
-    max-width: 100%;
-}
-
-.usuario-card .ativo {
-    color: #22c55e;
-    font-weight: bold;
-    text-align: center;
-}
-
-.usuario-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-}
-
-/* FOTO */
-.usuario-foto img {
-    width: 84px;
-    height: 84px;
-    border-radius: 50%;
-    object-fit: cover;
-    align-self: center;
-}
-
-/* NOME */
-.usuario-card h3 {
-    font-size: 1rem;
-    color: #020617;
-    text-align: center;
-}
-
-.inativo {
-    color: #ef4444;
-    font-weight: bold;
-    text-align: center;
-}
-
-/* CARGO */
-.cargo {
-    font-weight: 600;
-    color: #475569;
-    text-align: center;
-    font-size: 0.85rem;
-}
-
-/* BOTÃO PERFIL */
-.btn-perfil {
-    margin-top: auto;
-    padding: 0.55rem;
-    text-align: center;
-    background-color: #020617;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    transition: background 0.2s ease;
-    width: 100%;
-}
-
-.btn-perfil:hover {
-    background-color: #020617e8;
-}
-
-/* GRID PERFIL */
-.perfil-grid {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 20px;
-    align-items: stretch;
-}
-
-.perfil-header {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: linear-gradient(135deg, var(--cor-principal), #020617cc);
-    color: white;
-    border-radius: 14px;
-    padding: 20px;
-    text-align: center;
-}
-
-/* BASE PERFIL */
-.perfil {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    padding: 20px;
-}
-
-.perfil-foto {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    border: 4px solid white;
-    object-fit: cover;
-    margin-top: 50px;
-}
-
-.perfil-header h2 {
-    margin-top: 15px;
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-}
-
-.perfil-cargo {
-    margin-top: 10px;
-    opacity: 0.8;
-    font-size: 0.9rem;
-}
-
-/* STATUS */
-.status-ativo,
-.status-inativo {
-    display: inline-block;
-    padding: 4px 10px;
-    margin: 6px 0;
-    border-radius: 999px;
-    font-size: 0.75rem;
-}
-
-.status-ativo {
-    background: #22c55e;
-}
-
-.status-inativo {
-    background: #ef4444;
-}
-
-/* CONTAINERS */
-.perfil-dados {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 30px;
-}
-
-.perfil-dados article {
-    background: white;
-    padding: 14px;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-}
-
-.perfil-dados h4 {
-    margin-bottom: 6px;
-    color: var(--cor-principal);
-    font-size: 0.9rem;
-}
-
-.perfil-dados p {
-    font-size: 0.8rem;
-    margin-bottom: 4px;
-}
-
-/* AÇÕES EMPRESA */
-.acoes-empresa {
-    margin-top: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-/* ==============
-   FORMULÁRIOS
-============== */
-
-/* campos */
-.input-padrao {
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid var(--borda-padrao);
-    width: 100%;
-    font-size: 0.9rem;
-}
-
-.input-padrao:focus {
-    outline: none;
-    border-color: var(--cor-principal);
-}
-
-/* labels */
-.label-padrao {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--cor-principal);
-}
-
-/* ====================
-   FORMULÁRIO EDITAR
-==================== */
-#form-edicao {
-    margin-top: 20px;
-    background: #f8fafc;
-    padding: 16px;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-}
-
-#form-edicao h3 {
-    margin-bottom: 10px;
-}
-
-#form-edicao form {
-    display: grid;
-    gap: 10px;
-}
-
-/* ======================
-   FORMULÁRIO CADASTRO
-====================== */
-.form-padrao {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 10px;
-    margin-top: 12px;
-}
-
-/* ERROS */
-.erro {
-    color: var(--cor-perigo);
-}
-
-.lista-erro {
-    margin-left: 18px;
-}
-
-/* BOTÃO VOLTAR */
-.voltar-final {
-    text-align: center;
-    order: 2;
-    margin-top: 0;
-}
-
-.voltar-final a {
-    color: var(--cor-principal);
-    text-decoration: none;
-    display: block;
-    width: 100%;
-    padding: 8px;
-    border-radius: 8px;
-    background: #f1f5f9;
-    border: 1px solid var(--borda-padrao);
-    font-size: 0.85rem;
-    font-weight: 400;
-}
-
-.foto-upload {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    gap: 8px;
-}
-
-.foto-upload span {
-    font-size: 0.75rem;
-    color: #cbd5e1;
-    text-decoration: underline;
-}
-
-.foto-upload:hover span {
-    color: #fff;
-}
-
-.foto-upload input {
-    display: none;
-}
-
-.perfil-grid-editar {
-    display: grid;
-    grid-template-columns: 280px 1fr 1fr;
-    gap: 20px;
-}
-
-.perfil-visualizacao h4 {
-    text-align: center;
-}
-
-.perfil-visualizacao,
-.perfil-edicao {
-    background: #fff;
-    border-radius: 14px;
-    padding: 20px;
-    border: 1px solid #e5e7eb;
-}
-
-.perfil-edicao h4 {
-    color: var(--cor-principal);
-}
-
-.perfil-edicao .label-padrao {
-    text-align: left;
-    display: block;
-}
-
-.info-bloco {
-    margin-bottom: 12px;
-}
-
-.info-bloco span {
-    font-size: 0.75rem;
-    color: #64748b;
-}
-
-.acoes-perfil {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.acoes-perfil .btn-excluir {
-    order: 1;
-}
-
-/* =========================
-   CAIXA DE ERROS
-========================= */
-.box-erros {
-    border-left: 4px solid #dc2626;
-    padding: 10px;
-    margin-bottom: 12px;
-    background-color: #fee2e2;
-    border-radius: 8px;
-}
-
-.box-erros strong {
-    display: block;
-    margin-bottom: 6px;
-    color: #7f1d1d;
-}
-
-.box-erros ul {
-    margin: 0;
-    padding-left: 18px;
-}
-
-/* =========================
-   FORMULÁRIO
-========================= */
-
-/* Botão SALVAR FOTO */
-.hidden {
-    display: none !important;
-}
-
-.btn-salvar-foto {
-    background-color: #f1f5f9;
-    color: var(--cor-principal);
-    margin-top: 10px;
-}
-
-/* Botão ativar/desativar usuário */
-.form-status-usuario {
-    margin-top: 10px;
-}
-
-.btn-status {
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-weight: 500;
-    border: 1px solid transparent;
-    width: 100%;
-}
-
-.btn-ativar {
-    background-color: #2ecc71;
-    border: 1px solid #2ecc71
-}
-
-.btn-desativar {
-    background-color: #f97316;
-    border: 1px solid #f97316;
 }
 
 /* BANCO DE HORAS */
@@ -1248,124 +1213,13 @@ header img {
     background-color: #ffffff;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-
     padding: 0.6rem 2rem 0.6rem 0.8rem;
     font-size: 0.85rem;
     color: #020617;
-
     cursor: pointer;
     min-width: 150px;
-
     background-image: url("../IMG/utils/seta_baixo.svg");
     background-repeat: no-repeat;
     background-position: right 0.6rem center;
     background-size: 14px;
-}
-
-/* RESPONSIVIDADE */
-@media (max-width: 1000px) {
-
-    /* Global */
-    main {
-        padding: 1.2rem;
-    }
-
-    /* Navbar */
-    nav {
-        flex-direction: column;
-    }
-
-    nav a {
-        text-align: center;
-        border: 1px solid #1e293b;
-    }
-
-    /* Dropdown Navbar */
-    .nav-dropdown {
-        width: 100%;
-    }
-
-    .dropdown {
-        width: 100%;
-        flex-direction: column;
-        align-items: stretch;
-        text-align: center;
-    }
-
-    .dropdown-toggle {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .dropdown-menu {
-        position: static;
-        min-width: 100%;
-        border-radius: 0 0 6px 6px;
-        margin-top: 4px;
-    }
-
-    .dropdown-menu.right {
-        left: auto;
-        right: auto;
-    }
-
-    /* Lista de Usuários */
-    .usuarios-topo {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    #busca {
-        width: 100%;
-    }
-
-    .usuario-card {
-        width: 100%;
-    }
-
-    .perfil-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .perfil-header {
-        height: auto;
-    }
-
-    .form-padrao button {
-        grid-column: span 1;
-    }
-
-    /* Relatório Banco de Horas */
-    .bh-relatorio h2 {
-        font-size: 1.1rem;
-    }
-
-    .bh-relatorio>input[type="text"] {
-        width: 100%;
-    }
-
-    #tabelaBancoHoras th,
-    #tabelaBancoHoras td {
-        padding: 10px;
-        font-size: 0.8rem;
-    }
-
-    /* Configurações */
-    .configuracoes {
-        flex-direction: column;
-    }
-
-    .menu-config {
-        flex-direction: row;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    .painel-config fieldset {
-        grid-template-columns: 1fr;
-    }
-
-    .painel-config button {
-        grid-column: span 2;
-    }
 }

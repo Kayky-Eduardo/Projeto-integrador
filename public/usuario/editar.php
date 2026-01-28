@@ -254,7 +254,7 @@ if (isset($_POST['editar_usuario'])) {
                 <button type="submit" class="btn-padrao btn-salvar-foto hidden" name="editar_usuario" id="btn-salvar-foto">Salvar foto</button>
             </section>
 
-            <section class="perfil-visualizacao">
+            <section class="perfil-visualizacao" id="painel-visualizacao">
                 <?php if (!empty($erros)): ?>
                     <article class="box-erros">
                         <strong>Erros encontrados:</strong>
