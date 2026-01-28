@@ -7,9 +7,10 @@ if (session_status() === PHP_SESSION_NONE) {
 /*
 Estou com uma situação em mente:
 
-Estou trabalhando com sistema de ponto no navegador, gostaria que assim que o cara finalizar seu ponto aparecesse um popup na direita superior da tela dele falando: "Ponto finalizado" E um timer falando quanto tempo falta até ele ser deslogado da plataforma. Porém, eu atribuia o tempo dessa página pela url exemplo: "?s=100", porém não da pra fazer include deste jeito, o que fazer?
+assim que o cara finalizar seu ponto aparecesse um popup na direita superior da tela dele falando: "Ponto finalizado"
+E um timer falando quanto tempo falta até ele ser deslogado da plataforma.
+Porém, eu atribuia o tempo dessa página pela url exemplo: "?s=100", porém não da pra fazer include deste jeito.
 */
-
 function verificar_login($conn) {
     $id_login = $_SESSION['id_login'];
     $id_usuario = $_SESSION['id_usuario'];
@@ -18,6 +19,7 @@ function verificar_login($conn) {
         header("Location: /projeto-integrador/public/logout.php");
         exit;
     }
+    
     $stmt = $conn->prepare("
         SELECT data_fim FROM login
         WHERE id_login = ? AND id_usuario = ? LIMIT 1
@@ -48,29 +50,30 @@ function verificar_login($conn) {
         header("Location: /projeto-integrador/public/logout.php");
         exit;
     }
-    
-    $resultado_tempo = verificar_tempo_por_ponto($conn, $id_usuario);
 
+    $resultado_tempo = verificar_tempo_por_ponto($conn, $id_usuario);
+    
     verificar_tipo($conn, $id_usuario, $resultado_tempo);
+
 }
 
 // include não funciona por que é um arquivo que não existe(por causa do ?s=segundos)
-function teste($segundos) {
-    echo "<script>const TEMPO_LOGOUT = $segundos;</script>";
-    include "/projeto-integrador/public/ponto/pausas_e_ponto/msg_pop_up.php";
-}
-
 function redirecionar() {
-    // header("Location: /projeto-integrador/public/logout.php");
-    // exit;
-    $segundos = 60;
-    echo "<script>const TEMPO_LOGOUT = $segundos;</script>";
-    include "/projeto-integrador/public/ponto/pausas_e_ponto/msg_pop_up.php";
+    header("Location: /projeto-integrador/public/logout.php");
+    exit;
+    // $segundos = 60;
+    // echo "<script>const TEMPO_LOGOUT = $segundos;</script>";
+    // include "/projeto-integrador/public/ponto/pausas_e_ponto/msg_pop_up.php";
 }
 
 function verificar_tipo($conn, $id_usuario, $resultado_tempo) {
     $tipo = $resultado_tempo['tipo'];
     $tempo = $resultado_tempo['resultado'];
+    $mensagem = $resultado_tempo['mensagem'];
+
+    if ($tipo === "aviso") {
+        echo "<script>console.log('Você tem 10 minutos, antes de ser deslogado')<script>";
+    }
 
     if ($tipo === "bloqueado") {
         fechar_pontos_pendentes($conn, $id_usuario);
@@ -91,95 +94,6 @@ function verificar_tipo($conn, $id_usuario, $resultado_tempo) {
         fechar_pontos_pendentes($conn, $id_usuario);
         redirecionar();
     }
-}
-
-function verificar_tempo_logado($conn, $id_usuario, $id_login) {
-    $verificar_historico_ponto = $conn->prepare("
-        SELECT id_ponto
-        FROM ponto_dia
-        WHERE data_ponto = CURDATE() AND fim_ponto IS NOT NULL
-        AND id_usuario = ?;
-    ");
-    $verificar_historico_ponto->bind_param("i", $id_usuario);
-    $verificar_historico_ponto->execute();
-    $resultado = $verificar_historico_ponto->get_result();
-
-    if ($resultado->num_rows > 0) {
-        $id_ponto = $resultado->fetch_assoc()['id_ponto'];
-
-        return [
-            'tipo' => 'bloqueado',
-            'resultado' => 0
-        ];
-    }
-
-    // Busca tudo de uma vez: jornada, hora extra máxima e tempo logado
-    // Por login
-    $stmt = $conn->prepare("
-    SELECT 
-        TIME_TO_SEC(tempo_jornada.maximo_hora_extra) as hora_extra,
-        TIME_TO_SEC(tempo_jornada.jornada) AS segundos_jornada,
-        TIME_TO_SEC(ADDTIME(tempo_jornada.jornada, tempo_jornada.maximo_hora_extra)) AS segundos_maximos,
-        TIMESTAMPDIFF(SECOND, login.data_inicio, NOW()) AS segundos_logado
-    FROM login
-    JOIN grupo_setor
-        ON grupo_setor.id_usuario = login.id_usuario
-    JOIN setor
-		ON setor.id_setor = grupo_setor.id_setor
-    JOIN tempo_jornada
-        ON tempo_jornada.id_tempo = setor.id_tempo
-    WHERE login.id_login = ?
-        AND login.id_usuario = ?
-        AND login.data_fim IS NULL
-    LIMIT 1;
-    ");
-    $stmt->bind_param("ii", $id_login, $id_usuario);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    
-    if ($result->num_rows === 0) {
-        $stmt->close();
-        return 0;
-    }
-    
-    $dados = $result->fetch_assoc();
-    $stmt->close();
-    
-    $minutos_extra = 0;
-
-    if ($dados['segundos_logado'] >= $dados['segundos_maximos']) {
-        $minutos = (int) $dados['hora_extra'];
-        return [
-            "tipo" => "excedido",
-            "resultado" => $minutos,
-        ];
-    }
-
-    if ($dados['segundos_logado'] >= $dados['segundos_jornada']) {
-        $segundos_extra = $dados['segundos_logado'] - $dados['segundos_jornada'];
-        if ($segundos_extra > 0) {
-            $minutos = round($segundos_extra / 60);
-        
-            return [
-                "tipo" => 'tempo_extra',
-                "resultado" => $minutos,
-            ];
-        }
-    }
-    
-    if ($dados['segundos_logado'] < $dados['segundos_jornada']) {
-        $segundos_faltantes = $dados['segundos_logado'] - $dados['segundos_jornada'];
-        if ($segundos_faltantes < 0) {
-            $minutos = round($segundos_faltantes / 60);
-
-            return [
-                "tipo" => "tempo_faltante",
-                "resultado" => $minutos,
-            ];
-        }
-    }
-    return $minutos_extra;
 }
 
 function fechar_pontos_pendentes($conn, $id_usuario) {
@@ -319,6 +233,16 @@ function verificar_tempo_por_ponto($conn, $id_usuario) {
     $dados = $result->fetch_assoc();
     $stmt->close();
     
+    $aviso = $dados['segundos_trabalhados'] + 600 >= $dados['segundos_maximos'] ? true : false;
+    $aviso = true;
+    if ($aviso) {
+        return [
+            'tipo' => 'aviso',
+            'resultado' => 0,
+            'mensagem' => 'avisar',
+        ];
+    }
+
     // Calcula pausas para descontar do tempo trabalhado
     $tempo_pausas = calcular_tempo_pausas($conn, $id_usuario, $id_ponto);
     $segundos_trabalhados_efetivos = $dados['segundos_trabalhados'] - $tempo_pausas;
@@ -415,4 +339,97 @@ function calcular_tempo_pausas($conn, $id_usuario, $id_ponto) {
     }
     return $pausas_finalizadas;
 }
+
+function verificar_tempo_logado($conn, $id_usuario, $id_login) {
+    $verificar_historico_ponto = $conn->prepare("
+        SELECT id_ponto
+        FROM ponto_dia
+        WHERE data_ponto = CURDATE() AND fim_ponto IS NOT NULL
+        AND id_usuario = ?;
+    ");
+    $verificar_historico_ponto->bind_param("i", $id_usuario);
+    $verificar_historico_ponto->execute();
+    $resultado = $verificar_historico_ponto->get_result();
+
+    if ($resultado->num_rows > 0) {
+        $id_ponto = $resultado->fetch_assoc()['id_ponto'];
+
+        return [
+            'tipo' => 'bloqueado',
+            'resultado' => 0
+        ];
+    }
+
+    // Busca tudo de uma vez: jornada, hora extra máxima e tempo logado
+    // Por login
+    $stmt = $conn->prepare("
+    SELECT 
+        TIME_TO_SEC(tempo_jornada.maximo_hora_extra) as hora_extra,
+        TIME_TO_SEC(tempo_jornada.jornada) AS segundos_jornada,
+        TIME_TO_SEC(ADDTIME(tempo_jornada.jornada, tempo_jornada.maximo_hora_extra)) AS segundos_maximos,
+        TIMESTAMPDIFF(SECOND, login.data_inicio, NOW()) AS segundos_logado
+    FROM login
+    JOIN grupo_setor
+        ON grupo_setor.id_usuario = login.id_usuario
+    JOIN setor
+		ON setor.id_setor = grupo_setor.id_setor
+    JOIN tempo_jornada
+        ON tempo_jornada.id_tempo = setor.id_tempo
+    WHERE login.id_login = ?
+        AND login.id_usuario = ?
+        AND login.data_fim IS NULL
+    LIMIT 1;
+    ");
+    $stmt->bind_param("ii", $id_login, $id_usuario);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    
+    if ($result->num_rows === 0) {
+        $stmt->close();
+        return 0;
+    }
+    
+    $dados = $result->fetch_assoc();
+    $stmt->close();
+    
+    $minutos_extra = 0;
+
+    if ($dados['segundos_logado'] >= $dados['segundos_maximos']) {
+        $minutos = (int) $dados['hora_extra'];
+        return [
+            "tipo" => "excedido",
+            "resultado" => $minutos,
+            "mensagem" => "",
+        ];
+    }
+
+    if ($dados['segundos_logado'] >= $dados['segundos_jornada']) {
+        $segundos_extra = $dados['segundos_logado'] - $dados['segundos_jornada'];
+        if ($segundos_extra > 0) {
+            $minutos = round($segundos_extra / 60);
+        
+            return [
+                "tipo" => 'tempo_extra',
+                "resultado" => $minutos,
+                "mensagem" => "",
+            ];
+        }
+    }
+    
+    if ($dados['segundos_logado'] < $dados['segundos_jornada']) {
+        $segundos_faltantes = $dados['segundos_logado'] - $dados['segundos_jornada'];
+        if ($segundos_faltantes < 0) {
+            $minutos = round($segundos_faltantes / 60);
+
+            return [
+                "tipo" => "tempo_faltante",
+                "resultado" => $minutos,
+                "mensagem" => "",
+            ];
+        }
+    }
+    return $minutos_extra;
+}
+
 ?>

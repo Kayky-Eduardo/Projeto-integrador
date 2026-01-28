@@ -79,10 +79,12 @@ include "../../include/navbar.php";
                     <th>Email</th>
                     <th>Inicio</th>
                     <th>Saida</th>
+                    <th>Tempo trabalhado</th>
                     <th>Tempo logado</th>
                 </thead>
                 <tbody id="filtro-usuarios-tabela">
                     <tr>
+                        <td>-</td>
                         <td>-</td>
                         <td>-</td>
                         <td>-</td>
@@ -239,45 +241,51 @@ include "../../include/navbar.php";
         // coleta de dados horas extras usando o filtro para id_usuario
         const select = document.getElementById("filtro-usuarios");
         
+        function formatar_tempo(tempo) {
+            if (tempo != '-') {
+                const hora = Math.floor(tempo / 60);
+                const minutos = tempo % 60;
+                return tempo = hora > 0 ? `${hora}h ${minutos}min` : `${minutos}min`;
+            } else {
+                return "-"
+            }
+        } 
+
         async function filtrar_tabela_hora(id_usuario) {
             const exibicao_tabela_hora = document.getElementById("filtro-usuarios-tabela");
-                    const response = await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_tabela_hora", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({id_usuario: id_usuario})
-                });
+            const response = await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_tabela_hora", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({id_usuario: id_usuario})
+            });
 
-                const tabela_hora = await response.json();
-                exibicao_tabela_hora.innerHTML = "";
+            const tabela_hora = await response.json();
+            exibicao_tabela_hora.innerHTML = "";
 
-                if(tabela_hora.length === 0){
-                    exibicao_tabela_hora.innerHTML = `<tr><td colspan="5">Nenhum registro encontrado</td></tr>`;
-                    return;
-                }
+            if(tabela_hora.length === 0){
+                exibicao_tabela_hora.innerHTML = `<tr><td colspan="5">Nenhum registro encontrado</td></tr>`;
+                return;
+            }
 
-                tabela_hora.forEach(h => {
-                    let id_login = h.id_login ?? '-';
-                    let email_login = h.email_login ?? '-';
-                    let entrada = h.data_inicio ?? '-';                
-                    let saida = h.data_fim ?? '-';
-                    let tempo = h.tempo_logado ?? '-';
+            tabela_hora.forEach(h => {
+                let id_ponto = h.id_ponto ?? '-';
+                let email_login = h.email_login ?? '-';
+                let entrada = h.inicio_ponto ?? '-';                
+                let saida = h.fim_ponto ?? '-';
+                let tempo_logado = h.tempo_logado ?? '-';
+                let tempo_trabalhado = h.tempo_trabalhado ?? '-';
 
-                    if(tempo !== '-') {
-                        const hora = Math.floor(tempo / 60);
-                        const minutos = tempo % 60;
-                        tempo = hora > 0 ? `${hora}h ${minutos}min` : `${minutos}min`;
-                    }
-
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${id_login}</td>
-                        <td>${email_login}</td>
-                        <td>${entrada}</td>
-                        <td>${saida}</td>
-                        <td>${tempo}</td>
-                    `;
-                    exibicao_tabela_hora.appendChild(tr);
-                });
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${id_ponto}</td>
+                    <td>${email_login}</td>
+                    <td>${entrada}</td>
+                    <td>${saida}</td>
+                    <td>${formatar_tempo(tempo_trabalhado)}</td>
+                    <td>${formatar_tempo(tempo_logado)}</td>
+                `;
+                exibicao_tabela_hora.appendChild(tr);
+            });
         }
 
         async function exibicao_usuarios_option() {

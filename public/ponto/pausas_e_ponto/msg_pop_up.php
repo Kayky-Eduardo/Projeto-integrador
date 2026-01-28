@@ -3,7 +3,8 @@
     <p id="contador"></p>
 </article>
 
-<script>
+<script  type="text/javascript">
+  
   let segundos = TEMPO_LOGOUT;
   const p = document.getElementById("contador");
 

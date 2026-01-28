@@ -16,7 +16,7 @@ $stmt->execute();
 $setor = $stmt->get_result()->fetch_assoc();
 
 if (!$setor) {
-    die("Setor não encontrado.");
+    header("Location: setores.php");
 }
 
 // Buscar todos os usuários para o select

@@ -40,11 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // $conn->query("UPDATE ponto_dia SET fim_ponto = NOW() WHERE id_ponto = " . $ponto['id_ponto']);
                 $resultado_tempo = verificar_tempo_por_ponto($conn, $id_usuario);
                 verificar_tipo($conn, $id_usuario, $resultado_tempo);
-//                 echo json_encode([
-//                     "popup" => true,
-//                     "tempo_logout" => 60
-//                 ]);
-// exit;
             }
         }
     } 
@@ -117,7 +112,7 @@ $tiposPausa = $stmtTipos->get_result();
 
     <?php if ($erro): ?> <div style="color:red"><strong>Erro:</strong> <?= $erro ?></div> <?php endif; ?>
 
-    <form method="POST">
+    <form method="POST" id="formPausa1">
         <input type="hidden" name="acao" value="registrar_ponto">
         <button type="submit" <?= ($pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
             <?= !$pontoIniciado ? 'Iniciar Ponto' : 'Finalizar Ponto' ?>

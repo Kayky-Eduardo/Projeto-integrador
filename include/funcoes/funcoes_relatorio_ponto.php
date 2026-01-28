@@ -285,11 +285,17 @@ function relatorio_ponto_filtrado($conn, $id_usuario) {
     $usuario = [];
 
     $coleta_usuario_tabela = $conn->prepare("
-        SELECT id_login, email_login, data_inicio, data_fim,
-        TIMESTAMPDIFF(MINUTE, data_inicio, data_fim) AS tempo_logado
+        SELECT 
+			ponto_dia.id_ponto, 
+            inicio_ponto, 
+            fim_ponto,
+			email_login,
+			TIMESTAMPDIFF(MINUTE, data_inicio, data_fim) AS tempo_logado,
+			TIMESTAMPDIFF(MINUTE, inicio_ponto, fim_ponto) AS tempo_trabalhado
         FROM login
+        JOIN ponto_dia ON login.id_usuario = ponto_dia.id_usuario
         WHERE MONTH(data_inicio) = MONTH(CURDATE())
-        AND id_usuario = ?;
+        AND ponto_dia.id_usuario = ?;
     ");
     $coleta_usuario_tabela->bind_param("i", $id_usuario);
     $coleta_usuario_tabela->execute();
@@ -319,7 +325,8 @@ function get_logados($conn) {
     return $usuario;
 }
 
-function deslogar_usuario($conn, $id_login) {
+// alterar para deslogar depois de um tempo
+function deslogar_usuario_tempo($conn, $id_login) {
     $stmt = $conn->prepare("
         UPDATE login 
         SET data_fim = NOW() 
