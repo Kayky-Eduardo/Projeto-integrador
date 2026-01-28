@@ -134,31 +134,44 @@ $minutos_trabalhados = (int) (
 
 // 2. CALCULA OS MINUTOS ESPERADOS NO MÊS
 // Busca a jornada diária (em minutos) e a quantidade de dias trabalhados
-$sql_jornada = $conn->prepare("
-    SELECT 
-        TIME_TO_SEC(t.jornada) / 60 AS minutos_dia, -- Jornada diária em minutos
-        COUNT(DISTINCT p.data_ponto) AS dias        -- Quantidade de dias no mês
-    FROM ponto_dia p
-    JOIN grupo_setor gs ON gs.id_usuario = p.id_usuario
-    JOIN setor s ON s.id_setor = gs.id_setor
-    JOIN tempo_jornada t ON t.id_tempo = s.id_tempo
-    WHERE p.id_usuario = ?
-      AND DATE_FORMAT(p.data_ponto, '%Y-%m') = DATE_FORMAT(?, '%Y-%m')
+$sql_minutos_esperados = $conn->prepare("
+    WITH RECURSIVE dias_mes AS (
+        SELECT DATE_FORMAT(?, '%Y-%m-01') AS dia
+        UNION ALL
+        SELECT dia + INTERVAL 1 DAY
+        FROM dias_mes
+        WHERE dia + INTERVAL 1 DAY <= LAST_DAY(?)
+    )
+    SELECT
+        SUM(jt.horas_diarias * 60) AS minutos_esperados
+    FROM dias_mes dm
+    JOIN jornadas_trabalho jt
+        ON jt.usuario_id = ?
+        AND dm.dia BETWEEN jt.data_inicio AND IFNULL(jt.data_fim, dm.dia)
+    LEFT JOIN feriados f
+        ON f.data = dm.dia
+    WHERE
+        f.data IS NULL
+        AND JSON_CONTAINS(
+            jt.dias_semana,
+            CONCAT('[', DAYOFWEEK(dm.dia), ']')
+        )
 ");
 
-// Associa os parâmetros
-$sql_jornada->bind_param("is", $id_usuario, $mes_comp);
 
-// Executa a query
-$sql_jornada->execute();
+$sql_minutos_esperados->bind_param(
+    "ssi",
+    $mes_comp,
+    $mes_comp,
+    $id_usuario
+);
 
-// Resultado da jornada
-$res_jornada = $sql_jornada->get_result()->fetch_assoc();
+$sql_minutos_esperados->execute();
 
-// Calcula o total de minutos esperados no mês
-$minutos_esperados =
-    ((int)$res_jornada['minutos_dia']) *
-    ((int)$res_jornada['dias']);
+$minutos_esperados = (int) (
+    $sql_minutos_esperados->get_result()->fetch_assoc()['minutos_esperados'] ?? 0
+);
+
 
 // 3. CALCULA A DIFERENÇA DE MINUTOS
 // Diferença entre o que trabalhou e o que deveria trabalhar
@@ -179,6 +192,11 @@ $valor_desconto_falta = 0;
 if ($diferenca_minutos < 0) {
     // Converte os minutos faltantes em valor monetário
     $valor_desconto_falta = abs($diferenca_minutos) * $valor_minuto;
+    echo "Minutos trabalhados: $minutos_trabalhados <br>";
+    echo "Minutos esperados: $minutos_esperados <br>";
+    echo "Diferença (minutos): $diferenca_minutos <br>";
+    echo "Valor desconto falta: R$ " . number_format($valor_desconto_falta, 2, ',', '.') . "<br>";
+
 }
 
 // 6. CRIA OU ATUALIZA O EVENTO DE DESCONTO
@@ -278,7 +296,6 @@ $sql_folha_upd = $conn->prepare("
         salario_liquido = ?
     WHERE id_folha = ?
 ");
-
 // Associa os valores
 $sql_folha_upd->bind_param(
     "dddi",
@@ -319,9 +336,7 @@ h1 { text-align: center; }
 button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 </style>
 </head>
-
 <body>
-
 <button onclick="gerarPDF()">📄 Baixar PDF</button>
 
 <div id="holerite">
