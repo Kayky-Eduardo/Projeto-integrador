@@ -211,11 +211,14 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
                 <td><?= $f['nome_usuario'] ?></td>
                 <td>R$ <?= number_format($f['salario_liquido'], 2, ',', '.') ?></td>
                 <td>
+                    <a href="" onclick="construindo()">
+                    | Enviar PDF
+                    </a>
                     <a href="../../api/api_gerar_pdf.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>" target="_blank">
-                    Abrir PDF
+                    | Abrir PDF
                     </a>
                     <a href="editar_folha.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>">
-                    / Editar
+                    | Editar |
                     </a>
                 </td>
                      
@@ -227,3 +230,9 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
 
 </body>
 </html>
+
+<script>
+    function construindo(){
+        alert('Em construção.... aguarde');
+    }
+</script>

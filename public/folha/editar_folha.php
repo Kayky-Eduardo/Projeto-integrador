@@ -117,16 +117,40 @@ $eventos = $sql_eventos->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // CODIGUINHO DO DABI
 if ($_SERVER['REQUEST_METHOD'] === 'POST'){
-    $acao = $_POST['acao'] ?? '';
-    $id_evento = $_POST['id_evento'] ?? '';
 
-    //deletando evento
-    if ($acao = 'deletar'){
-        $sql= $conn->prepare("DELETE FROM eventos WHERE id_evento = ?");
-        $sql->bind_param('i', $id_evento);
-        $sql->execute();
+    $dados = json_decode(file_get_contents('php://input'), true);
+
+    if($dados){
+        $acao = $dados['acao'] ?? '';
+
+        if (isset($dados['confirmado']) && $dados['confirmado'] === true) {
+            $id_evento = $dados['id_evento'] ?? '';
+            //deletando evento
+            if ($acao = 'deletar' && !empty($id_evento)){
+                $sql= $conn->prepare("DELETE FROM eventos WHERE id_evento = ?");
+                $sql->bind_param('i', $id_evento);
+                if ($sql->execute()) {
+                    echo json_encode(['status' => 'sucesso', 'msg' => 'Evento deletado!']);
+                } else {
+                    echo json_encode(['status' => 'erro', 'msg' => 'Erro ao deletar.']);
+                }
+                exit;
+            }
+        }
+        if($acao = 'editar'){
+            $id_editar = $dados['id_editar'];
+            $valor_novo = $dados['valor'];
+
+            $sql= $conn->prepare("UPDATE FROM eventos SET valor = ? WHERE id_evento = ?");
+                $sql->bind_param('ii', $valor_novo, $id_evento);
+                if ($sql->execute()) {
+                    echo json_encode(['status' => 'sucesso', 'msg' => 'Evento deletado!']);
+                } else {
+                    echo json_encode(['status' => 'erro', 'msg' => 'Erro ao deletar.']);
+                }
+                exit;
+        }
     }
-    header("Refresh:0"); // "0" significa tempo para esperar pra dar refresh
 }
 
 ?>
@@ -143,7 +167,7 @@ table { width: 100%; border-collapse: collapse; margin-top: 15px; }
 td, th { border: 1px solid #444; padding: 8px; }
 .titulo { background: #ddd; font-weight: bold; }
 h1 { text-align: center; }
-button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+button {cursor: pointer;}
 input[type="text"], input[type="email"] {
             width: 100%;
             box-sizing: border-box; /* Garante que o padding/border não aumente a largura total */
@@ -154,7 +178,7 @@ input[type="text"], input[type="email"] {
 <body>
 
 <button onclick="gerarPDF()">📄 Baixar PDF</button>
-<a href="../">voltar</a>
+<a href="gerar_folhas_todos.php?$mes=<?= $mes ?>">voltar</a>
 
 <div id="holerite">
 
@@ -181,12 +205,10 @@ input[type="text"], input[type="email"] {
             <tr><td colspan="2">Nenhum evento cadastrado.</td></tr>
         <?php else: ?>
             <?php foreach ($eventos as $e): ?>
-                <form method="POST">
-                    <input hidden name="id_evento" value="<?= $e["id_evento"] ?>">
                     <tr>
                         <td><?= strtoupper($e["tipo"]) . " - " . $e["descricao"]; ?></td>
-                        <td>R$ <input value="<?= number_format($e["valor"], 2, ',', '.'); ?>"></input>
-                        <input type="submit" name="acao" value="deletar"></td>
+                        <td>R$ <input id="<?= $e["id_evento"] ?>" class="input-editar" value="<?= number_format($e["valor"], 2, ',', '.'); ?>"></input>
+                        <button type="button" class="btn-deletar" data-id="<?= $e["id_evento"] ?>">deletar</button></td>
                     </tr>
                 </form>
             <?php endforeach; ?>
@@ -214,58 +236,107 @@ input[type="text"], input[type="email"] {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
+    //CÓDIGO DAVI ↓↓↓↓↓
+    // deletar
+    document.querySelectorAll('.btn-deletar').forEach(botao => {
+        botao.addEventListener('click', function() {
+            const idEvento = this.getAttribute('data-id');
+            const resposta = confirm("Tem certeza que deseja deletar este evento?");
 
-// Recebe o nome do funcionário vindo do PHP e adiciona barras de escape para evitar problemas com aspas
-const nomeFuncionario = "<?= addslashes($user['nome_usuario']); ?>";
+            if (resposta) {
+                fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        confirmado: true, 
+                        acao: 'deletar', 
+                        id_evento: idEvento 
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'sucesso') location.reload(); // Recarrega para ver a mudança
+                })
+                .catch(err => console.error("Erro na requisição:", err));
+            }  
+        });
+    });
+    
+    // editar
+    document.querySelectorAll('.input-editar').forEach(input => {
+        input.addEventListener('change', function(event){
+            const idEditar = this.getAttribute('id');
+            const valorNovo = event.target.value;
+            fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        acao: 'editar',
+                        valor: valorNovo,
+                        id_editar : idEditar
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'sucesso') location.reload(); // Recarrega para ver a mudança
+                })
+                .catch(err => console.error("Erro na requisição:", err));
+        })
+        
+    });
+    //CÓDIGO DAVI ↑↑↑↑↑
 
-// Recebe o mês/ano da competência (ex: "01-2026") vindo do PHP
-const mesCompetencia  = "<?= date('m-Y', strtotime($mes_comp)); ?>";
+    // Recebe o nome do funcionário vindo do PHP e adiciona barras de escape para evitar problemas com aspas
+    const nomeFuncionario = "<?= addslashes($user['nome_usuario']); ?>";
 
-async function gerarPDF() {
+    // Recebe o mês/ano da competência (ex: "01-2026") vindo do PHP
+    const mesCompetencia  = "<?= date('m-Y', strtotime($mes_comp)); ?>";
 
-    // Importa o construtor jsPDF do objeto global window.jspdf
-    const { jsPDF } = window.jspdf;
+    async function gerarPDF() {
 
-    // Seleciona o elemento HTML que contém o holerite
-    const element = document.getElementById("holerite");
+        // Importa o construtor jsPDF do objeto global window.jspdf
+        const { jsPDF } = window.jspdf;
 
-    // Converte o elemento HTML em um canvas usando html2canvas
-    // scale: 2 aumenta a resolução da imagem gerada
-    const canvas = await html2canvas(element, { scale: 2 });
+        // Seleciona o elemento HTML que contém o holerite
+        const element = document.getElementById("holerite");
 
-    // Converte o canvas em uma imagem no formato PNG (base64)
-    const imgData = canvas.toDataURL("image/png");
+        // Converte o elemento HTML em um canvas usando html2canvas
+        // scale: 2 aumenta a resolução da imagem gerada
+        const canvas = await html2canvas(element, { scale: 2 });
 
-    // Cria um novo documento PDF
-    // "p" = orientação retrato (portrait)
-    // "mm" = unidade de medida em milímetros
-    // "a4" = tamanho da página
-    const pdf = new jsPDF("p", "mm", "a4");
+        // Converte o canvas em uma imagem no formato PNG (base64)
+        const imgData = canvas.toDataURL("image/png");
 
-    // Obtém a largura da página do PDF
-    const pageWidth = pdf.internal.pageSize.getWidth();
+        // Cria um novo documento PDF
+        // "p" = orientação retrato (portrait)
+        // "mm" = unidade de medida em milímetros
+        // "a4" = tamanho da página
+        const pdf = new jsPDF("p", "mm", "a4");
 
-    // Calcula a altura da imagem mantendo a proporção original
-    const imgHeight = (canvas.height * pageWidth) / canvas.width;
+        // Obtém a largura da página do PDF
+        const pageWidth = pdf.internal.pageSize.getWidth();
 
-    // Adiciona a imagem gerada ao PDF
-    // Parâmetros: imagem, formato, posição X, posição Y, largura, altura
-    pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
+        // Calcula a altura da imagem mantendo a proporção original
+        const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
-    // Remove acentos e normaliza o nome do funcionário
-    // Também substitui espaços por "_" para evitar problemas no nome do arquivo
-    const nomeLimpo = nomeFuncionario
-        .normalize("NFD")              // Normaliza caracteres com acentos
-        .replace(/[\u0300-\u036f]/g, "") // Remove os acentos
-        .replace(/\s+/g, "_");           // Substitui espaços por "_"
+        // Adiciona a imagem gerada ao PDF
+        // Parâmetros: imagem, formato, posição X, posição Y, largura, altura
+        pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
 
-    // Monta o nome final do arquivo PDF
-    // Exemplo: holerite_Joao_Silva_01-2026.pdf
-    const nomeArquivo = `holerite_${nomeLimpo}_${mesCompetencia}.pdf`;
+        // Remove acentos e normaliza o nome do funcionário
+        // Também substitui espaços por "_" para evitar problemas no nome do arquivo
+        const nomeLimpo = nomeFuncionario
+            .normalize("NFD")              // Normaliza caracteres com acentos
+            .replace(/[\u0300-\u036f]/g, "") // Remove os acentos
+            .replace(/\s+/g, "_");           // Substitui espaços por "_"
 
-    // Salva o PDF com o nome definido
-    pdf.save(nomeArquivo);
-}
+        // Monta o nome final do arquivo PDF
+        // Exemplo: holerite_Joao_Silva_01-2026.pdf
+        const nomeArquivo = `holerite_${nomeLimpo}_${mesCompetencia}.pdf`;
+
+        // Salva o PDF com o nome definido
+        pdf.save(nomeArquivo);
+    }
 
 </script>
 
