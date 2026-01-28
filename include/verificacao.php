@@ -4,7 +4,11 @@ require "funcoes/funcoes_banco_horas.php";
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+/*
+Estou com uma situação em mente:
 
+Estou trabalhando com sistema de ponto no navegador, gostaria que assim que o cara finalizar seu ponto aparecesse um popup na direita superior da tela dele falando: "Ponto finalizado" E um timer falando quanto tempo falta até ele ser deslogado da plataforma. Porém, eu atribuia o tempo dessa página pela url exemplo: "?s=100", porém não da pra fazer include deste jeito, o que fazer?
+*/
 
 function verificar_login($conn) {
     $id_login = $_SESSION['id_login'];
@@ -52,9 +56,8 @@ function verificar_login($conn) {
 
 // include não funciona por que é um arquivo que não existe(por causa do ?s=segundos)
 function teste($segundos) {
-    header("Location: /projeto-integrador/public/ponto/pausas_e_ponto/msg_pop_up.php?s=$segundos");
-    // $segundos = $segundos;
-    // include("/projeto-integrador/public/ponto/pausas_e_ponto/msg_pop_up.php");
+    echo "<script>const TEMPO_LOGOUT = $segundos;</script>";
+    include "/projeto-integrador/public/ponto/pausas_e_ponto/msg_pop_up.php";
 }
 
 function redirecionar() {

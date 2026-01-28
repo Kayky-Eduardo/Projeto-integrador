@@ -1,47 +1,28 @@
-<?php
+<article id="popup-ponto">
+    <h3>A finalização do ponto foi confirmada!</h3>
+    <p id="contador"></p>
+</article>
 
-?>
-<!DOCTYPE html>
-<html lang="pt-br">
+<script>
+  let segundos = TEMPO_LOGOUT;
+  const p = document.getElementById("contador");
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="css/estilo.css">
-</head>
+  function atualizar() {
+    const minutos = Math.floor(segundos / 60);
+    const resto = segundos % 60;
 
-<body>
-    <main>
-        <section id="resposta-pop-up">
-        </section>
-    </main>
-    <script>
-        let segundos = new URLSearchParams(window.location.search).get('s');
-        let milissegundos = Math.round(segundos * 1000);
-        let minutos = Math.round(segundos / 60);
+    p.textContent = `Você será deslogado em ${minutos}:${resto.toString().padStart(2, "0")}`;
+  }
 
-        let section = document.getElementById("resposta-pop-up");
-        let h3 = document.createElement("h3");
-        let p = document.createElement("p");
-        let tempo_novo = minutos;   
-        
-        h3.textContent = "A finalização do ponto foi confirmada!";
-        p.textContent = `Você será deslogado em ${minutos} minutos`;
+  atualizar();
 
-        section.appendChild(h3);
-        section.appendChild(p);
+  const interval = setInterval(() => {
+    segundos--;
+    atualizar();
 
-        setInterval(() => {
-            tempo_novo -= 1;
-            p.textContent = `Você será deslogado em ${tempo_novo} minutos`;
-
-        }, 60000);
-
-        setTimeout(() => {
-            window.location.href = "/projeto-integrador/public/logout.php";
-        }, milissegundos);
-    </script>
-</body>
-
-</html>
+    if (segundos <= 0) {
+      clearInterval(interval);
+      window.location.href = "/projeto-integrador/public/logout.php";
+    }
+  }, 1000);
+</script>
