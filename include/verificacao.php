@@ -61,8 +61,11 @@ function teste($segundos) {
 }
 
 function redirecionar() {
-    header("Location: /projeto-integrador/public/logout.php");
-    exit;
+    // header("Location: /projeto-integrador/public/logout.php");
+    // exit;
+    $segundos = 60;
+    echo "<script>const TEMPO_LOGOUT = $segundos;</script>";
+    include "/projeto-integrador/public/ponto/pausas_e_ponto/msg_pop_up.php";
 }
 
 function verificar_tipo($conn, $id_usuario, $resultado_tempo) {

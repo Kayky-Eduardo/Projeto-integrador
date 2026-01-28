@@ -152,15 +152,22 @@ while ($pausa_row = $pausas->fetch_assoc()) {
                 <?php endif; ?>
             </select>
             <br><br>
-
-            <label for="inicio_pausa_novo">Início da Pausa:</label>
-            <input type="time" name="inicio_pausa_novo" id="inicio_pausa_novo">
-            <br><br>
             
-            <label for="fim_pausa_novo">Fim da Pausa:</label>
-            <input type="time" name="fim_pausa_novo" id="fim_pausa_novo">
+            <!-- Início código novo -->
+
+            <label for="campo_pausa">Campo a ajustar:</label>
+            <select name="campo_pausa" id="campo_pausa">
+                <option value="inicio_pausa">Início</option>
+                <option value="fim_pausa">Fim</option>
+            </select>
+            <br><br>
+
+            <label for="pausa_nova">Novo Horário:</label>
+            <input type="time" name="pausa_nova" id="pausa_nova">
             <br><br>
             <hr>
+
+            <!-- fim do código novo -->
         </div>
         
         <label for="justificativa">Justificativa:</label><br>
@@ -188,8 +195,8 @@ while ($pausa_row = $pausas->fetch_assoc()) {
             document.getElementById('campo_ponto').required = false;
             document.getElementById('valor_novo_ponto').required = false;
             document.getElementById('id_pausa').required = false;
-            document.getElementById('inicio_pausa_novo').required = false;
-            document.getElementById('fim_pausa_novo').required = false;
+            document.getElementById('campo_pausa').required = false;
+            document.getElementById('pausa_nova').required = false;
 
             if (tipo === 'ponto') {
                 ajustePonto.style.display = 'block';

@@ -37,8 +37,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($checkPausa->num_rows > 0) {
                 $erro = "Encerre a pausa ativa antes de finalizar o ponto.";
             } else {
+                // $conn->query("UPDATE ponto_dia SET fim_ponto = NOW() WHERE id_ponto = " . $ponto['id_ponto']);
                 $resultado_tempo = verificar_tempo_por_ponto($conn, $id_usuario);
                 verificar_tipo($conn, $id_usuario, $resultado_tempo);
+//                 echo json_encode([
+//                     "popup" => true,
+//                     "tempo_logout" => 60
+//                 ]);
+// exit;
             }
         }
     } 
