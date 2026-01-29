@@ -122,7 +122,8 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn) {
     return [
         'id_usuario' => $id_usuario,
         'nome_usuario' => $usuario['nome_usuario'],
-        'salario_liquido' => $salario_liquido
+        'salario_liquido' => $salario_liquido,
+        'revisado' => 0
     ];
 }
 
@@ -190,14 +191,15 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
 <?php endif; ?>
 
 <!-- Form para gerar folhas -->
+<h2>Folhas Geradas <?= $mes ?></h2>
 <form method="POST">
     <label>Mês:</label>
     <input type="month" name="mes" value="<?= $mes ?>">
     <button type="submit" name="gerar_folhas">Gerar Todas as Folhas</button>
+    <button type="submit" name="gerar_folhas">Revisar todos</button>
 </form>
-
 <?php if (!empty($folhas_geradas)): ?>
-    <h2>Folhas Geradas <?= $mes ?></h2>
+    
     <table>
         <thead>
             <tr>
@@ -210,17 +212,16 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
             <tr>
                 <td><?= $f['nome_usuario'] ?></td>
                 <td>R$ <?= number_format($f['salario_liquido'], 2, ',', '.') ?></td>
-                <td>
-                    <a href="" onclick="construindo()">
-                    | Enviar PDF
-                    </a>
-                    <a href="../../api/api_gerar_pdf.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>" target="_blank">
-                    | Abrir PDF
-                    </a>
-                    <a href="editar_folha.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>">
-                    | Editar |
-                    </a>
-                </td>
+                <?php if ($f['revisado'] == 0): ?>
+                    <td>
+                        <a href="revisar_folha.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>">
+                        | Revisar PDF
+                        </a>
+                        <a href="editar_folha.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>">
+                        | Editar Eventos|
+                        </a>
+                    </td>
+                <?php endif ?>
                      
 
             </tr>
@@ -230,9 +231,3 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
 
 </body>
 </html>
-
-<script>
-    function construindo(){
-        alert('Em construção.... aguarde');
-    }
-</script>

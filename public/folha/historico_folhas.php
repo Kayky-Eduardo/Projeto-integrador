@@ -50,7 +50,7 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina); // Calcula o total 
 
 // SQL principal para exibir os registros com filtros e paginação
 $sql = "
-    SELECT f.id_folha, f.mes_competencia, f.salario_liquido,
+    SELECT f.*,
            u.nome_usuario, u.id_usuario, u.id_cargo
     FROM folhas f
     LEFT JOIN usuario u ON u.id_usuario = f.id_usuario
@@ -72,6 +72,7 @@ if (!empty($filtroUser)) {
 if ($nivel != 2){
     $sql .= " AND f.id_usuario = " . intval($id_usuario);
 }
+$sql .= " AND f.revisado = 1";
 
 // Ordena os resultados do mais recente para o mais antigo
 $sql .= " ORDER BY f.mes_competencia DESC";
