@@ -14,7 +14,7 @@
     $resultado = verificar_tempo_por_ponto($conn, $id_usuario);
 
     if ($resultado['tipo'] === 'aviso') {
-        $segundos_restantes = $dados['segundos_maximos'] - $segundos_trabalhados_efetivos;
+        $segundos_restantes = $dados['segundos_maximos'] - $dados["segundos_trabalhados_efetivos"];
 
         echo json_encode([
             'mostrar' => true,

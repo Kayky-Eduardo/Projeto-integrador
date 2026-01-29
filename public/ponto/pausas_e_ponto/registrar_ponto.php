@@ -182,7 +182,6 @@ $tiposPausa = $stmtTipos->get_result();
             const btnFinalizar = document.getElementById('btnFinalizarPausa');
             if (!el) return;
 
-            // Cálculo de tempo decorrido
             const inicio = new Date(el.dataset.inicio).getTime();
             const agora = new Date().getTime();
             const decorridoSegundos = Math.floor((agora - inicio) / 1000);
@@ -215,7 +214,7 @@ $tiposPausa = $stmtTipos->get_result();
                 document.getElementById('formPausa').submit();
                 window.location.reload();
                 alert("Tempo máximo de pausa atingido! Finalizando automaticamente.");
-                
+                window.location.href = "/projeto-integrador/public/logout.php"
             }
         }
 

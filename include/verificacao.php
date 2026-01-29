@@ -5,8 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 /*
-Estou com uma situação em mente:
-
+ideia:
 assim que o cara finalizar seu ponto aparecesse um popup na direita superior da tela dele falando: "Ponto finalizado"
 E um timer falando quanto tempo falta até ele ser deslogado da plataforma.
 Porém, eu atribuia o tempo dessa página pela url exemplo: "?s=100", porém não da pra fazer include deste jeito.
@@ -60,6 +59,7 @@ function verificar_login($conn) {
 function redirecionar() {
     header("Location: /projeto-integrador/public/logout.php");
     exit;
+    // include("\Projeto-integrador\public\ponto\pausas_e_ponto\msg_pop_up.php");
 }
 
 function verificar_tipo($conn, $id_usuario, $resultado_tempo) {

@@ -114,7 +114,8 @@ function dados_grafico($conn) {
     $pesquisa_horario_completo = $conn->prepare("
         SELECT COUNT(*) AS total_completo
         FROM ponto_dia
-        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NOT NULL AND fim_ponto != '00:00:00')
+        WHERE inicio_ponto IS NOT NULL 
+        AND (fim_ponto IS NOT NULL AND fim_ponto != '00:00:00')
         AND data_ponto = CURDATE();
     ");
     $pesquisa_horario_completo->execute();
@@ -143,8 +144,10 @@ function filtrar($conn, $tipo) {
         SELECT
             usuario.email_usuario, ponto_dia.*,
             TIMESTAMPDIFF(MINUTE, inicio_ponto, NOW()) AS tempo_logado
-        FROM ponto_dia JOIN usuario ON ponto_dia.id_usuario = usuario.id_usuario
-        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NULL or fim_ponto = '00:00:00')
+        FROM ponto_dia
+        JOIN usuario ON ponto_dia.id_usuario = usuario.id_usuario
+        WHERE inicio_ponto IS NOT NULL 
+        AND (fim_ponto IS NULL or fim_ponto = '00:00:00')
         AND data_ponto = CURDATE();
         ");
         $filtro_presente->execute();
@@ -164,7 +167,8 @@ function filtrar($conn, $tipo) {
             IFNULL(TIMESTAMPDIFF(MINUTE, inicio_ponto, NOW()), 0) AS tempo_logado 
         FROM usuario
         LEFT JOIN ponto_dia ON usuario.id_usuario = ponto_dia.id_usuario
-        WHERE ponto_dia.id_ponto IS NULL OR ponto_dia.inicio_ponto = '00:00:00'
+        WHERE ponto_dia.id_ponto IS NULL 
+        OR ponto_dia.inicio_ponto = '00:00:00'
         ");
         $filtro_ausente->execute();
         $result = $filtro_ausente->get_result();
@@ -212,7 +216,8 @@ function filtrar($conn, $tipo) {
             ponto_dia.data_ponto,
             TIMESTAMPDIFF(MINUTE, inicio_ponto, fim_ponto) AS tempo_logado 
         FROM ponto_dia JOIN usuario ON ponto_dia.id_usuario = usuario.id_usuario
-        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NOT NULL AND fim_ponto != '00:00:00')
+        WHERE inicio_ponto IS NOT NULL 
+        AND (fim_ponto IS NOT NULL AND fim_ponto != '00:00:00')
         AND ponto_dia.data_ponto = CURDATE();
     ");
     $filtro_horario_completo->execute();
