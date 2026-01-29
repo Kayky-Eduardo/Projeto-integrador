@@ -1,29 +1,69 @@
-<article id="popup-ponto">
-    <h3>A finalização do ponto foi confirmada!</h3>
-    <p id="contador"></p>
-</article>
+<div id="aviso-jornada" class="aviso oculto"></div>
 
-<script  type="text/javascript">
-  
-  let segundos = TEMPO_LOGOUT;
-  const p = document.getElementById("contador");
+<style>
+.aviso {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #0f172a;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    font-family: Arial;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    z-index: 9999;
+}
+.oculto { display: none; }
+</style>
+<script>
+let contadorInterval = null;
 
-  function atualizar() {
-    const minutos = Math.floor(segundos / 60);
-    const resto = segundos % 60;
+async function checarAvisoJornada() {
+    try {
+        const r = await fetch('/projeto-integrador/api/api_consulta_avisos.php');
 
-    p.textContent = `Você será deslogado em ${minutos}:${resto.toString().padStart(2, "0")}`;
-  }
+        if (!r.ok) {
+            console.warn("Erro na API de avisos:", r.status);
+            return;
+        }
 
-  atualizar();
+        const dados = await r.json();
 
-  const interval = setInterval(() => {
-    segundos--;
-    atualizar();
+        if (dados.erro === 'nao_autenticado') {
+            location.href = "/projeto-integrador/public/logout.php";
+            return;
+        }
 
-    if (segundos <= 0) {
-      clearInterval(interval);
-      window.location.href = "/projeto-integrador/public/logout.php";
+        if (dados.mostrar) {
+            iniciarAviso(dados.segundos);
+        }
+
+    } catch (e) {
+        console.error("Falha ao buscar aviso de jornada:", e);
     }
-  }, 1000);
+}
+
+function iniciarAviso(segundos) {
+    const box = document.getElementById('aviso-jornada');
+    box.classList.remove('oculto');
+
+    if (contadorInterval) return;
+
+    contadorInterval = setInterval(() => {
+        if (segundos <= 0) {
+            clearInterval(contadorInterval);
+            location.href = "/projeto-integrador/public/logout.php";
+            return;
+        }
+
+        const m = Math.floor(segundos / 60);
+        const s = segundos % 60;
+
+        box.innerHTML = `Sua sessão termina em <b>${m}m ${s}s</b>`;
+        segundos--;
+    }, 1000);
+}
+
+setInterval(checarAvisoJornada, 20000);
+checarAvisoJornada();
 </script>

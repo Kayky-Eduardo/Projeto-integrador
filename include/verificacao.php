@@ -57,13 +57,9 @@ function verificar_login($conn) {
 
 }
 
-// include não funciona por que é um arquivo que não existe(por causa do ?s=segundos)
 function redirecionar() {
     header("Location: /projeto-integrador/public/logout.php");
     exit;
-    // $segundos = 60;
-    // echo "<script>const TEMPO_LOGOUT = $segundos;</script>";
-    // include "/projeto-integrador/public/ponto/pausas_e_ponto/msg_pop_up.php";
 }
 
 function verificar_tipo($conn, $id_usuario, $resultado_tempo) {
@@ -72,7 +68,10 @@ function verificar_tipo($conn, $id_usuario, $resultado_tempo) {
     $mensagem = $resultado_tempo['mensagem'];
 
     if ($tipo === "aviso") {
-        echo "<script>console.log('Você tem 10 minutos, antes de ser deslogado')<script>";
+        $_SESSION['aviso_jornada'] = [
+            'mensagem' => $mensagem,
+            'tempo_restante' => 600
+        ];
     }
 
     if ($tipo === "bloqueado") {
@@ -233,8 +232,13 @@ function verificar_tempo_por_ponto($conn, $id_usuario) {
     $dados = $result->fetch_assoc();
     $stmt->close();
     
-    $aviso = $dados['segundos_trabalhados'] + 600 >= $dados['segundos_maximos'] ? true : false;
-    $aviso = true;
+    
+    // Calcula pausas para descontar do tempo trabalhado
+    $tempo_pausas = calcular_tempo_pausas($conn, $id_usuario, $id_ponto);
+    $segundos_trabalhados_efetivos = $dados['segundos_trabalhados'] - $tempo_pausas;
+    
+    $aviso = $segundos_trabalhados_efetivos + 600 >= $dados['segundos_maximos'] ? true : false;
+
     if ($aviso) {
         return [
             'tipo' => 'aviso',
@@ -242,10 +246,6 @@ function verificar_tempo_por_ponto($conn, $id_usuario) {
             'mensagem' => 'avisar',
         ];
     }
-
-    // Calcula pausas para descontar do tempo trabalhado
-    $tempo_pausas = calcular_tempo_pausas($conn, $id_usuario, $id_ponto);
-    $segundos_trabalhados_efetivos = $dados['segundos_trabalhados'] - $tempo_pausas;
     
     // Verifica se excedeu o tempo máximo
     if ($segundos_trabalhados_efetivos >= $dados['segundos_maximos']) {
@@ -257,12 +257,12 @@ function verificar_tempo_por_ponto($conn, $id_usuario) {
             'segundos_jornada' => $dados['segundos_jornada'],
             'segundos_maximos' => $dados['segundos_maximos'],
             'mensagem' => "Tempo máximo excedido. Hora extra máxima: {$minutos_extra} minutos"
-        ];
-    }
-    
-    // Verifica se está em hora extra
-    if ($segundos_trabalhados_efetivos >= $dados['segundos_jornada']) {
-        $segundos_extra = $segundos_trabalhados_efetivos - $dados['segundos_jornada'];
+            ];
+            }
+            
+            // Verifica se está em hora extra
+            if ($segundos_trabalhados_efetivos >= $dados['segundos_jornada']) {
+                $segundos_extra = $segundos_trabalhados_efetivos - $dados['segundos_jornada'];
         $minutos_extra = round($segundos_extra / 60);
         
         return [
