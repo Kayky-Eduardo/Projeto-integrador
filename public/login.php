@@ -64,73 +64,78 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $usuario = $result->fetch_assoc();
             $senha_banco = $usuario['senha_usuario'];
 
-            if (password_verify($senha, $senha_banco)) {
-                session_regenerate_id(true);
-                $_SESSION['nivel'] = $usuario['nivel'];
-                $_SESSION['id_usuario'] = $usuario['id_usuario'];
-                $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
-                $verificacao_logado = $conn->prepare("
-                    SELECT id_login FROM login
-                    WHERE id_usuario = ? AND data_fim IS NULL
-                    LIMIT 1
-                ");
+            if ($usuario['conta_ativa'] === 1) {
 
-                $verificacao_logado->bind_param("i", $usuario['id_usuario']);
-                $verificacao_logado->execute();
-                $verificacao_logado = $verificacao_logado->get_result();
+                if (password_verify($senha, $senha_banco)) {
+                    session_regenerate_id(true);
+                    $_SESSION['nivel'] = $usuario['nivel'];
+                    $_SESSION['id_usuario'] = $usuario['id_usuario'];
+                    $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
+                    $verificacao_logado = $conn->prepare("
+                        SELECT id_login FROM login
+                        WHERE id_usuario = ? AND data_fim IS NULL
+                        LIMIT 1
+                    ");
 
-                $verificar_historico_ponto = $conn->prepare("
-                    SELECT id_ponto
-                    FROM ponto_dia
-                    WHERE data_ponto = CURDATE() AND fim_ponto IS NOT NULL
-                    AND id_usuario = ?;
-                ");
+                    $verificacao_logado->bind_param("i", $usuario['id_usuario']);
+                    $verificacao_logado->execute();
+                    $verificacao_logado = $verificacao_logado->get_result();
 
-                $verificar_historico_ponto->bind_param("i", $usuario['id_usuario']);
-                $verificar_historico_ponto->execute();
-                $resultado = $verificar_historico_ponto->get_result();
+                    $verificar_historico_ponto = $conn->prepare("
+                        SELECT id_ponto
+                        FROM ponto_dia
+                        WHERE data_ponto = CURDATE() AND fim_ponto IS NOT NULL
+                        AND id_usuario = ?;
+                    ");
 
-                if ($resultado->num_rows === 0) {
-                    if ($verificacao_logado && $verificacao_logado->num_rows > 0) {
-                        $row = $verificacao_logado->fetch_assoc();
-                        $logout = $conn->prepare("UPDATE login SET data_fim = NOW() WHERE id_login = ?");
-                        $logout->bind_param("i", $row['id_login']);
-                        $logout->execute();
-                        $logout->close();
-                        $verificacao_logado->close();
+                    $verificar_historico_ponto->bind_param("i", $usuario['id_usuario']);
+                    $verificar_historico_ponto->execute();
+                    $resultado = $verificar_historico_ponto->get_result();
+
+                    if ($resultado->num_rows === 0) {
+                        if ($verificacao_logado && $verificacao_logado->num_rows > 0) {
+                            $row = $verificacao_logado->fetch_assoc();
+                            $logout = $conn->prepare("UPDATE login SET data_fim = NOW() WHERE id_login = ?");
+                            $logout->bind_param("i", $row['id_login']);
+                            $logout->execute();
+                            $logout->close();
+                            $verificacao_logado->close();
+                        }
+        
+                        $update_login = $conn->prepare("
+                            INSERT INTO login (email_login, id_usuario, id_cargo) VALUES
+                            (?, ?, ?)
+                            ");
+                        $update_login->bind_param(
+                            'sii',
+                            $usuario['email_usuario'],
+                            $usuario['id_usuario'],
+                            $usuario['id_cargo']
+                        );
+                        $update_login->execute();
+                        $_SESSION['id_login'] = $update_login->insert_id;
+                        $update_login->close();
+                        if (password_needs_rehash($senha_banco, PASSWORD_DEFAULT)) {
+                            $novo_hash = password_hash($senha, PASSWORD_DEFAULT);
+                            $update = $conn->prepare("UPDATE usuario SET senha_usuario = ? WHERE id_usuario = ?");
+                            $update->bind_param("si", $novo_hash, $usuario['id_usuario']);
+                            $update->execute();
+                            $update->close();
+                        } 
+                        header("Location: index.php");
+                        $conn->close();
+                        exit; 
+                    
+                    } else {        
+                        $erro_login = "Você já finalizou o ponto de hoje!";
+                        $verificar_historico_ponto->close();
+
                     }
-    
-                    $update_login = $conn->prepare("
-                        INSERT INTO login (email_login, id_usuario, id_cargo) VALUES
-                        (?, ?, ?)
-                        ");
-                    $update_login->bind_param(
-                        'sii',
-                        $usuario['email_usuario'],
-                        $usuario['id_usuario'],
-                        $usuario['id_cargo']
-                    );
-                    $update_login->execute();
-                    $_SESSION['id_login'] = $update_login->insert_id;
-                    $update_login->close();
-                    if (password_needs_rehash($senha_banco, PASSWORD_DEFAULT)) {
-                        $novo_hash = password_hash($senha, PASSWORD_DEFAULT);
-                        $update = $conn->prepare("UPDATE usuario SET senha_usuario = ? WHERE id_usuario = ?");
-                        $update->bind_param("si", $novo_hash, $usuario['id_usuario']);
-                        $update->execute();
-                        $update->close();
-                    } 
-                    header("Location: index.php");
-                    $conn->close();
-                    exit; 
-                
-                } else {        
-                    $erro_login = "Você já finalizou o ponto de hoje!";
-                    $verificar_historico_ponto->close();
-
+                } else {
+                    $erro_login = "E-mail ou senha incorretos.";
                 }
             } else {
-                $erro_login = "E-mail ou senha incorretos.";
+                $erro_login = "Verifique se sua conta esta ativa com seu supervisor";
             }
         } else {
             $erro_login = "E-mail ou senha incorretos.";

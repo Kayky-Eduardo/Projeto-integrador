@@ -9,7 +9,6 @@ if(isset($_GET['id'])) {
     $id_setor = $_GET['id'];
 }
 
-
 $stmt = $conn->prepare("SELECT * FROM setor WHERE id_setor = ?");
 $stmt->bind_param("i", $id_setor);
 $stmt->execute();
