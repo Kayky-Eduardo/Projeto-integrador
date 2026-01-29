@@ -68,8 +68,7 @@ footer ul,
 
 /* Estilos padrão para links */
 nav a,
-.dropdown-menu a,
-.voltar-final a {
+.dropdown-menu a {
     text-decoration: none;
     color: var(--cor-texto-branco);
     font-size: var(--tamanho-texto-padrao);
@@ -78,7 +77,7 @@ nav a,
 /* Estilos de hover para links */
 nav a:hover,
 .dropdown-menu a:hover,
-.voltar-final a:hover .menu-config a:hover,
+.menu-config a:hover,
 .menu-config a.ativo {
     background-color: var(--cor-fundo-nav-hover);
 }
@@ -192,12 +191,226 @@ footer a {
 =========================== */
 
 /* LOGO RESPONSIVA */
-header img {
+.logo {
     display: block;
     width: 100%;
 }
 
-/* CARROSSEL DE NOTÍCIAS */
+/* CONTAINER */
+.box {
+    background-color: var(--cor-fundo-card);
+    border: 1px solid var(--cor-borda-padrao);
+    border-radius: var(--raio-borda-grande);
+    padding: 16px;
+}
+
+/* BOTÃO BASE */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    cursor: pointer;
+    border: none;
+    font-size: var(--tamanho-texto-padrao);
+    font-weight: 500;
+    border-radius: var(--raio-borda-padrao);
+    transition: background-color 0.2s ease, transform 0.1s ease, opacity 0.2s ease;
+}
+
+.btn-link {
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+    font-size: var(--tamanho-texto-padrao);
+    font-weight: 500;
+    border-radius: var(--raio-borda-padrao);
+    transition: background-color 0.2s ease, transform 0.1s ease, opacity 0.2s ease;
+}
+
+.btn:focus,
+.btn-link:focus {
+    outline: 2px solid var(--cor-destaque);
+    outline-offset: 2px;
+}
+
+.btn:disabled,
+.btn-link:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-padrao {
+    background-color: var(--cor-principal);
+    color: var(--cor-texto-branco);
+}
+
+.btn-padrao:hover {
+    background-color: var(--cor-principal-hover);
+}
+
+.btn-salvar-foto {
+    margin-top: 20px;
+    background-color: var(--cor-fundo-card);
+    color: var(--cor-principal);
+    border: 1px solid var(--cor-borda-padrao);
+}
+
+.btn-salvar-foto:hover {
+    background-color: var(--cor-fundo-pagina);
+}
+
+.btn-ativar {
+    background-color: #2ecc71;
+}
+
+.btn-desativar {
+    background-color: #f97316;
+}
+
+.btn-excluir {
+    background-color: var(--cor-perigo);
+}
+
+.btn-voltar {
+    background-color: var(--cor-borda-padrao);
+    color: var(--cor-principal);
+}
+
+/* INPUT */
+.input {
+    width: 100%;
+    padding: 10px;
+    font-size: var(--tamanho-texto-padrao);
+    font-family: inherit;
+    border: 1px solid var(--cor-borda-padrao);
+    border-radius: var(--raio-borda-padrao);
+    background-color: var(--cor-fundo-card);
+    color: var(--cor-principal);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.input::placeholder {
+    color: var(--cor-texto-suave);
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--cor-principal);
+    box-shadow: 0 0 0 2px rgba(2, 6, 23, 0.15);
+}
+
+.input:disabled {
+    background-color: #f1f5f9;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.input-foto {
+    display: none;
+}
+
+/* LABEL  */
+.label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: var(--tamanho-texto-padrao);
+    font-weight: 600;
+    color: var(--cor-principal);
+}
+
+.label-foto {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    gap: 8px;
+}
+
+/* FORMULÁRIO  */
+.form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-linha {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+/* CARD */
+.card {
+    background-color: var(--cor-fundo-card);
+    border: 1px solid var(--cor-borda-padrao);
+    border-radius: var(--raio-borda-grande);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+.cards-container {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    width: 100%;
+    justify-content: center;
+}
+
+.card-usuario {
+    align-items: center;
+    width: 260px;
+    max-width: 100%;
+}
+
+/* STATUS */
+.status {
+    font-size: var(--tamanho-texto-padrao);
+    font-weight: bold;
+    text-align: center;
+}
+
+.ativo {
+    color: #22c55e;
+
+}
+
+.inativo {
+    color: var(--cor-perigo);
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: var(--tamanho-texto-padrao);
+    color: var(--cor-texto-branco);
+}
+
+.status-badge-ativo {
+    background: #22c55e;
+}
+
+.status-badge-inativo {
+    background: #ef4444;
+}
+
+
+/* Carrossel de notícias */
 .carrossel {
     max-width: 900px;
     width: 100%;
@@ -220,7 +433,7 @@ header img {
     color: var(--cor-texto-branco);
 }
 
-.slide.ativo {
+.slide.slide-ativo {
     opacity: 1;
     z-index: 1;
 }
@@ -324,78 +537,6 @@ header img {
     transform: scale(1.3);
 }
 
-/* BOTÕES */
-.btn-padrao,
-.btn-cadastrar,
-.btn-perfil,
-.btn-status,
-.btn-excluir,
-.btn-ativar,
-.btn-desativar {
-    padding: 10px;
-    cursor: pointer;
-    border: none;
-    font-size: var(--tamanho-texto-padrao);
-    border-radius: var(--raio-borda-padrao);
-    background-color: var(--cor-principal);
-    color: var(--cor-texto-branco);
-}
-
-.btn-padrao:hover,
-.painel-config button:hover {
-    background-color: var(--cor-principal-hover);
-}
-
-#btn-salvar-foto {
-    margin-top: 20px;
-    padding: 10px;
-    cursor: pointer;
-    border: none;
-    font-size: var(--tamanho-texto-padrao);
-    border-radius: var(--raio-borda-padrao);
-    background-color: var(--cor-fundo-pagina);
-    color: var(--cor-principal);
-}
-
-.btn-status {
-    padding: 10px;
-    border-radius: var(--raio-borda-padrao);
-    font-weight: 400;
-    border: 1px solid transparent;
-    width: 100%;
-}
-
-.btn-ativar {
-    background-color: #2ecc71;
-}
-
-.btn-desativar {
-    background-color: #f97316;
-}
-
-.btn-excluir {
-    background: var(--cor-perigo);
-    color: var(--cor-texto-branco);
-}
-
-.voltar-final {
-    text-align: center;
-    margin-top: 0;
-    border-radius: var(--raio-borda-padrao);
-}
-
-.voltar-final a {
-    color: var(--cor-principal);
-    text-decoration: none;
-    display: block;
-    width: 100%;
-    padding: 8px;
-    border-radius: var(--raio-borda-padrao);
-    background: var(--cor-borda-padrao);
-    border: 1px solid var(--cor-borda-padrao);
-    font-size: var(--tamanho-texto-padrao);
-    font-weight: 600;
-}
 
 /* ============================
     5 - PÁGINAS ESPECÍFICAS
@@ -446,48 +587,6 @@ header img {
     font-size: var(--tamanho-texto-padrao);
 }
 
-.login-sistema fieldset {
-    border: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-.login-sistema label {
-    font-weight: 600;
-    color: var(--cor-principal);
-    font-size: var(--tamanho-texto-padrao);
-}
-
-.login-sistema input {
-    padding: 0.65rem;
-    border: 1px solid var(--cor-borda-padrao);
-    background-color: var(--cor-fundo-card);
-    border-radius: var(--raio-borda-padrao);
-    font-size: var(--tamanho-texto-padrao);
-}
-
-.login-sistema input:focus {
-    outline: none;
-    border-color: var(--cor-principal);
-}
-
-.login-sistema button {
-    margin-top: 1.2rem;
-    padding: 0.75rem;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    background-color: var(--cor-principal);
-    color: var(--cor-texto-branco);
-    font-size: var(--tamanho-texto-padrao);
-    border-radius: var(--raio-borda-padrao);
-}
-
-.login-sistema button:hover {
-    background-color: var(--cor-principal-hover);
-}
-
 /* PÁGINA DE CONFIGURAÇÕES */
 .configuracoes {
     display: flex;
@@ -535,48 +634,6 @@ header img {
     font-size: var(--tamanho-texto-padrao);
 }
 
-/* Formulário de configurações */
-.painel-config fieldset {
-    border: none;
-    display: grid;
-    grid-template-columns: 0.5fr 2fr 0.5fr 2fr;
-    column-gap: 2rem;
-    row-gap: 0.4rem;
-}
-
-.painel-config label {
-    text-align: center;
-    font-weight: 600;
-    color: var(--cor-principal);
-    font-size: var(--tamanho-texto-padrao);
-}
-
-.painel-config input {
-    padding: 8px;
-    width: 100%;
-    border: 1px solid var(--cor-borda-padrao);
-    font-size: var(--tamanho-texto-padrao);
-    border-radius: var(--raio-borda-padrao);
-}
-
-.painel-config input:focus {
-    outline: none;
-    border-color: var(--cor-principal);
-}
-
-/* VAI MUDAR AINDA */
-.painel-config button {
-    grid-column: span 4;
-    margin-top: 1.2rem;
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-    background-color: var(--cor-principal);
-    color: var(--cor-texto-branco);
-    font-size: var(--tamanho-texto-padrao);
-    border-radius: var(--raio-borda-padrao);
-}
-
 #resposta {
     margin-top: 1rem;
     font-size: var(--tamanho-texto-padrao);
@@ -587,59 +644,8 @@ header img {
 /* Ações */
 .usuarios-acoes {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
+    flex-direction: row;
     gap: 14px;
-    margin-bottom: 16px;
-}
-
-.link-cadastrar {
-    text-decoration: none;
-    padding: 8px;
-    background-color: var(--cor-principal);
-    color: var(--cor-texto-branco);
-    font-size: var(--tamanho-texto-padrao);
-    border-radius: var(--raio-borda-padrao);
-}
-
-.link-cadastrar:hover {
-    background-color: var(--cor-principal-hover);
-}
-
-#busca {
-    padding: 10px;
-    border-radius: var(--raio-borda-padrao);
-    border: 1px solid var(--cor-borda-padrao);
-    width: 100%;
-}
-
-/* Cards de usuários */
-.cards-container {
-    margin-top: 30px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    width: 100%;
-}
-
-.usuario-card {
-    align-items: center;
-    background: var(--cor-fundo-card);
-    border-radius: var(--raio-borda-grande);
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    border: 1px solid var(--cor-borda-padrao);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    width: 260px;
-    max-width: 100%;
-}
-
-.usuario-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
 .usuario-foto img {
@@ -650,68 +656,17 @@ header img {
     align-self: center;
 }
 
-.usuario-card h3 {
-    font-size: var(--tamanho-titulo-padrao);
-    color: var(--cor-principal);
-}
-
-.usuario-card .ativo {
-    color: #22c55e;
-    font-weight: bold;
-    text-align: center;
-}
-
-.inativo {
-    font-weight: bold;
-    text-align: center;
-    color: var(--cor-perigo);
-}
-
 .cargo {
     font-weight: 600;
     color: var(--cor-texto-suave);
     font-size: var(--tamanho-texto-padrao);
 }
 
-.link-perfil {
-    padding: 10px;
-    text-align: center;
-    text-decoration: none;
-    width: 100%;
-    background-color: var(--cor-principal);
-    color: var(--cor-texto-branco);
-    font-size: var(--tamanho-texto-padrao);
-    border-radius: var(--raio-borda-padrao);
-}
-
-.link-perfil:hover {
-    background-color: var(--cor-principal-hover);
-}
-
 /* PÁGINA DE CADASTRO DE USUÁRIO */
-.form-padrao {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 10px;
-    margin-top: 12px;
-}
-
-.foto-upload {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    gap: 8px;
-}
-
 .foto-upload span {
     font-size: var(--tamanho-texto-padrao);
     color: var(--cor-texto-branco);
     text-decoration: underline;
-}
-
-.foto-upload input {
-    display: none;
 }
 
 /* PÁGINA DE PERFIL DO USUÁRIO */
@@ -770,23 +725,6 @@ header img {
     margin-bottom: 10px;
 }
 
-.status-ativo,
-.status-inativo {
-    padding: 4px 10px;
-    margin: 6px 0;
-    border-radius: 999px;
-    font-size: var(--tamanho-texto-padrao);
-    color: var(--cor-texto-branco);
-}
-
-.status-ativo {
-    background: #22c55e;
-}
-
-.status-inativo {
-    background: #ef4444;
-}
-
 .perfil-cargo {
     margin-top: 10px;
     color: var(--cor-texto-branco);
@@ -842,25 +780,6 @@ header img {
     color: var(--cor-principal);
     font-size: var(--tamanho-titulo-padrao);
     text-align: center;
-}
-
-.input-padrao {
-    padding: 8px;
-    border: 1px solid var(--cor-borda-padrao);
-    font-size: var(--tamanho-texto-padrao);
-    border-radius: var(--raio-borda-padrao);
-    width: 100%;
-}
-
-.input-padrao:focus {
-    outline: none;
-    border-color: var(--cor-principal);
-}
-
-.label-padrao {
-    font-size: var(--tamanho-texto-padrao);
-    font-weight: 600;
-    color: var(--cor-principal);
 }
 
 /* ========================
@@ -968,7 +887,7 @@ header img {
         width: 100%;
     }
 
-    .usuario-card {
+    .card-usuario {
         width: 100%;
     }
 
@@ -980,17 +899,9 @@ header img {
         height: auto;
     }
 
-    .form-padrao button {
-        grid-column: span 1;
-    }
-
     /* Relatório Banco de Horas */
     .bh-relatorio h2 {
         font-size: 1.1rem;
-    }
-
-    .bh-relatorio>input[type="text"] {
-        width: 100%;
     }
 
     #tabelaBancoHoras th,
@@ -1008,14 +919,6 @@ header img {
         flex-direction: row;
         justify-content: center;
         flex-wrap: wrap;
-    }
-
-    .painel-config fieldset {
-        grid-template-columns: 1fr;
-    }
-
-    .painel-config button {
-        grid-column: span 1;
     }
 }
 
@@ -1075,28 +978,6 @@ header img {
     align-items: center;
 }
 
-.bh-filtro label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #334155;
-}
-
-.bh-filtro input {
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #cbd5e1;
-    font-size: 0.85rem;
-}
-
-.bh-filtro button {
-    padding: 8px 18px;
-    background-color: var(--cor-principal);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
 .bh-historico {
     background: #fff;
     border: 1px solid #e5e7eb;
@@ -1130,9 +1011,9 @@ header img {
     color: #64748b;
 }
 
-/* ==========================
+/* ============================
    RELATÓRIO BANCO DE HORAS
-========================== */
+============================ */
 .bh-relatorio {
     background-color: #ffffff;
     border: 1px solid #e5e7eb;
@@ -1147,25 +1028,6 @@ header img {
     color: var(--cor-principal);
     margin-bottom: 16px;
     text-align: center;
-}
-
-/* INPUT DE FILTRO */
-.bh-relatorio>input[type="text"] {
-    display: block;
-    margin: 0 auto 18px auto;
-    width: 320px;
-    max-width: 100%;
-    padding: 10px 12px;
-    font-size: 0.9rem;
-    border-radius: 8px;
-    border: 1px solid #cbd5e1;
-    background-color: #f8fafc;
-}
-
-.bh-relatorio>input[type="text"]:focus {
-    outline: none;
-    border-color: var(--cor-principal);
-    background-color: #ffffff;
 }
 
 /* TABELA */

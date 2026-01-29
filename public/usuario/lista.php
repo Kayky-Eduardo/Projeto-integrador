@@ -66,10 +66,10 @@ $result = $stmt->get_result();
     <main class="main-center">
         <section class="usuarios-painel" aria-label="Painel de usuários">
             <section class="usuarios-acoes">
-                <a href="cadastro.php" class="link-cadastrar">Cadastrar Usuário</a>
+                <a href="cadastro.php" class="btn-link btn-padrao">Cadastrar Usuário</a>
 
-                <form class="busca-usuarios" onsubmit="return false;">
-                    <input type="search" id="busca" placeholder="Buscar usuário..." aria-label="Buscar usuário">
+                <form class="form" onsubmit="return false;">
+                    <input type="search" id="busca" class="input" placeholder="Buscar usuário..." aria-label="Buscar usuário">
                 </form>
 
                 <select id="filtro-status" class="select-padrao" aria-label="Filtrar usuários">
@@ -82,7 +82,7 @@ $result = $stmt->get_result();
             <section class="cards-container" id="tabelaUsuarios" aria-label="Lista de usuários">
                 <?php while ($row = $result->fetch_assoc()): ?>
                     <article
-                        class="usuario-card"
+                        class="card card-usuario status"
                         aria-label="Usuário <?= e($row['nome_usuario']) ?>"
                         data-status="<?= $row['conta_ativa'] ? 'ativo' : 'inativo' ?>"
                         data-nome="<?= strtolower(e($row['nome_usuario'])) ?>">
@@ -101,7 +101,7 @@ $result = $stmt->get_result();
                             <?= e($row['nome_cargo'] ?? 'Cargo não definido') ?>
                         </p>
 
-                        <a href="editar.php?id=<?= (int) $row['id_usuario'] ?>" class="link-perfil">Perfil</a>
+                        <a href="editar.php?id=<?= (int) $row['id_usuario'] ?>" class="btn-link btn-padrao">Perfil</a>
                     </article>
                 <?php endwhile; ?>
             </section>

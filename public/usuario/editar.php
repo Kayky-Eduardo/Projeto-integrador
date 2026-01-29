@@ -238,20 +238,20 @@ if (isset($_POST['editar_usuario'])) {
     <main class="container perfil">
         <form class="perfil-grid perfil-grid-editar" method="POST" enctype="multipart/form-data">
             <section class="perfil-header">
-                <label class="foto-upload">
+                <label class="label-foto">
                     <img src="<?= $caminho_foto ?>" class="perfil-foto" id="preview-foto">
-                    <input type="file" name="foto_usuario" id="input-foto" accept="image/*">
+                    <input class="input-foto" type="file" name="foto_usuario" id="input-foto" accept="image/*">
                     <span>Alterar foto</span>
                 </label>
 
                 <h2><?= $usuario['nome_usuario'] ?></h2>
 
-                <span class="<?= $usuario['conta_ativa'] ? 'status-ativo' : 'status-inativo' ?>">
+                <span class="status-badge <?= $usuario['conta_ativa'] ? 'status-badge-ativo' : 'status-badge-inativo' ?>">
                     <?= $usuario['conta_ativa'] ? 'Usuário Ativo' : 'Usuário Inativo' ?>
                 </span>
 
                 <p class="perfil-cargo"><?= $usuario['nome_cargo'] ?? 'Cargo não definido' ?></p>
-                <button type="submit" class="btn-padrao btn-salvar-foto hidden" name="editar_usuario" id="btn-salvar-foto">Salvar foto</button>
+                <button type="submit" class="btn btn-salvar-foto hidden" name="editar_usuario" id="btn-salvar-foto">Salvar foto</button>
             </section>
 
             <section class="perfil-visualizacao" id="painel-visualizacao">
@@ -309,19 +309,18 @@ if (isset($_POST['editar_usuario'])) {
                 </article>
 
                 <section class="acoes-perfil">
-                    <button type="button" class="btn-padrao" id="btn-editar">Editar</button>
-                    <input type="hidden" name="id_usuario" value="<?= $usuario['id_usuario'] ?>">
+                    <button type="button" class="btn btn-padrao" id="btn-editar">Editar</button>
 
                     <?php if ($usuario['conta_ativa']): ?>
-                        <button type="submit" name="toggle_status" value="0" class="btn-status btn-desativar">Desativar usuário</button>
+                        <button type="submit" name="toggle_status" value="0" class="btn btn-desativar">Desativar usuário</button>
                     <?php else: ?>
-                        <button type="submit" name="toggle_status" value="1" class="btn-status btn-ativar">Ativar usuário</button>
+                        <button type="submit" name="toggle_status" value="1" class="btn btn-ativar">Ativar usuário</button>
                     <?php endif; ?>
 
-                    <button type="submit" class="btn-excluir" formaction="deletar_usuario.php" formmethod="POST">Excluir</button>
+                    <button type="submit" class="btn btn-excluir" formaction="deletar_usuario.php" formmethod="POST">Excluir</button>
 
-                    <section class="voltar-final">
-                        <a href="lista.php" class="link-simples">Voltar</a>
+                    <section>
+                        <a href="lista.php" class="btn-link btn-voltar">Voltar</a>
                     </section>
                 </section>
             </section>
@@ -329,26 +328,26 @@ if (isset($_POST['editar_usuario'])) {
             <section class="perfil-edicao hidden" id="painel-edicao">
                 <h4>Editar Funcionário</h4>
 
-                <section class="form-padrao">
+                <section class="form">
                     <input type="hidden" name="id_usuario" value="<?= $usuario['id_usuario'] ?>">
 
-                    <label class="label-padrao">Nome</label>
-                    <input class="input-padrao" name="nome_usuario" value="<?= $usuario['nome_usuario'] ?>" required>
+                    <label class="label">Nome</label>
+                    <input class="input" name="nome_usuario" value="<?= $usuario['nome_usuario'] ?>" required>
 
-                    <label class="label-padrao">CPF</label>
-                    <input class="input-padrao" id="cpf" name="cpf_usuario" value="<?= $usuario['cpf_usuario'] ?>" required>
+                    <label class="label">CPF</label>
+                    <input class="input" id="cpf" name="cpf_usuario" value="<?= $usuario['cpf_usuario'] ?>" required>
 
-                    <label class="label-padrao">RG</label>
-                    <input class="input-padrao" id="rg" name="rg_usuario" value="<?= $usuario['rg_usuario'] ?>" required>
+                    <label class="label">RG</label>
+                    <input class="input" id="rg" name="rg_usuario" value="<?= $usuario['rg_usuario'] ?>" required>
 
-                    <label class="label-padrao">Telefone</label>
-                    <input class="input-padrao" id="telefone" name="telefone" value="<?= $usuario['telefone'] ?>">
+                    <label class="label">Telefone</label>
+                    <input class="input" id="telefone" name="telefone" value="<?= $usuario['telefone'] ?>">
 
-                    <label class="label-padrao">CEP</label>
-                    <input class="input-padrao" id="cep" name="cep" value="<?= $usuario['cep'] ?>">
+                    <label class="label">CEP</label>
+                    <input class="input" id="cep" name="cep" value="<?= $usuario['cep'] ?>">
 
-                    <label class="label-padrao">Cargo</label>
-                    <select class="input-padrao" name="id_cargo">
+                    <label class="label">Cargo</label>
+                    <select class="input" name="id_cargo">
                         <?php while ($cargo = $cargos->fetch_assoc()): ?>
                             <option value="<?= $cargo['id_cargo'] ?>" <?= $cargo['id_cargo'] == $usuario['id_cargo'] ? 'selected' : '' ?>>
                                 <?= $cargo['nome_cargo'] ?>
@@ -356,8 +355,8 @@ if (isset($_POST['editar_usuario'])) {
                         <?php endwhile; ?>
                     </select>
 
-                    <label class="label-padrao">Gênero</label>
-                    <select class="input-padrao" name="genero">
+                    <label class="label">Gênero</label>
+                    <select class="input" name="genero">
                         <option value="<?= $usuario['genero'] ?>"><?= $usuario['genero'] ?></option>
                         <option>Masculino</option>
                         <option>Feminino</option>
@@ -365,13 +364,13 @@ if (isset($_POST['editar_usuario'])) {
                         <option>Não Declarado</option>
                     </select>
 
-                    <label class="label-padrao">Email</label>
-                    <input class="input-padrao" name="email_usuario" value="<?= $usuario['email_usuario'] ?>">
+                    <label class="label">Email</label>
+                    <input class="input" name="email_usuario" value="<?= $usuario['email_usuario'] ?>">
 
-                    <label class="label-padrao">Senha</label>
-                    <input class="input-padrao" type="password" name="senha_usuario" placeholder="Nova senha (opcional)">
+                    <label class="label">Senha</label>
+                    <input class="input" type="password" name="senha_usuario" placeholder="Nova senha (opcional)">
 
-                    <button class="btn-padrao" name="editar_usuario">Salvar Alterações</button>
+                    <button class="btn btn-padrao" name="editar_usuario">Salvar Alterações</button>
                 </section>
             </section>
         </form>

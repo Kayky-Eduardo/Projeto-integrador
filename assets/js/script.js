@@ -9,9 +9,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let interval;
 
     function mostrarSlide(i) {
-        slides.forEach(slide => slide.classList.remove("ativo"));
+        slides.forEach(slide => slide.classList.remove("slide-ativo"));
         dots.forEach(dot => dot.classList.remove("ativo"));
-        slides[i]?.classList.add("ativo");
+        slides[i]?.classList.add("slide-ativo");
         dots[i]?.classList.add("ativo");
         index = i;
     }
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /* FILTRO DE BUSCA E FILTRO DE STATUS - LISTA DE USUÁRIOS */
     const campoBusca = document.getElementById("busca");
     const filtroStatus = document.getElementById("filtro-status");
-    const cardsUsuarios = document.querySelectorAll(".usuario-card");
+    const cardsUsuarios = document.querySelectorAll(".card-usuario");
 
     if (campoBusca && cardsUsuarios.length) {
         campoBusca.addEventListener("input", aplicarFiltros);

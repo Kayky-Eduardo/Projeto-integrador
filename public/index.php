@@ -134,7 +134,7 @@ verificar_login($conn);
 
 <body>
     <header>
-        <img src="../assets/img/banner_rh_pi.png" alt="">
+        <img class="logo" src="../assets/img/banner_rh_pi.png" alt="">
     </header>
 
     <nav aria-label="Menu principal">
@@ -150,7 +150,7 @@ verificar_login($conn);
                     <button class="dot" data-slide="2" aria-label="Slide 3"></button>
                 </li>
 
-                <li class="slide ativo">
+                <li class="slide slide-ativo">
                     <article>
                         <img src="../assets/img/ambiente_coorporativo.jpg" alt="Ambiente corporativo">
                         <h2>Bem-vindo ao Sistema</h2>

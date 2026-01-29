@@ -33,16 +33,14 @@ verificar_login($conn);
             <h1>Definir Jornada de Trabalho</h1>
             <p>Configure a carga horária e o limite diário de horas extras.</p>
 
-            <form id="form-jornada">
-                <fieldset>
-                    <label for="set-jornada">Jornada diária padrão:</label>
-                    <input id="set-jornada" type="time" required>
+            <form class="form-linha" id="form-jornada">
+                <label class="label" for="set-jornada">Jornada diária padrão:</label>
+                <input class="input" id="set-jornada" type="time" required>
 
-                    <label for="set-hora-max">Limite de hora extra:</label>
-                    <input id="set-hora-max" type="time" required>
+                <label class="label" for="set-hora-max">Limite de hora extra:</label>
+                <input class="input" id="set-hora-max" type="time" required>
 
-                    <button type="submit">Salvar configuração</button>
-                </fieldset>
+                <button type="submit" class="btn btn-padrao">Salvar configuração</button>
             </form>
 
             <p id="resposta" role="alert" aria-live="polite" tabindex="0"></p>

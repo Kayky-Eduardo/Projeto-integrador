@@ -209,7 +209,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <!-- COLUNA DA FOTO -->
             <section class="perfil-header">
-                <label class="foto-upload">
+                <label class="label-foto">
                     <?php
                     $caminhoPreview = "../../assets/img/user_padrao.png";
 
@@ -219,7 +219,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     ?>
 
                     <img src="<?= $caminhoPreview ?>" class="perfil-foto" id="preview-foto">
-                    <input type="file" name="foto_usuario" id="input-foto" accept="image/*">
+                    <input type="file" class="input-foto" name="foto_usuario" id="input-foto" accept="image/*">
                     <span>Alterar foto</span>
                 </label>
 
@@ -246,18 +246,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     <h4>Cadastro de Funcionário</h4>
 
-                    <section class="form-padrao">
-                        <label class="label-padrao">Nome</label>
-                        <input class="input-padrao" name="nome_usuario" value="<?= $_POST['nome_usuario'] ?? '' ?>" required>
+                    <section class="form">
+                        <label class="label">Nome</label>
+                        <input class="input" name="nome_usuario" value="<?= $_POST['nome_usuario'] ?? '' ?>" required>
 
-                        <label class="label-padrao">CPF</label>
-                        <input class="input-padrao" id="cpf" name="cpf_usuario" value="<?= $_POST['cpf_usuario'] ?? '' ?>" required>
+                        <label class="label">CPF</label>
+                        <input class="input" id="cpf" name="cpf_usuario" value="<?= $_POST['cpf_usuario'] ?? '' ?>" required>
 
-                        <label class="label-padrao">RG</label>
-                        <input class="input-padrao" id="rg" name="rg_usuario" value="<?= $_POST['rg_usuario'] ?? '' ?>" required>
+                        <label class="label">RG</label>
+                        <input class="input" id="rg" name="rg_usuario" value="<?= $_POST['rg_usuario'] ?? '' ?>" required>
 
-                        <label class="label-padrao">Gênero</label>
-                        <select class="input-padrao" name="genero" required>
+                        <label class="label">Gênero</label>
+                        <select class="input" name="genero" required>
                             <option value="">Selecione</option>
                             <option value="Masculino">Masculino</option>
                             <option value="Feminino">Feminino</option>
@@ -265,20 +265,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             <option value="Não Declarado">Não Declarado</option>
                         </select>
 
-                        <label class="label-padrao">Email</label>
-                        <input class="input-padrao" name="email_usuario" value="<?= $_POST['email_usuario'] ?? '' ?>" required>
+                        <label class="label">Email</label>
+                        <input class="input" name="email_usuario" value="<?= $_POST['email_usuario'] ?? '' ?>" required>
 
-                        <label class="label-padrao">Senha</label>
-                        <input class="input-padrao" type="password" name="senha_usuario" required>
+                        <label class="label">Senha</label>
+                        <input class="input" type="password" name="senha_usuario" required>
 
-                        <label class="label-padrao">Telefone</label>
-                        <input class="input-padrao" id="telefone" name="telefone" value="<?= $_POST['telefone'] ?? '' ?>" required>
+                        <label class="label">Telefone</label>
+                        <input class="input" id="telefone" name="telefone" value="<?= $_POST['telefone'] ?? '' ?>" required>
 
-                        <label class="label-padrao">CEP</label>
-                        <input class="input-padrao" id="cep" name="cep" value="<?= $_POST['cep'] ?? '' ?>" required>
+                        <label class="label">CEP</label>
+                        <input class="input" id="cep" name="cep" value="<?= $_POST['cep'] ?? '' ?>" required>
 
-                        <label class="label-padrao">Cargo</label>
-                        <select class="input-padrao" name="id_cargo" required>
+                        <label class="label">Cargo</label>
+                        <select class="input" name="id_cargo" required>
                             <option value="">Selecione</option>
                             <?php foreach ($cargos as $cargo): ?>
                                 <option value="<?= $cargo['id_cargo']; ?>">
@@ -287,19 +287,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             <?php endforeach; ?>
                         </select>
 
-                        <label class="label-padrao">Data de admissão</label>
-                        <input class="input-padrao" type="date" name="data_admissao" required>
+                        <label class="label">Data de admissão</label>
+                        <input class="input" type="date" name="data_admissao" required>
 
-                        <button class="btn-cadastrar">Cadastrar Usuário</button>
+                        <button class="btn btn-padrao">Cadastrar Usuário</button>
 
                         <section class="voltar-final">
-                            <a href="lista.php" class="link-simples">Voltar</a>
+                            <a href="lista.php" class="btn-link btn-voltar">Voltar</a>
                         </section>
                     </section>
 
                 </article>
             </section>
-
         </form>
     </main>
 

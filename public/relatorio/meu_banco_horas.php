@@ -113,7 +113,7 @@ if ($modoRelatorio && $ehRH) {
             <?php if ($modoRelatorio && $ehRH): ?>
                 <section class="bh-relatorio">
                     <h2>Banco de Horas - Relatório Geral</h2>
-                    <input type="text" id="filtroUsuario" placeholder="Digite o nome do usuário..." autocomplete="off">
+                    <input class="input" type="text" id="filtroUsuario" placeholder="Digite o nome do usuário..." autocomplete="off">
 
                     <table id="tabelaBancoHoras">
                         <thead>
@@ -158,18 +158,18 @@ if ($modoRelatorio && $ehRH) {
 
                 <!-- FILTRO -->
                 <section class="bh-filtro" aria-label="Filtro por período">
-                    <form method="POST">
+                    <form class="form-linha" method="POST">
                         <article>
-                            <label for="inicio">Início:</label>
-                            <input type="date" name="inicio" id="inicio" required>
+                            <label class="label" for="inicio">Início:</label>
+                            <input class="input" type="date" name="inicio" id="inicio" required>
                         </article>
 
                         <article>
-                            <label for="fim">Fim:</label>
-                            <input type="date" name="fim" id="fim" required>
+                            <label class="label" for="fim">Fim:</label>
+                            <input class="input" type="date" name="fim" id="fim" required>
                         </article>
 
-                        <button type="submit" class="btn-padrao">Aplicar</button>
+                        <button type="submit" class="btn btn-padrao">Aplicar</button>
                     </form>
                 </section>
 

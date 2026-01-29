@@ -212,6 +212,12 @@ if ($nivel >= 3) {
 
                 <ul class="dropdown-menu left">
                     <li>
+                        <a href="/projeto-integrador/public/config/config.php">
+                            Configurações
+                        </a>
+                    </li>
+
+                    <li>
                         <a href="/projeto-integrador/public/relatorio/meu_banco_horas.php">
                             Meu Banco de Horas
                         </a>

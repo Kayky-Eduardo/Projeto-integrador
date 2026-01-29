@@ -227,18 +227,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </p>
             <?php endif; ?>
 
-            <form method="POST">
-                <fieldset>
-                    <legend class="hidden">Credenciais de Acesso</legend>
+            <form class="form" method="POST">
+                <legend class="hidden">Credenciais de Acesso</legend>
 
-                    <label for="email">E-mail corporativo</label>
-                    <input type="email" id="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
+                <label class="label" for="email">E-mail corporativo</label>
+                <input type="email" class="input" id="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
 
-                    <label for="senha">Senha</label>
-                    <input type="password" id="senha" name="senha" required>
+                <label class="label" for="senha">Senha</label>
+                <input type="password" class="input" id="senha" name="senha" required>
 
-                    <button type="submit">Entrar</button>
-                </fieldset>
+                <button type="submit" class="btn btn-padrao">Entrar</button>
             </form>
         </section>
     </main>
