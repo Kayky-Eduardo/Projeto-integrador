@@ -115,7 +115,7 @@ $sql_eventos->bind_param("is", $id_usuario, $mes_comp);
 $sql_eventos->execute();
 $eventos = $sql_eventos->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// CODIGUINHO DO DABI
+// CODIGUINHO DO DABI ↓
 if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
     $dados = json_decode(file_get_contents('php://input'), true);
@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
         if (isset($dados['confirmado']) && $dados['confirmado'] === true) {
             $id_evento = $dados['id_evento'] ?? '';
             //deletando evento
-            if ($acao = 'deletar' && !empty($id_evento)){
+            if ($acao == 'deletar' && !empty($id_evento)){
                 $sql= $conn->prepare("DELETE FROM eventos WHERE id_evento = ?");
                 $sql->bind_param('i', $id_evento);
                 if ($sql->execute()) {
@@ -137,21 +137,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
                 exit;
             }
         }
-        if($acao = 'editar'){
-            $id_editar = $dados['id_editar'];
-            $valor_novo = $dados['valor'];
+        if($acao == 'editar'){
+            $id_editar = $dados['id_editar'] ?? '';
+            $valor_novo = $dados['valor'] ?? '';
 
-            $sql= $conn->prepare("UPDATE FROM eventos SET valor = ? WHERE id_evento = ?");
-                $sql->bind_param('ii', $valor_novo, $id_evento);
+            $sql= $conn->prepare("UPDATE eventos SET valor = ? WHERE id_evento = ?");
+                $sql->bind_param('di', $valor_novo, $id_editar);
                 if ($sql->execute()) {
-                    echo json_encode(['status' => 'sucesso', 'msg' => 'Evento deletado!']);
+                    echo json_encode(['status' => 'sucesso', 'msg' => 'Evento Editado! '. $valor_novo]);
                 } else {
-                    echo json_encode(['status' => 'erro', 'msg' => 'Erro ao deletar.']);
+                    echo json_encode(['status' => 'erro', 'msg' => 'Erro ao editar.']);
                 }
                 exit;
         }
     }
 }
+// CODIGUINHO DO DABI ↑
 
 ?>
 
@@ -207,7 +208,8 @@ input[type="text"], input[type="email"] {
             <?php foreach ($eventos as $e): ?>
                     <tr>
                         <td><?= strtoupper($e["tipo"]) . " - " . $e["descricao"]; ?></td>
-                        <td>R$ <input id="<?= $e["id_evento"] ?>" class="input-editar" value="<?= number_format($e["valor"], 2, ',', '.'); ?>"></input>
+                        <td>R$ <input id="<?= $e["id_evento"] ?>" class="input-editar"
+                        type="number" step="0.01" value="<?= number_format($e["valor"],2,'.','.'); ?>"></input>
                         <button type="button" class="btn-deletar" data-id="<?= $e["id_evento"] ?>">deletar</button></td>
                     </tr>
                 </form>
@@ -278,6 +280,7 @@ input[type="text"], input[type="email"] {
                 })
                 .then(res => res.json())
                 .then(data => {
+                    alert(data.msg);
                     if(data.status === 'sucesso') location.reload(); // Recarrega para ver a mudança
                 })
                 .catch(err => console.error("Erro na requisição:", err));
