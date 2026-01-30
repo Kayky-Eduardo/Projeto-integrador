@@ -217,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <body class="pagina-login">
     <main class="main-login">
-        <section class="login-sistema">
+        <section class="container login-sistema">
             <h2>Acesso ao Sistema</h2>
             <p>Utilize suas credenciais corporativas</p>
 

@@ -20,6 +20,8 @@
     --cor-fundo-pagina: #F2F2F2;
     --cor-fundo-card: #ffffff;
     --cor-fundo-nav-hover: #334155;
+    --cor-titulo-tabela: #f1f5f9;
+
 
     /* Bordas */
     --cor-borda-padrao: #cbd5e1;
@@ -88,6 +90,7 @@ nav a:hover,
     display: block;
 }
 
+
 /* =====================
     3 - LAYOUT GERAL
 ===================== */
@@ -149,7 +152,6 @@ nav a:focus {
 .dropdown-menu {
     position: absolute;
     top: 100%;
-    border: 1px solid #1e293b;
     min-width: 190px;
     display: none;
     z-index: 1000;
@@ -197,39 +199,32 @@ footer a {
 }
 
 /* CONTAINER */
-.box {
+.container {
     background-color: var(--cor-fundo-card);
     border: 1px solid var(--cor-borda-padrao);
     border-radius: var(--raio-borda-grande);
     padding: 16px;
+    width: 100%;
 }
 
 /* BOTÃO BASE */
-.btn {
+.btn,
+.btn-link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 12px;
-    cursor: pointer;
-    border: none;
+    padding: 10px 12px;
     font-size: var(--tamanho-texto-padrao);
     font-weight: 500;
     border-radius: var(--raio-borda-padrao);
+    cursor: pointer;
+    border: none;
     transition: background-color 0.2s ease, transform 0.1s ease, opacity 0.2s ease;
 }
 
 .btn-link {
-    text-decoration: none;
-    display: block;
     width: 100%;
-    text-align: center;
-    padding: 10px;
-    cursor: pointer;
-    border: none;
-    font-size: var(--tamanho-texto-padrao);
-    font-weight: 500;
-    border-radius: var(--raio-borda-padrao);
-    transition: background-color 0.2s ease, transform 0.1s ease, opacity 0.2s ease;
+    text-decoration: none;
 }
 
 .btn:focus,
@@ -254,7 +249,6 @@ footer a {
 }
 
 .btn-salvar-foto {
-    margin-top: 20px;
     background-color: var(--cor-fundo-card);
     color: var(--cor-principal);
     border: 1px solid var(--cor-borda-padrao);
@@ -331,6 +325,22 @@ footer a {
     gap: 8px;
 }
 
+/* SELECT */
+.select-padrao {
+    appearance: none;
+    background-color: var(--cor-fundo-card);
+    border: 1px solid var(--cor-borda-padrao);
+    border-radius: var(--raio-borda-padrao);
+    padding: 0.6rem 2rem 0.6rem 0.8rem;
+    font-size: var(--tamanho-texto-padrao);
+    color: var(--cor-principal);
+    cursor: pointer;
+    background-image: url("../IMG/utils/seta_baixo.svg");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    background-size: 14px;
+}
+
 /* FORMULÁRIO  */
 .form {
     width: 100%;
@@ -358,7 +368,7 @@ footer a {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.card:hover {
+.card-hover:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
@@ -542,7 +552,7 @@ footer a {
     5 - PÁGINAS ESPECÍFICAS
 ============================ */
 
-/* PÁGINA DE LOGIN */
+/* LOGIN */
 .pagina-login {
     background: url(../../assets/IMG/fundo_login.jpg) no-repeat center center fixed;
     background-size: cover;
@@ -562,21 +572,15 @@ footer a {
     align-items: center;
 }
 
-/* Container do Login */
 .login-sistema {
     max-width: 460px;
-    width: 100%;
     padding: 2.4rem;
-    border: 1px solid var(--cor-borda-padrao);
-    background-color: var(--cor-fundo-card);
-    border-radius: var(--raio-borda-grande);
     box-shadow: var(--sombra-card);
-    align-items: center;
 }
 
 .login-sistema h2 {
     margin-bottom: 0.4rem;
-    font-weight: 600;
+    font-weight: bold;
     color: var(--cor-principal);
     font-size: var(--tamanho-titulo-padrao);
 }
@@ -587,7 +591,7 @@ footer a {
     font-size: var(--tamanho-texto-padrao);
 }
 
-/* PÁGINA DE CONFIGURAÇÕES */
+/* CONFIGURAÇÕES */
 .configuracoes {
     display: flex;
     gap: 1.5rem;
@@ -614,15 +618,6 @@ footer a {
     border-radius: var(--raio-borda-padrao);
 }
 
-/* Painel de configurações */
-.painel-config {
-    flex: 1;
-    padding: 1.6rem;
-    border: 1px solid var(--cor-borda-padrao);
-    background-color: var(--cor-fundo-card);
-    border-radius: var(--raio-borda-grande);
-}
-
 .painel-config h1 {
     margin-bottom: 0.4rem;
     font-size: var(--tamanho-titulo-padrao);
@@ -639,7 +634,7 @@ footer a {
     font-size: var(--tamanho-texto-padrao);
 }
 
-/* PÁGINA DE LISTA DE USUÁRIOS */
+/* LISTA DE USUÁRIOS */
 
 /* Ações */
 .usuarios-acoes {
@@ -662,15 +657,15 @@ footer a {
     font-size: var(--tamanho-texto-padrao);
 }
 
-/* PÁGINA DE CADASTRO DE USUÁRIO */
+/* CADASTRO DE USUÁRIO */
 .foto-upload span {
     font-size: var(--tamanho-texto-padrao);
     color: var(--cor-texto-branco);
     text-decoration: underline;
 }
 
-/* PÁGINA DE PERFIL DO USUÁRIO */
-.perfil {
+/* PERFIL DE USUÁRIO */
+.main-perfil {
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -679,23 +674,8 @@ footer a {
 
 .perfil-grid {
     display: grid;
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 300px 1fr 1fr;
     gap: 20px;
-    align-items: stretch;
-}
-
-.perfil-grid-editar {
-    display: grid;
-    grid-template-columns: 280px 1fr 1fr;
-    gap: 20px;
-}
-
-.perfil-visualizacao,
-.perfil-edicao {
-    background: var(--cor-fundo-card);
-    border-radius: var(--raio-borda-grande);
-    padding: 20px;
-    border: 1px solid var(--cor-borda-padrao);
 }
 
 /* Primeira coluna - Cabeçalho */
@@ -706,8 +686,8 @@ footer a {
     align-items: center;
     background: linear-gradient(135deg, var(--cor-principal), #020617cc);
     color: var(--cor-texto-branco);
-    border-radius: var(--raio-borda-grande);
-    padding: 20px;
+    padding: 30px;
+    gap: 20px;
 }
 
 .perfil-foto {
@@ -720,32 +700,21 @@ footer a {
 }
 
 .perfil-header h2 {
-    margin-top: 15px;
     font-size: var(--tamanho-titulo-padrao);
-    margin-bottom: 10px;
 }
 
 .perfil-cargo {
-    margin-top: 10px;
     color: var(--cor-texto-branco);
     font-size: var(--tamanho-texto-padrao);
 }
 
 /* Segunda coluna - Informações Principais */
-#painel-visualizacao {
-    background: var(--cor-fundo-card);
-    padding: 16px;
-    border-radius: var(--raio-borda-grande);
-    border: 1px solid var(--cor-borda-padrao);
-}
-
 .perfil-visualizacao article {
+    margin-top: 6px;
     padding: 10px;
-    font-weight: 400;
 }
 
 .perfil-visualizacao h4 {
-    margin-bottom: 6px;
     color: var(--cor-principal);
     font-size: var(--tamanho-titulo-padrao);
     text-align: center;
@@ -759,7 +728,7 @@ footer a {
 
 .perfil-visualizacao p {
     font-size: var(--tamanho-texto-padrao);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .acoes-perfil {
@@ -769,18 +738,119 @@ footer a {
 }
 
 /* Terceira coluna - Formulário de edição */
-#painel-edicao {
-    background: var(--cor-fundo-card);
-    padding: 16px;
-    border-radius: var(--raio-borda-grande);
-    border: 1px solid var(--cor-borda-padrao);
-}
-
 .perfil-edicao h4 {
     color: var(--cor-principal);
     font-size: var(--tamanho-titulo-padrao);
     text-align: center;
 }
+
+/* PÁGINA DE BANCO DE HORAS */
+.banco-horas {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    align-items: stretch;
+}
+
+.bh-relatorio {
+    background-color: var(--cor-fundo-card);
+    border: 1px solid var(--cor-borda-padrao);
+    border-radius: var(--raio-borda-grande);
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.bh-relatorio h2 {
+    font-size: var(--tamanho-titulo-padrao);
+    color: var(--cor-principal);
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.bh-resumo {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+    background-color: transparent;
+    border: none;
+    border-radius: var(--raio-borda-grande);
+    padding: 0;
+    margin: 0;
+}
+
+.bh-resumo article {
+    background: var(--cor-fundo-card);
+    border: 1px solid var(--cor-borda-padrao);
+    border-radius: var(--raio-borda-grande);
+    padding: 18px;
+    text-align: center;
+}
+
+.bh-resumo h2 {
+    font-size: var(--tamanho-titulo-padrao);
+    color: var(--cor-principal);
+}
+
+.bh-resumo p {
+    font-size: var(--tamanho-texto-padrao);
+    color: var(--cor-texto-suave);
+}
+
+.bh-filtro {
+    background: var(--cor-fundo-card);
+    border: 1px solid var(--cor-borda-padrao);
+    border-radius: var(--raio-borda-grande);
+    padding: 12px;
+    width: 100%;
+}
+
+.bh-filtro form {
+    align-items: center;
+    justify-content: center;
+}
+
+.bh-filtro article {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+}
+
+.bh-historico {
+    background-color: var(--cor-fundo-card);
+    border: 1px solid var(--cor-borda-padrao);
+    border-radius: var(--raio-borda-grande);
+    padding: 16px;
+}
+
+.bh-historico table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--tamanho-texto-padrao);
+}
+
+.bh-historico thead {
+    background-color: var(--cor-titulo-tabela);
+}
+
+.bh-historico th,
+.bh-historico td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--cor-borda-padrao);
+}
+
+.bh-historico tbody tr:hover {
+    background-color: var(--cor-titulo-tabela);
+}
+
+.bh-historico p {
+    text-align: center;
+    color: var(--cor-principal);
+}
+
 
 /* ========================
     6 - ESTADOS E UTILS
@@ -831,7 +901,7 @@ footer a {
 
 
 /* =======================
-    8 - RESPONSIVIDADE
+    7 - RESPONSIVIDADE
 ======================= */
 
 @media (max-width: 1000px) {
@@ -920,168 +990,4 @@ footer a {
         justify-content: center;
         flex-wrap: wrap;
     }
-}
-
-/* BANCO DE HORAS */
-.banco-horas {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: stretch;
-}
-
-.bh-resumo {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.bh-resumo article {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 18px;
-    text-align: center;
-}
-
-.bh-resumo h2 {
-    font-size: 1.8rem;
-    color: var(--cor-principal);
-}
-
-.bh-resumo p {
-    font-size: 0.85rem;
-    color: #64748b;
-}
-
-.bh-filtro {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 24px;
-}
-
-.bh-filtro form {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    justify-content: center;
-}
-
-.bh-filtro article {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    align-items: center;
-}
-
-.bh-historico {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 16px;
-}
-
-.bh-historico table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-}
-
-.bh-historico thead {
-    background: #f1f5f9;
-}
-
-.bh-historico th,
-.bh-historico td {
-    padding: 10px;
-    text-align: center;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.bh-historico tbody tr:hover {
-    background-color: #f8fafc;
-}
-
-.bh-historico p {
-    text-align: center;
-    color: #64748b;
-}
-
-/* ============================
-   RELATÓRIO BANCO DE HORAS
-============================ */
-.bh-relatorio {
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 24px;
-}
-
-/* TÍTULO */
-.bh-relatorio h2 {
-    font-size: 1.3rem;
-    color: var(--cor-principal);
-    margin-bottom: 16px;
-    text-align: center;
-}
-
-/* TABELA */
-#tabelaBancoHoras {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-}
-
-#tabelaBancoHoras thead {
-    background-color: #f1f5f9;
-}
-
-#tabelaBancoHoras th {
-    padding: 12px;
-    text-align: center;
-    font-weight: 600;
-    color: #334155;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-#tabelaBancoHoras th:nth-child(1) {
-    text-align: left;
-}
-
-#tabelaBancoHoras td {
-    padding: 12px;
-    border-bottom: 1px solid #e5e7eb;
-    color: #020617;
-}
-
-#tabelaBancoHoras tbody tr:hover {
-    background-color: #f8fafc;
-}
-
-/* Alinhamento colunas */
-#tabelaBancoHoras td:nth-child(2) {
-    text-align: center;
-    font-weight: 600;
-}
-
-/* SELECT PADRÃO */
-.select-padrao {
-    appearance: none;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    padding: 0.6rem 2rem 0.6rem 0.8rem;
-    font-size: 0.85rem;
-    color: #020617;
-    cursor: pointer;
-    min-width: 150px;
-    background-image: url("../IMG/utils/seta_baixo.svg");
-    background-repeat: no-repeat;
-    background-position: right 0.6rem center;
-    background-size: 14px;
 }

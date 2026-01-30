@@ -204,11 +204,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <?php include("../../include/navbar.php"); ?>
     </nav>
 
-    <main class="perfil">
+    <main class="main-perfil">
         <form class="perfil-grid" method="POST" enctype="multipart/form-data">
 
             <!-- COLUNA DA FOTO -->
-            <section class="perfil-header">
+            <section class="container perfil-header">
                 <label class="label-foto">
                     <?php
                     $caminhoPreview = "../../assets/img/user_padrao.png";
@@ -229,7 +229,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </section>
 
             <!-- COLUNA FORMULÁRIO -->
-            <section class="perfil-visualizacao">
+            <section class="container perfil-visualizacao">
                 <article class="perfil-artigo">
 
                     <!-- ERROS -->
@@ -290,7 +290,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <label class="label">Data de admissão</label>
                         <input class="input" type="date" name="data_admissao" required>
 
-                        <button class="btn btn-padrao">Cadastrar Usuário</button>
+                        <button type="submit" class="btn btn-padrao">Cadastrar Usuário</button>
 
                         <section class="voltar-final">
                             <a href="lista.php" class="btn-link btn-voltar">Voltar</a>

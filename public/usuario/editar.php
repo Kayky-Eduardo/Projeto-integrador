@@ -235,9 +235,9 @@ if (isset($_POST['editar_usuario'])) {
         <?php include("../../include/navbar.php"); ?>
     </nav>
 
-    <main class="container perfil">
-        <form class="perfil-grid perfil-grid-editar" method="POST" enctype="multipart/form-data">
-            <section class="perfil-header">
+    <main class="main-perfil">
+        <form class="perfil-grid" method="POST" enctype="multipart/form-data">
+            <section class="container perfil-header">
                 <label class="label-foto">
                     <img src="<?= $caminho_foto ?>" class="perfil-foto" id="preview-foto">
                     <input class="input-foto" type="file" name="foto_usuario" id="input-foto" accept="image/*">
@@ -254,7 +254,7 @@ if (isset($_POST['editar_usuario'])) {
                 <button type="submit" class="btn btn-salvar-foto hidden" name="editar_usuario" id="btn-salvar-foto">Salvar foto</button>
             </section>
 
-            <section class="perfil-visualizacao" id="painel-visualizacao">
+            <section class="container perfil-visualizacao" id="painel-visualizacao">
                 <?php if (!empty($erros)): ?>
                     <article class="box-erros">
                         <strong>Erros encontrados:</strong>
@@ -325,7 +325,7 @@ if (isset($_POST['editar_usuario'])) {
                 </section>
             </section>
 
-            <section class="perfil-edicao hidden" id="painel-edicao">
+            <section class="container perfil-edicao hidden" id="painel-edicao">
                 <h4>Editar Funcionário</h4>
 
                 <section class="form">

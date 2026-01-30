@@ -82,7 +82,7 @@ $result = $stmt->get_result();
             <section class="cards-container" id="tabelaUsuarios" aria-label="Lista de usuários">
                 <?php while ($row = $result->fetch_assoc()): ?>
                     <article
-                        class="card card-usuario status"
+                        class="card card-hover card-usuario status"
                         aria-label="Usuário <?= e($row['nome_usuario']) ?>"
                         data-status="<?= $row['conta_ativa'] ? 'ativo' : 'inativo' ?>"
                         data-nome="<?= strtolower(e($row['nome_usuario'])) ?>">

@@ -29,7 +29,7 @@ verificar_login($conn);
             </ul>
         </aside>
 
-        <section class="painel-config" aria-label="Definição de jornada">
+        <section class="container" aria-label="Definição de jornada">
             <h1>Definir Jornada de Trabalho</h1>
             <p>Configure a carga horária e o limite diário de horas extras.</p>
 

@@ -106,14 +106,14 @@ if ($modoRelatorio && $ehRH) {
         <?php include("../../include/navbar.php"); ?>
     </nav>
 
-    <main role="main">
-        <section class="container banco-horas" aria-label="Banco de horas do usuário">
+    <main class="main-center">
+        <section class="banco-horas" aria-label="Banco de horas do usuário">
 
             <!-- RELATÓRIO GERAL -->
             <?php if ($modoRelatorio && $ehRH): ?>
-                <section class="bh-relatorio">
+                <section class="container bh-relatorio">
                     <h2>Banco de Horas - Relatório Geral</h2>
-                    <input class="input" type="text" id="filtroUsuario" placeholder="Digite o nome do usuário..." autocomplete="off">
+                    <input class="input bh-filtro" type="text" id="filtroUsuario" placeholder="Digite o nome do usuário..." autocomplete="off">
 
                     <table id="tabelaBancoHoras">
                         <thead>
@@ -139,7 +139,7 @@ if ($modoRelatorio && $ehRH) {
             <?php if (!$modoRelatorio): ?>
 
                 <!-- RESUMO -->
-                <section class="bh-resumo" aria-label="Resumo do banco de horas">
+                <section class="container bh-resumo" aria-label="Resumo do banco de horas">
                     <article>
                         <h2><?= $resumo['saldo_antigo'] ?? '00:00' ?></h2>
                         <p>Saldo anterior</p>
@@ -157,7 +157,7 @@ if ($modoRelatorio && $ehRH) {
                 </section>
 
                 <!-- FILTRO -->
-                <section class="bh-filtro" aria-label="Filtro por período">
+                <section class="container bh-filtro" aria-label="Filtro por período">
                     <form class="form-linha" method="POST">
                         <article>
                             <label class="label" for="inicio">Início:</label>
@@ -175,7 +175,7 @@ if ($modoRelatorio && $ehRH) {
 
                 <!-- HISTÓRICO -->
                 <?php if ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
-                    <section class="bh-historico" aria-label="Histórico de banco de horas">
+                    <section class="container bh-historico" aria-label="Histórico de banco de horas">
                         <?php if ($historico && is_array($historico)): ?>
                             <table>
                                 <thead>
