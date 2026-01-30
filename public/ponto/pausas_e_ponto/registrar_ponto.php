@@ -105,6 +105,9 @@ $tiposPausa = $stmtTipos->get_result();
 <head>
     <meta charset="UTF-8">
     <title>Ponto e Pausas</title>
+    <link href=" https://cdn.jsdelivr.net/npm/@pnotify/core@5.2.0/dist/PNotify.min.css " rel="stylesheet">
+    <script src=" https://cdn.jsdelivr.net/npm/@pnotify/core@5.2.0/dist/PNotify.min.js "></script>
+    <script src="https://cdn.jsdelivr.net/npm/nonblockjs@1/NonBlock.es5.js" type="text/javascript"></script>
 </head>
 <body>
     <a href="../../index.php">Voltar</a>
@@ -143,6 +146,7 @@ $tiposPausa = $stmtTipos->get_result();
         <?php endif; ?>
     </form>
 
+    <button onclick="notificar()">t</button>
     <hr>
 
     <h3>Pausa Ativa</h3>
@@ -174,13 +178,42 @@ $tiposPausa = $stmtTipos->get_result();
         <p>Nenhuma pausa ativa no momento.</p>
     <?php endif; ?>
 
-    <script>
+    <script type="text/javascript">
+        // if (local_storage.aviso) {
+        //     notificar();
+        // }
+        function notificar() {
+            PNotify.alert({
+                title: 'Página carregada com sucesso!',
+                delay: 2000
+            });
+
+            PNotify.info({
+                title: 'New Thing',
+                text: 'Just to let you know, something happened.'
+            }); 
+        }
+
+        // Função disparada pelo botão
+        function showNotification() {
+            PNotify.notice({
+                title: 'Vanilla JS Notice',
+                text: "Hey, toma gap!",
+                delay: 3000
+            });
+        }
+        
         let intervalId = null;
         function atualizarInterfacePausa() {
             const el = document.getElementById('cronometro');
             const statusMsg = document.getElementById('statusTempo');
             const btnFinalizar = document.getElementById('btnFinalizarPausa');
             if (!el) return;
+
+            btnFinalizar.addEventListener("click", function() {
+                local_storage.set("aviso", showNotification());
+                showNotification();
+            }) 
 
             const inicio = new Date(el.dataset.inicio).getTime();
             const agora = new Date().getTime();
