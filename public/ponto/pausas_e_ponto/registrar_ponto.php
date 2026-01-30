@@ -132,11 +132,9 @@ $tiposPausa = $stmtTipos->get_result();
         </select>
 
         <?php if (!$pausaAtiva): ?>
-            <input type="hidden" name="acao" value="pausa_iniciar">
-            <button type="submit" <?= (!$pontoIniciado || $pontoFinalizado) ? 'disabled' : '' ?>>Iniciar Pausa</button>
+            <button type="submit" <?= (!$pontoIniciado || $pontoFinalizado) ? 'disabled' : '' ?> name="acao" value="pausa_iniciar">Iniciar Pausa</button>
         <?php else: ?>
-            <input type="hidden" name="acao" value="pausa_finalizar">
-            <button type="submit" id="btnFinalizarPausa">Finalizar Pausa</button>
+            <button type="submit" id="btnFinalizarPausa" name="acao" value="pausa_finalizar">Finalizar Pausa</button>
             <div id="statusTempo" style="font-weight:bold; color: blue; margin-top:5px;"></div>
         <?php endif; ?>
     </form>

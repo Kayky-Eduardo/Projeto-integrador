@@ -6,7 +6,7 @@ require "../../include/funcoes/funcoes_calculo.php";
 // --------------------------
 // 1. Recebe mês do formulário
 // --------------------------
-$mes = $_POST['mes'] ?? date('Y-m'); // default: mês atual
+$mes = date('Y-m'); // default: mês atual
 $mes_padrao = $mes . "-01";
 
 // --------------------------
@@ -119,11 +119,24 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn) {
     );
     $stmt3->execute();
 
+    $stmt4 = $conn->prepare("
+    SELECT
+    revisado
+    FROM folhas
+    WHERE id_usuario = ? AND mes_competencia = ? LIMIT 1");
+
+    $stmt4->bind_param('is', $id_usuario, $mes_padrao);
+    $stmt4->execute();
+    $resultado = $stmt4->get_result();
+    if ($row = $resultado->fetch_assoc()){
+        $revisado = $row['revisado'];
+    }
+
     return [
         'id_usuario' => $id_usuario,
         'nome_usuario' => $usuario['nome_usuario'],
         'salario_liquido' => $salario_liquido,
-        'revisado' => 0
+        'revisado' => $revisado
     ];
 }
 
@@ -131,12 +144,21 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn) {
 // 5. Gerar folhas se botão foi clicado
 // --------------------------
 $folhas_geradas = [];
-if (isset($_POST['gerar_folhas'])) {
-    foreach ($usuarios as $usuario) {
-        $folha = gerarFolhaUsuario($usuario, $mes_padrao, $conn);
-        if ($folha) $folhas_geradas[] = $folha;
+if ($_SERVER['REQUEST_METHOD'] === "POST"){
+    $acao = $_POST['acao'] ?? '';
+    if ($acao === 'gerar') {
+        foreach ($usuarios as $usuario) {
+            $folha = gerarFolhaUsuario($usuario, $mes_padrao, $conn);
+            if ($folha) $folhas_geradas[] = $folha;
+        }
     }
-}
+    if ($acao === 'revisar') {
+        $stmt5 = $conn->prepare('UPDATE folhas SET revisado = 1 WHERE mes_competencia = ?');
+        $stmt5->bind_param('s', $mes_padrao);
+        $stmt5->execute();
+    }
+}   
+
 ?>
 
 <!DOCTYPE html>
@@ -191,16 +213,21 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
 <?php endif; ?>
 
 <!-- Form para gerar folhas -->
-<h2>Folhas Geradas <?= $mes ?></h2>
-<form method="POST">
+<h2 id="h2">Folhas Geradas <?= $mes ?></h2>
+<form method="POST" id="Form">
     <label>Mês:</label>
-    <input type="month" name="mes" value="<?= $mes ?>">
-    <button type="submit" name="gerar_folhas">Gerar Todas as Folhas</button>
-    <button type="submit" name="gerar_folhas">Revisar todos</button>
+    <input type="hidden" name="acao" id="inputAcao" value="">
+    <input type="month" id="mes" name="mes" value="<?= $mes ?>">
+    <button type="button" id="gerar_folhas" name="gerar_folhas">
+        Gerar Todas as Folhas
+    </button>
+    <button disabled type="button" class="btn-revisar">
+        Revisar todos
+    </button>
 </form>
 <?php if (!empty($folhas_geradas)): ?>
     
-    <table>
+    <table id="tabela">
         <thead>
             <tr>
                 <th>Nome</th>
@@ -212,22 +239,60 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
             <tr>
                 <td><?= $f['nome_usuario'] ?></td>
                 <td>R$ <?= number_format($f['salario_liquido'], 2, ',', '.') ?></td>
-                <?php if ($f['revisado'] == 0): ?>
                     <td>
-                        <a href="revisar_folha.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>">
-                        | Revisar PDF
-                        </a>
-                        <a href="editar_folha.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>">
-                        | Editar Eventos|
-                        </a>
+                        <?php if($f['revisado'] == 1):?>
+                            <a>Nenhuma ação disponível</a>
+                        <?php else:?>
+                            <a href="revisar_folha.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>">
+                            | Revisar PDF
+                            </a>
+                            <a href="editar_folha.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>">
+                            | Editar Eventos|
+                            </a>
+                        <?php endif?>
                     </td>
-                <?php endif ?>
-                     
-
             </tr>
         <?php endforeach; ?>
     </table>
 <?php endif; ?>
+
+<script>
+    const h2 = document.getElementById('h2');
+    const mes = document.getElementById('mes');
+    const btnGerar = document.getElementById('gerar_folhas');
+    const btnRevisao = document.querySelector('.btn-revisar');
+    const inputAcao = document.getElementById('inputAcao');
+    const form = document.getElementById('Form');
+
+    const dataFixa = mes.value;
+
+    mes.addEventListener('input', (event)=>{
+        const data = event.target.value
+        h2.textContent = `Folhas Geradas ${data}`;
+        if (dataFixa != data){
+            alert(`${dataFixa} != ${data}`);
+            btnGerar.setAttribute('disabled');
+            btnRevisao.setAttribute('disabled');
+        } else{
+            alert(`${dataFixa} != ${data}`);
+        }
+    })
+
+    btnGerar.addEventListener('click', function(){
+        inputAcao.value = 'gerar';
+        form.submit();
+    })
+
+    btnRevisao.addEventListener('click', function(){
+        const confirmacao = confirm(`Deseja marcar todas as folhas como revisado?
+        as folhas não poderão ser modificada depois`);
+
+        if (confirmacao){
+            inputAcao.value = 'revisar'; // Define a ação antes do submit
+            form.submit();
+        }
+    })
+</script>
 
 </body>
 </html>
