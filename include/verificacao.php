@@ -85,13 +85,13 @@ function verificar_tipo($conn, $id_usuario, $resultado_tempo) {
     
     } else if ($tipo === "tempo_extra") {
         adicionar_horas($conn, $id_usuario, $tempo);
-        fechar_pontos_pendentes($conn, $id_usuario);
-        redirecionar();
+        // fechar_pontos_pendentes($conn, $id_usuario);
+        // redirecionar();
 
     } else if ($tipo === "tempo_faltante") {
         retirar_horas($conn, $id_usuario, $tempo);
-        fechar_pontos_pendentes($conn, $id_usuario);
-        redirecionar();
+        // fechar_pontos_pendentes($conn, $id_usuario);
+        // redirecionar();
     }
 }
 

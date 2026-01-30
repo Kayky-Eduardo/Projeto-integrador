@@ -9,6 +9,7 @@ if (!$id_usuario) die("Acesso negado.");
 
 $hoje = date("Y-m-d");
 $erro = "";
+$desabilitar = "disabled";
 
 // LÓGICA DE AUTO-FECHAMENTO (BACKEND)
 // Fecha pausas que excederam o tempo_max caso o usuário tenha fechado o navegador
@@ -45,8 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } 
     
     elseif ($acao === 'pausa_iniciar') {
-        $id_config = intval($_POST['id_config']);
-        // Valida se já existe pausa aberta
+        $desabilitar = "";
+        if (!empty($_POST['id_config'])) {
+            $id_config = intval($_POST['id_config']);
+        }
+
+            // Valida se já existe pausa aberta
         $check = $conn->query("SELECT id_pausa FROM pausa WHERE id_usuario = $id_usuario AND fim IS NULL");
         if ($check->num_rows == 0) {
             $stmt = $conn->prepare("INSERT INTO pausa (id_usuario, id_config, inicio, data) VALUES (?, ?, NOW(), ?)");
@@ -138,7 +143,7 @@ $tiposPausa = $stmtTipos->get_result();
 
         <?php if (!$pausaAtiva): ?>
             <input type="hidden" name="acao" value="pausa_iniciar">
-            <button type="submit" <?= (!$pontoIniciado || $pontoFinalizado) ? 'disabled' : '' ?>>Iniciar Pausa</button>
+            <button type="submit" <?= (!$pontoIniciado || $pontoFinalizado) ? 'disabled' : '' ?> <?= $desabilitar ?>>Iniciar Pausa</button>
         <?php else: ?>
             <input type="hidden" name="acao" value="pausa_finalizar">
             <button type="submit" id="btnFinalizarPausa">Finalizar Pausa</button>
@@ -146,7 +151,6 @@ $tiposPausa = $stmtTipos->get_result();
         <?php endif; ?>
     </form>
 
-    <button onclick="notificar()">t</button>
     <hr>
 
     <h3>Pausa Ativa</h3>
@@ -179,9 +183,22 @@ $tiposPausa = $stmtTipos->get_result();
     <?php endif; ?>
 
     <script type="text/javascript">
-        // if (local_storage.aviso) {
-        //     notificar();
-        // }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            function exibir() {
+                PNotify.alert({
+                    title: 'Notificação Automática',
+                    text: 'Esta notificação apareceu sem clicar em nada!',
+                    type: 'info', // 'notice', 'info', 'success', or 'error'
+                    delay: 3000 // Tempo em milissegundos para desaparecer
+                });
+            }
+            exibir();
+        });
+
+        if (localStorage.aviso) {
+            notificar();
+        }
         function notificar() {
             PNotify.alert({
                 title: 'Página carregada com sucesso!',
@@ -189,7 +206,7 @@ $tiposPausa = $stmtTipos->get_result();
             });
 
             PNotify.info({
-                title: 'New Thing',
+                title: 'toma gap',
                 text: 'Just to let you know, something happened.'
             }); 
         }
@@ -211,7 +228,7 @@ $tiposPausa = $stmtTipos->get_result();
             if (!el) return;
 
             btnFinalizar.addEventListener("click", function() {
-                local_storage.set("aviso", showNotification());
+                localStorage.setItem("aviso", showNotification());
                 showNotification();
             }) 
 
