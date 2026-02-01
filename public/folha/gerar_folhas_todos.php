@@ -269,17 +269,16 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
     mes.addEventListener('input', (event)=>{
         const data = event.target.value
         h2.textContent = `Folhas Geradas ${data}`;
-        if (dataFixa != data){
-            alert(`${dataFixa} != ${data}`);
-            btnGerar.setAttribute('disabled');
-            btnRevisao.setAttribute('disabled');
+        if (dataFixa === data){
+            btnGerar.removeAttribute('disabled', 'false');
         } else{
-            alert(`${dataFixa} != ${data}`);
+            btnGerar.setAttribute('disabled', 'true');
         }
     })
 
     btnGerar.addEventListener('click', function(){
         inputAcao.value = 'gerar';
+        btnRevisao.setAttribute('disabled', 'false');
         form.submit();
     })
 
