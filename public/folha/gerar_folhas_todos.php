@@ -91,33 +91,45 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn) {
     $salario_liquido = calcularSalarioLiquido($salario_bruto, $total_proventos, $total_descontos);
 
     // --- Salvar no banco ---
-    $stmt3 = $conn->prepare("
-        INSERT INTO folhas 
-        (id_usuario, mes_competencia, salario_bruto, total_proventos, total_descontos, fgts, inss, irrf, vt, salario_liquido)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE
-            total_proventos = VALUES(total_proventos),
-            total_descontos = VALUES(total_descontos),
-            fgts = VALUES(fgts),
-            inss = VALUES(inss),
-            irrf = VALUES(irrf),
-            vt = VALUES(vt),
-            salario_liquido = VALUES(salario_liquido)
-    ");
-    $stmt3->bind_param(
-        "issddddddd",
-        $id_usuario,
-        $mes_padrao,
-        $salario_bruto,
-        $total_proventos,
-        $total_descontos,
-        $fgts,
-        $inss,
-        $irrf,
-        $vt,
-        $salario_liquido
-    );
-    $stmt3->execute();
+    // Dentro da função gerarFolhaUsuario
+    $stmtCheck = $conn->prepare("SELECT id_folha, revisado FROM folhas WHERE id_usuario = ? AND mes_competencia = ?");
+    $stmtCheck->bind_param("is", $id_usuario, $mes_padrao);
+    $stmtCheck->execute();
+    $resCheck = $stmtCheck->get_result();
+    $dadosExistentes = $resCheck->fetch_assoc();
+
+    if ($dadosExistentes) {
+        if ($dadosExistentes['revisado'] == 1) {
+            return null; // NÃO ALTERA se já foi revisado
+        }
+        // Procede com o UPDATE
+        $stmtUpdate = $conn->prepare("
+            UPDATE folhas SET
+                salario_bruto = ?, total_proventos = ?, total_descontos = ?, 
+                fgts = ?, inss = ?, irrf = ?, vt = ?, salario_liquido = ?
+        ");
+        $stmtUpdate->bind_param(
+            "dddddddi",
+            $salario_bruto, $total_proventos, $total_descontos,
+            $fgts, $inss, $irrf, $vt, $salario_liquido
+        );
+        $stmtUpdate->execute();
+        $stmtUpdate->close();
+    } else {
+        // Procede com o INSERT
+        $stmtInsert = $conn->prepare("
+            INSERT INTO folhas 
+            (id_usuario, mes_competencia, salario_bruto, total_proventos, total_descontos, fgts, inss, irrf, vt, salario_liquido)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stmtInsert->bind_param(
+            "issddddddd",
+            $id_usuario, $mes_padrao, $salario_bruto, $total_proventos, $total_descontos,
+            $fgts, $inss, $irrf, $vt, $salario_liquido
+        );
+        $stmtInsert->execute();
+        $stmtInsert->close();
+    }
 
     $stmt4 = $conn->prepare("
     SELECT
@@ -146,16 +158,17 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn) {
 $folhas_geradas = [];
 if ($_SERVER['REQUEST_METHOD'] === "POST"){
     $acao = $_POST['acao'] ?? '';
-    if ($acao === 'gerar' && isset($_POST['mesGerar'])) {
+    if ($acao === 'gerar') {
         foreach ($usuarios as $usuario) {
             $folha = gerarFolhaUsuario($usuario, $mes_padrao, $conn);
             if ($folha) $folhas_geradas[] = $folha;
         }
     }
-    if ($acao === 'revisar' && isset($_POST['mesRevisar'])) {
-        $stmt5 = $conn->prepare('UPDATE folhas SET revisado = 1 WHERE mes_competencia = ?');
-        $stmt5->bind_param('s', $mes_padrao);
-        $stmt5->execute();
+    if ($acao === 'revisar') {
+            $stmt5 = $conn->prepare('UPDATE folhas SET revisado = 1 WHERE mes_competencia = ?');
+            $stmt5->bind_param('s', $mes_padrao);
+            $stmt5->execute();
+            echo "<script>console.log(penis)</script>";
     }
 }
 
@@ -243,8 +256,8 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
                     <td>
                         <?php if($f['revisado'] == 1):?>
                             <a>Nenhuma ação disponível</a>
-                        <?php else: $mes_codificado = urlencode($mes); $id_codificado = urlencode($f['id_usuario'])?>
-                            <a href="revisar_folha.php?mes=<?= $mes_codificado ?>&id_usuario=<?= $id_codificado ?>">
+                        <?php else:?>
+                            <a href="revisar_folha.php?mes=<?= urlencode($mes) ?>&id_usuario=<?= urlencode($f['id_usuario']) ?>">
                             | Revisar PDF
                             </a>
                             <a href="editar_folha.php?mes=<?= urlencode($mes) ?>&id_usuario=<?= urlencode($f['id_usuario']) ?>">

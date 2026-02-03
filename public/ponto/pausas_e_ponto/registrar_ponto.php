@@ -211,7 +211,6 @@ $tiposPausa = $stmtTipos->get_result();
                 document.getElementById('formPausa').submit();
                 window.location.reload();
                 alert("Tempo máximo de pausa atingido! Finalizando automaticamente.");
-                
             }
         }
 

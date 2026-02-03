@@ -26,7 +26,7 @@ $sql_nivel_logado = $conn->prepare("
     LEFT JOIN cargo c ON u.id_cargo = c.id_cargo
     WHERE u.id_usuario = ?
 ");
-$sql_nivel_logado->bind_param("i", $id_usuario);
+$sql_nivel_logado->bind_param("i", $id_usuario_logado);
 $sql_nivel_logado->execute();
 $nivel_logado = $sql_nivel_logado->get_result()->fetch_assoc()['nivel'] ?? 0;
 
@@ -39,7 +39,7 @@ $sql_nivel_alvo = $conn->prepare("
     LEFT JOIN cargo c ON u.id_cargo = c.id_cargo
     WHERE u.id_usuario = ?
 ");
-$sql_nivel_alvo->bind_param("i", $id_usuario_logado);
+$sql_nivel_alvo->bind_param("i", $id_usuario);
 $sql_nivel_alvo->execute();
 $nivel_alvo = $sql_nivel_alvo->get_result()->fetch_assoc()['nivel'] ?? 0;
 
