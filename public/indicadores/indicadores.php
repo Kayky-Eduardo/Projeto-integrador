@@ -11,7 +11,7 @@ include "../../include/navbar.php";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório ponto</title>
-    <link rel="stylesheet" href="../../assets/css/estilo.css">
+    <!-- <link rel="stylesheet" href="../../assets/css/estilo.css"> -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
 </head>
@@ -21,25 +21,25 @@ include "../../include/navbar.php";
             <input type="date" id="data-filtro-relatorio-grafico">
         </div>
     </dialog>
-    <div class="caixa-grafico">
+    <section class="caixa-grafico">
         <h2>Relatório diário</h2>
-        <div id="piechart_3d" style="width: 900px; height: 500px;"></div>
-    </div>
+        <article id="piechart_3d" style="width: 900px; height: 500px;"></article>
+    </section>
 
-    <div class="caixa-grafico">
+    <section class="caixa-grafico">
         <h2>Taxa de presença</h2>
-        <div id="columnchart_material" style="width: 800px; height: 500px;"></div>
-    </div>
+        <article id="columnchart_material" style="width: 800px; height: 500px;"></article>
+    </section>
 
-    <div class="caixa-grafico">
+    <section class="caixa-grafico">
         <h2>Hora extra</h2>
-        <div id="columnchart_material2" style="width: 800px; height: 500px;"></div>
-    </div>
+        <article id="columnchart_material2" style="width: 800px; height: 500px;"></article>
+    </section>
 
-    <div class="caixa-grafico">
+    <section class="caixa-grafico">
         <h2>Evolução de Presença</h2>
-    <div id="linechart_presenca" style="width: 900px; height: 500px;"></div>
-    </div>
+    <article id="linechart_presenca" style="width: 900px; height: 500px;"></article>
+    </section>
 
     <div id="resultado-caixa-grafico">
         <table>
@@ -503,13 +503,6 @@ include "../../include/navbar.php";
             const response = await fetch('../../api/api_jornada.php?acao=taxa_presenca_geral');
             const resultado = await response.json();
             
-            if (!resultado.sucesso) {
-                console.error('Erro ao buscar dados:', resultado.mensagem);
-                return;
-            }
-            
-            const usuarios = resultado.dados.usuarios;
-
             // Cabeçalho do gráfico
             const dadosGrafico = [
                 [
@@ -519,6 +512,15 @@ include "../../include/navbar.php";
                     'Taxa de Presença (%)'
                 ]
             ];
+
+            if (!resultado.sucesso) {
+                console.error('Erro ao buscar dados:', resultado.mensagem);
+                dadosGrafico.push(['Sem dados', 0, 0, 0]);
+                return;
+            }
+            
+            const usuarios = resultado.dados.usuarios;
+
 
             usuarios.forEach(usuario => {
                 dadosGrafico.push([
@@ -562,17 +564,17 @@ include "../../include/navbar.php";
             const response = await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_usuario");
             const resultado = await response.json();
             
-            if (!resultado.sucesso) {
-                console.error('Erro ao buscar dados:', resultado.mensagem);
-                return;
-            }
-            
-            const usuarios = resultado.dados.usuarios;
-            
             const dadosGrafico = [
                 ['Funcionários', 'Saldo (Horas)', { role: 'style' }] // esta 3° coluna serve para definir qual vai ser a cor 
             ];
             
+            
+            if (!resultado.sucesso) {
+                console.error('Erro ao buscar dados:', resultado.mensagem);
+                dadosGrafico.push(['Sem dados', 0, '#9ca3af']);
+            }
+            
+            const usuarios = resultado.dados.usuarios;
             usuarios.forEach(usuario => {
                 const horas = parseFloat((usuario.saldo_horas).toFixed(0)); 
                 

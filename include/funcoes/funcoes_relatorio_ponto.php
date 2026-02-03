@@ -264,13 +264,13 @@ function filtrar_usuario($conn, $id_usuario = null) {
     $coleta_usuario->execute();
     
     $result = $coleta_usuario->get_result();
-    
     $dados_grafico = [];
 
     while ($usuario = $result->fetch_assoc()) {
+        $saldo_minutos = $usuario['saldo_minutos'] > 0 ? $usuario['saldo_minutos'] / 60 : 0;
         $dados_grafico[] = [
             'nome_usuario' => $usuario['nome_usuario'],
-            'saldo_horas' => $usuario['saldo_minutos'] / 60,
+            'saldo_horas' => $saldo_minutos,
             'data' => $usuario['ultima_atualizacao']
         ];
     }

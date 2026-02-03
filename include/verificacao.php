@@ -62,8 +62,8 @@ function redirecionar() {
     // include("\Projeto-integrador\public\ponto\pausas_e_ponto\msg_pop_up.php");
 }
 
-function verificar_tipo($conn, $id_usuario, $resultado_tempo) {
-    $tipo = $resultado_tempo['tipo'];
+function verificar_tipo($conn, $id_usuario, $resultado_tempo, $tipo_dado = null) {
+    $tipo = $tipo_dado ?? $resultado_tempo['tipo'];
     $tempo = $resultado_tempo['resultado'];
     $mensagem = $resultado_tempo['mensagem'];
 
@@ -72,6 +72,15 @@ function verificar_tipo($conn, $id_usuario, $resultado_tempo) {
             'mensagem' => $mensagem,
             'tempo_restante' => 600
         ];
+    }
+
+    if ($tipo == "finalizar") {
+        fechar_pontos_pendentes($conn, $id_usuario);
+        if ($tempo > 0) {
+            adicionar_horas($conn, $id_usuario, $tempo);
+        } else {
+            retirar_horas($conn, $id_usuario, $tempo);
+        }
     }
 
     if ($tipo === "bloqueado") {
