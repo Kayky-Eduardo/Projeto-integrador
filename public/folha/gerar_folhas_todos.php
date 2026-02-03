@@ -146,18 +146,18 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn) {
 $folhas_geradas = [];
 if ($_SERVER['REQUEST_METHOD'] === "POST"){
     $acao = $_POST['acao'] ?? '';
-    if ($acao === 'gerar') {
+    if ($acao === 'gerar' && isset($_POST['mesGerar'])) {
         foreach ($usuarios as $usuario) {
             $folha = gerarFolhaUsuario($usuario, $mes_padrao, $conn);
             if ($folha) $folhas_geradas[] = $folha;
         }
     }
-    if ($acao === 'revisar') {
+    if ($acao === 'revisar' && isset($_POST['mesRevisar'])) {
         $stmt5 = $conn->prepare('UPDATE folhas SET revisado = 1 WHERE mes_competencia = ?');
         $stmt5->bind_param('s', $mes_padrao);
         $stmt5->execute();
     }
-}   
+}
 
 ?>
 
@@ -182,7 +182,7 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
         <legend>Adicionar Provento/Desconto</legend>
 
         <label>Mês:</label>
-        <input type="month" name="mes" value="<?= $mes ?>"><br>
+        <input type="month" name="mes" id="mesEvento" value="<?= $mes ?>"><br>
 
         <label>Usuário:</label>
         <select name="id_usuario_evento" required>
@@ -204,7 +204,7 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
         <label>Valor:</label>
         <input type="number" step="0.01" name="valor" placeholder="0.00"><br>
 
-        <button type="submit" name="add_evento">Adicionar Evento</button>
+        <button type="submit" name="add_evento" id="add_evento">Adicionar Evento</button>
     </fieldset>
 </form>
 
@@ -216,12 +216,13 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
 <h2 id="h2">Folhas Geradas <?= $mes ?></h2>
 <form method="POST" id="Form">
     <label>Mês:</label>
+    <!-- o php só consegue acessar o value e o name de um input -->
     <input type="hidden" name="acao" id="inputAcao" value="">
-    <input type="month" id="mes" name="mes" value="<?= $mes ?>">
+    <input type="month" id="mesGerar" name="mesGerar" value="<?= $mes ?>">
     <button type="button" id="gerar_folhas" name="gerar_folhas">
         Gerar Todas as Folhas
     </button>
-    <button disabled type="button" class="btn-revisar">
+    <button type="button" class="btn-revisar">
         Revisar todos
     </button>
 </form>
@@ -242,11 +243,11 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
                     <td>
                         <?php if($f['revisado'] == 1):?>
                             <a>Nenhuma ação disponível</a>
-                        <?php else:?>
-                            <a href="revisar_folha.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>">
+                        <?php else: $mes_codificado = urlencode($mes); $id_codificado = urlencode($f['id_usuario'])?>
+                            <a href="revisar_folha.php?mes=<?= $mes_codificado ?>&id_usuario=<?= $id_codificado ?>">
                             | Revisar PDF
                             </a>
-                            <a href="editar_folha.php?mes=<?= $mes ?>&id_usuario=<?= $f['id_usuario'] ?>">
+                            <a href="editar_folha.php?mes=<?= urlencode($mes) ?>&id_usuario=<?= urlencode($f['id_usuario']) ?>">
                             | Editar Eventos|
                             </a>
                         <?php endif?>
@@ -258,27 +259,32 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
 
 <script>
     const h2 = document.getElementById('h2');
-    const mes = document.getElementById('mes');
+    const mesGerar = document.getElementById('mesGerar');
+    const mesEvento = document.getElementById('mesEvento');
+    const btnEvento = document.getElementById('add_evento');
     const btnGerar = document.getElementById('gerar_folhas');
     const btnRevisao = document.querySelector('.btn-revisar');
     const inputAcao = document.getElementById('inputAcao');
     const form = document.getElementById('Form');
 
-    const dataFixa = mes.value;
+    function ouvirEventos(mes, btn){
+        const dataFixa = mes.value;
+        mes.addEventListener('input', (event)=>{
+            const data = event.target.value
+            h2.textContent = `Folhas Geradas ${data}`;
+            if (dataFixa === data){
+                btn.removeAttribute('disabled', 'true');
+            } else{
+                btn.setAttribute('disabled', 'true');
+            }
+        })
+    }
 
-    mes.addEventListener('input', (event)=>{
-        const data = event.target.value
-        h2.textContent = `Folhas Geradas ${data}`;
-        if (dataFixa === data){
-            btnGerar.removeAttribute('disabled', 'false');
-        } else{
-            btnGerar.setAttribute('disabled', 'true');
-        }
-    })
+    ouvirEventos(mesGerar, btnGerar);
+    ouvirEventos(mesEvento, btnEvento);
 
     btnGerar.addEventListener('click', function(){
         inputAcao.value = 'gerar';
-        btnRevisao.setAttribute('disabled', 'false');
         form.submit();
     })
 
