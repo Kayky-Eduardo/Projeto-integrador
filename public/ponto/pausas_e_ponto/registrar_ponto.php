@@ -9,7 +9,8 @@ if (!$id_usuario) die("Acesso negado.");
 
 $hoje = date("Y-m-d");
 $erro = "";
-$desabilitar = "disabled";
+$desabilitar = "";
+// $desabilitar = "disabled";
 
 // LÓGICA DE AUTO-FECHAMENTO (BACKEND)
 // Fecha pausas que excederam o tempo_max caso o usuário tenha fechado o navegador
@@ -49,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $desabilitar = "";
         if (!empty($_POST['id_config'])) {
             $id_config = intval($_POST['id_config']);
+            // $desabilitar = "";
         }
 
             // Valida se já existe pausa aberta
@@ -184,10 +186,8 @@ $tiposPausa = $stmtTipos->get_result();
     <?php endif; ?>
 
    <script type="text/javascript">
-    // Espera o DOM carregar completamente
     document.addEventListener("DOMContentLoaded", function() {
         
-        // --- 1. Verificação de Avisos no LocalStorage ---
         if (localStorage.getItem("aviso_sucesso") === "true") {
             PNotify.success({
                 title: 'Sucesso',
@@ -197,13 +197,12 @@ $tiposPausa = $stmtTipos->get_result();
             localStorage.removeItem("aviso_sucesso");
         }
 
-        // --- 2. Lógica do Cronômetro e Alertas ---
         const el = document.getElementById('cronometro');
         const statusMsg = document.getElementById('statusTempo');
         const btnFinalizar = document.getElementById('btnFinalizarPausa');
         
-        let aviso10MinEnviado = false;
         let intervalId = null;
+        let continuar = true;
 
         if (el) {
             function atualizarInterfacePausa() {
@@ -232,22 +231,30 @@ $tiposPausa = $stmtTipos->get_result();
                     statusMsg.style.color = "green";
                 }
 
-                // NOTIFICAÇÃO: Falta 10 minutos (600 segundos)
-                // Usamos uma margem de 599 a 600 para não repetir o alerta no mesmo segundo
-                if (segundosRestantes <= 600 && segundosRestantes > 0 && !aviso10MinEnviado) {
-                    PNotify.notice({
-                        title: 'Aviso de Tempo',
-                        text: 'Faltam 10 minutos para o limite da sua pausa!',
-                        delay: 10000 // Fica na tela por 10 segundos
-                    });
-                    aviso10MinEnviado = true;
+                if (decorridoSegundos >= maxSegundos) {
+                    if (intervalId) clearInterval(intervalId);
+                    document.getElementById('formPausa').submit();
+                    window.location.reload();
                 }
 
-                // Estourou o tempo máximo
-                if (decorridoSegundos >= maxSegundos) {
-                    clearInterval(intervalId);
-                    alert("Tempo esgotado! Finalizando automaticamente.");
-                    document.getElementById('formPausa').submit();
+                if (segundosRestantes <= minSegundos && segundosRestantes > 0) {
+                    if (continuar == true) {
+                        let tempo = Math.round(segundosRestantes / 60);
+                        if (tempo > 60) {
+                            tempo = Math.round(tempo / 60);
+                        }
+    
+                        PNotify.notice({
+                            title: 'Aviso de Tempo',
+                            text: `Faltam ${tempo} minutos para o limite da sua pausa!`,
+                            delay: 10000
+                        });
+                        // teste 
+                        // localStorage.setItem("teste", "true")
+                        // localStorage.setItem("inicio", 60);
+                        // localStorage.setItem("tempo", 10);
+                        continuar = false;
+                    }
                 }
             }
 

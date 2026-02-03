@@ -529,7 +529,7 @@ include "../../include/navbar.php";
                     parseFloat(usuario.horas_esperadas),
                     parseFloat(usuario.taxa_presenca) // porcentagem
                 ]);
-            });
+            });            
 
             var data = google.visualization.arrayToDataTable(dadosGrafico);
 

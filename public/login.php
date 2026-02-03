@@ -81,18 +81,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $verificacao_logado->execute();
                     $verificacao_logado = $verificacao_logado->get_result();
 
-                    $verificar_historico_ponto = $conn->prepare("
-                        SELECT id_ponto
-                        FROM ponto_dia
-                        WHERE data_ponto = CURDATE() AND fim_ponto IS NOT NULL
-                        AND id_usuario = ?;
-                    ");
-
-                    $verificar_historico_ponto->bind_param("i", $usuario['id_usuario']);
-                    $verificar_historico_ponto->execute();
-                    $resultado = $verificar_historico_ponto->get_result();
-
-                    if ($resultado->num_rows === 0) {
                         if ($verificacao_logado && $verificacao_logado->num_rows > 0) {
                             $row = $verificacao_logado->fetch_assoc();
                             $logout = $conn->prepare("UPDATE login SET data_fim = NOW() WHERE id_login = ?");
@@ -126,10 +114,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $conn->close();
                         exit; 
                     
-                    } else {        
-                        $erro_login = "Você já finalizou o ponto de hoje!";
-                        $verificar_historico_ponto->close();
-
                     }
                 } else {
                     $erro_login = "E-mail ou senha incorretos.";
@@ -141,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $erro_login = "E-mail ou senha incorretos.";
         }
     }
-}
+
 ?>
 
 <!DOCTYPE html>

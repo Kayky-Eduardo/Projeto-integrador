@@ -83,22 +83,17 @@ function verificar_tipo($conn, $id_usuario, $resultado_tempo, $tipo_dado = null)
         }
     }
 
-    if ($tipo === "bloqueado") {
-        fechar_pontos_pendentes($conn, $id_usuario);
-        redirecionar();
-
-    } else if ($tipo === "excedido") {
+    if ($tipo === "excedido") {
         adicionar_horas($conn, $id_usuario, $tempo);
         fechar_pontos_pendentes($conn, $id_usuario);
-        redirecionar();
     
     } else if ($tipo === "tempo_extra") {
-        adicionar_horas($conn, $id_usuario, $tempo);
+        // adicionar_horas($conn, $id_usuario, $tempo);
         // fechar_pontos_pendentes($conn, $id_usuario);
         // redirecionar();
 
     } else if ($tipo === "tempo_faltante") {
-        retirar_horas($conn, $id_usuario, $tempo);
+        // retirar_horas($conn, $id_usuario, $tempo);
         // fechar_pontos_pendentes($conn, $id_usuario);
         // redirecionar();
     }
@@ -150,52 +145,9 @@ function fechar_pontos_pendentes($conn, $id_usuario) {
 }
 
 function verificar_tempo_por_ponto($conn, $id_usuario) {
-    // verifica se tem ponto em aberto
-    $verificar_ponto = $conn->prepare("
-        SELECT id_ponto, inicio_ponto
-        FROM ponto_dia
-        WHERE id_usuario = ? 
-        AND data_ponto = CURDATE() 
-        AND fim_ponto IS NULL
-        LIMIT 1;
-    ");
-    $verificar_ponto->bind_param("i", $id_usuario);
-    $verificar_ponto->execute();
-    $resultado_ponto = $verificar_ponto->get_result();
-
-    if ($resultado_ponto->num_rows === 0) {
-        $verificar_ponto->close();
-        return [
-            'tipo' => 'sem_ponto_aberto',
-            'resultado' => 0,
-            'mensagem' => 'Nenhum ponto aberto para hoje'
-        ];
-    }
-
     $ponto = $resultado_ponto->fetch_assoc();
     $id_ponto = $ponto['id_ponto'];
     $verificar_ponto->close();
-
-    $verificar_ponto_finalizado = $conn->prepare("
-        SELECT id_ponto
-        FROM ponto_dia
-        WHERE data_ponto = CURDATE() 
-        AND fim_ponto IS NOT NULL
-        AND id_usuario = ?
-        LIMIT 1;
-    ");
-    $verificar_ponto_finalizado->bind_param("i", $id_usuario);
-    $verificar_ponto_finalizado->execute();
-    $resultado_finalizado = $verificar_ponto_finalizado->get_result();
-
-    if ($resultado_finalizado->num_rows > 0) {
-        $verificar_ponto_finalizado->close();
-        return [
-            'tipo' => 'bloqueado',
-            'resultado' => 0,
-            'mensagem' => 'Ponto do dia já foi finalizado'
-        ];
-    }
     $verificar_ponto_finalizado->close();
 
     /* verifica:
@@ -245,16 +197,7 @@ function verificar_tempo_por_ponto($conn, $id_usuario) {
     // Calcula pausas para descontar do tempo trabalhado
     $tempo_pausas = calcular_tempo_pausas($conn, $id_usuario, $id_ponto);
     $segundos_trabalhados_efetivos = $dados['segundos_trabalhados'] - $tempo_pausas;
-    
-    $aviso = $segundos_trabalhados_efetivos + 600 >= $dados['segundos_maximos'] ? true : false;
 
-    if ($aviso) {
-        return [
-            'tipo' => 'aviso',
-            'resultado' => 0,
-            'mensagem' => 'avisar',
-        ];
-    }
     
     // Verifica se excedeu o tempo máximo
     if ($segundos_trabalhados_efetivos >= $dados['segundos_maximos']) {
@@ -272,16 +215,16 @@ function verificar_tempo_por_ponto($conn, $id_usuario) {
             // Verifica se está em hora extra
             if ($segundos_trabalhados_efetivos >= $dados['segundos_jornada']) {
                 $segundos_extra = $segundos_trabalhados_efetivos - $dados['segundos_jornada'];
-        $minutos_extra = round($segundos_extra / 60);
-        
-        return [
-            'tipo' => 'tempo_extra',
-            'resultado' => $minutos_extra,
-            'segundos_trabalhados' => $segundos_trabalhados_efetivos,
-            'segundos_jornada' => $dados['segundos_jornada'],
-            'segundos_maximos' => $dados['segundos_maximos'],
-            'mensagem' => "Em hora extra: {$minutos_extra} minutos"
-        ];
+                $minutos_extra = round($segundos_extra / 60);
+                
+                return [
+                    'tipo' => 'tempo_extra',
+                    'resultado' => $minutos_extra,
+                    'segundos_trabalhados' => $segundos_trabalhados_efetivos,
+                    'segundos_jornada' => $dados['segundos_jornada'],
+                    'segundos_maximos' => $dados['segundos_maximos'],
+                    'mensagem' => "Em hora extra: {$minutos_extra} minutos"
+                ];
     }
     
     // Ainda falta tempo para completar a jornada
