@@ -30,17 +30,36 @@ if (isset($_POST['add_evento'])) {
     $tipo = $_POST['tipo'] ?? '';
     $descricao = $_POST['descricao'] ?? 'Não Informado';
     $valor = floatval($_POST['valor'] ?? 0);
+    $data = $_POST['mesEvento'] ?? $mes;
 
-    if ($id_usuario_evento && $tipo && $valor > 0) {
+
+    if ($id_usuario_evento && $tipo && $valor > 0 && $data == date('Y-m')) {
+        // busca retornar true caso a folha não tenha sido revisada
         $stmt = $conn->prepare("
+            SELECT * FROM folhas WHERE id_usuario = ? AND mes_competencia = ? AND revisado = 0
+        ");
+        $stmt->bind_param("is", $id_usuario_evento, $mes_padrao);
+        $stmt->execute();
+        $verificacao = $stmt->get_result();
+
+        // se folha não for revisada
+        if(!$verificacao){
+            $stmtInsert = $conn->prepare("
             INSERT INTO eventos (id_usuario, tipo, descricao, valor, mes_competencia)
             VALUES (?, ?, ?, ?, ?)
-        ");
-        $stmt->bind_param("issds", $id_usuario_evento, $tipo, $descricao, $valor, $mes_padrao);
-        $stmt->execute();
-        $mensagem_evento = "Evento adicionado com sucesso!";
+            ");
+            $stmtInsert->bind_param("issds", $id_usuario_evento, $tipo, $descricao, $valor, $mes_padrao);
+            $stmtInsert->execute();
+            $mensagem_evento = "Evento adicionado com sucesso!";
+            $cor_evento = 'green';
+        } else{
+            $mensagem_evento = "Folha do Evento já foi revisada!";
+            $cor_evento = 'red';
+        }
+        
     } else {
         $mensagem_evento = "Preencha todos os campos corretamente.";
+        $cor_evento = 'red';
     }
 }
 
@@ -50,9 +69,28 @@ if (isset($_POST['add_evento'])) {
 function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn) {
     $id_usuario = $usuario['id_usuario'];
 
-    // --- Buscar salário ---
+    // 1. Verificar se a folha já existe e se está revisada
+    $stmtCheck = $conn->prepare("SELECT id_folha, salario_liquido, revisado FROM folhas WHERE id_usuario = ? AND mes_competencia = ?");
+    $stmtCheck->bind_param("is", $id_usuario, $mes_padrao);
+    $stmtCheck->execute();
+    $resCheck = $stmtCheck->get_result();
+    $folhaExistente = $resCheck->fetch_assoc();
+    $stmtCheck->close();
+
+    // Se a folha já foi revisada, interrompe a execução para este usuário.
+    // Isso impede que um recálculo acidental altere dados já validados.
+    if ($folhaExistente && $folhaExistente['revisado'] == 1) {
+        return [
+            'id_usuario' => $id_usuario,
+            'nome_usuario' => $usuario['nome_usuario'],
+            'salario_liquido' => $folhaExistente['salario_liquido'],
+            'revisado' => 1,
+        ];
+    }
+
+    // 2. Buscar dados de salário (Sempre do cadastro de cargos para garantir o valor atual)
     $stmt = $conn->prepare("
-        SELECT u.nome_usuario, c.salario_bruto 
+        SELECT c.salario_bruto 
         FROM usuario u
         JOIN cargo c ON c.id_cargo = u.id_cargo
         WHERE u.id_usuario = ?
@@ -65,11 +103,7 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn) {
     $salario_bruto = floatval($userData['salario_bruto']);
 
     // --- Buscar eventos ---
-    $stmt2 = $conn->prepare("
-        SELECT tipo, valor 
-        FROM eventos 
-        WHERE id_usuario = ? AND mes_competencia = ?
-    ");
+    $stmt2 = $conn->prepare("SELECT tipo, valor FROM eventos WHERE id_usuario = ? AND mes_competencia = ?");
     $stmt2->bind_param("is", $id_usuario, $mes_padrao);
     $stmt2->execute();
     $resEventos = $stmt2->get_result();
@@ -85,70 +119,48 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn) {
     $fgts = calcularFGTS($salario_bruto);
     $inss = calcularINSS($salario_bruto);
     $irrf = calcularIRRF($salario_bruto, $inss, 0);
-    $vt = calcularVT($salario_bruto, 300);
-    $total_descontos += $inss + $irrf + $vt;
-
-    $salario_liquido = calcularSalarioLiquido($salario_bruto, $total_proventos, $total_descontos);
+    $vt   = calcularVT($salario_bruto, 300);
+    
+    // O total de descontos soma os eventos variáveis + os descontos legais compulsórios
+    $descontos_totais_calculados = $total_descontos + $inss + $irrf + $vt;
+    $salario_liquido = calcularSalarioLiquido($salario_bruto, $total_proventos, $descontos_totais_calculados);
 
     // --- Salvar no banco ---
-    // Dentro da função gerarFolhaUsuario
-    $stmtCheck = $conn->prepare("SELECT id_folha, revisado FROM folhas WHERE id_usuario = ? AND mes_competencia = ?");
-    $stmtCheck->bind_param("is", $id_usuario, $mes_padrao);
-    $stmtCheck->execute();
-    $resCheck = $stmtCheck->get_result();
-    $dadosExistentes = $resCheck->fetch_assoc();
-
-    if ($dadosExistentes) {
-        if ($dadosExistentes['revisado'] == 1) {
-            return null; // NÃO ALTERA se já foi revisado
-        }
-        // Procede com o UPDATE
+    if ($folhaExistente) {
         $stmtUpdate = $conn->prepare("
             UPDATE folhas SET
                 salario_bruto = ?, total_proventos = ?, total_descontos = ?, 
                 fgts = ?, inss = ?, irrf = ?, vt = ?, salario_liquido = ?
+            WHERE id_folha = ?
         ");
         $stmtUpdate->bind_param(
-            "dddddddi",
-            $salario_bruto, $total_proventos, $total_descontos,
-            $fgts, $inss, $irrf, $vt, $salario_liquido
+            "dddddddii",
+            $salario_bruto, $total_proventos, $descontos_totais_calculados,
+            $fgts, $inss, $irrf, $vt, $salario_liquido,
+            $folhaExistente['id_folha']
         );
         $stmtUpdate->execute();
         $stmtUpdate->close();
     } else {
-        // Procede com o INSERT
         $stmtInsert = $conn->prepare("
             INSERT INTO folhas 
-            (id_usuario, mes_competencia, salario_bruto, total_proventos, total_descontos, fgts, inss, irrf, vt, salario_liquido)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (id_usuario, mes_competencia, salario_bruto, total_proventos, total_descontos, fgts, inss, irrf, vt, salario_liquido, revisado)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
         ");
         $stmtInsert->bind_param(
             "issddddddd",
-            $id_usuario, $mes_padrao, $salario_bruto, $total_proventos, $total_descontos,
+            $id_usuario, $mes_padrao, $salario_bruto, $total_proventos, $descontos_totais_calculados,
             $fgts, $inss, $irrf, $vt, $salario_liquido
         );
         $stmtInsert->execute();
         $stmtInsert->close();
     }
 
-    $stmt4 = $conn->prepare("
-    SELECT
-    revisado
-    FROM folhas
-    WHERE id_usuario = ? AND mes_competencia = ? LIMIT 1");
-
-    $stmt4->bind_param('is', $id_usuario, $mes_padrao);
-    $stmt4->execute();
-    $resultado = $stmt4->get_result();
-    if ($row = $resultado->fetch_assoc()){
-        $revisado = $row['revisado'];
-    }
-
     return [
         'id_usuario' => $id_usuario,
         'nome_usuario' => $usuario['nome_usuario'],
         'salario_liquido' => $salario_liquido,
-        'revisado' => $revisado
+        'revisado' => 0
     ];
 }
 
@@ -195,7 +207,7 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
         <legend>Adicionar Provento/Desconto</legend>
 
         <label>Mês:</label>
-        <input type="month" name="mes" id="mesEvento" value="<?= $mes ?>"><br>
+        <input type="month" name="mesEvento" id="mesEvento" value='<?= $mes ?>' readonly><br>
 
         <label>Usuário:</label>
         <select name="id_usuario_evento" required>
@@ -222,7 +234,7 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
 </form>
 
 <?php if ($mensagem_evento): ?>
-    <p style="color:green;"><?= $mensagem_evento ?></p>
+    <p style="color:<?= $cor_evento ?>;"><?= $mensagem_evento ?></p>
 <?php endif; ?>
 
 <!-- Form para gerar folhas -->
@@ -231,13 +243,15 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
     <label>Mês:</label>
     <!-- o php só consegue acessar o value e o name de um input -->
     <input type="hidden" name="acao" id="inputAcao" value="">
-    <input type="month" id="mesGerar" name="mesGerar" value="<?= $mes ?>">
+    <input type="month" id="mesGerar" name="mesGerar" value="<?= $mes ?>" readonly>
     <button type="button" id="gerar_folhas" name="gerar_folhas">
         Gerar Todas as Folhas
     </button>
-    <button type="button" class="btn-revisar">
-        Revisar todos
-    </button>
+    <?php if (!empty($folhas_geradas)): ?>
+        <button type="button" class="btn-revisar">
+            Revisar todos
+        </button>
+    <?php endif; ?>
 </form>
 <?php if (!empty($folhas_geradas)): ?>
     
@@ -280,20 +294,21 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
     const inputAcao = document.getElementById('inputAcao');
     const form = document.getElementById('Form');
 
-    function ouvirEventos(mes, btn){
+    function ouvirEventos(mes, btn, btn2 = undefined){
         const dataFixa = mes.value;
         mes.addEventListener('input', (event)=>{
             const data = event.target.value
-            h2.textContent = `Folhas Geradas ${data}`;
             if (dataFixa === data){
                 btn.removeAttribute('disabled', 'true');
+                btn2.removeAttribute('disabled', 'true');
             } else{
                 btn.setAttribute('disabled', 'true');
+                btn2.setAttribute('disabled', 'true');
             }
         })
     }
 
-    ouvirEventos(mesGerar, btnGerar);
+    ouvirEventos(mesGerar, btnGerar, btnRevisao);
     ouvirEventos(mesEvento, btnEvento);
 
     btnGerar.addEventListener('click', function(){
