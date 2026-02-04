@@ -30,13 +30,14 @@ require("../BD/conexao.php");
 $metodo = $_SERVER['REQUEST_METHOD'];
 
 // Processa requisição
-if ($metodo === 'POST') {
+if ($metodo === 'get') {
     $acao = $_GET['acao'] ?? 'aviso';
-    $input = json_decode(file_get_contents('php://input'), true);
+    // $input = json_decode(file_get_contents('php://input'), true);
 
     if ($acao === 'aviso') {
         try {
             $resultado = coleta_dado_aviso($conn, $input['id_usuario']);
+            
             if ($resultado) {
                 echo json_encode([
                     'sucesso' => true,
