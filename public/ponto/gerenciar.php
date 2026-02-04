@@ -65,13 +65,32 @@ if (isset($_GET['aprovar'])) {
     $stmt = $conn->prepare("UPDATE ponto_dia SET status = 'Aprovado' WHERE id_ponto = ?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
-
+    
+    $coleta_tempo = $conn->prepare("
+        SELECT
+        TIMESTAMPDIFF(MINUTE, inicio_ponto, fim_ponto) as duracao
+        FROM ponto_dia
+        WHERE id_ponto = ?;
+    ");
+    $coleta_tempo->bind_param("i", $id);
+    $coleta_tempo->execute();
+    $resultado = $coleta_tempo->get_result();
+    $resultado = $resultado->fetch_assoc()['duracao'];
+    
+    
     // Busca usuário dono do ponto
     $user = $conn->query("
-        SELECT id_usuario 
-        FROM ponto_dia 
-        WHERE id_ponto = $id
+    SELECT id_usuario 
+    FROM ponto_dia 
+    WHERE id_ponto = $id
     ")->fetch_assoc();
+    
+    $dados = [
+        "resultado" => $resultado,
+        "mensagem" => "Ponto aprovado"
+    ];
+
+    verificar_tipo($conn, $user['id_usuario'], $dados, "finalizar");
 
     // Envia notificação para o funcionário
     criar_notificacao($conn, $user['id_usuario'], $id, "Seu ponto foi aprovado.");

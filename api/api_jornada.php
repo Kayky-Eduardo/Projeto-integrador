@@ -12,7 +12,6 @@ $metodo = $_SERVER['REQUEST_METHOD'];
 if ($metodo === 'GET') {
     $acao = $_GET['acao'] ?? 'verificar_individual';
     
-    // NOVA ROTA: Para o gráfico de taxa de presença
     if ($acao === 'taxa_presenca_geral') {
         try {
             $resultado = verificar_jornada_todos_usuarios($conn);

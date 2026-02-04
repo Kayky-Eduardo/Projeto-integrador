@@ -1,15 +1,10 @@
 <?php
-require "funcoes/funcoes_banco_horas.php";
+require_once "funcoes/funcoes_banco_horas.php";
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-/*
-ideia:
-assim que o cara finalizar seu ponto aparecesse um popup na direita superior da tela dele falando: "Ponto finalizado"
-E um timer falando quanto tempo falta até ele ser deslogado da plataforma.
-Porém, eu atribuia o tempo dessa página pela url exemplo: "?s=100", porém não da pra fazer include deste jeito.
-*/
+
 function verificar_login($conn) {
     $id_login = $_SESSION['id_login'];
     $id_usuario = $_SESSION['id_usuario'];
@@ -53,31 +48,19 @@ function verificar_login($conn) {
     $resultado_tempo = verificar_tempo_por_ponto($conn, $id_usuario);
     
     verificar_tipo($conn, $id_usuario, $resultado_tempo);
-
-}
-
-function redirecionar() {
-    header("Location: /projeto-integrador/public/logout.php");
-    exit;
-    // include("\Projeto-integrador\public\ponto\pausas_e_ponto\msg_pop_up.php");
 }
 
 function verificar_tipo($conn, $id_usuario, $resultado_tempo, $tipo_dado = null) {
     $tipo = $tipo_dado ?? $resultado_tempo['tipo'];
     $tempo = $resultado_tempo['resultado'];
-    $mensagem = $resultado_tempo['mensagem'];
-
-    if ($tipo === "aviso") {
-        $_SESSION['aviso_jornada'] = [
-            'mensagem' => $mensagem,
-            'tempo_restante' => 600
-        ];
-    }
+    $mensagem = $resultado_tempo['mensagem'] ?? "";
 
     if ($tipo == "finalizar") {
         fechar_pontos_pendentes($conn, $id_usuario);
         if ($tempo > 0) {
             adicionar_horas($conn, $id_usuario, $tempo);
+        } else if ($tempo == 0) {
+            adicionar_horas($conn, $id_usuario, $tempo, "horario_completo");
         } else {
             retirar_horas($conn, $id_usuario, $tempo);
         }
@@ -88,14 +71,15 @@ function verificar_tipo($conn, $id_usuario, $resultado_tempo, $tipo_dado = null)
         fechar_pontos_pendentes($conn, $id_usuario);
     
     } else if ($tipo === "tempo_extra") {
+        // return [
+        //     "tipo_aviso" => "aviso_hora_extra",
+        //     "segundos_restante" => $resultado_tempo["segundos_restante"]
+        // ];
         // adicionar_horas($conn, $id_usuario, $tempo);
         // fechar_pontos_pendentes($conn, $id_usuario);
-        // redirecionar();
-
     } else if ($tipo === "tempo_faltante") {
         // retirar_horas($conn, $id_usuario, $tempo);
         // fechar_pontos_pendentes($conn, $id_usuario);
-        // redirecionar();
     }
 }
 
@@ -145,11 +129,6 @@ function fechar_pontos_pendentes($conn, $id_usuario) {
 }
 
 function verificar_tempo_por_ponto($conn, $id_usuario) {
-    $ponto = $resultado_ponto->fetch_assoc();
-    $id_ponto = $ponto['id_ponto'];
-    $verificar_ponto->close();
-    $verificar_ponto_finalizado->close();
-
     /* verifica:
         - quanto tempo de hora extra o setor dele pode ter
         - tempo da jornada de trabalho
@@ -210,21 +189,23 @@ function verificar_tempo_por_ponto($conn, $id_usuario) {
             'segundos_maximos' => $dados['segundos_maximos'],
             'mensagem' => "Tempo máximo excedido. Hora extra máxima: {$minutos_extra} minutos"
             ];
-            }
+    }
             
-            // Verifica se está em hora extra
-            if ($segundos_trabalhados_efetivos >= $dados['segundos_jornada']) {
-                $segundos_extra = $segundos_trabalhados_efetivos - $dados['segundos_jornada'];
-                $minutos_extra = round($segundos_extra / 60);
-                
-                return [
-                    'tipo' => 'tempo_extra',
-                    'resultado' => $minutos_extra,
-                    'segundos_trabalhados' => $segundos_trabalhados_efetivos,
-                    'segundos_jornada' => $dados['segundos_jornada'],
-                    'segundos_maximos' => $dados['segundos_maximos'],
-                    'mensagem' => "Em hora extra: {$minutos_extra} minutos"
-                ];
+    // Verifica se está em hora extra
+    if ($segundos_trabalhados_efetivos >= $dados['segundos_jornada']) {
+        $segundos_extra = $segundos_trabalhados_efetivos - $dados['segundos_jornada'];
+        $minutos_extra = round($segundos_extra / 60);
+        $segundos_restantes = $dados['hora_extra'] - $segundos_extra;
+
+        return [
+            'tipo' => 'tempo_extra',
+            'resultado' => $minutos_extra,
+            'segundos_restantes' => $segundos_restantes,
+            'segundos_trabalhados' => $segundos_trabalhados_efetivos,
+            'segundos_jornada' => $dados['segundos_jornada'],
+            'segundos_maximos' => $dados['segundos_maximos'],
+            'mensagem' => "Em hora extra: {$minutos_extra} minutos"
+        ];
     }
     
     // Ainda falta tempo para completar a jornada
@@ -239,6 +220,21 @@ function verificar_tempo_por_ponto($conn, $id_usuario) {
         'segundos_maximos' => $dados['segundos_maximos'],
         'mensagem' => "Faltam {$minutos_faltantes} minutos para completar a jornada"
     ];
+}
+
+function coleta_dado_aviso($conn, $id_usuario) {
+    $dados = verificar_tempo_por_ponto($conn, $id_usuario);
+    $tipo = $dados['tipo'];
+
+    if ($tipo === "tempo_extra") {
+        $segundos_restantes = $dados['segundos_restantes'];
+
+        return [
+            "mensagem" => "Você está em hora extra",
+            "tempo_extra" => $dados['resultado'],
+            "tempo_restantes" => $dados['segundos_restantes'],
+        ];
+    }
 }
 
 function calcular_tempo_pausas($conn, $id_usuario, $id_ponto) {
