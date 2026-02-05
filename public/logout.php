@@ -26,9 +26,7 @@ if (isset($id_login)) {
     $update->execute();
 }
 
-// Destroi todas as variáveis de sessão
 session_unset();
-// Destroi a sessão
 session_destroy();
 
 // Redireciona para a página de login
