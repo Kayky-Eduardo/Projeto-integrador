@@ -7,7 +7,11 @@ session_start();
 // 1. Recebe o mês (competência)
 // -----------------------------
 $mes = $_GET["mes"] ?? null;
-if (!$mes) { die("Mês não informado."); }
+if (!$mes) {
+    // No redirecionamento
+    header("Location: gerar_folhas_todos.php?erro=Mês inacessível.");
+    exit();
+};
 
 $mes_comp = $mes . "-01";
 
@@ -47,7 +51,8 @@ $nivel_alvo = $sql_nivel_alvo->get_result()->fetch_assoc()['nivel'] ?? 0;
 // 5. Permissão
 // -----------------------------
 if ($id_usuario != $id_usuario_logado && $nivel_logado < $nivel_alvo) {
-    die("Acesso negado.");
+    header("Location: gerar_folhas_todos.php?erro=Acesso Negado.");
+    exit();
 }
 
 // -----------------------------
