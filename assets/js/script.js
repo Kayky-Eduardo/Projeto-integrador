@@ -222,4 +222,100 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+    /* ONLINE – USUÁRIOS LOGADOS */
+    const tabelaOnline = document.getElementById("tabela-online");
+    const filtroOnline = document.getElementById("filtro-online");
+
+    if (tabelaOnline && filtroOnline) {
+        const API_URL = "../../api/api_relatorio_ponto.php";
+        carregarLogados();
+        setInterval(carregarLogados, 10000);
+        filtroOnline.addEventListener("input", aplicarFiltroOnline);
+
+        async function carregarLogados() {
+            try {
+                const response = await fetch(`${API_URL}?acao=get_logados`);
+                const dados = await response.json();
+                tabelaOnline.innerHTML = "";
+
+                if (!Array.isArray(dados) || !dados.length) {
+                    tabelaOnline.innerHTML = `
+                        <tr>
+                            <td colspan="5">Nenhum usuário logado</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                const fragment = document.createDocumentFragment();
+
+                dados.forEach(usuario => {
+                    fragment.appendChild(criarLinhaOnline(usuario));
+                });
+
+                tabelaOnline.appendChild(fragment);
+                aplicarFiltroOnline();
+            } catch (error) {
+                console.error("Erro ao buscar usuários logados:", error);
+
+                tabelaOnline.innerHTML = `
+                    <tr>
+                        <td colspan="5">Erro ao carregar dados</td>
+                    </tr>
+                `;
+            }
+        }
+
+        function criarLinhaOnline(usuario) {
+            const tr = document.createElement("tr");
+            const tempo = formatarTempo(usuario.tempo_logado);
+
+            tr.innerHTML = `
+                <td>
+                    <button class="btn btn-padrao" data-id="${usuario.id_login}">
+                        Deslogar
+                    </button>
+                </td>
+
+                <td class="col-nome">${usuario.nome_usuario ?? "-"}</td>
+                <td>${usuario.email_usuario ?? "-"}</td>
+                <td>${usuario.data_inicio ?? "-"}</td>
+                <td>${tempo}</td>
+            `;
+
+            tr.querySelector("button").addEventListener("click", () => {
+                deslogarUsuario(usuario.id_login);
+            });
+
+            return tr;
+        }
+
+        function aplicarFiltroOnline() {
+            const termo = filtroOnline.value.toLowerCase().trim();
+            const linhas = tabelaOnline.querySelectorAll("tr");
+
+            linhas.forEach(linha => {
+                const nome = linha.querySelector(".col-nome")?.textContent.toLowerCase() || "";
+                linha.style.display = nome.includes(termo) ? "" : "none";
+            });
+        }
+
+        async function deslogarUsuario(idLogin) {
+            await fetch(`${API_URL}?acao=deslogar`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id_login: idLogin })
+            });
+
+            carregarLogados();
+        }
+
+        function formatarTempo(minutosTotais) {
+            if (!minutosTotais) return "-";
+            const horas = Math.floor(minutosTotais / 60);
+            const minutos = minutosTotais % 60;
+            return horas > 0 ? `${horas}h ${minutos}min` : `${minutos}min`;
+        }
+    }
 });

@@ -283,23 +283,30 @@ function relatorio_ponto_filtrado($conn, $id_usuario)
 
 function get_logados($conn)
 {
-    $coleta_usuario_tabela = $conn->prepare("
-        SELECT usuario.id_usuario, usuario.email_usuario, id_login, email_login, data_inicio, TIMESTAMPDIFF(MINUTE, data_inicio, NOW()) 
-        AS tempo_logado
-        FROM login 
-        LEFT JOIN usuario on login.id_usuario = usuario.id_usuario
-        WHERE MONTH(data_inicio) = MONTH(CURDATE())
-        AND data_fim IS NULL;
+    $stmt = $conn->prepare("
+        SELECT
+            u.nome_usuario,
+            u.email_usuario,
+            l.id_login,
+            l.data_inicio,
+            TIMESTAMPDIFF(MINUTE, l.data_inicio, NOW()) AS tempo_logado
+        FROM login l
+        INNER JOIN usuario u ON u.id_usuario = l.id_usuario
+        WHERE l.data_fim IS NULL
+        AND MONTH(l.data_inicio) = MONTH(CURDATE())
+        ORDER BY l.data_inicio DESC
     ");
 
-    $coleta_usuario_tabela->execute();
-    $result = $coleta_usuario_tabela->get_result();
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    while ($linha = $result->fetch_assoc()) {
-        $usuario[] = $linha;
+    $usuarios = [];
+
+    while ($row = $result->fetch_assoc()) {
+        $usuarios[] = $row;
     }
 
-    return $usuario;
+    return $usuarios;
 }
 
 function deslogar_usuario($conn, $id_login)

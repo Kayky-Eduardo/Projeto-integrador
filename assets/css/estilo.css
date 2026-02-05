@@ -419,8 +419,55 @@ footer a {
     background: #ef4444;
 }
 
+/* TABELA */
+.tabela-padrao {
+    background-color: var(--cor-fundo-card);
+    border: 1px solid var(--cor-borda-padrao);
+    border-radius: var(--raio-borda-grande);
+    padding: 16px;
+}
 
-/* Carrossel de notícias */
+.tabela-padrao h2 {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.tabela-padrao table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--tamanho-texto-padrao);
+}
+
+.tabela-padrao thead {
+    background-color: var(--cor-titulo-tabela);
+}
+
+.tabela-padrao th,
+.tabela-padrao td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--cor-borda-padrao);
+}
+
+.tabela-padrao tbody tr:hover {
+    background-color: var(--cor-titulo-tabela);
+}
+
+.tabela-padrao p {
+    text-align: center;
+    color: var(--cor-principal);
+}
+
+/* FILTROS */
+.filtro-texto {
+    background: var(--cor-fundo-card);
+    border: 1px solid var(--cor-borda-padrao);
+    border-radius: var(--raio-borda-grande);
+    padding: 12px;
+    width: 100%;
+}
+
+/* CARROSSEL IMAGEM E TEXTO */
 .carrossel {
     max-width: 900px;
     width: 100%;
@@ -757,8 +804,7 @@ footer a {
     background-color: var(--cor-fundo-card);
     border: 1px solid var(--cor-borda-padrao);
     border-radius: var(--raio-borda-grande);
-    padding: 20px;
-    margin-bottom: 24px;
+    padding: 16px;
 }
 
 .bh-relatorio h2 {
@@ -818,37 +864,13 @@ footer a {
     align-items: center;
 }
 
-.bh-historico {
-    background-color: var(--cor-fundo-card);
-    border: 1px solid var(--cor-borda-padrao);
-    border-radius: var(--raio-borda-grande);
-    padding: 16px;
-}
-
-.bh-historico table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: var(--tamanho-texto-padrao);
-}
-
-.bh-historico thead {
-    background-color: var(--cor-titulo-tabela);
-}
-
-.bh-historico th,
-.bh-historico td {
-    padding: 10px;
-    text-align: center;
-    border-bottom: 1px solid var(--cor-borda-padrao);
-}
-
-.bh-historico tbody tr:hover {
-    background-color: var(--cor-titulo-tabela);
-}
-
-.bh-historico p {
-    text-align: center;
-    color: var(--cor-principal);
+/* PÁGINA CONTROLE DE USUÁRIOS ONLINE */
+.controle-usuarios {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    align-items: stretch;
 }
 
 
