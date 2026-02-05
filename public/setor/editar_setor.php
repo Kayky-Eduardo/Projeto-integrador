@@ -76,7 +76,7 @@ $jornada_atual = $atual->get_result()->fetch_assoc();  // Nome consistente
         <br><br>
 
         <div class="caixa_select">
-            <button class="btn-ativar" type="button" onclick="ativar_select()">
+            <button class="btn-ativar" id="btn-ativar" type="button">
                 <span id="contador">0</span> selecionados
             </button>
 
@@ -88,7 +88,7 @@ $jornada_atual = $atual->get_result()->fetch_assoc();  // Nome consistente
                         <input type="checkbox" 
                                name="usuarios[]" 
                                value="<?= $u['id_usuario'] ?>"
-                               onchange="atualizar_contador()">
+                               id="atualizador">
                         <?= htmlspecialchars($u['nome_usuario']) ?>
                     </label>
                 <?php endwhile; ?>
@@ -261,7 +261,14 @@ $jornada_atual = $atual->get_result()->fetch_assoc();  // Nome consistente
             document.getElementById('contador').innerText = checkboxes.length;
         }
 
-        
+        document.getElementById("btn-ativar").addEventListener("click", function () {
+            ativar_select();
+        })
+
+        document.getElementById("atualizador").addEventListener("change", function () {
+            atualizar_contador();
+        })
+
         // Mostrar mensagens ao usuário de acordo com o tipo proporcionado. exemplo: erro
         function mostrar_mensagem(texto, tipo = null) {
             const div = document.getElementById('mensagem');

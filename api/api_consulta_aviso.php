@@ -22,26 +22,30 @@ Existe uma função para calcular o tempo em pausa, tanto pausas fechadas quanto
 */
 
 header("Content-Type: application/json");
-require_once '../include/verificacao.php';
-require("../BD/conexao.php");
+require_once '../include/funcoes/funcoes_coleta_dados.php';
+require_once "../BD/conexao.php";
 
 
 // Pega o método da requisição
 $metodo = $_SERVER['REQUEST_METHOD'];
 
 // Processa requisição
-if ($metodo === 'get') {
+if ($metodo === 'GET') {
     $acao = $_GET['acao'] ?? 'aviso';
-    // $input = json_decode(file_get_contents('php://input'), true);
+    $input['id_usuario'] = null;
 
+    $input = json_decode(file_get_contents('php://input'), true);
+
+    $id_usuario = $input['id_usuario'];
+    
     if ($acao === 'aviso') {
         try {
-            $resultado = coleta_dado_aviso($conn, $input['id_usuario']);
+            $resultado = coleta_dado($conn, $id_usuario);
             
             if ($resultado) {
                 echo json_encode([
                     'sucesso' => true,
-                    'dados' => $resultado
+                    'dados' => $resultado,
                 ]);
             } else {
                 echo json_encode([

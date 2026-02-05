@@ -113,7 +113,7 @@ include "../../include/navbar.php";
                 <input type="date" id="dataFim">
             </div>
             
-            <button id="btnVerificar" onclick="buscar_jornada()">
+            <button id="btnVerificar">
                 Verificar Jornada
             </button>
         </div>
@@ -481,6 +481,10 @@ include "../../include/navbar.php";
             document.getElementById('loading').style.display = 'none';
         }
     }
+    
+    document.getElementById("btnVerificar").addEventListener("click", function () {
+        buscar_jornada();
+    })
     
     function limpar_resultado() {
         document.getElementById('resultado').innerHTML = '';
