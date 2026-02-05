@@ -1,21 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
-    /* CARROSSEL */
+    /* CARROSSEL - INDEX*/
     const slides = document.querySelectorAll(".slide");
     const prev = document.querySelector(".prev");
     const next = document.querySelector(".next");
     const dots = document.querySelectorAll(".dot");
     const area = document.querySelector(".carrossel");
-
     let index = 0;
     let interval;
 
     function mostrarSlide(i) {
-        slides.forEach(slide => slide.classList.remove("ativo"));
+        slides.forEach(slide => slide.classList.remove("slide-ativo"));
         dots.forEach(dot => dot.classList.remove("ativo"));
-
-        slides[i]?.classList.add("ativo");
+        slides[i]?.classList.add("slide-ativo");
         dots[i]?.classList.add("ativo");
-
         index = i;
     }
 
@@ -49,16 +46,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     area?.addEventListener("mouseenter", pararAuto);
     area?.addEventListener("mouseleave", iniciarAuto);
-
     iniciarAuto();
 
-    /* BUSCA + FILTRO DE STATUS - LISTA DE USUÁRIOS */
+    /* FILTRO DE BUSCA E FILTRO DE STATUS - LISTA DE USUÁRIOS */
     const campoBusca = document.getElementById("busca");
     const filtroStatus = document.getElementById("filtro-status");
-    const cardsUsuarios = document.querySelectorAll(".usuario-card");
+    const cardsUsuarios = document.querySelectorAll(".card-usuario");
 
     if (campoBusca && cardsUsuarios.length) {
-
         campoBusca.addEventListener("input", aplicarFiltros);
         filtroStatus?.addEventListener("change", aplicarFiltros);
 
@@ -70,15 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 const nome = card.querySelector("h3")?.textContent.toLowerCase() || "";
                 const cargo = card.querySelector(".cargo")?.textContent.toLowerCase() || "";
                 const isAtivo = card.querySelector("span")?.classList.contains("ativo");
-
                 let visivel = true;
 
-                // filtro por texto
                 if (!nome.includes(termo) && !cargo.includes(termo)) {
                     visivel = false;
                 }
 
-                // filtro por status
                 if (statusSelecionado === "ativos" && !isAtivo) {
                     visivel = false;
                 }
@@ -90,12 +82,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 card.classList.toggle("hidden", !visivel);
             });
         }
-
-        // filtro inicial: somente ativos
         aplicarFiltros();
     }
 
-    /* MÁSCARAS */
+    /* MÁSCARAS DE PREENCHIMENTO AUTOMÁTICO */
     if (document.getElementById("cpf")) {
         IMask(document.getElementById("cpf"), {
             mask: "000.000.000-00"
@@ -129,11 +119,12 @@ document.addEventListener("DOMContentLoaded", () => {
         inputFoto.addEventListener("change", () => {
             const file = inputFoto.files[0];
             if (!file) return;
-
             const reader = new FileReader();
+
             reader.onload = () => {
                 previewFoto.src = reader.result;
             };
+
             reader.readAsDataURL(file);
 
             if (btnSalvarFoto) {
@@ -148,31 +139,87 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (btnEditar && painelEdicao) {
         btnEditar.addEventListener("click", () => {
-            painelEdicao.classList.toggle("ativo");
+            painelEdicao.classList.toggle("hidden");
         });
     }
 
     /* FILTRO – BANCO DE HORAS (RELATÓRIO) */
-
     const filtroBancoHoras = document.getElementById("filtroUsuario");
     const tabelaBancoHoras = document.getElementById("tabelaBancoHoras");
 
     if (filtroBancoHoras && tabelaBancoHoras) {
-
         const linhasBancoHoras = tabelaBancoHoras.querySelectorAll("tbody tr");
 
         filtroBancoHoras.addEventListener("input", () => {
             const termo = filtroBancoHoras.value.toLowerCase().trim();
 
             linhasBancoHoras.forEach(linha => {
-                const nomeUsuario = linha.children[0]
-                    ?.textContent
-                    .toLowerCase() || "";
-
-                linha.style.display = nomeUsuario.includes(termo)
-                    ? ""
-                    : "none";
+                const nomeUsuario = linha.children[0]?.textContent.toLowerCase() || "";
+                linha.style.display = nomeUsuario.includes(termo) ? "" : "none";
             });
+        });
+    }
+
+    /*  CONFIGURAÇÕES – JORNADA  */
+    const formJornada = document.getElementById("form-jornada");
+
+    if (formJornada) {
+        const inputJornada = document.getElementById("set-jornada");
+        const inputHoraExtra = document.getElementById("set-hora-max");
+        const resposta = document.getElementById("resposta");
+        const botaoSalvar = formJornada.querySelector("button");
+
+        formJornada.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            resposta.textContent = "";
+            resposta.className = "";
+            const jornada = inputJornada.value;
+            const horaExtra = inputHoraExtra.value;
+
+            if (!jornada || !horaExtra) {
+                resposta.textContent = "Preencha todos os campos.";
+                resposta.className = "erro";
+                return;
+            }
+
+            if (jornada === "00:00") {
+                resposta.textContent = "A jornada diária não pode ser zero.";
+                resposta.className = "erro";
+                return;
+            }
+
+            try {
+                botaoSalvar.disabled = true;
+                resposta.textContent = "Salvando configuração...";
+                resposta.className = "info";
+
+                const response = await fetch("../../api/api_jornada.php?acao=jornada", {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        jornada,
+                        hora_extra: horaExtra
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Erro HTTP");
+                }
+
+                const data = await response.json();
+                resposta.textContent = data.mensagem;
+                resposta.className = data.sucesso ? "sucesso" : "erro";
+            } catch (error) {
+                resposta.textContent = "Falha na comunicação com o servidor.";
+                resposta.className = "erro";
+                console.error(error);
+            } finally {
+                botaoSalvar.disabled = false;
+            }
         });
     }
 });
