@@ -205,6 +205,4 @@ DO
     set saldo_minutos = 0;
 
 ");
-$conn->query($sql);
-
 ?>

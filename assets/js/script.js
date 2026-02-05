@@ -223,3 +223,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+// if (localStorage.getItem("teste") === "true") {
+//     let inicio = localStorage.getItem("inicio");
+//     let agora = new Date().getTime();
+//     let decorridoSegundos = Math.floor((agora - inicio) / 1000);
+
+//     PNotify.success({
+//         title: 'Sucesso',
+//         text: `Ação registrada com sucesso!${decorridoSegundos}`,
+//         delay: 3000
+//     });
+//     localStorage.removeItem("aviso_sucesso");
+// }

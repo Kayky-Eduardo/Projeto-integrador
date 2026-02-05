@@ -112,13 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $senha = $_POST['senha'];
 
         $stmt = $conn->prepare("
-            SELECT 
-                usuario.id_usuario,
-                usuario.nome_usuario,
-                usuario.email_usuario,
-                usuario.senha_usuario,
-                cargo.id_cargo,
-                cargo.nivel
+            SELECT usuario.*, cargo.nome_cargo, cargo.nivel, cargo.id_cargo, usuario.senha_usuario
             FROM usuario
             JOIN cargo ON usuario.id_cargo = cargo.id_cargo
             WHERE usuario.email_usuario = ?
@@ -132,78 +126,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $usuario = $result->fetch_assoc();
             $stmt->close();
 
-            if (password_verify($senha, $usuario['senha_usuario'])) {
-                session_regenerate_id(true);
-                $_SESSION['nivel']        = $usuario['nivel'];
-                $_SESSION['id_usuario']   = $usuario['id_usuario'];
-                $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
+            if ($usuario['conta_ativa'] === 1) {
 
-                $stmt_login = $conn->prepare("
-                    SELECT id_login
-                    FROM login
-                    WHERE id_usuario = ? AND data_fim IS NULL
-                    LIMIT 1
-                ");
-
-                $stmt_login->bind_param("i", $usuario['id_usuario']);
-                $stmt_login->execute();
-                $result_login = $stmt_login->get_result();
-
-                if ($result_login->num_rows > 0) {
-                    $row = $result_login->fetch_assoc();
-
-                    $stmt_logout = $conn->prepare("
-                        UPDATE login SET data_fim = NOW()
-                        WHERE id_login = ?
+                if (password_verify($senha, $senha_banco)) {
+                    session_regenerate_id(true);
+                    $_SESSION['nivel'] = $usuario['nivel'];
+                    $_SESSION['id_usuario'] = $usuario['id_usuario'];
+                    $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
+                    $verificacao_logado = $conn->prepare("
+                        SELECT id_login FROM login
+                        WHERE id_usuario = ? AND data_fim IS NULL
+                        LIMIT 1
                     ");
 
-                    $stmt_logout->bind_param("i", $row['id_login']);
-                    $stmt_logout->execute();
-                    $stmt_logout->close();
+                    $verificacao_logado->bind_param("i", $usuario['id_usuario']);
+                    $verificacao_logado->execute();
+                    $verificacao_logado = $verificacao_logado->get_result();
+
+                        if ($verificacao_logado && $verificacao_logado->num_rows > 0) {
+                            $row = $verificacao_logado->fetch_assoc();
+                            $logout = $conn->prepare("UPDATE login SET data_fim = NOW() WHERE id_login = ?");
+                            $logout->bind_param("i", $row['id_login']);
+                            $logout->execute();
+                            $logout->close();
+                            $verificacao_logado->close();
+                        }
+        
+                        $update_login = $conn->prepare("
+                            INSERT INTO login (email_login, id_usuario, id_cargo) VALUES
+                            (?, ?, ?)
+                            ");
+                        $update_login->bind_param(
+                            'sii',
+                            $usuario['email_usuario'],
+                            $usuario['id_usuario'],
+                            $usuario['id_cargo']
+                        );
+                        $update_login->execute();
+                        $_SESSION['id_login'] = $update_login->insert_id;
+                        $update_login->close();
+                        if (password_needs_rehash($senha_banco, PASSWORD_DEFAULT)) {
+                            $novo_hash = password_hash($senha, PASSWORD_DEFAULT);
+                            $update = $conn->prepare("UPDATE usuario SET senha_usuario = ? WHERE id_usuario = ?");
+                            $update->bind_param("si", $novo_hash, $usuario['id_usuario']);
+                            $update->execute();
+                            $update->close();
+                        } 
+                        header("Location: index.php");
+                        $conn->close();
+                        exit; 
+                    
+                    }
+                } else {
+                    $erro_login = "E-mail ou senha incorretos.";
                 }
-
-                $stmt_login->close();
-
-                $stmt_insert = $conn->prepare("
-                    INSERT INTO login (email_login, id_usuario, id_cargo)
-                    VALUES (?, ?, ?)
-                ");
-
-                $stmt_insert->bind_param(
-                    "sii",
-                    $usuario['email_usuario'],
-                    $usuario['id_usuario'],
-                    $usuario['id_cargo']
-                );
-
-                $stmt_insert->execute();
-                $_SESSION['id_login'] = $stmt_insert->insert_id;
-                $stmt_insert->close();
-
-                if (password_needs_rehash($usuario['senha_usuario'], PASSWORD_DEFAULT)) {
-                    $novo_hash = password_hash($senha, PASSWORD_DEFAULT);
-
-                    $stmt_update = $conn->prepare("
-                        UPDATE usuario SET senha_usuario = ?
-                        WHERE id_usuario = ?
-                    ");
-
-                    $stmt_update->bind_param("si", $novo_hash, $usuario['id_usuario']);
-                    $stmt_update->execute();
-                    $stmt_update->close();
-                }
-
-                header("Location: index.php");
-                exit;
             } else {
-                $erro_login = $mensagem_padrao;
+                $erro_login = "Verifique se sua conta esta ativa com seu supervisor";
             }
         } else {
             $stmt->close();
             $erro_login = $mensagem_padrao;
         }
     }
-}
+
 ?>
 
 <!DOCTYPE html>
@@ -241,5 +226,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </section>
     </main>
 </body>
-
 </html>

@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 date_default_timezone_set('America/Sao_Paulo');
@@ -9,6 +10,8 @@ if (!$id_usuario) die("Acesso negado.");
 
 $hoje = date("Y-m-d");
 $erro = "";
+$desabilitar = "";
+// $desabilitar = "disabled";
 
 // LÓGICA DE AUTO-FECHAMENTO (BACKEND)
 // Fecha pausas que excederam o tempo_max caso o usuário tenha fechado o navegador
@@ -43,8 +46,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } 
     
     elseif ($acao === 'pausa_iniciar') {
-        $id_config = intval($_POST['id_config']);
-        // Valida se já existe pausa aberta
+        $desabilitar = "";
+        if (!empty($_POST['id_config'])) {
+            $id_config = intval($_POST['id_config']);
+            // $desabilitar = "";
+        }
+
+            // Valida se já existe pausa aberta
         $check = $conn->query("SELECT id_pausa FROM pausa WHERE id_usuario = $id_usuario AND fim IS NULL");
         if ($check->num_rows == 0) {
             $stmt = $conn->prepare("INSERT INTO pausa (id_usuario, id_config, inicio, data) VALUES (?, ?, NOW(), ?)");
@@ -103,6 +111,10 @@ $tiposPausa = $stmtTipos->get_result();
 <head>
     <meta charset="UTF-8">
     <title>Ponto e Pausas</title>
+    <link href="https://cdn.jsdelivr.net/npm/@pnotify/core@5.2.0/dist/PNotify.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@pnotify/core@5.2.0/dist/BrightTheme.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@pnotify/core@5.2.0/dist/PNotify.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@pnotify/mobile@5.2.0/dist/PNotifyMobile.js"></script>
 </head>
 <body>
     <a href="../../index.php">Voltar</a>
@@ -110,7 +122,7 @@ $tiposPausa = $stmtTipos->get_result();
 
     <?php if ($erro): ?> <div style="color:red"><strong>Erro:</strong> <?= $erro ?></div> <?php endif; ?>
 
-    <form method="POST">
+    <form method="POST" id="formPausa1">
         <input type="hidden" name="acao" value="registrar_ponto">
         <button type="submit" <?= ($pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
             <?= !$pontoIniciado ? 'Iniciar Ponto' : 'Finalizar Ponto' ?>
@@ -133,7 +145,7 @@ $tiposPausa = $stmtTipos->get_result();
 
         <?php if (!$pausaAtiva): ?>
             <input type="hidden" name="acao" value="pausa_iniciar">
-            <button type="submit" <?= (!$pontoIniciado || $pontoFinalizado) ? 'disabled' : '' ?>>Iniciar Pausa</button>
+            <button type="submit" <?= (!$pontoIniciado || $pontoFinalizado) ? 'disabled' : '' ?> <?= $desabilitar ?>>Iniciar Pausa</button>
         <?php else: ?>
             <input type="hidden" name="acao" value="pausa_finalizar">
             <button type="submit" id="btnFinalizarPausa">Finalizar Pausa</button>
@@ -172,56 +184,91 @@ $tiposPausa = $stmtTipos->get_result();
         <p>Nenhuma pausa ativa no momento.</p>
     <?php endif; ?>
 
-    <script>
-        let intervalId = null;
-        function atualizarInterfacePausa() {
-            const el = document.getElementById('cronometro');
-            const statusMsg = document.getElementById('statusTempo');
-            const btnFinalizar = document.getElementById('btnFinalizarPausa');
-            if (!el) return;
-
-            // Cálculo de tempo decorrido
-            const inicio = new Date(el.dataset.inicio).getTime();
-            const agora = new Date().getTime();
-            const decorridoSegundos = Math.floor((agora - inicio) / 1000);
-            
-            const minSegundos = parseInt(el.dataset.min) * 60;
-            const maxSegundos = parseInt(el.dataset.max) * 60;
-
-            // Atualiza Cronômetro na tabela
-            const m = Math.floor(decorridoSegundos / 60).toString().padStart(2, '0');
-            const s = (decorridoSegundos % 60).toString().padStart(2, '0');
-            el.textContent = `${m}:${s}`;
-
-            // Lógica de Tempo Mínimo (Atualização em tempo real da mensagem)
-            if (decorridoSegundos < minSegundos) {
-                const faltamSegundos = minSegundos - decorridoSegundos;
-                const minFaltam = Math.floor(faltamSegundos / 60);
-                const segFaltam = faltamSegundos % 60;
-                statusMsg.textContent = `Aguarde: faltam ${minFaltam}min ${segFaltam}s para poder finalizar.`;
-                statusMsg.style.color = "red";
-                btnFinalizar.disabled = true;
-            } else {
-                statusMsg.textContent = "Tempo mínimo atingido. Você já pode voltar ao trabalho.";
-                statusMsg.style.color = "green";
-                btnFinalizar.disabled = false;
-            }
-
-            // Lógica de Auto-fechamento (Tempo Máximo)
-            if (decorridoSegundos >= maxSegundos) {
-                if (intervalId) clearInterval(intervalId);
-                document.getElementById('formPausa').submit();
-                window.location.reload();
-                alert("Tempo máximo de pausa atingido! Finalizando automaticamente.");
-                
-            }
+   <script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        if (localStorage.getItem("aviso_sucesso") === "true") {
+            PNotify.success({
+                title: 'Sucesso',
+                text: 'Ação registrada com sucesso!',
+                delay: 3000
+            });
+            localStorage.removeItem("aviso_sucesso");
         }
 
-        // Executa a cada 1 segundo se houver pausa ativa
-        if (document.getElementById('cronometro')) {
+        const el = document.getElementById('cronometro');
+        const statusMsg = document.getElementById('statusTempo');
+        const btnFinalizar = document.getElementById('btnFinalizarPausa');
+        
+        let intervalId = null;
+        let continuar = true;
+
+        if (el) {
+            function atualizarInterfacePausa() {
+                const inicio = new Date(el.dataset.inicio).getTime();
+                const agora = new Date().getTime();
+                const decorridoSegundos = Math.floor((agora - inicio) / 1000);
+                
+                const minSegundos = parseInt(el.dataset.min) * 60;
+                const maxSegundos = parseInt(el.dataset.max) * 60;
+                const segundosRestantes = maxSegundos - decorridoSegundos;
+
+                // Atualiza o relógio na tela
+                const m = Math.floor(decorridoSegundos / 60).toString().padStart(2, '0');
+                const s = (decorridoSegundos % 60).toString().padStart(2, '0');
+                el.textContent = `${m}:${s}`;
+
+                // Regra do botão desabilitado (Tempo Mínimo)
+                if (decorridoSegundos < minSegundos) {
+                    if(btnFinalizar) btnFinalizar.disabled = true;
+                    const faltam = minSegundos - decorridoSegundos;
+                    statusMsg.textContent = `Aguarde: faltam ${Math.floor(faltam/60)}m ${faltam%60}s`;
+                    statusMsg.style.color = "red";
+                } else {
+                    if(btnFinalizar) btnFinalizar.disabled = false;
+                    statusMsg.textContent = "Tempo mínimo atingido.";
+                    statusMsg.style.color = "green";
+                }
+
+                if (decorridoSegundos >= maxSegundos) {
+                    if (intervalId) clearInterval(intervalId);
+                    document.getElementById('formPausa').submit();
+                    window.location.reload();
+                }
+
+                if (segundosRestantes <= minSegundos && segundosRestantes > 0) {
+                    if (continuar == true) {
+                        let tempo = Math.round(segundosRestantes / 60);
+                        if (tempo > 60) {
+                            tempo = Math.round(tempo / 60);
+                        }
+    
+                        PNotify.notice({
+                            title: 'Aviso de Tempo',
+                            text: `Faltam ${tempo} minutos para o limite da sua pausa!`,
+                            delay: 10000
+                        });
+                        // teste 
+                        // localStorage.setItem("teste", "true")
+                        // localStorage.setItem("inicio", 60);
+                        // localStorage.setItem("tempo", 10);
+                        continuar = false;
+                    }
+                }
+            }
+
+            // Inicia o cronômetro
             intervalId = setInterval(atualizarInterfacePausa, 1000);
             atualizarInterfacePausa();
         }
-    </script>
+
+        // Adiciona o gatilho para o LocalStorage no botão de finalizar
+        if(btnFinalizar){
+            btnFinalizar.addEventListener("click", function() {
+                localStorage.setItem("aviso_sucesso", "true");
+            });
+        }
+    });
+</script>
 </body>
 </html>

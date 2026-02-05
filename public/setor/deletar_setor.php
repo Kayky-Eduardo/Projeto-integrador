@@ -9,6 +9,7 @@ if (!isset($_GET['setor']) || empty($_GET['setor'])) {
 
 $id = $_GET['setor'];
 echo $id;
+// alterar para limpar grupo_setor tbm
 $stmt = $conn->prepare("DELETE FROM setor WHERE id_setor = ?");
 $stmt->bind_param("i", $id);
 
