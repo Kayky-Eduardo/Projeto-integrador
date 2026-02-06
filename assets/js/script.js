@@ -177,15 +177,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// if (localStorage.getItem("teste") === "true") {
-//     let inicio = localStorage.getItem("inicio");
-//     let agora = new Date().getTime();
-//     let decorridoSegundos = Math.floor((agora - inicio) / 1000);
+if (localStorage.getItem("id_usuario")) {
+    let id_usuario = localStorage.getItem("id_usuario");
+    console.log(id_usuario);
+    
+    fetch(`/projeto-integrador/api/api_consulta_aviso.php?id_usuario=${id_usuario}`, {
+        method: "GET",
+        headers: {"Content-Type": "application/json"},
+    })
+    .then((res)=> res.json())
+    .then((resposta) => {
+        if (resposta.sucesso) {
+            console.log(resposta.dados)
+            PNotify.success({
+                title: 'Sucesso',
+                text: `${resposta.dados.mensagem}\n${resposta.dados.tempo_faltante}`,
+                delay: 3000
+            });
+        } 
+    });
 
-//     PNotify.success({
-//         title: 'Sucesso',
-//         text: `Ação registrada com sucesso!${decorridoSegundos}`,
-//         delay: 3000
-//     });
-//     localStorage.removeItem("aviso_sucesso");
-// }
+}
+
+
+if (localStorage.getItem("teste") === "true") {
+    let inicio = localStorage.getItem("inicio");
+    let agora = new Date().getTime();
+    let decorridoSegundos = Math.floor((agora - inicio) / 1000);
+
+    PNotify.success({
+        title: 'Sucesso',
+        text: `Ação registrada com sucesso!${decorridoSegundos}`,
+        delay: 3000
+    });
+    localStorage.removeItem("aviso_sucesso");
+}

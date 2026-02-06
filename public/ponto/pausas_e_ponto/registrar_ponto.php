@@ -123,7 +123,7 @@ $tiposPausa = $stmtTipos->get_result();
     <?php if ($erro): ?> <div style="color:red"><strong>Erro:</strong> <?= $erro ?></div> <?php endif; ?>
 
     <form method="POST" id="formPausa1">
-        <input type="hidden" name="acao" value="registrar_ponto">
+        <input type="hidden" name="acao" value="registrar_ponto" id="registrar-ponto" data-id="<?= $id_usuario?>">
         <button type="submit" <?= ($pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
             <?= !$pontoIniciado ? 'Iniciar Ponto' : 'Finalizar Ponto' ?>
         </button>
@@ -186,7 +186,10 @@ $tiposPausa = $stmtTipos->get_result();
 
    <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", function() {
-        
+        if (!localStorage.getItem("id_usuario")) {
+            localStorage.setItem("id_usuario", document.getElementById("registrar-ponto").dataset.id);
+        }
+
         if (localStorage.getItem("aviso_sucesso") === "true") {
             PNotify.success({
                 title: 'Sucesso',

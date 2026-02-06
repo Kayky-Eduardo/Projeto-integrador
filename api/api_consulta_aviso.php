@@ -34,9 +34,7 @@ if ($metodo === 'GET') {
     $acao = $_GET['acao'] ?? 'aviso';
     $input['id_usuario'] = null;
 
-    $input = json_decode(file_get_contents('php://input'), true);
-
-    $id_usuario = $input['id_usuario'];
+    $id_usuario = $_GET['id_usuario'] ?? null;
     
     if ($acao === 'aviso') {
         try {
@@ -49,7 +47,7 @@ if ($metodo === 'GET') {
                 ]);
             } else {
                 echo json_encode([
-                    'sucesso' => true,
+                    'sucesso' => false,
                     'dados' => "nenhuma informação coletada!"
                 ]);
             }
