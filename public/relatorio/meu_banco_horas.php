@@ -111,10 +111,12 @@ if ($modoRelatorio && $ehRH) {
 
             <!-- RELATÓRIO GERAL -->
             <?php if ($modoRelatorio && $ehRH): ?>
-                <section class="container bh-relatorio">
+                <section class="container tabela-padrao">
                     <h2>Banco de Horas - Relatório Geral</h2>
-                    <input class="input bh-filtro" type="text" id="filtroUsuario" placeholder="Digite o nome do usuário..." autocomplete="off">
+                    <input class="input filtro-texto" type="text" id="filtroUsuario" placeholder="Digite o nome do usuário..." autocomplete="off">
+                </section>
 
+                <section class="container tabela-padrao">
                     <table id="tabelaBancoHoras">
                         <thead>
                             <tr>
@@ -175,7 +177,7 @@ if ($modoRelatorio && $ehRH) {
 
                 <!-- HISTÓRICO -->
                 <?php if ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
-                    <section class="container bh-historico" aria-label="Histórico de banco de horas">
+                    <section class="container tabela-padrao" aria-label="Histórico de banco de horas">
                         <?php if ($historico && is_array($historico)): ?>
                             <table>
                                 <thead>
