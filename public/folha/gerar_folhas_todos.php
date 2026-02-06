@@ -53,21 +53,19 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
             $verificacao = $stmt->get_result();
 
             // se folha não for revisada
-            if($if($verificacao->num_rows > 0)){
+            if(($verificacao->num_rows > 0)){
                 $stmtInsert = $conn->prepare("
                 INSERT INTO eventos (id_usuario, tipo, descricao, valor, mes_competencia)
                 VALUES (?, ?, ?, ?, ?)
                 ");
                 $stmtInsert->bind_param("issds", $id_usuario_evento, $tipo, $descricao, $valor, $mes_padrao);
                 $stmtInsert->execute();
-
-                // DEFINA UMA MENSAGEM NA SESSÃO (Flash Message)
                 $_SESSION['msg'] = "Evento adicionado com sucesso!";
                 $_SESSION['cor'] = "green";
 
-                // REDIRECIONE PARA LIMPAR O POST
-                header("Location: " . $_SERVER['PHP_SELF']); 
-                exit; // OBRIGATÓRIO: Mata o script para não renderizar o resto
+                // limpa o post
+                header("Location: " . $_SERVER['PHP_SELF']);
+                exit; // exit obrigatório: Mata o script para não renderizar o resto
             } else{
                 $_SESSION['msg'] = "Folha do Evento já foi revisada!";
                 $_SESSION['cor'] = "red";
@@ -195,10 +193,17 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
         }
     }
     if ($acao === 'revisar') {
+        $stmtRevisar = $conn->prepare('SELECT revisado FROM folhas WHERE revisado = 0 AND mes_competencia = ?');
+        $stmtRevisar->bind_param('s', $mes_padrao);
+        $stmtRevisar->execute();
+        $totalLinhas = $stmtRevisar->get_result();
+        if ($totalLinhas->num_rows > 0){
             $stmt5 = $conn->prepare('UPDATE folhas SET revisado = 1 WHERE mes_competencia = ?');
             $stmt5->bind_param('s', $mes_padrao);
             $stmt5->execute();
-            echo "<script>console.log(penis)</script>";
+        } else{
+            $msg_acesso = 'Todas as Folhas já foram Revisadas.';
+        }
     }
 }
 
