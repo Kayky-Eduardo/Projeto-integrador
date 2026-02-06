@@ -19,7 +19,7 @@ verificar_login($conn);
     <nav><?php include("../../include/navbar.php"); ?></nav>
 
     <main class="main-center">
-        <section class="controle-usuarios">
+        <section class="pagina-padrao">
             <section class="container tabela-padrao">
                 <h2>Usuários Logados</h2>
                 <input class="input filtro-texto" type="text" id="filtro-online" placeholder="Digite o nome do usuário..." autocomplete="off">

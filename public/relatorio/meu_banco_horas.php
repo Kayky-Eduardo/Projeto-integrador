@@ -102,12 +102,12 @@ if ($modoRelatorio && $ehRH) {
 </head>
 
 <body>
-    <nav role="navigation">
+    <nav>
         <?php include("../../include/navbar.php"); ?>
     </nav>
 
     <main class="main-center">
-        <section class="banco-horas" aria-label="Banco de horas do usuário">
+        <section class="pagina-padrao" aria-label="Banco de horas do usuário">
 
             <!-- RELATÓRIO GERAL -->
             <?php if ($modoRelatorio && $ehRH): ?>

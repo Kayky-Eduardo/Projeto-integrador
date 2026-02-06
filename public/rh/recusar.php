@@ -18,7 +18,7 @@ if ($_SESSION['nivel'] < 2) {
 function atualizarStatusPonto($conn, $id_ponto)
 {
     // Busca os horários do ponto
-    $sql = "SELECT inicio_ponto, inicio_almoco, fim_almoco, fim_ponto 
+    $sql = "SELECT inicio_ponto, fim_ponto 
             FROM ponto_dia WHERE id_ponto = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id_ponto);
@@ -28,8 +28,6 @@ function atualizarStatusPonto($conn, $id_ponto)
     // Verifica se todos os campos existem
     if (
         $res['inicio_ponto'] &&
-        $res['inicio_almoco'] &&
-        $res['fim_almoco'] &&
         $res['fim_ponto']
     ) {
         $status = 'Finalizado';
@@ -68,7 +66,7 @@ if ($busca && $busca->num_rows > 0) {
     // REMOVE A SOLICITAÇÃO
     // ====================
     // Exclui o pedido do banco
-    $conn->query("DELETE FROM ajustes_ponto WHERE id_ajuste = $id");
+    $conn->query("UPDATE ajustes_ponto SET status = 'Recusado' WHERE id_ajuste = $id");
 
     // =================
     // ENVIA NOTIFICAÇÃO

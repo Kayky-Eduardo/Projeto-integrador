@@ -15,6 +15,7 @@
     --cor-texto-suave: #64748b;
     --tamanho-texto-padrao: 0.9rem;
     --tamanho-titulo-padrao: 1.4rem;
+    --tamanho-titulo-pagina: 2.0rem;
 
     /* Fundos */
     --cor-fundo-pagina: #F2F2F2;
@@ -196,6 +197,23 @@ footer a {
 .logo {
     display: block;
     width: 100%;
+}
+
+/* TÍTULO DA PÁGINA */
+.page-title {
+    font-size: var(--tamanho-titulo-pagina);
+    margin-bottom: 1rem;
+    color: var(--cor-principal);
+    text-align: center;
+}
+
+/* PÁGINA PADRÃO */
+.pagina-padrao {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    align-items: stretch;
 }
 
 /* CONTAINER */
@@ -792,14 +810,6 @@ footer a {
 }
 
 /* PÁGINA DE BANCO DE HORAS */
-.banco-horas {
-    width: 70%;
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-    align-items: stretch;
-}
-
 .bh-relatorio {
     background-color: var(--cor-fundo-card);
     border: 1px solid var(--cor-borda-padrao);
@@ -864,13 +874,25 @@ footer a {
     align-items: center;
 }
 
-/* PÁGINA CONTROLE DE USUÁRIOS ONLINE */
-.controle-usuarios {
-    width: 70%;
+/* PÁGINA DE PONTO */
+.ponto-dia ul {
+    list-style-type: none;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    text-align: center;
     gap: 30px;
-    align-items: stretch;
+    justify-content: center;
+}
+
+.ponto-dia li {
+    width: 20%;
+}
+
+.bater-ponto {
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    width: 50%;
 }
 
 
