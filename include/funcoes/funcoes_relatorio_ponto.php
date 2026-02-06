@@ -312,21 +312,24 @@ function relatorio_ponto_filtrado($conn, $id_usuario) {
     return $usuario;
 }
 
-function get_logados($conn) {
+function get_logados($conn)
+{
     $coleta_usuario_tabela = $conn->prepare("
-    SELECT usuario.id_usuario, usuario.email_usuario, id_login, email_login, data_inicio,
-    TIMESTAMPDIFF(MINUTE, data_inicio, NOW()) AS tempo_logado
-    FROM login 
-    LEFT JOIN usuario on login.id_usuario = usuario.id_usuario
-    WHERE MONTH(data_inicio) = MONTH(CURDATE())
-    AND data_fim IS NULL;
+        SELECT usuario.id_usuario, usuario.email_usuario, id_login, email_login, data_inicio, TIMESTAMPDIFF(MINUTE, data_inicio, NOW()) 
+        AS tempo_logado
+        FROM login 
+        LEFT JOIN usuario on login.id_usuario = usuario.id_usuario
+        WHERE MONTH(data_inicio) = MONTH(CURDATE())
+        AND data_fim IS NULL;
     ");
+
     $coleta_usuario_tabela->execute();
-    
     $result = $coleta_usuario_tabela->get_result();
-    while($linha = $result->fetch_assoc()) {
+
+    while ($linha = $result->fetch_assoc()) {
         $usuario[] = $linha;
     }
+
     return $usuario;
 }
 
