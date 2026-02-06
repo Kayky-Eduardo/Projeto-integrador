@@ -69,11 +69,15 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
             } else{
                 $_SESSION['msg'] = "Folha do Evento já foi revisada!";
                 $_SESSION['cor'] = "red";
+                header("Location: " . $_SERVER['PHP_SELF']);
+                exit; // exit obrigatório: Mata o script para não renderizar o resto
             }
             
         } else {
             $_SESSION['msg'] = "Preencha todos os campos corretamente.";
             $_SESSION['cor'] = 'red';
+            header("Location: " . $_SERVER['PHP_SELF']);
+            exit; // exit obrigatório: Mata o script para não renderizar o resto
         }
     }
 }
@@ -254,11 +258,11 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
 
         <button type="submit" name="add_evento" id="add_evento">Adicionar Evento</button>
     </fieldset>
-</form>
-
-<?php if ($mensagem_evento): ?>
+    <br>
+    <?php if ($mensagem_evento): ?>
     <p style="color:<?= $cor_evento ?>;"><?= $mensagem_evento ?></p>
 <?php endif; ?>
+</form>
 
 <!-- Form para gerar folhas -->
 <h2 id="h2">Folhas Geradas <?= $mes ?></h2>
@@ -309,7 +313,6 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
 <?php endif; ?>
 
 <script>
-    const h2 = document.getElementById('h2');
     const mesGerar = document.getElementById('mesGerar');
     const mesEvento = document.getElementById('mesEvento');
     const btnEvento = document.getElementById('add_evento');

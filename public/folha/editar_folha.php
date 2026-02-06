@@ -1,4 +1,4 @@
-<?php
+ <?php
 // Conexão com banco de dados
 require_once "../../BD/conexao.php";
 session_start();
