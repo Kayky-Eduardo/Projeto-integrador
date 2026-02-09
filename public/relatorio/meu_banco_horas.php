@@ -111,12 +111,12 @@ if ($modoRelatorio && $ehRH) {
 
             <!-- RELATÓRIO GERAL -->
             <?php if ($modoRelatorio && $ehRH): ?>
-                <section class="container tabela-padrao">
+                <section class="tabela-padrao">
                     <h2>Banco de Horas - Relatório Geral</h2>
                     <input class="input filtro-texto" type="text" id="filtroUsuario" placeholder="Digite o nome do usuário..." autocomplete="off">
                 </section>
 
-                <section class="container tabela-padrao">
+                <section class="tabela-padrao">
                     <table id="tabelaBancoHoras">
                         <thead>
                             <tr>
@@ -141,7 +141,7 @@ if ($modoRelatorio && $ehRH) {
             <?php if (!$modoRelatorio): ?>
 
                 <!-- RESUMO -->
-                <section class="container bh-resumo" aria-label="Resumo do banco de horas">
+                <section class="bh-resumo" aria-label="Resumo do banco de horas">
                     <article>
                         <h2><?= $resumo['saldo_antigo'] ?? '00:00' ?></h2>
                         <p>Saldo anterior</p>
@@ -159,7 +159,7 @@ if ($modoRelatorio && $ehRH) {
                 </section>
 
                 <!-- FILTRO -->
-                <section class="container bh-filtro" aria-label="Filtro por período">
+                <section class="filtro-padrao" aria-label="Filtro por período">
                     <form class="form-linha" method="POST">
                         <article>
                             <label class="label" for="inicio">Início:</label>
