@@ -22,8 +22,13 @@ $mes_padrao = $mes . "-01";
 // --------------------------
 // 2. Buscar todos os usuários ativos
 // --------------------------
-$sql = "SELECT id_usuario, nome_usuario 
-        FROM usuario 
+$sql = "SELECT u.id_usuario,
+        u.nome_usuario,
+        u.id_cargo,
+        c.id_cargo,
+        c.nome_cargo
+        FROM usuario u
+        JOIN cargo c ON c.id_cargo = u.id_cargo
         WHERE conta_ativa = 1";
 $result = $conn->query($sql);
 $usuarios = [];
@@ -42,6 +47,37 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
         $valor = floatval($_POST['valor'] ?? 0);
         $data = $_POST['mesEvento'] ?? $mes;
 
+        if($id_usuario_evento === 'todos'){
+            $stmt = $conn->prepare("
+                SELECT * FROM folhas WHERE mes_competencia = ? AND revisado = 0
+            ");
+            $stmt->bind_param("s", $mes_padrao);
+            $stmt->execute();
+            $verificacao = $stmt->get_result();
+
+            // se folha não for revisada
+            if(($verificacao->num_rows > 0)){
+                foreach($usuarios as $u){
+                    $stmtInsert = $conn->prepare("
+                    INSERT INTO eventos (id_usuario, tipo, descricao, valor, mes_competencia)
+                    VALUES (?, ?, ?, ?, ?)
+                    ");
+                    $stmtInsert->bind_param("issds", $u['id_usuario'], $tipo, $descricao, $valor, $mes_padrao);
+                    $stmtInsert->execute();
+                }
+                $_SESSION['msg'] = "Evento adicionado com sucesso!";
+                $_SESSION['cor'] = "green";
+
+                // limpa o post
+                header("Location: " . $_SERVER['PHP_SELF']);
+                exit; // exit obrigatório: Mata o script para não renderizar o resto
+            } else{
+                $_SESSION['msg'] = "Todas as folhas já foram revisadas!";
+                $_SESSION['cor'] = "red";
+                header("Location: " . $_SERVER['PHP_SELF']);
+                exit; // exit obrigatório: Mata o script para não renderizar o resto
+            }
+        }
 
         if ($id_usuario_evento && $tipo && $valor > 0 && $data == date('Y-m')) {
             // busca retornar true caso a folha não tenha sido revisada
@@ -88,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
 function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn) {
     $id_usuario = $usuario['id_usuario'];
 
-    // 1. Verificar se a folha já existe e se está revisada
+    // Verifica se a folha já existe e se está revisada
     $stmtCheck = $conn->prepare("SELECT id_folha, salario_liquido, revisado FROM folhas WHERE id_usuario = ? AND mes_competencia = ?");
     $stmtCheck->bind_param("is", $id_usuario, $mes_padrao);
     $stmtCheck->execute();
@@ -96,7 +132,7 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn) {
     $folhaExistente = $resCheck->fetch_assoc();
     $stmtCheck->close();
 
-    // Se a folha já foi revisada, interrompe a execução para este usuário.
+    // Se folha revisada, interrompe execução para este usuário.
     if ($folhaExistente && $folhaExistente['revisado'] == 1) {
         return [
             'id_usuario' => $id_usuario,
@@ -239,8 +275,9 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
         <label>Usuário:</label>
         <select name="id_usuario_evento" required>
             <option value="">-- Selecione --</option>
+            <option value="todos">Todos</option>
             <?php foreach ($usuarios as $u): ?>
-                <option value="<?= $u['id_usuario'] ?>"><?= $u['nome_usuario'] ?></option>
+                <option value="<?= $u['id_usuario'] ?>"><?= $u['nome_usuario']?> (<?= $u['nome_cargo'] ?>)</option>
             <?php endforeach; ?>
         </select><br>
 
