@@ -1,44 +1,122 @@
-<!--
-    MÓDULO: PÁGINA PRINCIPAL DO SISTEMA (DASHBOARD)
-
-    OBJETIVO
-        Servir como página inicial após autenticação, organizando conteúdo institucional e informativo.
-
-    ESTRUTURA SEMÂNTICA
-        header  - Cabeçalho institucional (banner)
-        nav     - Barra de navegação geral
-        main    - Conteúdo central da aplicação
-        section - Agrupamento de notícias
-        article - Cada notícia individual
-        footer  - Informações institucionais
-        address - Informações de contato
-
-    FUNCIONALIDADES
-        1. Exibição de banner principal
-        2. Inclusão dinâmica do menu
-        3. Apresentação de notícias internas
-        4. Controle de navegação por slides
-        5. Rodapé institucional
-
-    ACESSIBILIDADE
-        role="banner"       - Identifica o cabeçalho
-        role="navigation"   - Área de navegação principal
-        role="main"         - Conteúdo primário da página
-        role="contentinfo"  - Informações institucionais
-        aria-label          - Descrição acessível para leitores de tela
-
-    BENEFÍCIOS
-        - Organização semântica moderna
-        - Melhor indexação por buscadores
-        - Experiência otimizada para leitores de tela
-
-    OBSERVAÇÕES TÉCNICAS
-        - Navbar carregada via include
-        - Estilo centralizado em ../assets/css/estilo.css
-        - Comportamento dinâmico feito via script.js
--->
-
 <?php
+/*
+ * =============================================================
+ * ARQUIVO: index.php
+ * MÓDULO: Página Inicial do Sistema (Dashboard)
+ * =============================================================
+ * 
+ * DESCRIÇÃO GERAL
+ * -------------------------------------------------------------
+ * Arquivo responsável pela exibição da página inicial do
+ * sistema após a autenticação do usuário.
+ *
+ * Atua como ponto de entrada principal do sistema, exibindo:
+ * - Banner institucional
+ * - Menu de navegação principal
+ * - Conteúdo informativo em formato de carrossel
+ * - Rodapé institucional
+ *
+ * Não executa regras de negócio complexas nem operações diretas
+ * de banco de dados além da verificação de sessão.
+ *
+ *
+ * FLUXO DE EXECUÇÃO
+ * -------------------------------------------------------------
+ * 1. Inicia a sessão PHP
+ * 2. Inclui o arquivo de conexão com o banco de dados
+ * 3. Inclui o arquivo de verificação de autenticação
+ * 4. Valida se o usuário está logado
+ *    - Redireciona para login caso não esteja autenticado
+ * 5. Renderiza a estrutura HTML da página inicial
+ * 6. Carrega:
+ *    - Banner do sistema
+ *    - Navbar dinâmica via include
+ *    - Carrossel de notícias/informações
+ *    - Rodapé institucional
+ * 7. Inicializa os scripts JavaScript do carrossel
+ *
+ *
+ * SEGURANÇA
+ * -------------------------------------------------------------
+ * - Acesso protegido por verificação de sessão ativa
+ * - Usuários não autenticados não acessam esta página
+ * - Includes controlados via caminhos absolutos (__DIR__)
+ * - Nenhum dado sensível é exibido diretamente na tela
+ *
+ *
+ * ACESSIBILIDADE
+ * -------------------------------------------------------------
+ * - Uso de landmarks semânticos (<header>, <nav>, <main>,
+ *   <footer>)
+ * - Menu de navegação com aria-label
+ * - Carrossel com aria-label nos controles
+ * - Botões de navegação com rótulos acessíveis
+ * - Estrutura de lista (<ul>, <li>) para melhor leitura por
+ *   leitores de tela
+ *
+ *
+ * DEPENDÊNCIAS
+ * -------------------------------------------------------------
+ * 1. "../BD/conexao.php"
+ *    - Responsável pela conexão com o banco de dados MySQL
+ *
+ * 2. "../include/verificacao.php"
+ *    - Responsável pela validação da sessão do usuário
+ *
+ * 3. "../include/navbar.php"
+ *    - Renderização do menu de navegação principal
+ *
+ * 4. "../assets/css/estilo_R01.css"
+ *    - Estilos globais e específicos da página inicial
+ *
+ * 5. "../assets/js/script.js"
+ *    - Controle do carrossel (slides, botões e indicadores)
+ *
+ *
+ * COMPONENTES PRESENTES
+ * -------------------------------------------------------------
+ * 1. Header
+ *    - Banner institucional do sistema
+ *
+ * 2. Navbar
+ *    - Menu principal dinâmico
+ *
+ * 3. Main
+ *    - Carrossel de notícias/informações internas
+ *
+ * 4. Footer
+ *    - Informações institucionais
+ *    - Links legais
+ *    - Dados de contato
+ * 
+ *
+ * BOAS PRÁTICAS APLICADAS
+ * -------------------------------------------------------------
+ * - Separação clara entre lógica PHP e marcação HTML
+ * - Controle de acesso centralizado
+ * - Reutilização de componentes via include
+ * - CSS organizado com variáveis globais
+ * - Estrutura HTML semântica
+ *
+ *
+ * OBSERVAÇÕES
+ * -------------------------------------------------------------
+ * - Nenhuma consulta direta é realizada neste arquivo, a 
+ *   conexão com o banco é utilizada apenas para validação de 
+ *   sessão via arquivo de verificação
+ * - Este arquivo não deve conter regras de negócio
+ * - Alterações de conteúdo dinâmico devem ser feitas via
+ *   componentes ou APIs futuras
+ * - A conexão ($conn) não é fechada manualmente, pois o PHP
+ *   encerra automaticamente ao final do script
+ *
+ * 
+ * -------------------------------------------------------------
+ * Data: 23/01/2026
+ * Versão: 1.0
+ * =============================================================
+*/
+
 session_start();
 include(__DIR__ . "/../BD/conexao.php");
 require "../include/verificacao.php";
@@ -59,30 +137,24 @@ verificar_login($conn);
 </head>
 
 <body>
-
-    <!-- Banner / Topo -->
-    <header role="banner">
-        <img src="../assets/img/banner_rh_pi.png" alt="">
+    <header>
+        <img class="logo" src="../assets/img/banner_rh_pi.png" alt="">
     </header>
 
-    <!-- Navbar -->
-    <nav role="navigation" aria-label="Menu principal">
+    <nav aria-label="Menu principal">
         <?php include("../include/navbar.php"); ?>
     </nav>
 
-    <!-- Conteúdo Principal -->
-    <main role="main" aria-label="Conteúdo principal">
-
-        <!-- Carrossel de Notícias -->
+    <main>
         <section class="carrossel" aria-label="Notícias da empresa">
             <ul class="slides">
-                <nav class="indicadores" aria-label="Indicador de slides">
+                <li class="indicadores" aria-label="Indicador de slides">
                     <button class="dot ativo" data-slide="0" aria-label="Slide 1"></button>
                     <button class="dot" data-slide="1" aria-label="Slide 2"></button>
                     <button class="dot" data-slide="2" aria-label="Slide 3"></button>
-                </nav>
+                </li>
 
-                <li class="slide ativo">
+                <li class="slide slide-ativo">
                     <article>
                         <img src="../assets/img/ambiente_coorporativo.jpg" alt="Ambiente corporativo">
                         <h2>Bem-vindo ao Sistema</h2>
@@ -107,15 +179,13 @@ verificar_login($conn);
                 </li>
             </ul>
 
-            <button class="btn prev" aria-label="Notícia anterior">&#10094;</button>
-            <button class="btn next" aria-label="Próxima notícia">&#10095;</button>
+            <button class="btn-carrossel prev" aria-label="Notícia anterior">&#10094;</button>
+            <button class="btn-carrossel next" aria-label="Próxima notícia">&#10095;</button>
         </section>
     </main>
 
-    <!-- Rodapé -->
-    <footer role="contentinfo">
+    <footer>
         <h3>Sistema de RH</h3>
-
         <p>&copy; 2025 Todos os direitos reservados.</p>
 
         <ul>

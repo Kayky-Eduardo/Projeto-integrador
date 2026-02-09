@@ -46,18 +46,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } 
     
     elseif ($acao === 'pausa_iniciar') {
-        $desabilitar = "";
-        if (!empty($_POST['id_config'])) {
+        if (empty($_POST['id_config'])) {
+                $erro = "Selecione um tipo de pausa antes de iniciar.";
+        } else {
             $id_config = intval($_POST['id_config']);
-            // $desabilitar = "";
-        }
 
             // Valida se já existe pausa aberta
-        $check = $conn->query("SELECT id_pausa FROM pausa WHERE id_usuario = $id_usuario AND fim IS NULL");
-        if ($check->num_rows == 0) {
-            $stmt = $conn->prepare("INSERT INTO pausa (id_usuario, id_config, inicio, data) VALUES (?, ?, NOW(), ?)");
-            $stmt->bind_param("iis", $id_usuario, $id_config, $hoje);
-            $stmt->execute();
+            $check = $conn->query("SELECT id_pausa FROM pausa 
+                                WHERE id_usuario = $id_usuario AND fim IS NULL");
+
+            if ($check->num_rows == 0) {
+                $stmt = $conn->prepare(
+                    "INSERT INTO pausa (id_usuario, id_config, inicio, data) 
+                    VALUES (?, ?, NOW(), ?)"
+                );
+                $stmt->bind_param("iis", $id_usuario, $id_config, $hoje);
+                $stmt->execute();
+            }
         }
     } 
     
@@ -134,6 +139,7 @@ $tiposPausa = $stmtTipos->get_result();
     <form method="POST" id="formPausa">
         <label>Tipo de pausa:</label>
         <select name="id_config" <?= (!$pontoIniciado || $pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
+            <option value="">Selecione uma pausa</option>
             <?php while($t = $tiposPausa->fetch_assoc()):
                 $limiteAtingido = ($t['limite_pausa_diario'] > 0 && $t['total_realizado'] >= $t['limite_pausa_diario']);?>
                 <option value="<?= $t['id_config'] ?>" <?= $limiteAtingido ? 'disabled' : '' ?>>
@@ -251,10 +257,7 @@ $tiposPausa = $stmtTipos->get_result();
                             text: `Faltam ${tempo} minutos para o limite da sua pausa!`,
                             delay: 10000
                         });
-                        // teste 
-                        // localStorage.setItem("teste", "true")
-                        // localStorage.setItem("inicio", 60);
-                        // localStorage.setItem("tempo", 10);
+
                         continuar = false;
                     }
                 }

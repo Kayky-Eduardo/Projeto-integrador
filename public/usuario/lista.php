@@ -1,140 +1,114 @@
-<!--
-    MÓDULO: LISTAGEM DE USUÁRIOS
-
-    OBJETIVO
-        Exibir todos os usuários cadastrados com filtros e ações administrativas
-
-    ESTRUTURA SEMÂNTICA
-        nav       - Menu de navegação
-        main      - Conteúdo principal do sistema
-        section   - Agrupamento funcional
-        header    - Área de ações e busca
-        table     - Exibição de dados em forma tabular
-
-    FUNCIONALIDADES
-        1. Listagem dinâmica via PHP/MySQL
-        2. Campo de busca em tempo real (JavaScript)
-        3. Ações de editar e excluir usuário
-        4. Exibição de status (ativo/inativo)
-        5. Responsividade sem uso de scroll horizontal
-
-    ACESSIBILIDADE
-        - Uso de data-label para leitura mobile
-        - Marcação semântica adequada
-        - Botões com ações claras
-
-    RESPONSIVIDADE
-        Desktop: modo tabela tradicional
-        Mobile: transformação em cartões sem perda de dados
-
-    OBSERVAÇÕES TÉCNICAS
-        - Banco conectado via mysqli
-        - Navbar reutilizada via include
-        - CSS centralizado em: ../../assets/css/estilo.css
--->
-
 <?php
 session_start();
+
 include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
+
 verificar_login($conn);
 
-$sql = "SELECT 
-          u.id_usuario, 
-          u.nome_usuario, 
-          u.cpf_usuario, 
-          u.rg_usuario, 
-          u.genero,
-          u.email_usuario, 
-          u.telefone, 
-          u.cep, 
-          c.nome_cargo, 
-          u.assiduidade,
-          u.data_admissao, 
-          u.conta_ativa,
-          u.foto_usuario
-        FROM usuario u
-        LEFT JOIN cargo c ON u.id_cargo = c.id_cargo
-        ORDER BY u.id_usuario ASC";
+/* FUNÇÕES AUXILIARES */
 
-$result = $conn->query($sql);
+/* Escapa valores para evitar XSS */
+function e($valor)
+{
+    return htmlspecialchars($valor ?? '', ENT_QUOTES, 'UTF-8');
+}
+
+/* Retorna o caminho da foto do usuário ou a imagem padrão */
+function fotoUsuario($foto)
+{
+    $padrao = '../../assets/img/user_padrao.png';
+    $caminho = "../../assets/img/usuarios/$foto";
+
+    return (!empty($foto) && file_exists($caminho)) ? $caminho : $padrao;
+}
+
+/* CONSULTA AO BANCO */
+$sql = "
+    SELECT 
+        u.id_usuario, 
+        u.nome_usuario, 
+        u.cpf_usuario, 
+        u.rg_usuario, 
+        u.genero,
+        u.email_usuario, 
+        u.telefone, 
+        u.cep, 
+        c.nome_cargo, 
+        u.assiduidade,
+        u.data_admissao, 
+        u.conta_ativa,
+        u.foto_usuario
+    FROM usuario u
+    LEFT JOIN cargo c ON u.id_cargo = c.id_cargo
+    ORDER BY u.id_usuario ASC
+";
+
+$stmt = $conn->prepare($sql);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
 
 <head>
-  <meta charset="UTF-8">
-  <title>Usuários | Sistema RH</title>
-  <link rel="stylesheet" href="../../assets/css/estilo.css">
+    <meta charset="UTF-8">
+    <title>Usuários | Sistema RH</title>
+    <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
 
 <body>
-  <nav role="navigation" aria-label="Menu principal">
-    <?php include("../../include/navbar.php"); ?>
-  </nav>
+    <nav aria-label="Menu principal">
+        <?php include("../../include/navbar.php"); ?>
+    </nav>
 
-  <main role="main">
-    <section class="usuarios-painel" aria-label="Painel de usuários">
-      <header class="usuarios-topo">
-        <a href="cadastro.php" class="btn-cadastrar">
-          Cadastrar Usuário
-        </a>
+    <main class="main-center">
+        <section class="usuarios-painel" aria-label="Painel de usuários">
+            <section class="usuarios-acoes">
+                <a href="cadastro.php" class="btn-link btn-padrao">Cadastrar Usuário</a>
 
-        <form class="busca-usuarios" onsubmit="return false;">
-          <input
-            type="search"
-            id="busca"
-            placeholder="Buscar usuário..."
-            aria-label="Buscar usuário">
-        </form>
+                <form class="form" onsubmit="return false;">
+                    <input type="search" id="busca" class="input" placeholder="Buscar usuário..." aria-label="Buscar usuário">
+                </form>
 
-        <select id="filtro-status" class="select-padrao" aria-label="Filtrar usuários">
-          <option value="ativos" selected>Ativos</option>
-          <option value="inativos">Inativos</option>
-          <option value="todos">Todos</option>
-        </select>
-      </header>
+                <select id="filtro-status" class="select-padrao" aria-label="Filtrar usuários">
+                    <option value="ativos" selected>Ativos</option>
+                    <option value="inativos">Inativos</option>
+                    <option value="todos">Todos</option>
+                </select>
+            </section>
 
-      <section class="cards-container" id="tabelaUsuarios" aria-label="Lista de usuários">
-        <?php while ($row = $result->fetch_assoc()): ?>
-          <article class="usuario-card" aria-label="Usuário">
+            <section class="cards-container" id="tabelaUsuarios" aria-label="Lista de usuários">
+                <?php while ($row = $result->fetch_assoc()): ?>
+                    <article
+                        class="card card-hover card-usuario status"
+                        aria-label="Usuário <?= e($row['nome_usuario']) ?>"
+                        data-status="<?= $row['conta_ativa'] ? 'ativo' : 'inativo' ?>"
+                        data-nome="<?= strtolower(e($row['nome_usuario'])) ?>">
 
-            <!-- FOTO -->
-            <?php
-            $caminho = '../../assets/img/user_padrao.png';
+                        <figure class="usuario-foto">
+                            <img src="<?= fotoUsuario($row['foto_usuario']) ?>" alt="Foto de <?= e($row['nome_usuario']) ?>">
+                        </figure>
 
-            if (!empty($row['foto_usuario']) && file_exists("../../assets/img/usuarios/" . $row['foto_usuario'])) {
-              $caminho = "../../assets/img/usuarios/" . $row['foto_usuario'];
-            }
-            ?>
+                        <h3><?= e($row['nome_usuario']) ?></h3>
 
-            <figure class="usuario-foto">
-              <img src="<?= $caminho ?>" alt="Foto do usuário">
-            </figure>
+                        <span class="<?= $row['conta_ativa'] ? 'ativo' : 'inativo' ?>">
+                            <?= $row['conta_ativa'] ? 'Ativo' : 'Inativo' ?>
+                        </span>
 
-            <!-- NOME -->
-            <h3><?= $row['nome_usuario'] ?></h3>
+                        <p class="cargo">
+                            <?= e($row['nome_cargo'] ?? 'Cargo não definido') ?>
+                        </p>
 
-            <!-- STATUS -->
-            <?= $row['conta_ativa']
-              ? "<span class='ativo'>Ativo</span>"
-              : "<span class='inativo'>Inativo</span>" ?>
+                        <a href="editar.php?id=<?= (int) $row['id_usuario'] ?>" class="btn-link btn-padrao">Perfil</a>
+                    </article>
+                <?php endwhile; ?>
+            </section>
+        </section>
+    </main>
 
-            <!-- CARGO -->
-            <p class="cargo"><?= $row['nome_cargo'] ?? 'Cargo não definido' ?></p>
-
-            <!-- AÇÃO -->
-            <a href="editar.php?id=<?= $row['id_usuario'] ?>" class="btn-perfil">
-              Perfil
-            </a>
-          </article>
-        <?php endwhile; ?>
-      </section>
-    </section>
-  </main>
-
-  <script src="../../assets/js/script.js"></script>
+    <script src="../../assets/js/script.js"></script>
 </body>
 
 </html>

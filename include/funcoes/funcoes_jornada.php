@@ -249,8 +249,6 @@ function set_jornada($conn, $jornada, $hora_extra) {
     $conn->begin_transaction();
 
     try {
-        $conn->query("TRUNCATE TABLE tempo_jornada");
-
         $jornada_formatada = $jornada . ':00';
         $hora_extra_formatada = $hora_extra . ':00';
 

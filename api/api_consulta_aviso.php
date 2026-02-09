@@ -40,7 +40,7 @@ if ($metodo === 'GET') {
         try {
             $resultado = coleta_dado($conn, $id_usuario);
             
-            if ($resultado) {
+            if ($resultado['coleta']) {
                 echo json_encode([
                     'sucesso' => true,
                     'dados' => $resultado,

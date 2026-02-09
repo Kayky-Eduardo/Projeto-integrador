@@ -127,7 +127,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -138,8 +137,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 
 <body class="pagina-login">
-    <main role="main" aria-label="Tela de acesso">
-        <section class="login-sistema" aria-label="Área de autenticação">
+    <main class="main-login">
+        <section class="container login-sistema">
             <h2>Acesso ao Sistema</h2>
             <p>Utilize suas credenciais corporativas</p>
 
@@ -149,18 +148,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </p>
             <?php endif; ?>
 
-            <form method="POST">
-                <fieldset>
-                    <label for="email">E-mail corporativo</label>
-                    <input type="email" id="email" name="email" required>
+            <form class="form" method="POST">
+                <legend class="hidden">Credenciais de Acesso</legend>
 
-                    <label for="senha">Senha</label>
-                    <input type="password" id="senha" name="senha" required>
+                <label class="label" for="email">E-mail corporativo</label>
+                <input type="email" class="input" id="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
 
-                    <button type="submit">Entrar</button>
-                </fieldset>
+                <label class="label" for="senha">Senha</label>
+                <input type="password" class="input" id="senha" name="senha" required>
+
+                <button type="submit" class="btn btn-padrao">Entrar</button>
             </form>
         </section>
     </main>
 </body>
+
 </html>
