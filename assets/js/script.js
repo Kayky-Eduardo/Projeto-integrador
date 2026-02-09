@@ -318,4 +318,77 @@ document.addEventListener("DOMContentLoaded", () => {
             return horas > 0 ? `${horas}h ${minutos}min` : `${minutos}min`;
         }
     }
+
+    /* PONTO / PAUSA – REGISTRO DE PONTO */
+    if (document.getElementById("formPausa")) {
+        if (localStorage.getItem("aviso_sucesso") === "true") {
+            PNotify.success({
+                title: "Sucesso",
+                text: "Ação registrada com sucesso!",
+                delay: 3000
+            });
+
+            localStorage.removeItem("aviso_sucesso");
+        }
+
+        const el = document.getElementById("cronometro");
+        const statusMsg = document.getElementById("statusTempo");
+        const btnFinalizar = document.getElementById("btnFinalizarPausa");
+        let intervalId = null;
+        let avisoEmitido = false;
+
+        if (el) {
+            function atualizarInterfacePausa() {
+                const inicio = new Date(el.dataset.inicio).getTime();
+                const agora = Date.now();
+                const decorridoSegundos = Math.floor((agora - inicio) / 1000);
+
+                const minSegundos = parseInt(el.dataset.min) * 60;
+                const maxSegundos = parseInt(el.dataset.max) * 60;
+                const segundosRestantes = maxSegundos - decorridoSegundos;
+
+                const m = Math.floor(decorridoSegundos / 60).toString().padStart(2, "0");
+                const s = (decorridoSegundos % 60).toString().padStart(2, "0");
+                el.textContent = `${m}:${s}`;
+
+                if (decorridoSegundos < minSegundos) {
+                    btnFinalizar && (btnFinalizar.disabled = true);
+                    const faltam = minSegundos - decorridoSegundos;
+                    statusMsg.textContent = `Aguarde: faltam ${Math.floor(faltam / 60)}m ${faltam % 60}s`;
+                    statusMsg.style.color = "red";
+                } else {
+                    btnFinalizar && (btnFinalizar.disabled = false);
+                    statusMsg.textContent = "Tempo mínimo atingido.";
+                    statusMsg.style.color = "green";
+                }
+
+                if (decorridoSegundos >= maxSegundos) {
+                    clearInterval(intervalId);
+                    document.getElementById("formPausa").submit();
+                }
+
+                if (segundosRestantes <= minSegundos && segundosRestantes > 0 && !avisoEmitido) {
+                    let tempo = Math.round(segundosRestantes / 60);
+                    if (tempo > 60) tempo = Math.round(tempo / 60);
+
+                    PNotify.notice({
+                        title: "Aviso de Tempo",
+                        text: `Faltam ${tempo} minutos para o limite da sua pausa!`,
+                        delay: 10000
+                    });
+
+                    avisoEmitido = true;
+                }
+            }
+
+            intervalId = setInterval(atualizarInterfacePausa, 1000);
+            atualizarInterfacePausa();
+        }
+
+        if (btnFinalizar) {
+            btnFinalizar.addEventListener("click", () => {
+                localStorage.setItem("aviso_sucesso", "true");
+            });
+        }
+    }
 });

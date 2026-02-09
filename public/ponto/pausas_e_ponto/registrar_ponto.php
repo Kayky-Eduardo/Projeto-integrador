@@ -46,21 +46,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($_POST['id_config'])) {
             $erro = "Selecione um tipo de pausa.";
         } else {
-
             $id_config = intval($_POST['id_config']);
 
-            $check = $conn->query(
+            $checkAtiva = $conn->query(
                 "SELECT id_pausa FROM pausa 
              WHERE id_usuario = $id_usuario AND fim IS NULL"
             );
 
-            if ($check->num_rows == 0) {
-                $stmt = $conn->prepare(
-                    "INSERT INTO pausa (id_usuario, id_config, inicio, data)
-                 VALUES (?, ?, NOW(), ?)"
-                );
-                $stmt->bind_param("iis", $id_usuario, $id_config, $hoje);
-                $stmt->execute();
+            if ($checkAtiva->num_rows > 0) {
+                $erro = "Você já possui uma pausa ativa.";
+            } else {
+                $stmtLimite = $conn->prepare("
+                    SELECT 
+                        pc.limite_pausa_diario,
+                        COUNT(p.id_pausa) AS total_realizado
+                    FROM pausa_config pc
+                    LEFT JOIN pausa p 
+                        ON p.id_config = pc.id_config
+                        AND p.id_usuario = ?
+                        AND p.data = CURDATE()
+                    WHERE pc.id_config = ?
+                    GROUP BY pc.id_config
+                ");
+
+                $stmtLimite->bind_param("ii", $id_usuario, $id_config);
+                $stmtLimite->execute();
+                $dados = $stmtLimite->get_result()->fetch_assoc();
+
+                if ($dados && $dados['total_realizado'] >= $dados['limite_pausa_diario']) {
+                    $erro = "Você já atingiu o limite diário dessa pausa.";
+                } else {
+
+                    $stmt = $conn->prepare(
+                        "
+                        INSERT INTO pausa (id_usuario, id_config, inicio, data)
+                        VALUES (?, ?, NOW(), ?)"
+                    );
+                    $stmt->bind_param("iis", $id_usuario, $id_config, $hoje);
+                    $stmt->execute();
+                }
             }
         }
     } elseif ($acao === 'pausa_finalizar') {
@@ -120,13 +144,10 @@ $tiposPausa = $stmtTipos->get_result();
 <head>
     <meta charset="UTF-8">
     <title>Ponto e Pausas</title>
-
     <link href="https://cdn.jsdelivr.net/npm/@pnotify/core@5.2.0/dist/PNotify.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@pnotify/core@5.2.0/dist/BrightTheme.css" rel="stylesheet">
-
     <script src="https://cdn.jsdelivr.net/npm/@pnotify/core@5.2.0/dist/PNotify.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@pnotify/mobile@5.2.0/dist/PNotifyMobile.js"></script>
-
     <link rel="stylesheet" href="../../../assets/css/estilo.css">
 </head>
 
@@ -139,24 +160,25 @@ $tiposPausa = $stmtTipos->get_result();
         <section class="pagina-padrao">
             <h1 class="page-title">Registro de Ponto</h1>
 
-            <?php if ($erro): ?>
-                <div class="box-erros">
-                    <strong>Erro:</strong> <?= $erro ?>
-                </div>
-            <?php endif; ?>
+            <section class="container ponto-dia">
+                <?php if ($erro): ?>
+                    <div class="box-erros">
+                        <strong>Erro:</strong> <?= $erro ?>
+                    </div>
+                <?php endif; ?>
 
-            <section class="ponto-dia">
                 <ul>
                     <li class="card">
-                        <strong>Ponto:</strong>
+                        <h2>Ponto:</h2>
 
                         <span class="status-badge <?= !$pontoIniciado ? 'status-badge-inativo' : 'status-badge-ativo' ?>">
-                            <?= !$pontoIniciado ? 'Não iniciado' : ($pontoFinalizado ? 'Finalizado' : 'Em andamento') ?>
+                            <?= !$pontoIniciado ? 'Nenhum' : ($pontoFinalizado ? 'Finalizado' : 'Em andamento') ?>
                         </span>
                     </li>
 
                     <li class="card">
-                        <strong>Pausa(as):</strong>
+                        <h2>Pausa(as):</h2>
+
                         <span class="status-badge <?= $pausaAtiva ? 'status-badge-ativo' : 'status-badge-inativo' ?>">
                             <?= $pausaAtiva ? 'Ativa' : 'Nenhuma' ?>
                         </span>
@@ -176,17 +198,19 @@ $tiposPausa = $stmtTipos->get_result();
                 </form>
             </section>
 
-            <section class="container">
+            <section class="container bater-ponto">
                 <article>
                     <h2>Pausa</h2>
 
                     <form method="POST" id="formPausa" class="form">
-                        <label for="tipo_pausa">Tipo de pausa</label>
+                        <label for="tipo_pausa" class="label">Tipo de pausa</label>
 
                         <select id="tipo_pausa" name="id_config" class="select-padrao" required <?= (!$pontoIniciado || $pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
                             <?php while ($t = $tiposPausa->fetch_assoc()): ?>
-                                <option value="<?= $t['id_config'] ?>">
+                                <option value="<?= $t['id_config'] ?>"
+                                    <?= ($t['total_realizado'] >= $t['limite_pausa_diario']) ? 'disabled' : '' ?>>
                                     <?= htmlspecialchars($t['descricao_pausa']) ?>
+                                    (<?= $t['total_realizado'] ?>/<?= $t['limite_pausa_diario'] ?>)
                                 </option>
                             <?php endwhile; ?>
                         </select>
@@ -216,16 +240,19 @@ $tiposPausa = $stmtTipos->get_result();
                                         <th>Limites</th>
                                     </tr>
                                 </thead>
+
                                 <tbody>
                                     <tr>
                                         <td><?= htmlspecialchars($pausaAtiva['descricao_pausa']) ?></td>
                                         <td><?= date('H:i:s', strtotime($pausaAtiva['inicio'])) ?></td>
+
                                         <td id="cronometro"
                                             data-inicio="<?= $pausaAtiva['data'] . 'T' . $pausaAtiva['inicio'] ?>"
                                             data-min="<?= $pausaAtiva['tempo_min'] ?>"
                                             data-max="<?= $pausaAtiva['tempo_max'] ?>">
                                             00:00
                                         </td>
+
                                         <td>
                                             <?= $pausaAtiva['tempo_min'] ?> /
                                             <?= $pausaAtiva['tempo_max'] ?> min
@@ -242,83 +269,7 @@ $tiposPausa = $stmtTipos->get_result();
         </section>
     </main>
 
-    <script type="text/javascript">
-        document.addEventListener("DOMContentLoaded", function() {
-
-            if (localStorage.getItem("aviso_sucesso") === "true") {
-                PNotify.success({
-                    title: 'Sucesso',
-                    text: 'Ação registrada com sucesso!',
-                    delay: 3000
-                });
-
-                localStorage.removeItem("aviso_sucesso");
-            }
-
-            const el = document.getElementById('cronometro');
-            const statusMsg = document.getElementById('statusTempo');
-            const btnFinalizar = document.getElementById('btnFinalizarPausa');
-            let intervalId = null;
-            let continuar = true;
-
-            if (el) {
-                function atualizarInterfacePausa() {
-                    const inicio = new Date(el.dataset.inicio).getTime();
-                    const agora = new Date().getTime();
-                    const decorridoSegundos = Math.floor((agora - inicio) / 1000);
-                    const minSegundos = parseInt(el.dataset.min) * 60;
-                    const maxSegundos = parseInt(el.dataset.max) * 60;
-                    const segundosRestantes = maxSegundos - decorridoSegundos;
-                    const m = Math.floor(decorridoSegundos / 60).toString().padStart(2, '0');
-                    const s = (decorridoSegundos % 60).toString().padStart(2, '0');
-                    el.textContent = `${m}:${s}`;
-
-                    if (decorridoSegundos < minSegundos) {
-                        if (btnFinalizar) btnFinalizar.disabled = true;
-                        const faltam = minSegundos - decorridoSegundos;
-                        statusMsg.textContent = `Aguarde: faltam ${Math.floor(faltam/60)}m ${faltam%60}s`;
-                        statusMsg.style.color = "red";
-                    } else {
-                        if (btnFinalizar) btnFinalizar.disabled = false;
-                        statusMsg.textContent = "Tempo mínimo atingido.";
-                        statusMsg.style.color = "green";
-                    }
-
-                    if (decorridoSegundos >= maxSegundos) {
-                        if (intervalId) clearInterval(intervalId);
-                        document.getElementById('formPausa').submit();
-                        window.location.reload();
-                    }
-
-                    if (segundosRestantes <= minSegundos && segundosRestantes > 0) {
-                        if (continuar == true) {
-                            let tempo = Math.round(segundosRestantes / 60);
-
-                            if (tempo > 60) {
-                                tempo = Math.round(tempo / 60);
-                            }
-
-                            PNotify.notice({
-                                title: 'Aviso de Tempo',
-                                text: `Faltam ${tempo} minutos para o limite da sua pausa!`,
-                                delay: 10000
-                            });
-                            continuar = false;
-                        }
-                    }
-                }
-
-                intervalId = setInterval(atualizarInterfacePausa, 1000);
-                atualizarInterfacePausa();
-            }
-
-            if (btnFinalizar) {
-                btnFinalizar.addEventListener("click", function() {
-                    localStorage.setItem("aviso_sucesso", "true");
-                });
-            }
-        });
-    </script>
+    <script src="../../../assets/js/script.js"></script>
 </body>
 
 </html>

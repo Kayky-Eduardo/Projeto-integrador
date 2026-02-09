@@ -875,6 +875,18 @@ footer a {
 }
 
 /* PÁGINA DE PONTO */
+
+.ponto-dia.container {
+    width: 50%;
+    margin: 0 auto;
+    min-width: 500px;
+}
+
+.ponto-dia h2 {
+    font-size: var(--tamanho-titulo-padrao);
+    color: var(--cor-principal);
+}
+
 .ponto-dia ul {
     list-style-type: none;
     display: flex;
@@ -886,13 +898,32 @@ footer a {
 
 .ponto-dia li {
     width: 20%;
+    min-width: 200px;
+    background-color: var(--cor-fundo-pagina);
 }
 
 .bater-ponto {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     text-align: center;
-    justify-content: center;
-    align-items: center;
     width: 50%;
+    min-width: 500px;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.bater-ponto h2 {
+    font-size: var(--tamanho-titulo-padrao);
+    color: var(--cor-principal);
+}
+
+.bater-ponto select {
+    text-align: center;
+}
+
+.bater-ponto .tabela-padrao {
+    border: none;
 }
 
 
