@@ -130,7 +130,7 @@ function verificar_tempo_por_ponto($conn, $id_ponto, $id_usuario) {
             'segundos_trabalhados' => $segundos_trabalhados_efetivos,
             'segundos_jornada' => $dados['segundos_jornada'],
             'segundos_maximos' => $dados['segundos_maximos'],
-            'mensagem' => "Tempo máximo excedido. Hora extra máxima: "
+            'mensagem' => "Tempo máximo excedido."
             ];
     }
             
@@ -215,15 +215,23 @@ function coleta_dado($conn, $id_usuario) {
         }
 
         if ($tipo === "tempo_faltante") {
-            $minutos = floor($dados['tempo'] / 60);
+            $minutos = floor($dados['segundos_faltantes'] / 60);
             
             $tempo = formatar_tempo($dados['segundos_faltantes']);
 
-            return [
-                "coleta" => true,
-                "mensagem" => "faltam " . $tempo . " para completar a sua jornada",
-                "tempo_faltante" => $tempo
-            ];
+            if ($minutos <= 60) {
+                return [
+                    "coleta" => true,
+                    "mensagem" => "faltam " . $tempo . " para completar a sua jornada",
+                    "tempo_faltante" => $tempo
+                ];
+            } else {
+                return [
+                    "coleta" => false,
+                    "mensagem" => "Avisar depois",
+                    "tempo_faltante" => $tempo
+                ];   
+            }
         }
 
         if ($tipo === "excedido") {
@@ -231,12 +239,20 @@ function coleta_dado($conn, $id_usuario) {
 
             return [
                 "coleta" => true,
-                "mensagem" => $dados['mensagem'] .  $tempo,
-                "tipo" => "tempo_trabalhado",
+                "mensagem" => $dados['mensagem'],
+                "tipo" => "excedido",
                 "tempo_trabalhado" => formatar_tempo($dados['segundos_trabalhados']),
             ];
         }
     } else {
+        /*
+        para verificar se tem ponto fechado com o usuario hoje,
+        exibir um 
+        SELECT id_ponto
+        FROM ponto_dia
+        WHERE id_usuario = ? AND data_ponto = CURDATE()
+        LIMIT 1;
+        */
         return [
             "coleta" => false,
             "mensagem" => "Não foi encontrado o id do ponto"

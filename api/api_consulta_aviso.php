@@ -48,7 +48,8 @@ if ($metodo === 'GET') {
             } else {
                 echo json_encode([
                     'sucesso' => false,
-                    'dados' => "nenhuma informação coletada!"
+                    'dados' => "nenhuma informação coletada!",
+                    'info' => $resultado['mensagem']
                 ]);
             }
         } catch (Exception $e) {

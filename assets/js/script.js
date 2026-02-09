@@ -321,7 +321,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (localStorage.getItem("id_usuario")) {
         let id_usuario = localStorage.getItem("id_usuario");
-        console.log(id_usuario);
         
         fetch(`/projeto-integrador/api/api_consulta_aviso.php?id_usuario=${id_usuario}`, {
             method: "GET",
@@ -330,17 +329,14 @@ document.addEventListener("DOMContentLoaded", () => {
         .then((res)=> res.json())
         .then((resposta) => {
             if (resposta.sucesso) {
-                console.log(resposta.dados)
-                PNotify.success({
-                    title: 'Sucesso',
+                PNotify.info({
+                    title: 'Aviso',
                     text: `${resposta.dados.mensagem}`,
-                    delay: 3000
+                    delay: 3000,    
                 });
             } 
         });
-
     }
-
 
     if (localStorage.getItem("aviso_sucesso") === "true") {        
         PNotify.success({
@@ -348,7 +344,6 @@ document.addEventListener("DOMContentLoaded", () => {
             text: `Ação registrada com sucesso!}`,
             delay: 3000
         });
-        localStorage.removeItem("teste");
         localStorage.removeItem("aviso_sucesso");
     }
 });

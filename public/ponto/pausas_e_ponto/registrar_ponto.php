@@ -196,15 +196,6 @@ $tiposPausa = $stmtTipos->get_result();
             localStorage.setItem("id_usuario", document.getElementById("registrar-ponto").dataset.id);
         }
 
-        if (localStorage.getItem("aviso_sucesso") === "true") {
-            PNotify.success({
-                title: 'Sucesso',
-                text: 'Ação registrada com sucesso!',
-                delay: 3000
-            });
-            localStorage.removeItem("aviso_sucesso");
-        }
-
         const el = document.getElementById('cronometro');
         const statusMsg = document.getElementById('statusTempo');
         const btnFinalizar = document.getElementById('btnFinalizarPausa');
@@ -245,6 +236,9 @@ $tiposPausa = $stmtTipos->get_result();
                     window.location.reload();
                 }
 
+                // fazer para atualizar em qualquer pagina
+                // derrepente, ele informa a api que tem que avisar, pega o tipo e o texto
+                // e a api exibe
                 if (segundosRestantes <= minSegundos && segundosRestantes > 0) {
                     if (continuar == true) {
                         let tempo = Math.round(segundosRestantes / 60);
