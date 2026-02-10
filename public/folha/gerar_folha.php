@@ -15,6 +15,7 @@ $nome_usuario = $_SESSION['nome_usuario'];
 <body>
 
 <div class="card">
+    <a href="../">voltar</a>
     <h2>Gerar Folha de Pagamento</h2>
     <h2>Olá, <?php echo $nome_usuario; ?></h2>
     <label>Mês:</label>
