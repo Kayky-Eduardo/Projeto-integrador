@@ -166,6 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (formJornada) {
         const inputJornada = document.getElementById("set-jornada");
         const inputHoraExtra = document.getElementById("set-hora-max");
+        const inputDescricao = document.getElementById("set-descricao");
         const resposta = document.getElementById("resposta");
         const botaoSalvar = formJornada.querySelector("button");
 
@@ -173,10 +174,11 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             resposta.textContent = "";
             resposta.className = "";
+            const descricao = inputDescricao.value;
             const jornada = inputJornada.value;
             const horaExtra = inputHoraExtra.value;
 
-            if (!jornada || !horaExtra) {
+            if (!jornada || !horaExtra || !descricao) {
                 resposta.textContent = "Preencha todos os campos.";
                 resposta.className = "erro";
                 return;
@@ -201,6 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     },
 
                     body: JSON.stringify({
+                        descricao: descricao,
                         jornada: jornada,
                         hora_extra: horaExtra
                     })

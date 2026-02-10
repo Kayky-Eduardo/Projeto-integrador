@@ -93,7 +93,7 @@ if ($metodo === 'GET') {
                 }
                 
                 try {
-                    $sucesso = set_jornada($conn, $input['jornada'], $input['hora_extra']);
+                    $sucesso = set_jornada($conn, $input['descricao'], $input['jornada'], $input['hora_extra']);
                     
                     echo json_encode([
                         'sucesso' => $sucesso,

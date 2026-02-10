@@ -13,6 +13,8 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastrar Setor</title>
+        <?php include("../../include/link.html"); ?>
+
     <style>
         .caixa_select {
             position: relative;
@@ -41,43 +43,42 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
         <?php include("../../include/navbar.php");?>
     </header>
 
-    <h2>Cadastrar Novo Setor</h2>
+    <main>
+        <h2>Cadastrar Novo Setor</h2>
 
-    <div id="mensagem"></div>
-
-    <form id="form-setor">
-        <label>Nome do Setor:</label><br>
-        <input type="text" 
-               id="nome_setor" 
-               name="nome_setor" 
-               placeholder="Digite o nome do setor"
-               required>
-        <br><br>
-
-        <label>Selecionar Usuários:</label><br>
-        <div class="select-box">
-        <button class="btn-ativar" id="btn-ativar" type="button">
-            <span id="contador">0</span> selecionados
-        </button>
-
-        <select id="filtro-jornada">Jornada de trabalho</select>
-
-        <div id="opcoes_select" class="oculto">
-            <?php while ($u = $usuarios->fetch_assoc()): ?>
-                <label>
-                    <input type="checkbox" name="usuarios[]" 
-                    value="<?= $u['id_usuario'] ?>" id="atualizador">
-                    <?= htmlspecialchars($u['nome_usuario']) ?>
-                </label>
-                <?php endwhile; ?>
-            </div>
-        </div>
+        <p id="mensagem"></p>
+        <section class="container">
+            <form id="form-setor" class="form">
+                <label class="label" for="nome_setor">Nome do Setor:</label><br>
+                <input class="input" type="text" id="nome_setor" 
+                name="nome_setor" placeholder="Digite o nome do setor" required>
+                <br><br>
         
-        <br>
-        <button id="cadastrar" type="submit">Cadastrar</button>
-        <a href="setores.php">Voltar</a>
-    </form>
-    
+                <label class="label">Selecionar Usuários:</label><br>
+                <section class="select-box">
+                    <button class="btn-ativar" id="btn-ativar" type="button">
+                        <span id="contador">0</span> selecionados
+                    </button>
+        
+                    <select class="select-padrao" id="filtro-jornada" required>Jornada de trabalho</select>
+        
+                    <div id="opcoes_select" class="oculto">
+                        <?php while ($u = $usuarios->fetch_assoc()): ?>
+                            <label class="label">
+                                <input type="checkbox" name="usuarios[]" 
+                                value="<?= $u['id_usuario'] ?>" id="atualizador">
+                                <?= htmlspecialchars($u['nome_usuario']) ?>
+                            </label>
+                        <?php endwhile; ?>
+                    </div>
+                </section>
+                
+                <br>
+                <button id="cadastrar" class="btn btn-padrao" type="submit">Cadastrar</button>
+                <a href="setores.php">Voltar</a>
+            </form>
+        </section>
+    <main>
     <script type="text/javascript">
         const select = document.getElementById("filtro-jornada") 
 
@@ -109,6 +110,12 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
                     mostrar_mensagem('O nome do setor é obrigatório!', 'erro');
                     return;
                 }
+                
+                if (!idTempo) {
+                    mostrar_mensagem('Selecione uma jornada de trabalho!', 'erro');
+                    return;
+                }
+
 
                 const checkboxes = document.querySelectorAll('input[name="usuarios[]"]:checked');
                 const usuariosSelecionados = Array.from(checkboxes).map(cb => parseInt(cb.value));

@@ -245,19 +245,20 @@ function atualizar_assiduidade($conn, $usuario_id, $percentual) {
     return $sucesso;
 }
 
-function set_jornada($conn, $jornada, $hora_extra) {
+function set_jornada($conn, $descricao, $jornada, $hora_extra) {
     $conn->begin_transaction();
 
     try {
+        $descricao = trim(strtolower($descricao));
         $jornada_formatada = $jornada . ':00';
         $hora_extra_formatada = $hora_extra . ':00';
 
         $stmt = $conn->prepare("
-            INSERT INTO tempo_jornada (jornada, maximo_hora_extra)
-            VALUES (?, ?);
+            INSERT INTO tempo_jornada (jornada, maximo_hora_extra, descricao)
+            VALUES (?, ?, ?);
         ");
 
-        $stmt->bind_param('ss', $jornada_formatada, $hora_extra_formatada);
+        $stmt->bind_param('sss', $jornada_formatada, $hora_extra_formatada, $descricao);
         $sucesso = $stmt->execute();
 
         $stmt->close();
