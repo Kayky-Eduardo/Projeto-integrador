@@ -11,7 +11,7 @@ include "../../include/navbar.php";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório ponto</title>
-    <link rel="stylesheet" href="../../assets/css/estilo.css">
+    <!-- <link rel="stylesheet" href="../../assets/css/estilo.css"> -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
 </head>
@@ -21,30 +21,30 @@ include "../../include/navbar.php";
             <input type="date" id="data-filtro-relatorio-grafico">
         </div>
     </dialog>
-    <div class="caixa-grafico">
+    <section class="caixa-grafico">
         <h2>Relatório diário</h2>
-        <div id="piechart_3d" style="width: 900px; height: 500px;"></div>
-    </div>
+        <article id="piechart_3d" style="width: 900px; height: 500px;"></article>
+    </section>
 
-    <div class="caixa-grafico">
+    <section class="caixa-grafico">
         <h2>Taxa de presença</h2>
-        <div id="columnchart_material" style="width: 800px; height: 500px;"></div>
-    </div>
+        <article id="columnchart_material" style="width: 800px; height: 500px;"></article>
+    </section>
 
-    <div class="caixa-grafico">
+    <section class="caixa-grafico">
         <h2>Hora extra</h2>
-        <div id="columnchart_material2" style="width: 800px; height: 500px;"></div>
-    </div>
+        <article id="columnchart_material2" style="width: 800px; height: 500px;"></article>
+    </section>
 
-    <div class="caixa-grafico">
+    <section class="caixa-grafico">
         <h2>Evolução de Presença</h2>
-    <div id="linechart_presenca" style="width: 900px; height: 500px;"></div>
-    </div>
+    <article id="linechart_presenca" style="width: 900px; height: 500px;"></article>
+    </section>
 
     <div id="resultado-caixa-grafico">
         <table>
             <thead>
-                <th>ID ponto</th>
+                <th>ID</th>
                 <th>Email</th>
                 <th>Entrada</th>
                 <th>Saida</th>
@@ -79,10 +79,12 @@ include "../../include/navbar.php";
                     <th>Email</th>
                     <th>Inicio</th>
                     <th>Saida</th>
+                    <th>Tempo trabalhado</th>
                     <th>Tempo logado</th>
                 </thead>
                 <tbody id="filtro-usuarios-tabela">
                     <tr>
+                        <td>-</td>
                         <td>-</td>
                         <td>-</td>
                         <td>-</td>
@@ -111,7 +113,7 @@ include "../../include/navbar.php";
                 <input type="date" id="dataFim">
             </div>
             
-            <button id="btnVerificar" onclick="buscar_jornada()">
+            <button id="btnVerificar">
                 Verificar Jornada
             </button>
         </div>
@@ -208,6 +210,10 @@ include "../../include/navbar.php";
                             let data = r.data_ponto ?? '-';
                             let tempo_logado = '-';
 
+                            if (tipo === 'Pausa') {
+                                entrada = r.inicio;
+                                saida = r.fim ?? '-';
+                            }
                             if (r.tempo_logado) {
                                 const horas = Math.floor(r.tempo_logado / 60);
                                 const minutos = r.tempo_logado % 60;
@@ -235,45 +241,51 @@ include "../../include/navbar.php";
         // coleta de dados horas extras usando o filtro para id_usuario
         const select = document.getElementById("filtro-usuarios");
         
+        function formatar_tempo(tempo) {
+            if (tempo != '-') {
+                const hora = Math.floor(tempo / 60);
+                const minutos = tempo % 60;
+                return tempo = hora > 0 ? `${hora}h ${minutos}min` : `${minutos}min`;
+            } else {
+                return "-"
+            }
+        } 
+
         async function filtrar_tabela_hora(id_usuario) {
             const exibicao_tabela_hora = document.getElementById("filtro-usuarios-tabela");
-                    const response = await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_tabela_hora", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({id_usuario: id_usuario})
-                });
+            const response = await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_tabela_hora", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({id_usuario: id_usuario})
+            });
 
-                const tabela_hora = await response.json();
-                exibicao_tabela_hora.innerHTML = "";
+            const tabela_hora = await response.json();
+            exibicao_tabela_hora.innerHTML = "";
 
-                if(tabela_hora.length === 0){
-                    exibicao_tabela_hora.innerHTML = `<tr><td colspan="5">Nenhum registro encontrado</td></tr>`;
-                    return;
-                }
+            if(tabela_hora.length === 0){
+                exibicao_tabela_hora.innerHTML = `<tr><td colspan="5">Nenhum registro encontrado</td></tr>`;
+                return;
+            }
 
-                tabela_hora.forEach(h => {
-                    let id_login = h.id_login ?? '-';
-                    let email_login = h.email_login ?? '-';
-                    let entrada = h.data_inicio ?? '-';                
-                    let saida = h.data_fim ?? '-';
-                    let tempo = h.tempo_logado ?? '-';
+            tabela_hora.forEach(h => {
+                let id_ponto = h.id_ponto ?? '-';
+                let email_login = h.email_login ?? '-';
+                let entrada = h.inicio_ponto ?? '-';                
+                let saida = h.fim_ponto ?? '-';
+                let tempo_logado = h.tempo_logado ?? '-';
+                let tempo_trabalhado = h.tempo_trabalhado ?? '-';
 
-                    if(tempo !== '-') {
-                        const hora = Math.floor(tempo / 60);
-                        const minutos = tempo % 60;
-                        tempo = hora > 0 ? `${hora}h ${minutos}min` : `${minutos}min`;
-                    }
-
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${id_login}</td>
-                        <td>${email_login}</td>
-                        <td>${entrada}</td>
-                        <td>${saida}</td>
-                        <td>${tempo}</td>
-                    `;
-                    exibicao_tabela_hora.appendChild(tr);
-                });
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${id_ponto}</td>
+                    <td>${email_login}</td>
+                    <td>${entrada}</td>
+                    <td>${saida}</td>
+                    <td>${formatar_tempo(tempo_trabalhado)}</td>
+                    <td>${formatar_tempo(tempo_logado)}</td>
+                `;
+                exibicao_tabela_hora.appendChild(tr);
+            });
         }
 
         async function exibicao_usuarios_option() {
@@ -470,6 +482,10 @@ include "../../include/navbar.php";
         }
     }
     
+    document.getElementById("btnVerificar").addEventListener("click", function () {
+        buscar_jornada();
+    })
+    
     function limpar_resultado() {
         document.getElementById('resultado').innerHTML = '';
         document.getElementById('detalhes').innerHTML = '';
@@ -491,13 +507,6 @@ include "../../include/navbar.php";
             const response = await fetch('../../api/api_jornada.php?acao=taxa_presenca_geral');
             const resultado = await response.json();
             
-            if (!resultado.sucesso) {
-                console.error('Erro ao buscar dados:', resultado.mensagem);
-                return;
-            }
-            
-            const usuarios = resultado.dados.usuarios;
-
             // Cabeçalho do gráfico
             const dadosGrafico = [
                 [
@@ -508,6 +517,15 @@ include "../../include/navbar.php";
                 ]
             ];
 
+            if (!resultado.sucesso) {
+                console.error('Erro ao buscar dados:', resultado.mensagem);
+                dadosGrafico.push(['Sem dados', 0, 0, 0]);
+                return;
+            }
+            
+            const usuarios = resultado.dados.usuarios;
+
+
             usuarios.forEach(usuario => {
                 dadosGrafico.push([
                     usuario.nome,
@@ -515,7 +533,7 @@ include "../../include/navbar.php";
                     parseFloat(usuario.horas_esperadas),
                     parseFloat(usuario.taxa_presenca) // porcentagem
                 ]);
-            });
+            });            
 
             var data = google.visualization.arrayToDataTable(dadosGrafico);
 
@@ -550,17 +568,17 @@ include "../../include/navbar.php";
             const response = await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_usuario");
             const resultado = await response.json();
             
-            if (!resultado.sucesso) {
-                console.error('Erro ao buscar dados:', resultado.mensagem);
-                return;
-            }
-            
-            const usuarios = resultado.dados.usuarios;
-            
             const dadosGrafico = [
                 ['Funcionários', 'Saldo (Horas)', { role: 'style' }] // esta 3° coluna serve para definir qual vai ser a cor 
             ];
             
+            
+            if (!resultado.sucesso) {
+                console.error('Erro ao buscar dados:', resultado.mensagem);
+                dadosGrafico.push(['Sem dados', 0, '#9ca3af']);
+            }
+            
+            const usuarios = resultado.dados.usuarios;
             usuarios.forEach(usuario => {
                 const horas = parseFloat((usuario.saldo_horas).toFixed(0)); 
                 

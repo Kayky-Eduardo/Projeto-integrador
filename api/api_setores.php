@@ -61,16 +61,12 @@ try {
     } elseif ($acao === 'set_setor') {
         
         // Validar parâmetros obrigatórios
-        if (!isset($input['id_setor'])) {
-            throw new Exception("Parâmetro obrigatório: id_setor");
+        if (!isset($input['id_setor'], $input['usuarios_selecionado'])) {
+            throw new Exception("Parâmetro obrigatório: id_setor, nome_setor, usuarios_selecionado");
         }
         
         if (!isset($input['nome_setor']) || trim($input['nome_setor']) === '') {
-            throw new Exception("Parâmetro obrigatório: nome_setor");
-        }
-        
-        if (!isset($input['usuarios_selecionado'])) {
-            throw new Exception("Parâmetro obrigatório: usuarios_selecionado");
+            throw new Exception("Parâmetro obrigatório: ");
         }
         
         // Executar função
@@ -78,7 +74,8 @@ try {
             $conn,
             $input['usuarios_selecionado'],
             $input['nome_setor'],
-            $input['id_setor']
+            $input['id_setor'],
+            $input['id_tempo']
         );
         
         $resposta = [
@@ -103,7 +100,7 @@ try {
         );
         
         $resposta = [
-            'sucesso' => true,
+            'sucesso' => false,
             'dados' => $resultado
         ];
     } 

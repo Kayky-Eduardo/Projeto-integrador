@@ -106,15 +106,17 @@ if ($modoRelatorio && $ehRH) {
         <?php include("../../include/navbar.php"); ?>
     </nav>
 
-    <main role="main">
+    <main class="main-center">
         <section class="banco-horas" aria-label="Banco de horas do usuário">
 
             <!-- RELATÓRIO GERAL -->
             <?php if ($modoRelatorio && $ehRH): ?>
-                <section class="bh-relatorio">
+                <section class="container tabela-padrao">
                     <h2>Banco de Horas - Relatório Geral</h2>
-                    <input type="text" id="filtroUsuario" placeholder="Digite o nome do usuário..." autocomplete="off">
+                    <input class="input filtro-texto" type="text" id="filtroUsuario" placeholder="Digite o nome do usuário..." autocomplete="off">
+                </section>
 
+                <section class="container tabela-padrao">
                     <table id="tabelaBancoHoras">
                         <thead>
                             <tr>
@@ -139,7 +141,7 @@ if ($modoRelatorio && $ehRH) {
             <?php if (!$modoRelatorio): ?>
 
                 <!-- RESUMO -->
-                <section class="bh-resumo" aria-label="Resumo do banco de horas">
+                <section class="container bh-resumo" aria-label="Resumo do banco de horas">
                     <article>
                         <h2><?= $resumo['saldo_antigo'] ?? '00:00' ?></h2>
                         <p>Saldo anterior</p>
@@ -157,25 +159,25 @@ if ($modoRelatorio && $ehRH) {
                 </section>
 
                 <!-- FILTRO -->
-                <section class="bh-filtro" aria-label="Filtro por período">
-                    <form method="POST">
+                <section class="container bh-filtro" aria-label="Filtro por período">
+                    <form class="form-linha" method="POST">
                         <article>
-                            <label for="inicio">Início:</label>
-                            <input type="date" name="inicio" id="inicio" required>
+                            <label class="label" for="inicio">Início:</label>
+                            <input class="input" type="date" name="inicio" id="inicio" required>
                         </article>
 
                         <article>
-                            <label for="fim">Fim:</label>
-                            <input type="date" name="fim" id="fim" required>
+                            <label class="label" for="fim">Fim:</label>
+                            <input class="input" type="date" name="fim" id="fim" required>
                         </article>
 
-                        <button type="submit">Aplicar</button>
+                        <button type="submit" class="btn btn-padrao">Aplicar</button>
                     </form>
                 </section>
 
                 <!-- HISTÓRICO -->
                 <?php if ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
-                    <section class="bh-historico" aria-label="Histórico de banco de horas">
+                    <section class="container tabela-padrao" aria-label="Histórico de banco de horas">
                         <?php if ($historico && is_array($historico)): ?>
                             <table>
                                 <thead>

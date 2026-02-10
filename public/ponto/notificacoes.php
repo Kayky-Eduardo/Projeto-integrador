@@ -12,7 +12,7 @@ $nivel = $_SESSION['nivel'];
 // REDIRECIONAMENTO DO RH
 // ======================
 // Se for RH/Admin, redireciona para tela de ajustes pendentes
-if ($nivel <= 2) {
+if ($nivel < 2) {
     header("Location: ../rh/ajustes_pendentes.php");
     exit;
 }
@@ -74,6 +74,7 @@ $sql = "
         n.mensagem,           -- Texto da mensagem
         n.data_notificacao,   -- Data e hora
         n.lida,               -- Status (0 = não lida, 1 = lida)
+        p.data_ponto,           -- Data do ponto relacionado
         p.data_ponto,           -- Data do ponto relacionado
         p.id_ponto            -- ID do ponto
     FROM notificacoes_ponto n
@@ -168,6 +169,7 @@ $notificacoes = $stmt->get_result();
 
                 <!-- Link para o ponto daquele dia -->
                 <td>
+                    <a href="../ponto/historico.php?from=<?= $row['data_ponto'] ?>&to=<?= $row['data_ponto'] ?>">
                     <a href="../ponto/historico.php?from=<?= $row['data_ponto'] ?>&to=<?= $row['data_ponto'] ?>">
                         Ver dia
                     </a>
