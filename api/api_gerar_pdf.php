@@ -3,6 +3,9 @@
 require_once "../BD/conexao.php";
 session_start();
 
+// Funções de cálculo
+require_once "../include/funcoes/calculoDescontoFalta.php";
+
 // -----------------------------
 // 1. Recebe o mês (competência)
 // -----------------------------
@@ -101,10 +104,21 @@ if (!$folha) {
     exit;
 }
 
+//função e executa o cálculo e atualização do desconto
+$desconto = calcularEAplicarDescontoFalta($conn, $id_usuario, $mes_comp, $user, $folha);
+ 
+// Buscar novamente a folha atualizada
+$sql_folha = $conn->prepare("
+    SELECT *
+    FROM folhas
+    WHERE id_usuario = ? AND mes_competencia = ?
+");
+$sql_folha->bind_param("is", $id_usuario, $mes_comp);
+$sql_folha->execute();
+$folha = $sql_folha->get_result()->fetch_assoc();
 
-// -----------------------------
+
 // 8. Eventos
-// -----------------------------
 $sql_eventos = $conn->prepare("
     SELECT tipo, descricao, valor 
     FROM eventos 
@@ -120,7 +134,7 @@ $eventos = $sql_eventos->get_result()->fetch_all(MYSQLI_ASSOC);
 <head>
 <meta charset="UTF-8">
 <title>Holerite <?php echo $mes; ?></title>
-
+<!--Isso so ta aqui pq sem css fica muito feio a folha de pagamento (pode arrancar daqui depois Bruno✌)-->
 <style>
 body { font-family: Arial; padding: 25px; }
 table { width: 100%; border-collapse: collapse; margin-top: 15px; }
@@ -130,10 +144,9 @@ h1 { text-align: center; }
 button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 </style>
 </head>
-
 <body>
+<button id="btnGerarPdf">Baixar PDF</button>
 
-<button onclick="gerarPDF()">📄 Baixar PDF</button>
 
 <div id="holerite">
 
@@ -167,11 +180,11 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 
     <tr class="titulo"><td colspan="2">Resumo</td></tr>
     <tr><td>Salário Bruto:</td><td>R$ <?php echo number_format($folha["salario_bruto"],2,',','.'); ?></td></tr>
-    <tr><td>Total Proventos:</td><td>R$ <?php echo number_format($folha["total_proventos"],2,',','.'); ?></td></tr>
-    <tr><td>Total Descontos:</td><td>R$ <?php echo number_format($folha["total_descontos"],2,',','.'); ?></td></tr>
     <tr><td>VT:</td><td>R$ <?php echo number_format($folha["vt"],2,',','.'); ?></td></tr>
     <tr><td>INSS:</td><td>R$ <?php echo number_format($folha["inss"],2,',','.'); ?></td></tr>
     <tr><td>IRRF:</td><td>R$ <?php echo number_format($folha["irrf"],2,',','.'); ?></td></tr>
+    <tr><td>Total Proventos:</td><td>R$ <?php echo number_format($folha["total_proventos"],2,',','.'); ?></td></tr>
+    <tr><td>Total Descontos:</td><td>R$ <?php echo number_format($folha["total_descontos"],2,',','.'); ?></td></tr>
     <tr class="titulo">
         <td><b>Salário Líquido</b></td>
         <td><b>R$ <?php echo number_format($folha["salario_liquido"],2,',','.'); ?></b></td>
@@ -187,6 +200,12 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
+
+document.addEventListener("DOMContentLoaded", () => {
+  document
+    .getElementById("btnGerarPdf")
+    .addEventListener("click", gerarPDF);
+});
 
 // Recebe o nome do funcionário vindo do PHP e adiciona barras de escape para evitar problemas com aspas
 const nomeFuncionario = "<?php echo addslashes($user['nome_usuario']); ?>";

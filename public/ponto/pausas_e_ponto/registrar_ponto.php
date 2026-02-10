@@ -220,7 +220,7 @@ $tiposPausa = $stmtTipos->get_result();
                             <button type="submit" class="btn btn-padrao" <?= $disabled ?>>Iniciar Pausa</button>
                         <?php else: ?>
                             <input type="hidden" name="acao" value="pausa_finalizar">
-                            <button type="submit" class="btn btn-excluir" id="btnFinalizarPausa" <?= $disabled ?>>Finalizar Pausa</button>
+                            <button type="submit" class="btn btn-excluir" id="btnFinalizarPausa">Finalizar Pausa</button>
                             <p id="statusTempo" class="status-tempo"></p>
                         <?php endif; ?>
                     </form>
