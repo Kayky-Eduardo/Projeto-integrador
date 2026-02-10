@@ -50,10 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $senha = $_POST['senha'];
 
         $stmt = $conn->prepare("
-        SELECT usuario.*, cargo.nome_cargo, cargo.nivel, cargo.id_cargo, usuario.senha_usuario
-        FROM usuario
-        JOIN cargo ON usuario.id_cargo = cargo.id_cargo
-        WHERE usuario.email_usuario = ?
+            SELECT usuario.*, cargo.nome_cargo, cargo.nivel, cargo.id_cargo, usuario.senha_usuario
+            FROM usuario
+            JOIN cargo ON usuario.id_cargo = cargo.id_cargo
+            WHERE usuario.email_usuario = ?
         ");
 
         $stmt->bind_param("s", $email);
@@ -64,63 +64,69 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $usuario = $result->fetch_assoc();
             $senha_banco = $usuario['senha_usuario'];
 
-            if (password_verify($senha, $senha_banco) || $senha === $senha_banco) {
-                $_SESSION['nivel'] = $usuario['nivel'];
-                $_SESSION['id_usuario'] = $usuario['id_usuario'];
-                $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
-                $verificacao_logado = $conn->prepare("
-                    SELECT id_login FROM login
-                    WHERE id_usuario = ? AND data_fim IS NULL
-                    LIMIT 1
+            if ($usuario['conta_ativa'] === 1) {
+
+                if (password_verify($senha, $senha_banco)) {
+                    session_regenerate_id(true);
+                    $_SESSION['nivel'] = $usuario['nivel'];
+                    $_SESSION['id_usuario'] = $usuario['id_usuario'];
+                    $_SESSION['nome_usuario'] = $usuario['nome_usuario'];
+                    $verificacao_logado = $conn->prepare("
+                        SELECT id_login FROM login
+                        WHERE id_usuario = ? AND data_fim IS NULL
+                        LIMIT 1
                     ");
 
-                $verificacao_logado->bind_param("i", $usuario['id_usuario']);
-                $verificacao_logado->execute();
-                $verificacao_logado = $verificacao_logado->get_result();
+                    $verificacao_logado->bind_param("i", $usuario['id_usuario']);
+                    $verificacao_logado->execute();
+                    $verificacao_logado = $verificacao_logado->get_result();
 
-                if ($verificacao_logado && $verificacao_logado->num_rows > 0) {
-                    $row = $verificacao_logado->fetch_assoc();
-                    $logout = $conn->prepare("UPDATE login SET data_fim = NOW() WHERE id_login = ?");
-                    $logout->bind_param("i", $row['id_login']);
-                    $logout->execute();
-                    $logout->close();
-                    $verificacao_logado->close();
+                        if ($verificacao_logado && $verificacao_logado->num_rows > 0) {
+                            $row = $verificacao_logado->fetch_assoc();
+                            $logout = $conn->prepare("UPDATE login SET data_fim = NOW() WHERE id_login = ?");
+                            $logout->bind_param("i", $row['id_login']);
+                            $logout->execute();
+                            $logout->close();
+                            $verificacao_logado->close();
+                        }
+        
+                        $update_login = $conn->prepare("
+                            INSERT INTO login (email_login, id_usuario, id_cargo) VALUES
+                            (?, ?, ?)
+                            ");
+                        $update_login->bind_param(
+                            'sii',
+                            $usuario['email_usuario'],
+                            $usuario['id_usuario'],
+                            $usuario['id_cargo']
+                        );
+                        $update_login->execute();
+                        $_SESSION['id_login'] = $update_login->insert_id;
+                        $update_login->close();
+                        if (password_needs_rehash($senha_banco, PASSWORD_DEFAULT)) {
+                            $novo_hash = password_hash($senha, PASSWORD_DEFAULT);
+                            $update = $conn->prepare("UPDATE usuario SET senha_usuario = ? WHERE id_usuario = ?");
+                            $update->bind_param("si", $novo_hash, $usuario['id_usuario']);
+                            $update->execute();
+                            $update->close();
+                        } 
+                        header("Location: index.php");
+                        $conn->close();
+                        exit; 
+                    
+                    }
+                } else {
+                    $erro_login = "E-mail ou senha incorretos.";
                 }
-                // não é definitivo, lembrar das dependencias
-                // como cuidar do hash e etc.
-                $update_login = $conn->prepare("
-                    INSERT INTO login (email_login, id_usuario, id_cargo) VALUES
-                    (?, ?, ?)
-                    ");
-                $update_login->bind_param(
-                    'sii',
-                    $usuario['email_usuario'],
-                    $usuario['id_usuario'],
-                    $usuario['id_cargo']
-                );
-                $update_login->execute();
-                $_SESSION['id_login'] = $update_login->insert_id;
-                $update_login->close();
-                if ($senha === $senha_banco) {
-                    $novo_hash = password_hash($senha, PASSWORD_DEFAULT);
-
-                    $update = $conn->prepare("UPDATE usuario SET senha_usuario = ? WHERE id_usuario = ?");
-                    $update->bind_param("si", $novo_hash, $usuario['id_usuario']);
-                    $update->execute();
-                    $update->close();
-                    $conn->close();
-                }
-                header("Location: index.php");
             } else {
-                $erro_login = "E-mail ou senha incorretos.";
+                $erro_login = "Verifique se sua conta esta ativa com seu supervisor";
             }
         } else {
             $erro_login = "E-mail ou senha incorretos.";
         }
     }
-}
-?>
 
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -131,8 +137,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 
 <body class="pagina-login">
-    <main role="main" aria-label="Tela de acesso">
-        <section class="login-sistema" aria-label="Área de autenticação">
+    <main class="main-login">
+        <section class="container login-sistema">
             <h2>Acesso ao Sistema</h2>
             <p>Utilize suas credenciais corporativas</p>
 
@@ -142,16 +148,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </p>
             <?php endif; ?>
 
-            <form method="POST">
-                <fieldset>
-                    <label for="email">E-mail corporativo</label>
-                    <input type="email" id="email" name="email" required>
+            <form class="form" method="POST">
+                <legend class="hidden">Credenciais de Acesso</legend>
 
-                    <label for="senha">Senha</label>
-                    <input type="password" id="senha" name="senha" required>
+                <label class="label" for="email">E-mail corporativo</label>
+                <input type="email" class="input" id="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
 
-                    <button type="submit">Entrar</button>
-                </fieldset>
+                <label class="label" for="senha">Senha</label>
+                <input type="password" class="input" id="senha" name="senha" required>
+
+                <button type="submit" class="btn btn-padrao">Entrar</button>
             </form>
         </section>
     </main>
