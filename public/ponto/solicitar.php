@@ -175,6 +175,7 @@ while ($pausa_row = $pausas->fetch_assoc()) {
                     <button type="submit" class="btn btn-padrao">Enviar Solicitação</button>
                 </form>
             </section>
+        </section>
     </main>
 
     <script>

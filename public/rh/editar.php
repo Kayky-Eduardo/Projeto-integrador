@@ -4,56 +4,35 @@ include("../../BD/conexao.php");
 require("../../include/verificacao.php");
 verificar_login($conn);
 
-// =====================
-// CONTROLE DE PERMISSÃO
-// =====================
-// Apenas usuários nível 2 ou maior (RH / Admin)
-if ($_SESSION['nivel'] >= 2) {
-    // Permissão concedida
-} else{
+if ($_SESSION['nivel'] < 2) {
     die("Acesso restrito.");
 }
 
-// =====================
-// VALIDA O ID DO AJUSTE
-// =====================
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     die("ID inválido.");
 }
 
 $id = intval($_GET['id']);
 
-// ======================
-// BUSCAR DADOS DO AJUSTE
-// ======================
-
-/*
-Recupera o ajuste e o ponto relacionado
-
-Tabelas:
-ajustes_ponto -> dados da solicitação
-ponto_dia     -> horários reais do ponto
-usuario       -> funcionário solicitante
-*/
 $sql = "
-SELECT 
-    a.campo,                -- Campo que pode ser alterado
-    a.motivo,               -- motivo do pedido
-    a.id_ajuste,
-    a.id_ponto,
-    a.id_pausa,
-    ps.inicio as inicio_pausa,
-    ps.fim as fim_pausa,
-    ps.id_pausa,
-    p.inicio_ponto,
-    p.fim_ponto,
-    p.data_ponto,
-    u.nome_usuario          -- Funcionário
-FROM ajustes_ponto a
-INNER JOIN ponto_dia p ON p.id_ponto = a.id_ponto
-INNER JOIN usuario u ON u.id_usuario = p.id_usuario
-LEFT JOIN pausa ps ON ps.id_pausa = a.id_pausa
-WHERE a.id_ajuste = ?
+    SELECT 
+        a.campo,
+        a.motivo,
+        a.id_ajuste,
+        a.id_ponto,
+        a.id_pausa,
+        ps.inicio as inicio_pausa,
+        ps.fim as fim_pausa,
+        ps.id_pausa,
+        p.inicio_ponto,
+        p.fim_ponto,
+        p.data_ponto,
+        u.nome_usuario
+    FROM ajustes_ponto a
+    INNER JOIN ponto_dia p ON p.id_ponto = a.id_ponto
+    INNER JOIN usuario u ON u.id_usuario = p.id_usuario
+    LEFT JOIN pausa ps ON ps.id_pausa = a.id_pausa
+    WHERE a.id_ajuste = ?
 ";
 
 $stmt = $conn->prepare($sql);
@@ -65,21 +44,12 @@ if (!$ajuste) {
     die("Ajuste não encontrado." . $id);
 }
 
-// ==============
-// CAMPO EDITÁVEL
-// ==============
-// Somente um campo é alterável por vez
+
 $campo_editavel = $ajuste['campo'];
 
-// ============================
-// FUNÇÃO DE BLOQUEIO DE INPUTS
-// ============================
-// Todos os campos são travados, exceto o que foi solicitado
 function desabilitar($nomeCampo, $campoEditavel)
 {
-    return ($nomeCampo !== $campoEditavel)
-        ? 'readonly disabled'
-        : '';
+    return ($nomeCampo !== $campoEditavel) ? 'readonly disabled' : '';
 }
 ?>
 
@@ -89,69 +59,62 @@ function desabilitar($nomeCampo, $campoEditavel)
 <head>
     <meta charset="UTF-8">
     <title>Editar Ajuste</title>
+    <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
 
 <body>
-    <h1>Editar horário solicitado</h1>
-    <a href="ajustes_pendentes.php">Voltar</a>
-    <br><br>
+    <nav>
+        <?php include("../../include/navbar.php"); ?>
+    </nav>
 
-    <form method="post" action="salvar.php">
+    <main class="main-center">
+        <section class="pagina-padrao">
+            <h1 class="page-title">Editar horário solicitado</h1>
 
-        <!-- IDs usados no salvamento -->
-        <input type="hidden" name="id_ajuste" value="<?= $ajuste['id_ajuste'] ?>">
-        <input type="hidden" name="id_pausa" value="<?= $ajuste['id_pausa'] ?>">
-        <input type="hidden" name="id_ponto" value="<?= $ajuste['id_ponto'] ?>">
-        <input type="hidden" name="campo" value="<?= $campo_editavel ?>">
+            <section class="container solicitar-ajuste">
+                <form method="post" action="salvar.php" class="form">
+                    <input type="hidden" name="id_ajuste" value="<?= $ajuste['id_ajuste'] ?>">
+                    <input type="hidden" name="id_pausa" value="<?= $ajuste['id_pausa'] ?>">
+                    <input type="hidden" name="id_ponto" value="<?= $ajuste['id_ponto'] ?>">
+                    <input type="hidden" name="campo" value="<?= $campo_editavel ?>">
 
-        <!-- Informações do ajuste -->
-        <p><strong>Funcionário:</strong> <?= htmlspecialchars($ajuste['nome_usuario']) ?></p>
-        <p><strong>Data:</strong> <?= htmlspecialchars($ajuste['data_ponto']) ?></p>
+                    <article>
+                        <p class="label">Funcionário: <?= htmlspecialchars($ajuste['nome_usuario']) ?></p>
+                        <p class="label">
+                            Data: <?= date('d-m-Y', strtotime($ajuste['data_ponto'])) ?>
+                        </p>
+                    </article>
 
-        <!-- ===================== -->
-        <!-- CAMPOS DE HORÁRIO     -->
-        <!-- ===================== -->
+                    <article>
+                        <label class="label">Entrada:</label>
+                        <input class="input" type="time" name="inicio_ponto" value="<?= date('H:i', strtotime($ajuste['inicio_ponto'])) ?>" <?= desabilitar('inicio_ponto', $campo_editavel) ?>>
+                    </article>
 
-        <!-- ENTRADA -->
-        <label>Entrada:</label>
-        <input type="time"
-            name="inicio_ponto"
-            value="<?= date('H:i', strtotime($ajuste['inicio_ponto'])) ?>"
-            <?= desabilitar('inicio_ponto', $campo_editavel) ?>>
-        <br><br>
+                    <article>
+                        <label class="label">Início Pausa:</label>
+                        <input class="input" type="time" name="inicio_pausa" value="<?= date('H:i', strtotime($ajuste['inicio_pausa'])) ?>" <?= desabilitar('inicio_pausa', $campo_editavel) ?>>
+                    </article>
 
-        <!-- INÍCIO Pausa -->
-        <label>Início Pausa:</label>
-        <input type="time"
-            name="inicio_pausa"
-            value="<?= date('H:i', strtotime($ajuste['inicio_pausa'])) ?>"
-            <?= desabilitar('inicio_pausa', $campo_editavel) ?>>
-        <br><br>
+                    <article>
+                        <label class="label">Fim Pausa:</label>
+                        <input class="input" type="time" name="fim_pausa" value="<?= date('H:i', strtotime($ajuste['fim_pausa'])) ?>" <?= desabilitar('fim_pausa', $campo_editavel) ?>>
+                    </article>
 
-        <!-- FIM Pausa -->
-        <label>Fim Pausa:</label>
-        <input type="time"
-            name="fim_pausa"
-            value="<?= date('H:i', strtotime($ajuste['fim_pausa'])) ?>"
-            <?= desabilitar('fim_pausa', $campo_editavel) ?>>
-        <br><br>
+                    <article>
+                        <label class="label">Saída:</label>
+                        <input class="input" type="time" name="fim_ponto" value="<?= date('H:i', strtotime($ajuste['fim_ponto'])) ?>" <?= desabilitar('fim_ponto', $campo_editavel) ?>>
+                    </article>
 
-        <!-- SAÍDA -->
-        <label>Saída:</label>
-        <input type="time"
-            name="fim_ponto"
-            value="<?= date('H:i', strtotime($ajuste['fim_ponto'])) ?>"
-            <?= desabilitar('fim_ponto', $campo_editavel) ?>>
-        <br><br>
+                    <article>
+                        <label class="label">Justificativa:</label>
+                        <textarea class="input" name="motivo" rows="4" cols="50" placeholder="Escreva aqui a justificativa..."><?= htmlspecialchars($ajuste['motivo']) ?></textarea>
+                    </article>
 
-        <!-- motivo -->
-        <label>motivo:</label><br>
-        <textarea name="motivo" rows="4" cols="50"><?= htmlspecialchars($ajuste['motivo']) ?></textarea>
-        <br><br>
-
-        <!-- AÇÃO FINAL -->
-        <button type="submit">Salvar Ajuste</button>
-    </form>
+                    <button class="btn btn-padrao" type="submit">Salvar Ajuste</button>
+                </form>
+            </section>
+        </section>
+    </main>
 </body>
 
 </html>
