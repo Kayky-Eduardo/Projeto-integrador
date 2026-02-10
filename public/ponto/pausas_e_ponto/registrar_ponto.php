@@ -215,12 +215,12 @@ $tiposPausa = $stmtTipos->get_result();
                             <?php endwhile; ?>
                         </select>
 
-                        <?php if (!$pausaAtiva): ?>
+                        <?php if (!$pausaAtiva): $disabled = (!$pontoIniciado || $pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>
                             <input type="hidden" name="acao" value="pausa_iniciar">
-                            <button type="submit" class="btn btn-padrao">Iniciar Pausa</button>
+                            <button type="submit" class="btn btn-padrao" <?= $disabled ?>>Iniciar Pausa</button>
                         <?php else: ?>
                             <input type="hidden" name="acao" value="pausa_finalizar">
-                            <button type="submit" class="btn btn-excluir" id="btnFinalizarPausa">Finalizar Pausa</button>
+                            <button type="submit" class="btn btn-excluir" id="btnFinalizarPausa" <?= $disabled ?>>Finalizar Pausa</button>
                             <p id="statusTempo" class="status-tempo"></p>
                         <?php endif; ?>
                     </form>
