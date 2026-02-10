@@ -3,12 +3,11 @@ session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require __DIR__ . "/../../include/verificacao.php";
 verificar_login($conn);
+date_default_timezone_set('America/Sao_Paulo');
 
 if ($_SESSION['nivel'] < 2) {
     die("Acesso restrito.");
 }
-
-date_default_timezone_set('America/Sao_Paulo');
 
 function criar_notificacao($conn, $id_usuario, $id_ponto, $msg)
 {

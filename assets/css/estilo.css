@@ -887,7 +887,7 @@ footer a {
 }
 
 /* PÁGINA DE PONTO */
-.ponto-dia.container {
+.ponto-dia {
     width: 50%;
     margin: 0 auto;
     min-width: 500px;
@@ -929,12 +929,28 @@ footer a {
     color: var(--cor-principal);
 }
 
-.bater-ponto select {
-    text-align: center;
-}
-
 .bater-ponto .tabela-padrao {
     border: none;
+}
+
+/* PÁGINA DE SOLICITAR AJUSTE */
+.solicitar-ajuste {
+    width: 50%;
+    margin: 0 auto;
+    min-width: 500px;
+}
+
+.solicitar-ajuste article {
+    font-size: var(--tamanho-titulo-pagina);
+    color: var(--cor-principal);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+}
+
+.solicitar-ajuste label {
+    margin-bottom: 10px;
 }
 
 
