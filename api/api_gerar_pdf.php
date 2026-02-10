@@ -3,6 +3,9 @@
 require_once "../BD/conexao.php";
 session_start();
 
+// Funções de cálculo
+require_once "../include/funcoes/calculoDescontoFalta.php";
+
 // -----------------------------
 // 1. Recebe o mês (competência)
 // -----------------------------
@@ -101,216 +104,21 @@ if (!$folha) {
     exit;
 }
 
-// 7.2 DESCONTO AUTOMÁTICO POR FALTA DE HORAS (MÊS)
-
-// 1. CALCULA OS MINUTOS TRABALHADOS NO MÊS
-// Prepara a query que soma os minutos trabalhados
-// (diferença entre início e fim do ponto, menos as pausas)
-$sql_trabalhado = $conn->prepare("
-    SELECT 
-        SUM(
-            TIMESTAMPDIFF(MINUTE, p.inicio_ponto, p.fim_ponto)
-            - IFNULL(pa.duracao_minutos, 0)
-        ) AS minutos
-    FROM ponto_dia p
-    LEFT JOIN pausa pa 
-        ON pa.id_usuario = p.id_usuario
-        AND pa.data = p.data_ponto
-    WHERE p.id_usuario = ?                 -- Usuário específico
-      AND p.fim_ponto IS NOT NULL          -- Apenas pontos finalizados
-      AND DATE_FORMAT(p.data_ponto, '%Y-%m') = DATE_FORMAT(?, '%Y-%m') -- Mês/Ano
+//função e executa o cálculo e atualização do desconto
+$desconto = calcularEAplicarDescontoFalta($conn, $id_usuario, $mes_comp, $user, $folha);
+ 
+// Buscar novamente a folha atualizada
+$sql_folha = $conn->prepare("
+    SELECT *
+    FROM folhas
+    WHERE id_usuario = ? AND mes_competencia = ?
 ");
-
-// Associa os parâmetros
-$sql_trabalhado->bind_param("is", $id_usuario, $mes_comp);
-
-// Executa a query
-$sql_trabalhado->execute();
-
-// Recupera o total de minutos trabalhados no mês
-$minutos_trabalhados = (int) (
-    $sql_trabalhado->get_result()->fetch_assoc()['minutos'] ?? 0
-);
-
-// 2. CALCULA OS MINUTOS ESPERADOS NO MÊS
-// Busca a jornada diária (em minutos) e a quantidade de dias trabalhados
-$sql_minutos_esperados = $conn->prepare("
-    WITH RECURSIVE dias_mes AS (
-        SELECT DATE_FORMAT(?, '%Y-%m-01') AS dia
-        UNION ALL
-        SELECT dia + INTERVAL 1 DAY
-        FROM dias_mes
-        WHERE dia + INTERVAL 1 DAY <= LAST_DAY(?)
-    )
-    SELECT
-        SUM(jt.horas_diarias * 60) AS minutos_esperados
-    FROM dias_mes dm
-    JOIN jornadas_trabalho jt
-        ON jt.usuario_id = ?
-        AND dm.dia BETWEEN jt.data_inicio AND IFNULL(jt.data_fim, dm.dia)
-    LEFT JOIN feriados f
-        ON f.data = dm.dia
-    WHERE
-        f.data IS NULL
-        AND JSON_CONTAINS(
-            jt.dias_semana,
-            CONCAT('[', DAYOFWEEK(dm.dia), ']')
-        )
-");
-
-
-$sql_minutos_esperados->bind_param(
-    "ssi",
-    $mes_comp,
-    $mes_comp,
-    $id_usuario
-);
-
-$sql_minutos_esperados->execute();
-
-$minutos_esperados = (int) (
-    $sql_minutos_esperados->get_result()->fetch_assoc()['minutos_esperados'] ?? 0
-);
-
-
-// 3. CALCULA A DIFERENÇA DE MINUTOS
-// Diferença entre o que trabalhou e o que deveria trabalhar
-$diferenca_minutos = $minutos_trabalhados - $minutos_esperados;
-
-// 4. CALCULA O VALOR DO MINUTO
-// Calcula o valor da hora (salário dividido por 220 horas)
-$valor_hora = $user['salario_bruto'] / 220;
-
-// Calcula o valor do minuto
-$valor_minuto = $valor_hora / 60;
-
-// 5. CALCULA O DESCONTO POR FALTA
-// Inicializa o desconto
-$valor_desconto_falta = 0;
-
-// Se a diferença for negativa, houve falta
-if ($diferenca_minutos < 0) {
-    // Converte os minutos faltantes em valor monetário
-    $valor_desconto_falta = abs($diferenca_minutos) * $valor_minuto;
-    echo "Minutos trabalhados: $minutos_trabalhados <br>";
-    echo "Minutos esperados: $minutos_esperados <br>";
-    echo "Diferença (minutos): $diferenca_minutos <br>";
-    echo "Valor desconto falta: R$ " . number_format($valor_desconto_falta, 2, ',', '.') . "<br>";
-
-}
-
-// 6. CRIA OU ATUALIZA O EVENTO DE DESCONTO
-// Descrição padrão do evento
-$descricao_evento = "Desconto por falta";
-
-// Verifica se já existe evento de desconto para o mês
-$sql_evento = $conn->prepare("
-    SELECT id_evento 
-    FROM eventos 
-    WHERE id_usuario = ? 
-      AND mes_competencia = ?
-      AND descricao = ?
-");
-
-// Associa os parâmetros
-$sql_evento->bind_param("iss", $id_usuario, $mes_comp, $descricao_evento);
-
-// Executa a query
-$sql_evento->execute();
-
-// Busca o evento existente (se houver)
-$evento = $sql_evento->get_result()->fetch_assoc();
-
-// Só cria ou atualiza se houver desconto
-if ($valor_desconto_falta > 0) {
-
-    // Se o evento já existe, atualiza o valor
-    if ($evento) {
-
-        $sql_upd = $conn->prepare("
-            UPDATE eventos 
-            SET valor = ?
-            WHERE id_evento = ?
-        ");
-
-        $sql_upd->bind_param("di", $valor_desconto_falta, $evento['id_evento']);
-        $sql_upd->execute();
-
-    } 
-    // Se não existe, cria um novo evento de desconto
-    else {
-
-        $sql_ins = $conn->prepare("
-            INSERT INTO eventos 
-            (id_usuario, tipo, descricao, valor, mes_competencia)
-            VALUES (?, 'desconto', ?, ?, ?)
-        ");
-
-        $sql_ins->bind_param(
-            "isds",
-            $id_usuario,
-            $descricao_evento,
-            $valor_desconto_falta,
-            $mes_comp
-        );
-
-        $sql_ins->execute();
-    }
-}
-
-// 7. ATUALIZA OS TOTAIS DA FOLHA
-// Soma todos os proventos e descontos do mês
-$sql_totais = $conn->prepare("
-    SELECT 
-        SUM(CASE WHEN tipo = 'provento' THEN valor ELSE 0 END) AS proventos,
-        SUM(CASE WHEN tipo = 'desconto' THEN valor ELSE 0 END) AS descontos
-    FROM eventos
-    WHERE id_usuario = ? 
-      AND mes_competencia = ?
-");
-
-// Associa os parâmetros
-$sql_totais->bind_param("is", $id_usuario, $mes_comp);
-
-// Executa a query
-$sql_totais->execute();
-
-// Busca os totais
-$totais = $sql_totais->get_result()->fetch_assoc();
-
-// Define os totais (evita null)
-$total_proventos = $totais['proventos'] ?? 0;
-$total_descontos = $totais['descontos'] ?? 0;
-
-// Calcula o salário líquido
-$salario_liquido =
-    $folha['salario_bruto'] +
-    $total_proventos -
-    $total_descontos;
-
-// Atualiza a folha de pagamento
-$sql_folha_upd = $conn->prepare("
-    UPDATE folhas 
-    SET total_proventos = ?, 
-        total_descontos = ?, 
-        salario_liquido = ?
-    WHERE id_folha = ?
-");
-// Associa os valores
-$sql_folha_upd->bind_param(
-    "dddi",
-    $total_proventos,
-    $total_descontos,
-    $salario_liquido,
-    $folha['id_folha']
-);
-
-// Executa a atualização
-$sql_folha_upd->execute();
+$sql_folha->bind_param("is", $id_usuario, $mes_comp);
+$sql_folha->execute();
+$folha = $sql_folha->get_result()->fetch_assoc();
 
 
 // 8. Eventos
-
 $sql_eventos = $conn->prepare("
     SELECT tipo, descricao, valor 
     FROM eventos 
@@ -337,7 +145,8 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 </style>
 </head>
 <body>
-<button onclick="gerarPDF()">📄 Baixar PDF</button>
+<button id="btnGerarPdf">Baixar PDF</button>
+
 
 <div id="holerite">
 
@@ -391,6 +200,12 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
+
+document.addEventListener("DOMContentLoaded", () => {
+  document
+    .getElementById("btnGerarPdf")
+    .addEventListener("click", gerarPDF);
+});
 
 // Recebe o nome do funcionário vindo do PHP e adiciona barras de escape para evitar problemas com aspas
 const nomeFuncionario = "<?php echo addslashes($user['nome_usuario']); ?>";
