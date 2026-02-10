@@ -173,6 +173,8 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 <table>
     <tr class="titulo"><td colspan="2">Empresa</td></tr>
     <tr><td>Nome:</td><td>Sem nome</td></tr>
+    <tr><td>Endereço:</td><td>Sem endereço</td></tr>
+    <tr><td>CNPJ:</td><td>Sem CNPJ</td></tr>
 
     <tr class="titulo"><td colspan="2">Funcionário</td></tr>
     <tr><td>Nome:</td><td><?php echo $user["nome_usuario"]; ?></td></tr>
