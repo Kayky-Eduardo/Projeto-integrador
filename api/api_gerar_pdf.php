@@ -4,7 +4,7 @@ require_once "../BD/conexao.php";
 session_start();
 
 // Funções de cálculo
-require_once "../include/funcoes/calculoDescontoFalta.php";
+require_once "../include/funcoes/calculo_desconto_falta.php";
 
 // -----------------------------
 // 1. Recebe o mês (competência)
