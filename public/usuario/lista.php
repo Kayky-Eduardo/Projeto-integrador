@@ -55,7 +55,7 @@ $result = $stmt->get_result();
 <head>
     <meta charset="UTF-8">
     <title>Usuários | Sistema RH</title>
-    <link rel="stylesheet" href="../../assets/css/estilo.css">
+    <?php include("../../include/link.html"); ?>
 </head>
 
 <body>

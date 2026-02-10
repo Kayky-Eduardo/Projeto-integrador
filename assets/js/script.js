@@ -319,6 +319,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    function chamarPnotifyAviso(titulo, mensagem, milissegundos) {
+        let tempo = milissegundos ?? 5000;
+        PNotify.info({
+            title: titulo,
+            text: `${mensagem}`,
+            delay: tempo,
+        });
+    }
+
+    function chamarPnotifySuccess(titulo, mensagem, milissegundos) {
+        let tempo = milissegundos ?? 5000;
+        PNotify.success({
+            title: titulo,
+            text: `${mensagem}`,
+            delay: tempo,    
+        });
+    }
+
     if (localStorage.getItem("id_usuario")) {
         let id_usuario = localStorage.getItem("id_usuario");
         
@@ -329,11 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .then((res)=> res.json())
         .then((resposta) => {
             if (resposta.sucesso) {
-                PNotify.info({
-                    title: 'Aviso',
-                    text: `${resposta.dados.mensagem}`,
-                    delay: 3000,    
-                });
+                chamarPnotifyAviso("Aviso", resposta.dados.mensagem, 5000);
             } 
         });
     }

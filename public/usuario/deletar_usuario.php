@@ -37,6 +37,23 @@ if ($dados['total'] > 0) {
     exit;
 }
 
+$stmt = $conn->prepare(
+    "SELECT COUNT(*) AS total 
+     FROM ajustes_ponto 
+     WHERE id_usuario = ?"
+);
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
+$dados = $result->fetch_assoc();
+$stmt->close();
+
+if ($dados['total'] > 0) {
+    $_SESSION['erros'][] = "Não é possível excluir, pois já existem registros deste usuário!";
+    header("Location: editar.php?id=$id");
+    exit;
+}
+
 /* EXCLUI LOGIN */
 $stmt = $conn->prepare("DELETE FROM login WHERE id_usuario = ?");
 $stmt->bind_param("i", $id);

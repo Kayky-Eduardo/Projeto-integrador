@@ -129,12 +129,7 @@ verificar_login($conn);
 <head>
     <meta charset="UTF-8">
     <title>Sistema de RH</title>
-    <link rel="stylesheet" href="../assets/css/estilo.css">
-    <link href="https://cdn.jsdelivr.net/npm/@pnotify/core@5.2.0/dist/PNotify.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@pnotify/core@5.2.0/dist/BrightTheme.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@pnotify/core@5.2.0/dist/PNotify.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@pnotify/mobile@5.2.0/dist/PNotifyMobile.js"></script>
-    <link rel="stylesheet" href="PNotifyBrightTheme.css">
+    <?php include("../include/link.html"); ?>
 </head>
 
 <body>
