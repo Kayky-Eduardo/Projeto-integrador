@@ -1,4 +1,4 @@
- <?php
+<?php
 // Conexão com banco de dados
 require_once "../../BD/conexao.php";
 session_start();
@@ -125,22 +125,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
     $dados = json_decode(file_get_contents('php://input'), true);
 
-    if($dados){
+    if($dados && isset($dados['acao'])){
         $acao = $dados['acao'] ?? '';
-
-        if (isset($dados['confirmado']) && $dados['confirmado'] === true) {
-            $id_evento = $dados['id_evento'] ?? '';
-            //deletando evento
-            if ($acao == 'deletar' && !empty($id_evento)){
-                $sql= $conn->prepare("DELETE FROM eventos WHERE id_evento = ?");
-                $sql->bind_param('i', $id_evento);
+        // deletar
+        if ($acao == 'deletar' && !empty($dados['id_evento'])) {
+            if (isset($dados['confirmado']) && $dados['confirmado'] === true) {
+                $sql = $conn->prepare("DELETE FROM eventos WHERE id_evento = ?");
+                $sql->bind_param('i', $dados['id_evento']);
                 if ($sql->execute()) {
-                    echo json_encode(['status' => 'sucesso', 'msg' => 'Evento deletado!']);
+                echo json_encode(['status' => 'sucesso', 'msg' => 'Evento Deletado!']);
                 } else {
                     echo json_encode(['status' => 'erro', 'msg' => 'Erro ao deletar.']);
                 }
                 exit;
             }
+        } 
+        // editar
+        else if($acao == 'editar' && !empty($dados['id_editar'])) {
+            $sql = $conn->prepare("UPDATE eventos SET valor = ? WHERE id_evento = ?");
+            $sql->bind_param('di', $dados['valor'], $dados['id_editar']);
+            if ($sql->execute()) {
+                echo json_encode(['status' => 'sucesso', 'msg' => 'Evento Editado!']);
+            } else {
+                echo json_encode(['status' => 'erro', 'msg' => 'Erro ao editar.']);
+            }
+            exit;
         }
     }
 }
@@ -195,11 +204,11 @@ input[type="text"], input[type="email"] {
         <?php if (count($eventos) == 0): ?>
             <tr><td colspan="2">Nenhum evento cadastrado.</td></tr>
         <?php else: ?>
-            <?php foreach ($eventos as $e): ?>
+            <?php foreach ($eventos as $e): ?><?= $e['valor'] ?>
                     <tr>
                         <td><?= strtoupper($e["tipo"]) . " - " . $e["descricao"]; ?></td>
                         <td>R$ <input id="<?= $e["id_evento"] ?>" class="input-editar"
-                        type="number" step="0.01" value="<?= number_format($e["valor"],2,'.','.'); ?>"></input>
+                        type="number" step="0.01" value="<?= $e["valor"] ?>"></input>
                         <button type="button" class="btn-deletar" data-id="<?= $e["id_evento"] ?>">deletar</button></td>
                     </tr>
                 </form>
