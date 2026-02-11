@@ -5,6 +5,19 @@ require "../../include/verificacao.php";
 verificar_login($conn);
 
 $setores = $conn->query("SELECT id_setor, nome_setor FROM setor ORDER BY nome_setor");
+$jornadas = $conn->query("SELECT * FROM tempo_jornada ORDER BY descricao");
+
+function formatar_dias(array $numeros) {
+
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isset($_POST['nome_cargo'], $_POST['nivel'], $_POST['salario'])) {
+
+    }
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -45,33 +58,12 @@ $setores = $conn->query("SELECT id_setor, nome_setor FROM setor ORDER BY nome_se
                 <label class="label" for="set-hora-max">Limite de hora extra:</label>
                 <input class="input" id="set-hora-max" type="time" required>
 
-                <button type="submit" class="btn btn-padrao">Salvar configuração</button>
+                <button type="submit" id="botao-salvar-jornada" class="btn btn-padrao">Salvar configuração</button>
             </form>
 
             <p id="resposta" role="alert" aria-live="polite" tabindex="0"></p>
         </section>
-        <!-- 
-            <select name="usuario">
-                <option value="">-- Todos --</option>
-                </*?php while ($u = $users->fetch_assoc()): ?>
-                    <option value="<//?= $u['id_usuario'] ?>"
-                    <//?= ($u['id_usuario'] == $filtroUser) ? 'selected' : '' ?>>
-                    <//?= $u['nome_usuario'] ?> (ID: <//?= $u['id_usuario'] ?>)
-                </option>
-                <//?php endwhile; ?>
-            </select>
-            -->
-        <select name="setor" id="set-setores">
-            <option value="">Selecione um setor</option>
-            <?php while ($s = $setor->fetch_assoc()): ?>
-                
-        </select>
-        <section>
-            <form class="form-linha">
-                <label class="label" for="set-setor">Setor</label>
-                
-            </form>
-        </section>
+
     </main>
 
     <script src="../../assets/js/script.js"></script>
