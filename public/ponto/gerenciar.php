@@ -165,6 +165,10 @@ while ($row = $result->fetch_assoc()) {
             'inicio'          => $row['inicio_pausa'],
             'fim'             => $row['fim_pausa'],
         ];
+    } else{
+        $pontos_agrupados[$id_ponto]['pausas'][] = [
+            'descricao_pausa' => 0,
+        ];
     }
 }
 ?>
@@ -244,11 +248,15 @@ while ($row = $result->fetch_assoc()) {
 
                                 <td>
                                     <?php foreach ($r['pausas'] as $pausa): ?>
-                                        <?php
-                                        $pausa_inicio = ($pausa['inicio'] ? date("H:i", strtotime($pausa['inicio'])) : '--:--');
-                                        $pausa_fim    = ($pausa['fim']    ? date("H:i", strtotime($pausa['fim'])) : '--:--');
-                                        echo htmlspecialchars($pausa['descricao_pausa']) . " - " . $pausa_inicio . " - " . $pausa_fim . "<br>";
-                                        ?>
+                                        <?php if ($pausa['descricao_pausa'] == 0):?>
+                                            <p>-</p>
+                                        <?php else:?>
+                                            <?php
+                                            $pausa_inicio = ($pausa['inicio'] ? date("H:i", strtotime($pausa['inicio'])) : '--:--');
+                                            $pausa_fim    = ($pausa['fim']    ? date("H:i", strtotime($pausa['fim'])) : '--:--');
+                                            echo htmlspecialchars($pausa['descricao_pausa']) . " - " . $pausa_inicio . " - " . $pausa_fim . "<br>";
+                                            ?>
+                                        <?php endif; ?>
                                     <?php endforeach; ?>
                                 </td>
 
