@@ -161,9 +161,13 @@ while ($row = $result->fetch_assoc()) {
 
     if (!empty($row['inicio_pausa'])) {
         $pontos_agrupados[$id_ponto]['pausas'][] = [
-            'descricao_pausa' => $row['descricao_pausa'],
+            'descricao_pausa' => ucfirst($row['descricao_pausa']),
             'inicio'          => $row['inicio_pausa'],
             'fim'             => $row['fim_pausa'],
+        ];
+    } else{
+        $pontos_agrupados[$id_ponto]['pausas'][] = [
+            'descricao_pausa' => 0,
         ];
     }
 }
@@ -244,23 +248,36 @@ while ($row = $result->fetch_assoc()) {
 
                                 <td>
                                     <?php foreach ($r['pausas'] as $pausa): ?>
-                                        <?php
-                                        $pausa_inicio = ($pausa['inicio'] ? date("H:i", strtotime($pausa['inicio'])) : '--:--');
-                                        $pausa_fim    = ($pausa['fim']    ? date("H:i", strtotime($pausa['fim'])) : '--:--');
-                                        echo htmlspecialchars($pausa['descricao_pausa']) . " - " . $pausa_inicio . " - " . $pausa_fim . "<br>";
-                                        ?>
+                                        <?php if ($pausa['descricao_pausa'] == 0):?>
+                                            <p>-</p>
+                                        <?php else:?>
+                                            <?php
+                                            $pausa_inicio = ($pausa['inicio'] ? date("H:i", strtotime($pausa['inicio'])) : '--:--');
+                                            $pausa_fim    = ($pausa['fim']    ? date("H:i", strtotime($pausa['fim'])) : '--:--');
+                                            echo htmlspecialchars($pausa['descricao_pausa']) . " - " . $pausa_inicio . " - " . $pausa_fim . "<br>";
+                                            ?>
+                                        <?php endif; ?>
                                     <?php endforeach; ?>
                                 </td>
 
                                 <td><?= $r['status'] ?></td>
 
                                 <td>
-                                    <?php if ($r['status'] !== 'Aprovado'): ?>
+                                    <!-- Aprovar somente se ainda não estiver aprovado -->
+                                    <?php if ($r['status'] !== 'Aprovado' && $r['status'] !== 'Revisar'): ?>
                                         <a class="btn-link btn-padrao" href="gerenciar.php?aprovar=<?= $r['id_ponto'] ?>">Aprovar</a>
                                     <?php endif; ?>
 
-                                    <?php if ($r['status'] === 'Finalizado' || $r['status'] === 'Em Andamento'): ?>
-                                        <a class="btn-link btn-desativar" href="../ponto/solicitar.php?id_ponto=<?= $r['id_ponto'] ?>">Solicitar Ajuste</a>
+                                    <!-- Permitir ajuste se não estiver aprovado -->
+                                    <?php if ($r['status'] === 'Finalizado' || $r['status'] === 'Em Andamento' || $r['status'] === 'Revisar'): ?>
+                                        <a class="btn-link btn-desativar" href="../ponto/solicitar.php?id_ponto=<?= $r['id_ponto'] ?>">
+                                        Solicitar Ajuste
+                                        </a>
+                                    <?php endif; ?>
+
+                                    <!-- Caso Aprovado -->
+                                    <?php if ($r['status'] === 'Aprovado'): ?>
+                                        <p>-</p>
                                     <?php endif; ?>
                                 </td>
                             </tr>
