@@ -79,6 +79,18 @@ function verificar_tempo_por_ponto($conn, $id_ponto, $id_usuario) {
         - tempo maximo de trabalho
         - e o tempo trabalhado a partir do inico_ponto até agora
     */
+    $stmt_ponto_aberto = $conn->prepare("SELECT id_ponto FROM ponto_dia WHERE id_usuario = ?");
+    $stmt_ponto_aberto->bind_param("i", $id_usuario);
+    $stmt_ponto_aberto->execute();
+    $result_ponto_aberto = $stmt_ponto_aberto->get_result();
+    if ($result_ponto_aberto->num_rows === 0) {
+        return [
+            'tipo' => 'erro',
+            'resultado' => 0,
+            'mensagem' => 'Ponto não está ativo'
+        ];
+    }
+    
     $stmt = $conn->prepare("
         SELECT 
             TIME_TO_SEC(tempo_jornada.maximo_hora_extra) AS hora_extra,
@@ -242,6 +254,14 @@ function coleta_dado($conn, $id_usuario) {
                 "mensagem" => $dados['mensagem'],
                 "tipo" => "excedido",
                 "tempo_trabalhado" => formatar_tempo($dados['segundos_trabalhados']),
+            ];
+        }
+
+        if ($tipo === "erro") {
+            return [
+                "coleta" => false,
+                "tipo" => "erro",
+                "mensagem" => $dados['mensagem']
             ];
         }
     } else {

@@ -137,10 +137,10 @@ if (isset($_SESSION['resposta_jornada'])) {
                 </p>
             <?php endif; ?>
             
-            <form class="form-linha" method="POST" action="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>">
-                <label class="label" for="set-setores">Setor</label>
+            <form class="form" method="POST" action="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>">
+                <label class="label" for="set-setores">Selecione um setor:</label>
                 <select class="select-padrao" name="setor" id="set-setores" required>
-                    <option value="">Selecione um setor:</option>
+                    <option value="">Selecione um setor</option>
                     <?php while ($s = $setores->fetch_assoc()): ?>
                         <option value="<?= (int)$s['id_setor'] ?>">
                             <?= htmlspecialchars($s['nome_setor']) ?>
@@ -161,7 +161,7 @@ if (isset($_SESSION['resposta_jornada'])) {
                         <option value="<?= (int)$j['id_tempo'] ?>">
                             <?= htmlspecialchars($j['descricao'] ?? 'Sem descrição') ?> | 
                             <?= htmlspecialchars($j['jornada']) ?> | 
-                            HE: <?= htmlspecialchars($j['maximo_hora_extra']) ?> | 
+                            he: <?= htmlspecialchars($j['maximo_hora_extra']) ?> | 
                             <?= htmlspecialchars($dias_formatados) ?>
                         </option>
                     <?php endwhile; ?>

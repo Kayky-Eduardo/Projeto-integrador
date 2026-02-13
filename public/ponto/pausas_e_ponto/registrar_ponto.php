@@ -235,26 +235,6 @@ $tiposPausa = $stmtTipos->get_result();
                     document.getElementById('formPausa').submit();
                     window.location.reload();
                 }
-
-                // fazer para atualizar em qualquer pagina
-                // derrepente, ele informa a api que tem que avisar, pega o tipo e o texto
-                // e a api exibe
-                if (segundosRestantes <= minSegundos && segundosRestantes > 0) {
-                    if (continuar == true) {
-                        let tempo = Math.round(segundosRestantes / 60);
-                        if (tempo > 60) {
-                            tempo = Math.round(tempo / 60);
-                        }
-    
-                        PNotify.notice({
-                            title: 'Aviso de Tempo',
-                            text: `Faltam ${tempo} minutos para o limite da sua pausa!`,
-                            delay: 10000
-                        });
-
-                        continuar = false;
-                    }
-                }
             }
 
             // Inicia o cronômetro
