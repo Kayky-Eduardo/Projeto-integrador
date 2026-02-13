@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Armazena a resposta na sessão para exibir após o redirect
         $_SESSION['resposta_jornada'] = $resposta;
         
-        // Redireciona para evitar reenvio do formulário (padrão POST-Redirect-GET)
+        // pra evitar reenvio do formulário
         header("Location: " . $_SERVER['PHP_SELF']);
         exit();
     }
