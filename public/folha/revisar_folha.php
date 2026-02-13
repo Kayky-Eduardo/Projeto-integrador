@@ -171,7 +171,10 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 <h1>HOLERITE <?php echo date("m/Y", strtotime($mes_comp)); ?></h1>
 
 <table>
-    <tr class="titulo"><td colspan="2">Empresa</td></tr>
+    <tr class="titulo">
+        <td><b>Empresa</b></td>
+        <td><b><a href="criar_empresa.php">Editar</a></b></td>
+    </tr>
     <tr><td>Nome:</td><td>Sem nome</td></tr>
     <tr><td>Endereço:</td><td>Sem endereço</td></tr>
     <tr><td>CNPJ:</td><td>Sem CNPJ</td></tr>
