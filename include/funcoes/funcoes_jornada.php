@@ -245,31 +245,141 @@ function atualizar_assiduidade($conn, $usuario_id, $percentual) {
     return $sucesso;
 }
 
-function set_jornada($conn, $descricao, $jornada, $hora_extra) {
+function set_jornada($conn, $descricao, $jornada, $hora_extra, $dias_semana = null) {    
+    if (empty(trim($descricao))) {
+        return [
+            'sucesso' => false,
+            'mensagem' => 'A descrição da jornada é obrigatória.',
+            'id_inserido' => null
+        ];
+    }
+    
+    $descricao = trim(strtolower($descricao));
+
+    if (strlen($descricao) > 100) {
+        return [
+            'sucesso' => false,
+            'mensagem' => 'A descrição não pode exceder 100 caracteres.',
+            'id_inserido' => null
+        ];
+    }
+        
+    $dias_semana_json = null;
+    if ($dias_semana !== null) {
+        if (empty($dias_semana)) {
+            return [
+                'sucesso' => false,
+                'mensagem' => 'Se informar dias da semana, ao menos um dia deve ser selecionado.',
+                'id_inserido' => null
+            ];
+        }
+                
+        foreach ($dias_semana as $dia) {
+            if ($dia < 1 || $dia > 7) {
+                return [
+                    'sucesso' => false,
+                    'mensagem' => 'Os dias da semana devem estar entre 1 (Segunda) e 7 (Domingo).',
+                    'id_inserido' => null
+                ];
+            }
+        }
+        
+        sort($dias_semana);
+        $dias_semana_json = json_encode($dias_semana);
+    }
+        
+    $stmt_verifica = $conn->prepare("
+        SELECT id_tempo 
+        FROM tempo_jornada 
+        WHERE LOWER(descricao) = ?
+    ");
+    $stmt_verifica->bind_param('s', $descricao);
+    $stmt_verifica->execute();
+    $resultado_verifica = $stmt_verifica->get_result();
+    
+    if ($resultado_verifica->num_rows > 0) {
+        $stmt_verifica->close();
+        return [
+            'sucesso' => false,
+            'mensagem' => 'Já existe uma jornada cadastrada com esta descrição.',
+            'id_inserido' => null
+        ];
+    }
+    $stmt_verifica->close();
+        
+    // Adiciona segundos ao formato (banco espera TIME completo HH:MM:SS)
+    $jornada_formatada = $jornada . ':00';
+    $hora_extra_formatada = $hora_extra . ':00';
+        
     $conn->begin_transaction();
-
+    
     try {
-        $descricao = trim(strtolower($descricao));
-        $jornada_formatada = $jornada . ':00';
-        $hora_extra_formatada = $hora_extra . ':00';
-
+        $dias = $dias_semana_json ?? json_encode([1, 2, 3, 4, 5, 6, 7]);
         $stmt = $conn->prepare("
-            INSERT INTO tempo_jornada (jornada, maximo_hora_extra, descricao)
-            VALUES (?, ?, ?);
+            INSERT INTO tempo_jornada (descricao, jornada, maximo_hora_extra, dias_semana)
+            VALUES (?, ?, ?, ?)
         ");
-
-        $stmt->bind_param('sss', $jornada_formatada, $hora_extra_formatada, $descricao);
+        
+        $stmt->bind_param('ssss', $descricao, $jornada_formatada, $hora_extra_formatada, $dias);
+        
         $sucesso = $stmt->execute();
-
+        
+        if (!$sucesso) {
+            throw new Exception("Falha ao executar a inserção: " . $stmt->error);
+        }
+        
+        $id_inserido = $stmt->insert_id;
         $stmt->close();
         $conn->commit();
-
-        return $sucesso;
+        
+        return [
+            'sucesso' => true,
+            'mensagem' => 'Jornada cadastrada com sucesso!',
+            'id_inserido' => $id_inserido
+        ];
+        
     } catch(Exception $e) {
         $conn->rollback();
-        throw new Exception("Erro ao configurar jornada: " . $e->getMessage());
+
+        return [
+            'sucesso' => false,
+            'mensagem' => 'Erro ao cadastrar jornada: ' . $e->getMessage(),
+            'id_inserido' => null
+        ];
     }
 }
+
+
+// função para atualizar a jornada no setor
+function atualizar_jornada($conn, $id_tempo, $id_setor) {
+    $stmt_update = $conn->prepare("UPDATE setor SET id_tempo = ? WHERE id_setor = ?");
+    $stmt_update->bind_param("ii", $id_tempo, $id_setor);
+    
+    if ($stmt_update->execute()) {
+        if ($stmt_update->affected_rows === 0) {
+            return [
+                'sucesso' => false,
+                'mensagem' => 'Nenhuma alteração foi realizada. A jornada pode já estar aplicada.'
+            ];
+        }
+        $stmt_update->close();
+        
+        return [
+            'sucesso' => true,
+            'mensagem' => 'Jornada atualizada com sucesso!'
+        ];
+
+    } else {
+        $erro = $stmt_update->error;
+        $stmt_update->close();
+        return [
+            'sucesso' => false,
+            'mensagem' => 'Erro ao atualizar jornada: ' . $erro
+        ];
+    }
+
+}
+
 
 function get_pessoas_setor($conn, $id_setor) {
     $stmt = $conn->prepare("

@@ -168,7 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const inputHoraExtra = document.getElementById("set-hora-max");
         const inputDescricao = document.getElementById("set-descricao");
         const resposta = document.getElementById("resposta");
-        const botaoSalvarJornada = formJornada.getElementById("botao-salvar-jornada");
+        const botaoSalvar = formJornada.querySelector("button");
 
         formJornada.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -191,7 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             try {
-                botaoSalvarJornada.disabled = true;
+                botaoSalvar.disabled = true;
                 resposta.textContent = "Salvando configuração...";
                 resposta.className = "info";
 
@@ -221,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 resposta.className = "erro";
                 console.error(error);
             } finally {
-                botaoSalvarJornada.disabled = false;
+                botaoSalvar.disabled = false;
             }
         });
     }

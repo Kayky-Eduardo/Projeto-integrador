@@ -1,23 +1,8 @@
 <?php
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
-require "../../include/verificacao.php";
+require_once "../../include/verificacao.php";
 verificar_login($conn);
-
-$setores = $conn->query("SELECT id_setor, nome_setor FROM setor ORDER BY nome_setor");
-$jornadas = $conn->query("SELECT * FROM tempo_jornada ORDER BY descricao");
-
-function formatar_dias(array $numeros) {
-
-}
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['nome_cargo'], $_POST['nivel'], $_POST['salario'])) {
-
-    }
-}
-
-
 ?>
 
 <!DOCTYPE html>
@@ -58,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <label class="label" for="set-hora-max">Limite de hora extra:</label>
                 <input class="input" id="set-hora-max" type="time" required>
 
-                <button type="submit" id="botao-salvar-jornada" class="btn btn-padrao">Salvar configuração</button>
+                <button type="submit" class="btn btn-padrao">Salvar configuração</button>
             </form>
 
             <p id="resposta" role="alert" aria-live="polite" tabindex="0"></p>
