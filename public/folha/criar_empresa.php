@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     if($dados){
         if (isset($dados['acao']) && $dados['acao'] == 'salvar'){
             $id_usuario = $dados['id_usuario'] ?? '';
-            /*
+            
             $sql = $conn->prepare("UPDATE empresas SET nome = ?, cnpj = ? WHERE id_usuario = ?");
             $sql->bind_param('ssi', $nome_empresa, $cnpj_empresa, $id_usuario);
             if ($sql->execute()) {
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
             } else {
                 echo json_encode(['status' => 'erro', 'msg' => 'Erro ao salvar dados.']);
             }
-            */
+            
             // Por enquanto, apenas retornamos sucesso
             echo json_encode(['status' => 'sucesso', 'msg' => 'Dados da empresa salvos!']);
             exit;
@@ -43,12 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 <a href="gerar_folhas_todos.php?$mes=<?= $mes ?>">voltar</a>
 <h1>Edição De Dados da Empresa</h1>
 
-<form action="">
+<form action="" id="meuForm">
     <label>Nome da Empresa</label>
-    <input type="text" required>
+    <input type="text" name="nome" required>
 
     <label>CNPJ</label>
-    <input type="text" required>
+    <input type="text" name="cnpj" required>
 </form>
 
 
@@ -69,12 +69,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
         let resposta = confirm('Tem certeza que deseja Salvar?');
         const idUsuario = this.getAttribute('id');
         if (resposta){
+            let dicionario = {};
+            let lista = [];
+            const form = document.getElementById('meuForm');
+            const formData = new FormData(form);
+
+            for (let [chave, valor] of formData.entries()) {
+                lista.push({chave, valor})
+            }
+            
             fetch('', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         acao: 'salvar',
-                        id_usuario: idUsuario
+                        id_usuario: idUsuario,
+                        dicionario : dicionario
                     })
                 })
                 .then(res => res.json())
