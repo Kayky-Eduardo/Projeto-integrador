@@ -1,4 +1,4 @@
-# SGRH — Sistema de Gerenciamento de Recursos Humanos
+# SGRH — Sistema de Gerenciamento de Recursos Humanos (Em andamento)
 
 ## Descrição
 
