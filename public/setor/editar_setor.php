@@ -67,7 +67,7 @@ $jornada_atual = $atual->get_result()->fetch_assoc();  // Nome consistente
     <main>
         <h2>Editar Setor</h2>
 
-        <div id="mensagem"></div>
+        <p id="mensagem"></p>
 
         <form id="form-setor" class="form">
             <label class="label" for="nome_setor">Nome do Setor:</label><br>

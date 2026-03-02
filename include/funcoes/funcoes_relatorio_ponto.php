@@ -1,4 +1,5 @@
 <?php
+
 function evolucao_presenca($conn) {
     $data_inicio = date('Y-m-01'); // Primeiro dia do mês
     $data_fim = date('Y-m-d'); // Hoje
@@ -142,7 +143,8 @@ function filtrar($conn, $tipo) {
         $presentes = [];
         $filtro_presente = $conn->prepare("
         SELECT
-            usuario.email_usuario, ponto_dia.*,
+            usuario.email_usuario,
+            ponto_dia.*,
             TIMESTAMPDIFF(MINUTE, inicio_ponto, NOW()) AS tempo_logado
         FROM ponto_dia
         JOIN usuario ON ponto_dia.id_usuario = usuario.id_usuario
@@ -153,6 +155,28 @@ function filtrar($conn, $tipo) {
         $filtro_presente->execute();
         $result = $filtro_presente->get_result();
         while($linha = $result->fetch_assoc()){
+
+            // // verificando se não tem pausa em aberta com este id
+            // só pode ser contado como presente se não estiver com pausa aberta
+            // $linha_id_usuario = $linha['id_usuario'];
+
+            // $verificar_em_pausa = $conn->prepare("
+            //     SELECT
+            //         id_pausa,
+            //         inicio,
+            //         fim
+            //     FROM pausa
+            //     WHERE id_usuario = ?
+            // ");
+            // $verificar_em_pausa->bind_params("i", $linha_id_usuario);
+            // $verificar_em_pausa->execute();
+            // $resultado_verificacao = $verificar_em_pausa->get_result();
+
+            // if ($resultado_verificacao->fetch_assoc()['fim'] === null) {
+            //     // continua para o proximo usuario
+            // } else {
+            //     $presentes[] = $linha;
+            // }
             $presentes[] = $linha;
         }
         return $presentes;
