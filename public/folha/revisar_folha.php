@@ -145,6 +145,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     }
 }
 // CODIGUINHO DO DABI ↑
+// pegar valores de empresa
+$sql_empresa = $conn->prepare("
+    SELECT *
+    FROM empresas
+    WHERE id_empresa = 0
+");
+// $sql_empresa->bind_param("i", $id_usuario);
+$sql_empresa->execute();
+$empresa = $sql_empresa->get_result()->fetch_assoc();
+
 
 ?>
 
@@ -175,9 +185,9 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
         <td><b>Empresa</b></td>
         <td><b><a href="criar_empresa.php">Editar</a></b></td>
     </tr>
-    <tr><td>Nome:</td><td>Sem nome</td></tr>
-    <tr><td>Endereço:</td><td>Sem endereço</td></tr>
-    <tr><td>CNPJ:</td><td>Sem CNPJ</td></tr>
+    <tr><td>Nome:</td><td><?= isset($empresa["nome_fantasia"]) ? $empresa['nome_fantasia'] : 'Sem Nome'?></td></tr>
+    <tr><td>Endereço:</td><td> <?= isset($empresa["uf"]) ? $empresa['uf'] : 'Sem endereço'?></td></tr>
+    <tr><td>CNPJ:</td><td><?= isset($empresa["cnpj"]) ? $empresa['cnpj'] : 'Sem CNPJ'?></td></tr>
 
     <tr class="titulo"><td colspan="2">Funcionário</td></tr>
     <tr><td>Nome:</td><td><?php echo $user["nome_usuario"]; ?></td></tr>

@@ -186,9 +186,9 @@ input[type="text"], input[type="email"] {
 
     <table>
         <tr class="titulo"><td colspan="2">Empregador</td></tr>
-        <tr><td>Nome:</td><td>Sem nome</td></tr>
-        <tr><td>Endereço:</td><td>Sem endereço</td></tr>
-        <tr><td>CNPJ:</td><td>Sem CNPJ</td></tr>
+        <tr><td>Nome:</td><td><?= isset($empresa["nome_fantasia"]) ? $empresa['nome_fantasia'] : 'Sem Nome'?></td></tr>
+        <tr><td>Endereço:</td><td> <?= isset($empresa["uf"]) ? $empresa['uf'] : 'Sem endereço'?></td></tr>
+        <tr><td>CNPJ:</td><td><?= isset($empresa["cnpj"]) ? $empresa['cnpj'] : 'Sem CNPJ'?></td></tr>
 
         <tr class="titulo"><td colspan="2">Funcionário</td></tr>
         <tr><td>Nome:</td><td><?= $user["nome_usuario"]; ?></td></tr>
