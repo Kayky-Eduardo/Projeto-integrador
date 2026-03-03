@@ -307,7 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id_login: idLogin })
             });
-
+            window.location.reload();
             carregarLogados();
         }
 

@@ -132,7 +132,7 @@ while ($pausa_row = $pausas->fetch_assoc()) {
 
                         <article>
                             <label for="valor_novo_ponto" class="label">Novo horário:</label>
-                            <input type="time" name="valor_novo_ponto" id="valor_novo_ponto" class="input">
+                            <input type="time" name="valor_novo_ponto" id="valor_novo_ponto" class="input" required>
                         </article>
                     </section>
 
