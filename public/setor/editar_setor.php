@@ -87,8 +87,7 @@ $jornada_atual = $atual->get_result()->fetch_assoc();  // Nome consistente
                         <label>
                             <input type="checkbox" 
                                 name="usuarios[]" 
-                                value="<?= $u['id_usuario'] ?>"
-                                id="atualizador">
+                                value="<?= $u['id_usuario'] ?>">
                             <?= htmlspecialchars($u['nome_usuario']) ?>
                         </label>
                     <?php endwhile; ?>
@@ -265,10 +264,11 @@ $jornada_atual = $atual->get_result()->fetch_assoc();  // Nome consistente
             ativar_select();
         })
 
-        document.getElementById("atualizador").addEventListener("change", function () {
-            atualizar_contador();
-        })
-
+        document.querySelectorAll('input[name="usuarios[]"]').forEach(function(checkbox) {
+            checkbox.addEventListener("change", function () {
+                atualizar_contador();
+            });
+        });
         // Mostrar mensagens ao usuário de acordo com o tipo proporcionado. exemplo: erro
         function mostrar_mensagem(texto, tipo = null) {
             const div = document.getElementById('mensagem');

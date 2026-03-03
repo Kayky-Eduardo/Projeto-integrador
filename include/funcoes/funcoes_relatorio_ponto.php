@@ -77,64 +77,58 @@ function calculo_total_usuarios($conn) {
 // realizando as pesquisas do status do funcionário
 // no banco de dados
 function dados_grafico($conn) {
+    // Presentes (excluindo quem está em pausa)
     $pesquisa_trabalhando = $conn->prepare("
         SELECT COUNT(*) AS total_trabalhando
         FROM ponto_dia
-        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NULL OR fim_ponto = '00:00:00')
+        WHERE inicio_ponto IS NOT NULL 
+        AND (fim_ponto IS NULL OR fim_ponto = '00:00:00')
         AND data_ponto = CURDATE()
+        AND NOT EXISTS (
+            SELECT 1 FROM pausa
+            WHERE pausa.id_usuario = ponto_dia.id_usuario
+            AND (pausa.fim IS NULL OR pausa.fim = '' OR pausa.fim = '0000-00-00')
+            AND pausa.data = CURDATE()
+        )
     ");
-    
     $pesquisa_trabalhando->execute();
     $result = $pesquisa_trabalhando->get_result();
-    if ($linha = $result->fetch_assoc()) {
-        $numero_presente = $linha['total_trabalhando'];
-    } else {
-        $numero_presente = 0;
-    }
-  
-    $total_usuarios = calculo_total_usuarios($conn);
+    $numero_presente = ($linha = $result->fetch_assoc()) ? (int)$linha['total_trabalhando'] : 0;
 
-    $numero_ausentes = $total_usuarios - (int)$numero_presente;
-    
+    // Em pausa
     $pesquisa_pausa = $conn->prepare("
         SELECT COUNT(*) AS total_pausa
         FROM pausa
-        WHERE inicio IS NOT NULL AND (fim IS NULL or fim = '' or fim = '00:00:00')
-        AND data = CURDATE();
+        WHERE inicio IS NOT NULL 
+        AND (fim IS NULL OR fim = '' OR fim = '0000-00-00')
+        AND data = CURDATE()
     ");
     $pesquisa_pausa->execute();
     $result = $pesquisa_pausa->get_result();
+    $numero_pausa = ($linha = $result->fetch_assoc()) ? (int)$linha['total_pausa'] : 0;
 
-    if ($linha = $result->fetch_assoc()) {
-        $numero_pausa = (int)$linha['total_pausa'];
-    } else {
-        $numero_pausa = 0;
-     }
-    
-    // pesquisa horario completo
+    // Horário completo
     $pesquisa_horario_completo = $conn->prepare("
         SELECT COUNT(*) AS total_completo
         FROM ponto_dia
         WHERE inicio_ponto IS NOT NULL 
         AND (fim_ponto IS NOT NULL AND fim_ponto != '00:00:00')
-        AND data_ponto = CURDATE();
+        AND data_ponto = CURDATE()
     ");
     $pesquisa_horario_completo->execute();
-
     $result = $pesquisa_horario_completo->get_result();
+    $numero_horario_completo = ($linha = $result->fetch_assoc()) ? (int)$linha['total_completo'] : 0;
 
-    if ($linha = $result->fetch_assoc()) {
-        $numero_horario_completo = (int)$linha['total_completo'];
-    } else {
-        $numero_horario_completo = 0;
-    }
-    
-    // entregando uma array com os valores da pesquisas
-    $valores = [
-        $numero_presente, $numero_ausentes,
-        $numero_pausa, $numero_horario_completo
+    // Ausentes = total - todas as outras categorias
+    $total_usuarios = calculo_total_usuarios($conn);
+    $numero_ausentes = $total_usuarios - $numero_presente - $numero_pausa - $numero_horario_completo;
+
+    return [
+        $numero_presente,
+        $numero_ausentes,
+        $numero_pausa,
+        $numero_horario_completo
     ];
-    return $valores;
 }
 
 // realizando o filtro para trazer as informações

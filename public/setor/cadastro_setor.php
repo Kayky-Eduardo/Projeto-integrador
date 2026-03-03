@@ -14,7 +14,6 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastrar Setor</title>
         <?php include("../../include/link.html"); ?>
-
     <style>
         .caixa_select {
             position: relative;
@@ -66,7 +65,7 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
                         <?php while ($u = $usuarios->fetch_assoc()): ?>
                             <label class="label">
                                 <input type="checkbox" name="usuarios[]" 
-                                value="<?= $u['id_usuario'] ?>" id="atualizador">
+                                value="<?= $u['id_usuario'] ?>">
                                 <?= htmlspecialchars($u['nome_usuario']) ?>
                             </label>
                         <?php endwhile; ?>
@@ -111,7 +110,7 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
                     return;
                 }
                 
-                if (!idTempo) {
+                if (!id_tempo) {
                     mostrar_mensagem('Selecione uma jornada de trabalho!', 'erro');
                     return;
                 }
@@ -172,9 +171,11 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
             ativar_select();
         })
 
-        document.getElementById("atualizador").addEventListener("change", function () {
-            atualizar_contador();
-        })
+        document.querySelectorAll('input[name="usuarios[]"]').forEach(function(checkbox) {
+            checkbox.addEventListener("change", function () {
+                atualizar_contador();
+            });
+        });
 
         // Mostrar mensagens ao usuário
         function mostrar_mensagem(texto, tipo) {
