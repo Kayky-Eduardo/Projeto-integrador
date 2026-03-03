@@ -2,6 +2,8 @@
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/funcoes/funcoes_calculo.php";
+require "../../include/verificacao.php";
+verificar_login($conn);
 
 // Correção da lógica de erro de acesso
 $msg_acesso = $_GET['erro'] ?? '';

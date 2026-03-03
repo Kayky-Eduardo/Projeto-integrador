@@ -1,59 +1,75 @@
 <?php
 // Conexão com banco de dados
-require_once "../../BD/conexao.php";
 session_start();
+include(__DIR__ . "/../../BD/conexao.php");
+require "../../include/verificacao.php";
+verificar_login($conn);
 
 // ID usuário logado
 $id_usuario = $_SESSION['id_usuario'];
 
-// CODIGUINHO DO DABI ↓
+// pegar valores de empresa
+$sql_empresa = $conn->prepare("
+    SELECT *
+    FROM empresas
+    WHERE id_empresa = 0
+");
+// $sql_empresa->bind_param("i", $id_usuario); 
+$sql_empresa->execute();
+$empresa = $sql_empresa->get_result()->fetch_assoc();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
     $dados = json_decode(file_get_contents('php://input'), true);
 
-    if($dados){
-        if (isset($dados['acao']) && $dados['acao'] == 'salvar'){
-            $id_usuario = $dados['id_usuario'] ?? '';
-            $d = $dados['dicionario'] ?? [];
-            
-            $sql = $conn->prepare("INSERT INTO empresas (
-            id_modificador, 
-            data_modificacao, 
-            razao_social, 
-            nome_fantasia, 
-            cnpj, 
-            uf, 
-            cidade, 
-            bairro, 
-            numero, 
-            cep
-            ) VALUES (?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)");
+    if (isset($empresa)){
+        echo json_encode(['status' => 'sucesso', 'msg' => 'Já existe essa merda!']);
+    } else{
+        if($dados){
+            if (isset($dados['acao'] ) && $dados['acao'] == 'salvar'){
+                $id_usuario = $dados['id_usuario'] ?? '';
+                $d = $dados['dicionario'] ?? [];
+                
+                $sql = $conn->prepare("INSERT INTO empresas (
+                id_modificador, 
+                data_modificacao, 
+                razao_social, 
+                nome_fantasia, 
+                cnpj, 
+                uf, 
+                cidade, 
+                bairro, 
+                numero, 
+                cep
+                ) VALUES (?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)");
 
-            // Mapeamento: 1 inteiro (id) + 8 strings
-            $tipos = 'issssssss'; 
-            
-            $sql->bind_param($tipos, 
-                $id_usuario,
-                $d['razao_social'], 
-                $d['nome_fantasia'], 
-                $d['cnpj'], 
-                $d['estado'], 
-                $d['cidade'], 
-                $d['bairro'], 
-                $d['numero'], 
-                $d['cep']
-            );
+                // Mapeamento: 1 inteiro (id) + 8 strings
+                $tipos = 'issssssss'; 
+                
+                $sql->bind_param($tipos, 
+                    $id_usuario,
+                    $d['razao_social'], 
+                    $d['nome_fantasia'], 
+                    $d['cnpj'], 
+                    $d['estado'], 
+                    $d['cidade'], 
+                    $d['bairro'], 
+                    $d['numero'], 
+                    $d['cep']
+                );
 
-            if ($sql->execute()) {
-                echo json_encode(['status' => 'sucesso', 'msg' => 'Dados da empresa salvos!']);
-            } else {
-                echo json_encode(['status' => 'erro', 'msg' => 'Erro ao salvar dados.']);
+                if ($sql->execute()) {
+                    echo json_encode(['status' => 'sucesso', 'msg' => 'Dados da empresa salvos!']);
+                } else {
+                    echo json_encode(['status' => 'erro', 'msg' => 'Erro ao salvar dados.']);
+                }
+                exit;
             }
-            exit;
         }
     }
+
+    
 }
-// CODIGUINHO DO DABI ↑
 
 ?>
 
@@ -73,7 +89,7 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 </style>
 <body>
 
-<div id="holerite">
+<section id="holerite">
 <a href="gerar_folhas_todos.php">voltar</a>
 <h1>Edição De Dados da Empresa</h1>
 
@@ -126,13 +142,33 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 <button class="btn-salvar" id="<?= $id_usuario ?>">Salvar</button>
 
 <table>
-    <tr><td><b>Empresa</b></td></tr>
-    <tr><td>Nome:</td><td><?= isset($empresa["nome_fantasia"]) ? $empresa['nome_fantasia'] : 'Sem Nome'?></td></tr>
-    <tr><td>Endereço:</td><td> <?= isset($empresa["uf"]) ? $empresa['uf'] : 'Sem endereço'?></td></tr>
-    <tr><td>CNPJ:</td><td><?= isset($empresa["cnpj"]) ? $empresa['cnpj'] : 'Sem CNPJ'?></td></tr>
+    <caption><b>Empresa</b></caption>
+    <thead>
+        <tr>
+            <th>ID Empresa</th>
+            <th>ID Modificador</th>
+            <th>Data Modificação</th>
+
+            <th>Razão Social</th>
+            <th>Nome Fantasia</th>
+            <th>CNPJ</th>
+            <th>CEP</th>
+            <th>Estado</th>
+            <th>Cidade</th>
+            <th>Bairro</th>
+            <th>Número</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <?php foreach($empresa as $e): ?>
+                <td><?= isset($e) ? $e : '⊘'?></td>
+            <?php endforeach;?>
+        </tr>
+    </tbody>
 </table>
 
-</div>
+</section>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>

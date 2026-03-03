@@ -3,6 +3,8 @@ include(__DIR__ . "/../../BD/conexao.php");
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+require "../../include/verificacao.php";
+verificar_login($conn);
 
 $id_usuario = $_SESSION['id_usuario'] ?? 0;
 $nivel = $_SESSION['nivel'] ?? 0;

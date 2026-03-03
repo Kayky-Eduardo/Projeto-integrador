@@ -1,7 +1,9 @@
 <?php
 // Conexão com banco de dados
-require_once "../../BD/conexao.php";
 session_start();
+include(__DIR__ . "/../../BD/conexao.php");
+require "../../include/verificacao.php";
+verificar_login($conn);
 
 // -----------------------------
 // 1. Recebe o mês (competência)

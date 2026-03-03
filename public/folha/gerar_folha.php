@@ -2,6 +2,8 @@
 
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
+require "../../include/verificacao.php";
+verificar_login($conn);
 
 $nome_usuario = $_SESSION['nome_usuario'];
 
