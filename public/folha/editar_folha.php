@@ -1,6 +1,7 @@
  <?php
 // Conexão com banco de dados
 require_once "../../BD/conexao.php";
+require_once "../../include/funcoes/calculoDescontoFalta.php";
 session_start();
 
 // -----------------------------
@@ -107,6 +108,9 @@ if (!$folha) {
     exit;
 }
 
+
+//função e executa o cálculo e atualização do desconto
+$desconto = calcularEAplicarDescontoFalta($conn, $id_usuario, $mes_comp, $user, $folha);
 
 // -----------------------------
 // 8. Eventos

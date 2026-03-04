@@ -1,6 +1,7 @@
 <?php
 // Conexão com banco de dados
 require_once "../../BD/conexao.php";
+require_once "../../include/funcoes/calculoDescontoFalta.php";
 session_start();
 
 // -----------------------------
@@ -107,6 +108,8 @@ if (!$folha) {
     exit;
 }
 
+//função e executa o cálculo e atualização do desconto
+$desconto = calcularEAplicarDescontoFalta($conn, $id_usuario, $mes_comp, $user, $folha);
 
 // -----------------------------
 // 8. Eventos
@@ -244,6 +247,18 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
         }
     })
     //CÓDIGO DAVI ↑↑↑↑↑
+    window.onload = function () {
+        // Se não marcou como "acabou de recarregar"
+        if (!sessionStorage.getItem("justReloaded")) {
+            // Marca que acabou de recarregar
+            sessionStorage.setItem("justReloaded", "true");
+            // Recarrega a página
+            location.reload();
+        } else {
+            // Limpa a marca para a próxima vez que entrar na página
+            sessionStorage.removeItem("justReloaded");
+        }
+    };
 
 </script>
 

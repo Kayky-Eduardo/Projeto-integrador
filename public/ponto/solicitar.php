@@ -173,6 +173,8 @@ while ($pausa_row = $pausas->fetch_assoc()) {
                     </article>
 
                     <button type="submit" class="btn btn-padrao">Enviar Solicitação</button>
+                    <div id="erro_validacao" class="erro-login" style="display:none;"></div>
+
                 </form>
             </section>
     </main>
@@ -199,6 +201,119 @@ while ($pausa_row = $pausas->fetch_assoc()) {
                 document.getElementById('id_pausa').required = true;
             }
         }
+        // Evento ao enviar o formulário
+        document.querySelector("form").addEventListener("submit", function(e) {
+
+            // Seleciona a div que exibirá mensagens de erro
+            const erroBox = document.getElementById("erro_validacao");
+            // Esconde a div de erro e limpa mensagens anteriores
+            erroBox.style.display = "none";
+            erroBox.innerHTML = "";
+
+            // Remove a classe de erro de ambos os campos (reset visual)
+            document.getElementById("valor_novo_ponto").classList.remove("input-erro");
+            document.getElementById("pausa_nova").classList.remove("input-erro");
+
+            // Pega o tipo de ajuste selecionado (ponto ou pausa)
+            const tipo = document.getElementById('tipo_ajuste').value;
+
+            // ===== VALIDAÇÃO DE PONTO =====
+            if (tipo === 'ponto') {
+                // Pega qual campo está sendo ajustado (inicio ou fim do ponto)
+                const campo = document.getElementById('campo_ponto').value;
+                // Pega o novo valor que o usuário inseriu
+                const novoValor = document.getElementById('valor_novo_ponto').value;
+
+                // Pega os horários atuais do registro (PHP inserindo no JS)
+                const inicioAtual = "<?= $reg['inicio_ponto'] ? date("H:i", strtotime($reg['inicio_ponto'])) : '' ?>";
+                const fimAtual = "<?= $reg['fim_ponto'] ? date("H:i", strtotime($reg['fim_ponto'])) : '' ?>";
+
+                // Se o usuário não digitou nada, sai da validação
+                if (!novoValor) return;
+
+                // Validação: entrada não pode ser depois da saída
+                if (campo === 'inicio_ponto' && fimAtual && novoValor > fimAtual) {
+                    e.preventDefault(); // impede o envio do formulário
+                    mostrarErro("A entrada não pode ser depois da saída.", "valor_novo_ponto");
+                    return;
+                }
+
+                // Validação: saída não pode ser antes da entrada
+                if (campo === 'fim_ponto' && inicioAtual && novoValor < inicioAtual) {
+                    e.preventDefault();
+                    mostrarErro("A saída não pode ser antes da entrada.", "valor_novo_ponto");
+                    return;
+                }
+            }
+
+            // ===== VALIDAÇÃO DE PAUSA =====
+            if (tipo === 'pausa') {
+                // Pega qual campo da pausa está sendo ajustado (inicio ou fim)
+                const campoPausa = document.getElementById('campo_pausa').value;
+                const novaHora = document.getElementById('pausa_nova').value;
+
+                // Pega os horários de entrada e saída do ponto
+                const inicioPonto = "<?= $reg['inicio_ponto'] ? date("H:i", strtotime($reg['inicio_ponto'])) : '' ?>";
+                const fimPonto = "<?= $reg['fim_ponto'] ? date("H:i", strtotime($reg['fim_ponto'])) : '' ?>";
+
+                // Pega o texto do select da pausa selecionada
+                const selectPausa = document.getElementById("id_pausa");
+                const textoSelecionado = selectPausa.options[selectPausa.selectedIndex].text;
+
+                // Extrai horários atuais da pausa usando regex
+                const match = textoSelecionado.match(/Início:\s(\d{2}:\d{2}),\sFim:\s(\d{2}:\d{2})/);
+                if (!match) return;
+
+                const inicioPausaAtual = match[1];
+                const fimPausaAtual = match[2];
+
+                // Se o usuário não digitou nada, sai da validação
+                if (!novaHora) return;
+
+                // Validações para início da pausa
+                if (campoPausa === 'inicio_pausa') {
+                    // Início da pausa não pode ser depois do fim da pausa
+                    if (novaHora > fimPausaAtual) {
+                        e.preventDefault();
+                        mostrarErro("O início da pausa não pode ser depois do fim.", "pausa_nova");
+                        return;
+                    }
+                    // Início da pausa não pode ser antes da entrada
+                    if (inicioPonto && novaHora < inicioPonto) {
+                        e.preventDefault();
+                        mostrarErro("A pausa não pode começar antes da entrada.", "pausa_nova");
+                        return;
+                    }
+                }
+
+                // Validações para fim da pausa
+                if (campoPausa === 'fim_pausa') {
+                    // Fim da pausa não pode ser antes do início
+                    if (novaHora < inicioPausaAtual) {
+                        e.preventDefault();
+                        mostrarErro("O fim da pausa não pode ser antes do início.", "pausa_nova");
+                        return;
+                    }
+                    // Fim da pausa não pode ser depois da saída
+                    if (fimPonto && novaHora > fimPonto) {
+                        e.preventDefault();
+                        mostrarErro("A pausa não pode terminar depois da saída.", "pausa_nova");
+                        return;
+                    }
+                }
+            }
+
+            // ===== Função auxiliar para mostrar erro e marcar campo =====
+            function mostrarErro(mensagem, campoErroId) {
+                erroBox.innerHTML = mensagem; // insere a mensagem de erro
+                erroBox.style.display = "block"; // mostra o box de erro
+                if (campoErroId) {
+                    // adiciona a classe que destaca visualmente o campo com erro
+                    document.getElementById(campoErroId).classList.add("input-erro");
+                }
+            }
+        });
+
     </script>
 </body>
 
