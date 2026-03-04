@@ -322,9 +322,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    /* PNOTIFY */
     function chamarPnotifyAviso(titulo, mensagem, milissegundos) {
+        const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_comum.mp3');
+
+        som_aviso.play();
+
         let tempo = milissegundos ?? 5000;
         PNotify.info({
+            title: titulo,
+            text: `${mensagem}`,
+            delay: tempo,
+        });
+    }
+
+    function chamarPnotifyAlert(titulo, mensagem, milissegundos) {
+        const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_erro.wav');
+
+        som_aviso.play();
+
+        let tempo = milissegundos ?? 5000;
+        PNotify.alert({
             title: titulo,
             text: `${mensagem}`,
             delay: tempo,

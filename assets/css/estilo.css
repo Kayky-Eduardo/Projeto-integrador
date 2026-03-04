@@ -15,6 +15,7 @@
     --cor-texto-suave: #64748b;
     --tamanho-texto-padrao: 0.9rem;
     --tamanho-titulo-padrao: 1.4rem;
+    --tamanho-titulo-pagina: 2.0rem;
 
     /* Fundos */
     --cor-fundo-pagina: #F2F2F2;
@@ -198,6 +199,23 @@ footer a {
     width: 100%;
 }
 
+/* TÍTULO DA PÁGINA */
+.page-title {
+    font-size: var(--tamanho-titulo-pagina);
+    margin-bottom: 1rem;
+    color: var(--cor-principal);
+    text-align: center;
+}
+
+/* PÁGINA PADRÃO */
+.pagina-padrao {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    align-items: stretch;
+}
+
 /* CONTAINER */
 .container {
     background-color: var(--cor-fundo-card);
@@ -258,12 +276,18 @@ footer a {
     background-color: var(--cor-fundo-pagina);
 }
 
+.btn-destaque {
+    background-color: var(--cor-destaque);
+    color: var(--cor-principal);
+}
+
 .btn-ativar {
     background-color: #2ecc71;
 }
 
 .btn-desativar {
     background-color: #f97316;
+    color: var(--cor-principal);
 }
 
 .btn-excluir {
@@ -458,6 +482,12 @@ footer a {
     color: var(--cor-principal);
 }
 
+.tabela-padrao td:last-child .btn-link {
+    width: auto;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+}
+
 /* FILTROS */
 .filtro-texto {
     background: var(--cor-fundo-card);
@@ -465,6 +495,26 @@ footer a {
     border-radius: var(--raio-borda-grande);
     padding: 12px;
     width: 100%;
+}
+
+.filtro-padrao {
+    background: var(--cor-fundo-card);
+    border: 1px solid var(--cor-borda-padrao);
+    border-radius: var(--raio-borda-grande);
+    padding: 12px;
+    width: 100%;
+}
+
+.filtro-padrao form {
+    align-items: center;
+    justify-content: center;
+}
+
+.filtro-padrao article {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
 }
 
 /* CARROSSEL IMAGEM E TEXTO */
@@ -792,14 +842,6 @@ footer a {
 }
 
 /* PÁGINA DE BANCO DE HORAS */
-.banco-horas {
-    width: 70%;
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-    align-items: stretch;
-}
-
 .bh-relatorio {
     background-color: var(--cor-fundo-card);
     border: 1px solid var(--cor-borda-padrao);
@@ -844,33 +886,71 @@ footer a {
     color: var(--cor-texto-suave);
 }
 
-.bh-filtro {
-    background: var(--cor-fundo-card);
-    border: 1px solid var(--cor-borda-padrao);
-    border-radius: var(--raio-borda-grande);
-    padding: 12px;
-    width: 100%;
+/* PÁGINA DE PONTO */
+.ponto-dia {
+    width: 50%;
+    margin: 0 auto;
+    min-width: 500px;
 }
 
-.bh-filtro form {
-    align-items: center;
+.ponto-dia h2 {
+    font-size: var(--tamanho-titulo-padrao);
+    color: var(--cor-principal);
+}
+
+.ponto-dia ul {
+    list-style-type: none;
+    display: flex;
+    flex-direction: row;
+    text-align: center;
+    gap: 30px;
     justify-content: center;
 }
 
-.bh-filtro article {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    align-items: center;
+.ponto-dia li {
+    width: 20%;
+    min-width: 200px;
+    background-color: var(--cor-fundo-pagina);
 }
 
-/* PÁGINA CONTROLE DE USUÁRIOS ONLINE */
-.controle-usuarios {
-    width: 70%;
+.bater-ponto {
     display: flex;
     flex-direction: column;
-    gap: 30px;
-    align-items: stretch;
+    gap: 16px;
+    text-align: center;
+    width: 50%;
+    min-width: 500px;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.bater-ponto h2 {
+    font-size: var(--tamanho-titulo-padrao);
+    color: var(--cor-principal);
+}
+
+.bater-ponto .tabela-padrao {
+    border: none;
+}
+
+/* PÁGINA DE SOLICITAR AJUSTE */
+.solicitar-ajuste {
+    width: 50%;
+    margin: 0 auto;
+    min-width: 500px;
+}
+
+.solicitar-ajuste article {
+    font-size: var(--tamanho-titulo-pagina);
+    color: var(--cor-principal);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+}
+
+.solicitar-ajuste label {
+    margin-bottom: 10px;
 }
 
 
@@ -929,6 +1009,10 @@ footer a {
 @media (max-width: 1000px) {
     main {
         padding: 1.2rem;
+    }
+
+    .pagina-padrao {
+        width: 100%;
     }
 
     /* Navbar */
@@ -1011,5 +1095,30 @@ footer a {
         flex-direction: row;
         justify-content: center;
         flex-wrap: wrap;
+    }
+
+    /* Página Gerenciamento de Ponto */
+    .filtro-ponto .form-linha {
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .filtro-ponto input,
+    .filtro-ponto select {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .filtro-ponto button {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .tabela-padrao {
+        overflow-x: auto;
+    }
+
+    .tabela-padrao table {
+        min-width: 900px;
     }
 }

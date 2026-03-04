@@ -294,13 +294,28 @@ function filtrar_usuario($conn, $id_usuario = null) {
     }
 
     $coleta_usuario->close();
+    
+    if (empty($dados_grafico)) {
+        return [
+            'sucesso' => false,
+            'periodo' => [
+                'inicio' => $data_inicio,
+                'fim' => $data_fim
+            ],
+            'usuarios' => [],
+            'mensagem' => 'Sem registros'
+        ];
+    }
 
     return [
+        'sucesso' => true,
         'periodo' => [
             'inicio' => $data_inicio,
             'fim' => $data_fim
         ],
+        'mensagem' => 'consulta concluida!',
         'usuarios' => $dados_grafico
+        
     ];
 }
 
