@@ -155,6 +155,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
         }
     }
 }
+// pegar valores de empresa
+$sql_empresa = $conn->prepare("
+    SELECT *
+    FROM empresas
+    WHERE id_empresa = 0
+");
+// $sql_empresa->bind_param("i", $id_usuario);
+$sql_empresa->execute();
+$empresa = $sql_empresa->get_result()->fetch_assoc();
 // CODIGUINHO DO DABI ↑
 
 ?>
@@ -187,9 +196,15 @@ input[type="text"], input[type="email"] {
     <h1>EDITAR HOLERITE <?= date("m/Y", strtotime($mes_comp)); ?></h1>
 
     <table>
-        <tr class="titulo"><td colspan="2">Empregador</td></tr>
+        <tr class="titulo">
+        <td><b>Empresa</b></td>
+        <td><b><a href="criar_empresa.php">Editar</a></b></td>
+        </tr>
         <tr><td>Nome:</td><td><?= isset($empresa["nome_fantasia"]) ? $empresa['nome_fantasia'] : 'Sem Nome'?></td></tr>
-        <tr><td>Endereço:</td><td> <?= isset($empresa["uf"]) ? $empresa['uf'] : 'Sem endereço'?></td></tr>
+        <tr><td>Endereço:</td><td>
+            <?= isset($empresa["uf"]) ? $empresa["uf"].' - '.$empresa['cidade']
+            .' - '.$empresa['bairro'].' - '. $empresa['numero'] : 'Sem endereço'?>
+        </td></tr>
         <tr><td>CNPJ:</td><td><?= isset($empresa["cnpj"]) ? $empresa['cnpj'] : 'Sem CNPJ'?></td></tr>
 
         <tr class="titulo"><td colspan="2">Funcionário</td></tr>

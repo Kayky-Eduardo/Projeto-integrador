@@ -188,7 +188,10 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
         <td><b><a href="criar_empresa.php">Editar</a></b></td>
     </tr>
     <tr><td>Nome:</td><td><?= isset($empresa["nome_fantasia"]) ? $empresa['nome_fantasia'] : 'Sem Nome'?></td></tr>
-    <tr><td>Endereço:</td><td> <?= isset($empresa["uf"]) ? $empresa['uf'] : 'Sem endereço'?></td></tr>
+    <tr><td>Endereço:</td><td>
+        <?= isset($empresa["uf"]) ? $empresa["uf"].' - '.$empresa['cidade']
+        .' - '.$empresa['bairro'].' - '. $empresa['numero'] : 'Sem endereço'?>
+    </td></tr>
     <tr><td>CNPJ:</td><td><?= isset($empresa["cnpj"]) ? $empresa['cnpj'] : 'Sem CNPJ'?></td></tr>
 
     <tr class="titulo"><td colspan="2">Funcionário</td></tr>

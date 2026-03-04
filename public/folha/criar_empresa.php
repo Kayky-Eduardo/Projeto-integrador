@@ -12,34 +12,65 @@ $id_usuario = $_SESSION['id_usuario'];
 $sql_empresa = $conn->prepare("
     SELECT *
     FROM empresas
-    WHERE id_empresa = 0
 ");
-// $sql_empresa->bind_param("i", $id_usuario); 
+
 $sql_empresa->execute();
 $empresa = $sql_empresa->get_result()->fetch_assoc();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST'){
-
     $dados = json_decode(file_get_contents('php://input'), true);
+    if($dados){
+        $id_usuario = $dados['id_usuario'] ?? '';
+        if (isset($dados['acao'] ) && $dados['acao'] == 'salvar'){
+            $d = $dados['dicionario'] ?? [];
 
-    if (isset($empresa)){
-        echo json_encode(['status' => 'sucesso', 'msg' => 'Já existe essa merda!']);
-    } else{
-        if($dados){
-            if (isset($dados['acao'] ) && $dados['acao'] == 'salvar'){
-                $id_usuario = $dados['id_usuario'] ?? '';
-                $d = $dados['dicionario'] ?? [];
-                
+            // caso já exista empresa - UPDATE
+            if (isset($empresa)){
+                $sql = $conn->prepare("UPDATE empresas SET
+                    id_modificador = ?,
+                    data_modificacao = CURDATE(),
+                    razao_social = ?,
+                    nome_fantasia = ?,
+                    cnpj = ?,
+                    uf = ?,
+                    cidade = ?,
+                    bairro = ?,
+                    numero = ?,
+                    cep = ?
+                    WHERE id_modificador = ?");
+
+                // 'ssssssssi' significa: 8 strings e 2 inteiros (id_usuario)
+                $sql->bind_param('issssssssi',
+                    $id_usuario,
+                    $d['razao_social'],
+                    $d['nome_fantasia'],
+                    $d['cnpj'],
+                    $d['estado'],
+                    $d['cidade'],
+                    $d['bairro'],
+                    $d['numero'],
+                    $d['cep'],
+                    $id_usuario
+                );
+
+                if ($sql->execute()) {
+                    echo json_encode(['status' => 'sucesso', 'msg' => 'Dados da empresa editados com sucesso!']);
+                } else {
+                    echo json_encode(['status' => 'erro', 'msg' => 'Erro inesperado!' . $conn->error]);
+                }
+                exit;
+                // caso NÃO exista empresa - INSERT
+            } else{
                 $sql = $conn->prepare("INSERT INTO empresas (
-                id_modificador, 
-                data_modificacao, 
-                razao_social, 
-                nome_fantasia, 
-                cnpj, 
-                uf, 
-                cidade, 
-                bairro, 
-                numero, 
+                id_modificador,
+                data_modificacao,
+                razao_social,
+                nome_fantasia,
+                cnpj,
+                uf,
+                cidade,
+                bairro,
+                numero,
                 cep
                 ) VALUES (?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)");
 
@@ -59,16 +90,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
                 );
 
                 if ($sql->execute()) {
-                    echo json_encode(['status' => 'sucesso', 'msg' => 'Dados da empresa salvos!']);
+                    echo json_encode(['status' => 'sucesso', 'msg' => 'Dados da empresa Salvos!']);
                 } else {
-                    echo json_encode(['status' => 'erro', 'msg' => 'Erro ao salvar dados.']);
+                    echo json_encode(['status' => 'erro', 'msg' => 'Erro ao salvar dados!' . $conn->error]);
                 }
                 exit;
             }
+        } else if (isset($dados['acao'] ) && $dados['acao'] == 'excluir'){
+            $sql = $conn->prepare("DELETE FROM empresas");
+            if ($sql->execute()) {
+                    echo json_encode(['status' => 'sucesso', 'msg' => 'Dados da empresa Excluídos!']);
+            } else {
+                echo json_encode(['status' => 'erro', 'msg' => 'Erro ao excluir dados!' . $conn->error]);
+            }
+            exit;
         }
     }
-
-    
 }
 
 ?>
@@ -96,42 +133,42 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 <form action="" id="meuForm">
     <label>Razão Social</label>
     <br>
-    <input type="text" name="razao_social" required>
+    <input type="text" name="razao_social" value="<?= isset($empresa['razao_social']) ? $empresa['razao_social'] : '' ?>" required>
     <br>
 
     <label>Nome Fantasia</label>
     <br>
-    <input type="text" name="nome_fantasia" required>
+    <input type="text" name="nome_fantasia" value="<?= isset($empresa['nome_fantasia']) ? $empresa['nome_fantasia'] : '' ?>" required>
     <br>
 
     <label>CNPJ</label>
     <br>
-    <input type="number" name="cnpj" required>
+    <input type="number" name="cnpj" value="<?= isset($empresa['cnpj']) ? $empresa['cnpj'] : '' ?>" required>
     <br>
 
     <label>Estado</label>
     <br>
-    <input type="text" name="estado" required>
+    <input type="text" name="estado" value="<?= isset($empresa['uf']) ? $empresa['uf'] : '' ?>" required>
     <br>
 
     <label>Cidade</label>
     <br>
-    <input type="text" name="cidade" required>
+    <input type="text" name="cidade" value="<?= isset($empresa['cidade']) ? $empresa['cidade'] : '' ?>" required>
     <br>
 
     <label>Bairro</label>
     <br>
-    <input type="text" name="bairro" required>
+    <input type="text" name="bairro" value="<?= isset($empresa['bairro']) ? $empresa['bairro'] : '' ?>" required>
     <br>
 
     <label>Número</label>
     <br>
-    <input type="number" name="numero" required>
+    <input type="number" name="numero" value="<?= isset($empresa['numero']) ? $empresa['numero'] : '' ?>" required>
     <br>
 
     <label>CEP</label>
     <br>
-    <input type="number" name="cep" required>
+    <input type="number" name="cep" value="<?= isset($empresa['cep']) ? $empresa['cep'] : '' ?>" required>
     <br>
 </form>
 
@@ -140,6 +177,7 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 
 <br>
 <button class="btn-salvar" id="<?= $id_usuario ?>">Salvar</button>
+<button class="btn-excluir" id="<?= $id_usuario ?>">Excluir</button>
 
 <table>
     <caption><b>Empresa</b></caption>
@@ -161,7 +199,7 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
     </thead>
     <tbody>
         <tr>
-            <?php foreach($empresa as $e): ?>
+            <?php  if ($empresa) foreach($empresa as $e): ?>
                 <td><?= isset($e) ? $e : '⊘'?></td>
             <?php endforeach;?>
         </tr>
@@ -196,6 +234,27 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
                         acao: 'salvar',
                         id_usuario: idUsuario,
                         dicionario : dicionario
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.msg);
+                    if(data.status === 'sucesso') location.reload(); // Recarrega para ver a mudança
+                })
+                .catch(err => console.error("Erro na requisição:", err));
+        }
+    })
+
+    // excluir
+    btnExcluir = document.querySelector('.btn-excluir');
+    btnExcluir.addEventListener('click', function(){
+        let resposta = confirm('Tem certeza que deseja Excluir?');
+        if (resposta){
+            fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        acao: 'excluir',
                     })
                 })
                 .then(res => res.json())
