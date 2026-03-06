@@ -23,7 +23,6 @@
     --cor-fundo-nav-hover: #334155;
     --cor-titulo-tabela: #f1f5f9;
 
-
     /* Bordas */
     --cor-borda-padrao: #cbd5e1;
     --cor-borda-erro: #fecaca;
@@ -276,12 +275,19 @@ footer a {
     background-color: var(--cor-fundo-pagina);
 }
 
+.btn-destaque {
+    background-color: var(--cor-destaque);
+    color: var(--cor-principal);
+}
+
 .btn-ativar {
     background-color: #2ecc71;
+    color: var(--cor-principal);
 }
 
 .btn-desativar {
     background-color: #f97316;
+    color: var(--cor-principal);
 }
 
 .btn-excluir {
@@ -443,6 +449,7 @@ footer a {
     border: 1px solid var(--cor-borda-padrao);
     border-radius: var(--raio-borda-grande);
     padding: 16px;
+    overflow: auto;
 }
 
 .tabela-padrao h2 {
@@ -476,6 +483,19 @@ footer a {
     color: var(--cor-principal);
 }
 
+.tabela-padrao td:last-child .btn-link {
+    width: auto;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+}
+
+.tabela-vazia {
+    text-align: center;
+    padding: 20px;
+    font-weight: 500;
+    color: var(--cor-texto-secundario, #777);
+}
+
 /* FILTROS */
 .filtro-texto {
     background: var(--cor-fundo-card);
@@ -483,6 +503,26 @@ footer a {
     border-radius: var(--raio-borda-grande);
     padding: 12px;
     width: 100%;
+}
+
+.filtro-padrao {
+    background: var(--cor-fundo-card);
+    border: 1px solid var(--cor-borda-padrao);
+    border-radius: var(--raio-borda-grande);
+    padding: 12px;
+    width: 100%;
+}
+
+.filtro-padrao form {
+    align-items: center;
+    justify-content: center;
+}
+
+.filtro-padrao article {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
 }
 
 /* CARROSSEL IMAGEM E TEXTO */
@@ -854,29 +894,8 @@ footer a {
     color: var(--cor-texto-suave);
 }
 
-.bh-filtro {
-    background: var(--cor-fundo-card);
-    border: 1px solid var(--cor-borda-padrao);
-    border-radius: var(--raio-borda-grande);
-    padding: 12px;
-    width: 100%;
-}
-
-.bh-filtro form {
-    align-items: center;
-    justify-content: center;
-}
-
-.bh-filtro article {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    align-items: center;
-}
-
 /* PÁGINA DE PONTO */
-
-.ponto-dia.container {
+.ponto-dia {
     width: 50%;
     margin: 0 auto;
     min-width: 500px;
@@ -918,12 +937,31 @@ footer a {
     color: var(--cor-principal);
 }
 
-.bater-ponto select {
-    text-align: center;
-}
-
 .bater-ponto .tabela-padrao {
     border: none;
+}
+
+/* PÁGINA DE SOLICITAR AJUSTE */
+.solicitar-ajuste {
+    width: 50%;
+    margin: 0 auto;
+    min-width: 500px;
+}
+
+.solicitar-ajuste article {
+    font-size: var(--tamanho-titulo-pagina);
+    color: var(--cor-principal);
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+}
+
+.solicitar-ajuste label {
+    margin-bottom: 10px;
+}
+
+.solicitar-ajuste p {
+    text-align: center;
 }
 
 
@@ -982,6 +1020,10 @@ footer a {
 @media (max-width: 1000px) {
     main {
         padding: 1.2rem;
+    }
+
+    .pagina-padrao {
+        width: 100%;
     }
 
     /* Navbar */
@@ -1064,5 +1106,30 @@ footer a {
         flex-direction: row;
         justify-content: center;
         flex-wrap: wrap;
+    }
+
+    /* Página Gerenciamento de Ponto */
+    .filtro-ponto .form-linha {
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .filtro-ponto input,
+    .filtro-ponto select {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .filtro-ponto button {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .tabela-padrao {
+        overflow-x: auto;
+    }
+
+    .tabela-padrao table {
+        min-width: 900px;
     }
 }
