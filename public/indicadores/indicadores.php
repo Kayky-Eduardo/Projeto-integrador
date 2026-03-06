@@ -408,55 +408,6 @@ verificar_login($conn);
             `;
         }
 
-        function exibir_detalhes(resultado, elementoId) {
-        const elemento = document.getElementById(elementoId);
-        
-        if (!elemento) {
-            console.log('Elemento não encontrado:', elementoId);
-            return;
-        }
-        
-        let html = '<section class="jornada-detalhes">';
-        
-        // horas trabalhados
-        if (resultado.detalhes_trabalhados && resultado.detalhes_trabalhados.length > 0) {
-            html += '<h4>horas Trabalhados</h4>';
-            html += '<table class="tabela-detalhes">';
-            html += '<thead><tr><th>Data</th><th>Horas</th></tr></thead><tbody>';
-            
-            resultado.detalhes_trabalhados.forEach(dia => {
-                html +=
-                `<tr>
-                    <td>${dia.data}</td>
-                    <td>${formatarHoras(dia.horas)}</td>
-                </tr>`;
-            });
-            
-            html += '</tbody></table>';
-        }
-        
-        // horas esperados
-        if (resultado.detalhes_esperados && resultado.detalhes_esperados.length > 0) {
-            html += '<h4>horas Esperados</h4>';
-            html += '<table class="tabela-detalhes">';
-            html += '<thead><tr><th>Data</th><th>Dia da Semana</th><th>Horas</th></tr></thead><tbody>';
-            
-            resultado.detalhes_esperados.forEach(dia => {
-                html += `<tr>
-                    <td>${dia.data}</td>
-                    <td>${dia.dia_semana}</td>
-                    <td>${formatarHoras(dia.horas)}</td>
-                </tr>`;
-            });
-            
-            html += '</tbody></table>';
-        }
-        
-        html += '</section>';
-        
-        elemento.innerHTML = html;
-        }
-
         async function buscar_jornada() {
             const usuarioId = document.getElementById('usuarioId').value;
             const dataInicio = document.getElementById('dataInicio').value;
