@@ -67,10 +67,10 @@ function calculo_total_usuarios($conn) {
     $total_usuarios = 0;
     
     if ($linha_total = $result_total->fetch_assoc()) {
-       return $total_usuarios = (int)$linha_total['total_usuarios'];
+       $total_usuarios = (int)$linha_total['total_usuarios'];
     }
-    $stmt_total->close();
     
+    $stmt_total->close();
     return $total_usuarios;
 }
 
@@ -285,7 +285,7 @@ function filtrar_usuario($conn, $id_usuario = null) {
     $dados_grafico = [];
 
     while ($usuario = $result->fetch_assoc()) {
-        $saldo_minutos = $usuario['saldo_minutos'] > 0 ? $usuario['saldo_minutos'] / 60 : 0;
+        $saldo_minutos = $usuario['saldo_minutos'] / 60;
         $dados_grafico[] = [
             'nome_usuario' => $usuario['nome_usuario'],
             'saldo_horas' => $saldo_minutos,
