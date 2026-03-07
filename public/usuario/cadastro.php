@@ -19,6 +19,8 @@
  * - Criptografia de senha (password_hash).
  * - Persistência de dados na tabela 'usuario'.
  * *
+ * 
+ * 
  * FLUXO DE EXECUÇÃO
  * -------------------------------------------------------------
  * 1. Inicia sessão e verifica permissão de acesso
