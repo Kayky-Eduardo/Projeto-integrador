@@ -1,10 +1,103 @@
 <?php
+/*
+ * =============================================================
+ * ARQUIVO: cadastro.php
+ * MÓDULO: Gestão de Funcionários (RH)
+ * =============================================================
+ * * DESCRIÇÃO GERAL
+ * -------------------------------------------------------------
+ * Arquivo responsável pelo formulário e processamento de novos
+ * usuários/funcionários no sistema.
+ *
+ * Executa:
+ * - Listagem dinâmica de cargos para o formulário.
+ * - Upload e tratamento de foto de perfil 
+ *   (UUID para unicidade).
+ * - Validação rigorosa de campos 
+ *   (CPF, RG, E-mail, CEP, Telefone).
+ * - Verificação de duplicidade de documentos no banco de dados.
+ * - Criptografia de senha (password_hash).
+ * - Persistência de dados na tabela 'usuario'.
+ * *
+ * FLUXO DE EXECUÇÃO
+ * -------------------------------------------------------------
+ * 1. Inicia sessão e verifica permissão de acesso
+ *    (verificar_login).
+ * 2. Consulta a tabela 'cargo' para popular o select do
+ *    formulário.
+ * 3. Se houver POST:
+ *    a. Processa o upload da imagem (valida extensões e move 
+ *       para o diretório).
+ *    b. Sanitiza strings e remove formatação de documentos (D).
+ *    c. Executa função validarDados() para checar integridade e
+ *       duplicidade.
+ *    d. Caso sem erros, gera o hash da senha e insere no banco
+ *       via Prepared Statement.
+ *    e. Redireciona para a lista de usuários em caso de 
+ *       sucesso.
+ * 4. Renderiza a interface com persistência de valores em caso
+ *    de erro de validação.
+ *
+ *
+ * SEGURANÇA
+ * -------------------------------------------------------------
+ * - Proteção contra SQL Injection via Prepared Statements 
+ *   (bind_param).
+ * - Senhas armazenadas com algoritmo BCRYPT (password_hash).
+ * - Validação de extensões de arquivo permitidas 
+ *   (jpg, jpeg, png, webp).
+ * - Sanitização de inputs contra scripts maliciosos.
+ * - Verificação de autenticação obrigatória no topo do arquivo.
+ *
+ *
+ * ACESSIBILIDADE E UX
+ * -------------------------------------------------------------
+ * - Feedback de erros em lista centralizada (box-erros).
+ * - Preview dinâmico da imagem de perfil (pré-carregamento).
+ * - Manutenção dos dados digitados no formulário após erro 
+ *   (Sticky Form).
+ * - Máscaras de entrada via biblioteca IMask (via JS externo).
+ *
+ *
+ * DEPENDÊNCIAS
+ * -------------------------------------------------------------
+ * - "../../BD/conexao.php": Conexão com a base de dados.
+ * - "../../include/verificacao.php": Script de controle de 
+ *   acesso.
+ * - "../../include/navbar.php": Menu de navegação global.
+ * - "imask": Biblioteca externa para máscaras de documentos.
+ *
+ *
+ * TABELAS UTILIZADAS
+ * -------------------------------------------------------------
+ * 1. usuario
+ * - id_usuario, nome_usuario, cpf_usuario, rg_usuario, genero,
+ * email_usuario, senha_usuario, telefone, cep, id_cargo,
+ * data_admissao, foto_usuario, conta_ativa
+ *
+ * 2. cargo
+ * - id_cargo
+ * - nome_cargo
+ *
+ *
+ * BOAS PRÁTICAS APLICADAS
+ * -------------------------------------------------------------
+ * - Funções isoladas para validação e cadastro (Modularização).
+ * - Tratamento de strings com trim() e preg_replace().
+ * - Verificação de existência de diretórios (mkdir 0777).
+ * - Nomenclatura de arquivos de imagem usando IDs únicos 
+ *   (uniqid).
+ *
+ * * -------------------------------------------------------------
+ * Data: 07/03/2026
+ * Versão: 1.0
+ * =============================================================
+ */
+
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
-
-// BUSCAR CARGOS
 $cargos = [];
 $result = $conn->query("SELECT id_cargo, nome_cargo FROM cargo ORDER BY nome_cargo ASC");
 
@@ -12,21 +105,16 @@ while ($row = $result->fetch_assoc()) {
     $cargos[] = $row;
 }
 
-// =================================
-// Função de validação
-// =================================
+
 function validarDados($dados, $conn)
 {
     $erros = [];
-
     $fotoPreview = "user_padrao.png";
 
-    // Nome
     if (empty($dados['nome_usuario'])) {
         $erros[] = "Campo 'Nome' está vazio.";
     }
 
-    // CPF
     if (empty($dados['cpf_usuario'])) {
         $erros[] = "Campo 'CPF' está vazio.";
     } elseif (!preg_match('/^\d{11}$/', $dados['cpf_usuario'])) {
@@ -40,7 +128,6 @@ function validarDados($dados, $conn)
         $stmt->close();
     }
 
-    // RG
     if (empty($dados['rg_usuario'])) {
         $erros[] = "Campo 'RG' está vazio.";
     } elseif (!preg_match('/^\d{9}$/', $dados['rg_usuario'])) {
@@ -54,12 +141,10 @@ function validarDados($dados, $conn)
         $stmt->close();
     }
 
-    // Gênero
     if (empty($dados['genero'])) {
         $erros[] = "Escolha um gênero.";
     }
 
-    // Email
     if (empty($dados['email_usuario']) || !filter_var($dados['email_usuario'], FILTER_VALIDATE_EMAIL)) {
         $erros[] = "Email inválido.";
     } else {
@@ -71,27 +156,22 @@ function validarDados($dados, $conn)
         $stmt->close();
     }
 
-    // Senha
     if (strlen($dados['senha_usuario']) < 6) {
         $erros[] = "Senha deve ter no mínimo 6 caracteres.";
     }
 
-    // Telefone
     if (!preg_match('/^\d{11}$/', $dados['telefone'])) {
         $erros[] = "Telefone inválido.";
     }
 
-    // CEP
     if (!preg_match('/^\d{8}$/', $dados['cep'])) {
         $erros[] = "CEP inválido.";
     }
 
-    // Cargo
     if (!$dados['id_cargo']) {
         $erros[] = "Cargo inválido.";
     }
 
-    // Data
     if (empty($dados['data_admissao'])) {
         $erros[] = "Data obrigatória.";
     }
@@ -99,9 +179,6 @@ function validarDados($dados, $conn)
     return $erros;
 }
 
-// =================================
-// Cadastro do Usuário
-// =================================
 function cadastrarUsuario($conn, $dados)
 {
     $sql = "INSERT INTO usuario (
@@ -132,34 +209,24 @@ function cadastrarUsuario($conn, $dados)
     return $stmt->execute();
 }
 
-// =================================
-// PROCESSAMENTO
-// =================================
 $erros = [];
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-
-    // Upload da foto
     $foto = "user_padrao.png";
     $fotoPreview = "user_padrao.png";
 
     if (!empty($_FILES['foto_usuario']['name'])) {
-
         $dir = "../../assets/img/usuarios/";
-
         if (!is_dir($dir)) mkdir($dir, 0777, true);
-
         $ext = strtolower(pathinfo($_FILES['foto_usuario']['name'], PATHINFO_EXTENSION));
         $permitidas = ["jpg", "jpeg", "png", "webp"];
 
         if (in_array($ext, $permitidas)) {
             $foto = uniqid("user_") . "." . $ext;
             move_uploaded_file($_FILES['foto_usuario']['tmp_name'], $dir . $foto);
-
             $fotoPreview = $foto;
         }
     }
 
-    // Dados
     $dados = [
         "nome_usuario"   => trim($_POST['nome_usuario']),
         "cpf_usuario"    => preg_replace('/\D/', '', $_POST['cpf_usuario']),
@@ -175,7 +242,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         "conta_ativa"    => 1
     ];
 
-    // Validação
     $erros = array_merge($erros, validarDados($dados, $conn));
 
     if (empty($erros)) {
@@ -206,8 +272,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <main class="main-perfil">
         <form class="perfil-grid" method="POST" enctype="multipart/form-data">
-
-            <!-- COLUNA DA FOTO -->
             <section class="container perfil-header">
                 <label class="label-foto">
                     <?php
@@ -228,11 +292,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <p class="perfil-cargo">Sistema de Recursos Humanos</p>
             </section>
 
-            <!-- COLUNA FORMULÁRIO -->
             <section class="container perfil-visualizacao">
                 <article class="perfil-artigo">
-
-                    <!-- ERROS -->
                     <?php if (!empty($erros)): ?>
                         <div class="box-erros">
                             <strong>Erros encontrados:</strong>
