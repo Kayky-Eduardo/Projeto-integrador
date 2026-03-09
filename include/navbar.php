@@ -136,12 +136,6 @@ if ($nivel >= 3) {
                             Controle de Usuários
                         </a>
                     </li>
-
-                    <li>
-                        <a href="/projeto-integrador/public/ponto/historico.php">
-                            Histórico de Pontos
-                        </a>
-                    </li>
                 </ul>
             </li>
         </ul>
@@ -162,10 +156,23 @@ if ($nivel >= 3) {
                     <li class="separador"></li>
 
                     <li>
+                        <a href="/projeto-integrador/public/ponto/historico.php">
+                            Histórico de Pontos
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/ponto/notificacoes.php">
+                            Notificações
+                        </a>
+                    </li>
+                    
+                    <li>
                         <a href="/projeto-integrador/public/logout.php" class="sair">
                             Sair
                         </a>
                     </li>
+
                 </ul>
             </li>
         </ul>
@@ -199,12 +206,6 @@ if ($nivel >= 3) {
                             Controle de Usuários
                         </a>
                     </li>
-
-                    <li>
-                        <a href="/projeto-integrador/public/ponto/historico.php">
-                            Histórico de Pontos
-                        </a>
-                    </li>
                 </ul>
             </li>
         </ul>
@@ -219,6 +220,12 @@ if ($nivel >= 3) {
                     <li>
                         <a href="/projeto-integrador/public/config/config.php">
                             Configurações
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/ponto/historico.php">
+                            Histórico de Pontos
                         </a>
                     </li>
 
@@ -265,6 +272,12 @@ if ($nivel >= 3) {
                     <li>
                         <a href="/projeto-integrador/public/ponto/historico.php">
                             Meu Histórico
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/ponto/historico.php">
+                            Histórico de Pontos
                         </a>
                     </li>
 

@@ -255,13 +255,11 @@ while ($row = $result->fetch_assoc()) {
                                 <td><?= $r['status'] ?></td>
 
                                 <td>
-                                    <?php if ($r['status'] !== 'Aprovado'): ?>
+                                    <?php if ($r['status'] !== 'Aprovado' && $r['status'] !== 'Em Andamento' && $r['status'] !== 'Revisar'): ?>
                                         <a class="btn-link btn-padrao" href="gerenciar.php?aprovar=<?= $r['id_ponto'] ?>">Aprovar</a>
                                     <?php endif; ?>
 
-                                    <?php if ($r['status'] === 'Finalizado' || $r['status'] === 'Em Andamento'): ?>
-                                        <a class="btn-link btn-desativar" href="../ponto/solicitar.php?id_ponto=<?= $r['id_ponto'] ?>">Solicitar Ajuste</a>
-                                    <?php endif; ?>
+
                                 </td>
                             </tr>
                         <?php endforeach; ?>

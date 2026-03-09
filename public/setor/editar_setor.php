@@ -64,44 +64,43 @@ $jornada_atual = $atual->get_result()->fetch_assoc();  // Nome consistente
     <header>
         <?php include("../../include/navbar.php");?>
     </header>
+    <main>
+        <h2>Editar Setor</h2>
 
-    <h2>Editar Setor</h2>
+        <p id="mensagem"></p>
 
-    <div id="mensagem"></div>
+        <form id="form-setor" class="form">
+            <label class="label" for="nome_setor">Nome do Setor:</label><br>
+            <input class="input" type="text" id="nome_setor" data-id="<?= $id_setor ?>"
+            value="<?= htmlspecialchars($setor['nome_setor']) ?>" required>
+            <br><br>
 
-    <form id="form-setor">
-        <label>Nome do Setor:</label><br>
-        <input type="text" id="nome_setor" data-id="<?= $id_setor ?>"
-        value="<?= htmlspecialchars($setor['nome_setor']) ?>" required>
-        <br><br>
+            <div class="caixa_select">
+                <button class="btn-ativar" id="btn-ativar" type="button">
+                    <span id="contador">0</span> selecionados
+                </button>
 
-        <div class="caixa_select">
-            <button class="btn-ativar" id="btn-ativar" type="button">
-                <span id="contador">0</span> selecionados
-            </button>
+                <select class="select-padrao" id="filtro-jornada">Jornada de trabalho</select>
 
-            <select id="filtro-jornada">Jornada de trabalho</select>
-
-            <div id="opcoes_select" class="oculto">
-                <?php while ($u = $usuarios->fetch_assoc()): ?>
-                    <label>
-                        <input type="checkbox" 
-                               name="usuarios[]" 
-                               value="<?= $u['id_usuario'] ?>"
-                               id="atualizador">
-                        <?= htmlspecialchars($u['nome_usuario']) ?>
-                    </label>
-                <?php endwhile; ?>
+                <div id="opcoes_select" class="oculto">
+                    <?php while ($u = $usuarios->fetch_assoc()): ?>
+                        <label>
+                            <input type="checkbox" 
+                                name="usuarios[]" 
+                                value="<?= $u['id_usuario'] ?>">
+                            <?= htmlspecialchars($u['nome_usuario']) ?>
+                        </label>
+                    <?php endwhile; ?>
+                </div>
             </div>
-        </div>
 
-        <button id="editar" type="submit">Salvar</button>
-        <a class="btn-excluir" href="deletar_setor.php?setor=<?= $id_setor ?>">Excluir</a>
+            <button id="editar" class="btn btn-padrao"type="submit">Salvar</button>
+            <a class="btn btn-excluir" href="deletar_setor.php?setor=<?= $id_setor ?>">Excluir</a>
 
-        <a href="setores.php">Voltar</a>
-        <br>
-    </form>
-
+            <a href="setores.php">Voltar</a>
+            <br>
+        </form>
+    </main>
     <script>
         const idSetor = <?= json_encode((int)$id_setor) ?>;
         const jornadaAtualId = <?= $jornada_atual ? json_encode((int)$jornada_atual['id_tempo']) : 'null' ?>;
@@ -265,10 +264,11 @@ $jornada_atual = $atual->get_result()->fetch_assoc();  // Nome consistente
             ativar_select();
         })
 
-        document.getElementById("atualizador").addEventListener("change", function () {
-            atualizar_contador();
-        })
-
+        document.querySelectorAll('input[name="usuarios[]"]').forEach(function(checkbox) {
+            checkbox.addEventListener("change", function () {
+                atualizar_contador();
+            });
+        });
         // Mostrar mensagens ao usuário de acordo com o tipo proporcionado. exemplo: erro
         function mostrar_mensagem(texto, tipo = null) {
             const div = document.getElementById('mensagem');

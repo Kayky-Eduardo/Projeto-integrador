@@ -105,7 +105,7 @@ $res = $conn->query($sql);
                 <!-- Ações do RH -->
                 <td>
                     <!-- Abre formulário para editar manualmente -->
-                    <a href="editar.php?id=<?= htmlspecialchars($r['id_ajuste']) ?>">Editar</a> |
+                    <a href="editar_ajuste.php?id=<?= htmlspecialchars($r['id_ajuste']) ?>">Editar</a> |
 
                     <!-- Aprova e aplica o ajuste -->
                     <a href="aprovar.php?id=<?= htmlspecialchars($r['id_ajuste']) ?>">Aprovar</a> |

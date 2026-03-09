@@ -150,8 +150,72 @@ function desabilitar($nomeCampo, $campoEditavel)
         <br><br>
 
         <!-- AÇÃO FINAL -->
+         <div id="erroHorario" class="erro-login"></div>
         <button type="submit">Salvar Ajuste</button>
     </form>
+    <script>
+    // Adiciona um evento ao formulário quando ele for enviado
+    document.querySelector("form").addEventListener("submit", function(e) {
+
+        // Seleciona os campos do formulário pelo atributo name
+        const inicioPonto = document.querySelector("[name='inicio_ponto']");
+        const fimPonto = document.querySelector("[name='fim_ponto']");
+        const inicioPausa = document.querySelector("[name='inicio_pausa']");
+        const fimPausa = document.querySelector("[name='fim_pausa']");
+        
+        // Seleciona a div onde as mensagens de erro serão exibidas
+        const erroDiv = document.getElementById("erroHorario");
+
+        // Limpa qualquer mensagem de erro anterior
+        erroDiv.innerText = "";
+
+        // Função auxiliar para exibir erro e impedir o envio do formulário
+        function erro(msg){
+            erroDiv.innerText = msg; // Mostra a mensagem de erro
+            e.preventDefault();      // Impede o envio do formulário
+        }
+
+        // ============================
+        // VALIDAÇÃO 1: Entrada < Saída
+        // ============================
+        // Verifica se ambos os campos foram preenchidos
+        if (inicioPonto.value && fimPonto.value) {
+            // Se o horário de entrada for maior ou igual ao de saída → erro
+            if (inicioPonto.value >= fimPonto.value) {
+                return erro("A entrada não pode ser maior ou igual à saída.");
+            }
+        }
+
+        // ===================================
+        // VALIDAÇÃO 2: Início pausa < Fim pausa
+        // ===================================
+        if (inicioPausa.value && fimPausa.value) {
+            // Se o início da pausa for maior ou igual ao fim → erro
+            if (inicioPausa.value >= fimPausa.value) {
+                return erro("O início da pausa não pode ser maior ou igual ao fim.");
+            }
+        }
+
+        // ===================================
+        // VALIDAÇÃO 3: Pausa dentro da jornada
+        // ===================================
+
+        // Verifica se a pausa começa antes do horário de entrada
+        if (inicioPausa.value && inicioPonto.value) {
+            if (inicioPausa.value < inicioPonto.value) {
+                return erro("A pausa não pode começar antes da entrada.");
+            }
+        }
+
+        // Verifica se a pausa termina depois do horário de saída
+        if (fimPausa.value && fimPonto.value) {
+            if (fimPausa.value > fimPonto.value) {
+                return erro("A pausa não pode terminar depois da saída.");
+            }
+        }
+
+    });
+    </script>
 </body>
 
 </html>

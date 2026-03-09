@@ -286,6 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             tr.querySelector("button").addEventListener("click", () => {
                 deslogarUsuario(usuario.id_login);
+                window.location.reload();
             });
 
             return tr;
@@ -307,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id_login: idLogin })
             });
-
+            window.location.reload();
             carregarLogados();
         }
 
