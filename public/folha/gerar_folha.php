@@ -16,7 +16,7 @@ $nome_usuario = $_SESSION['nome_usuario'];
 
 <div class="card">
     <a href="../">voltar</a>
-    <h2>Gerar Folha de Pagamento</h2>
+    <h2>Visualizar Folha de Pagamento</h2>
     <h2>Olá, <?php echo $nome_usuario; ?></h2>
     <label>Mês:</label>
 
@@ -26,7 +26,7 @@ $nome_usuario = $_SESSION['nome_usuario'];
     <input type="month" id="mes" min="2024-01" max="<?= date('Y-m'); ?>">
 
     <!-- Botão para gerar PDF (abre em nova aba) -->
-    <button onclick="gerarPDF()">Gerar PDF</button>
+    <button onclick="gerarPDF()">Ver Folha</button>
 </div>
 
 <script>

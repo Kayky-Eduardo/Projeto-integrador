@@ -251,6 +251,13 @@ while ($pausa_row = $pausas->fetch_assoc()) {
                 // Pega qual campo da pausa está sendo ajustado (inicio ou fim)
                 const campoPausa = document.getElementById('campo_pausa').value;
                 const novaHora = document.getElementById('pausa_nova').value;
+                
+                // Garante que o novo horário seja preenchido
+                if (novaHora == '') {
+                    e.preventDefault();
+                    mostrarErro("O novo horário deve ser atribuído");
+                    return;
+                };
 
                 // Pega os horários de entrada e saída do ponto
                 const inicioPonto = "<?= $reg['inicio_ponto'] ? date("H:i", strtotime($reg['inicio_ponto'])) : '' ?>";

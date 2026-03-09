@@ -42,7 +42,7 @@ $sql = "
 CONTROLE DE PERMISSÕES
 =================== */
 // Funcionário comum vê apenas seus dados
-if ($nivel < 2) {
+if ($nivel > 0) {
     $where[]  = "p.id_usuario = ?";
     $params[] = $id_usuario;
     $types   .= 'i';
@@ -164,10 +164,6 @@ while ($row = $batidas->fetch_assoc()) {
         <!-- Filtro por data final -->
         <label>Até:</label>
         <input type="date" name="to" value="<?= htmlspecialchars($f_to) ?>">
-
-        <!-- Filtro por nome (RH) -->
-        <label>Nome:</label>
-        <input type="text" name="nome" value="<?= htmlspecialchars($f_nome) ?>">
 
         <!-- Filtro por status -->
         <label>Status:</label>

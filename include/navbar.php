@@ -118,14 +118,20 @@ if ($nivel >= 3) {
         <a href="/projeto-integrador/public/folha/gerar_folha.php">Ver Folha</a>
         <a href="/projeto-integrador/public/folha/historico_folhas.php">Historico folha</a>
         <a href="/projeto-integrador/public/folha/gerar_folhas_todos.php">Gerar folha de pagamento</a>
-
-        <ul class="nav-dropdown">
+        
+        <ul class="nav-dropdown usuario">
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle">
-                    Relatórios ▾
+                    ' . $_SESSION["nome_usuario"] . ' ▾
                 </a>
 
                 <ul class="dropdown-menu left">
+                    <li>
+                        <a href="/projeto-integrador/public/config/config.php">
+                            Configurações
+                        </a>
+                    </li>
+
                     <li>
                         <a href="/projeto-integrador/public/relatorio/meu_banco_horas.php?relatorio=1">
                             Banco de Horas
@@ -141,22 +147,6 @@ if ($nivel >= 3) {
                     <li>
                         <a href="/projeto-integrador/public/ponto/historico.php">
                             Histórico de Pontos
-                        </a>
-                    </li>
-                </ul>
-            </li>
-        </ul>
-
-        <ul class="nav-dropdown usuario">
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">
-                    ' . $_SESSION["nome_usuario"] . ' ▾
-                </a>
-
-                <ul class="dropdown-menu left">
-                    <li>
-                        <a href="/projeto-integrador/public/config/config.php">
-                            Configurações
                         </a>
                     </li>
 

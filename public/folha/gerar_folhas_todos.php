@@ -324,14 +324,14 @@ td, th {border: 1px solid #1b1b1b; padding: 8px;}
         <thead>
             <tr>
                 <th>Nome</th>
-                <th>Salário Líquido</th>
+
                 <th>Ações</th>
             </tr>
         </thead>
         <?php foreach ($folhas_geradas as $f): ?>
             <tr>
                 <td><?= $f['nome_usuario'] ?></td>
-                <td>R$ <?= number_format($f['salario_liquido'], 2, ',', '.') ?></td>
+
                     <td>
                         <?php if($f['revisado'] == 1):?>
                             <a>Nenhuma ação disponível</a>
