@@ -113,13 +113,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         header("Location: index.php");
                         $conn->close();
                         exit; 
-                    
                     }
                 } else {
                     $erro_login = "E-mail ou senha incorretos.";
                 }
             } else {
-                $erro_login = "Verifique se sua conta esta ativa com seu supervisor";
+            $erro_login = "Verifique o estado da sua conta com seu supervisor";
             }
         } else {
             $erro_login = "E-mail ou senha incorretos.";
