@@ -1,4 +1,52 @@
 <?php
+/*
+ * =============================================================
+ * ARQUIVO: ajustes_pendentes.php
+ * MÓDULO: Auditoria e Fluxo de Aprovação (RH / Admin)
+ * =============================================================
+ * DESCRIÇÃO GERAL
+ * -------------------------------------------------------------
+ * Central de processamento de solicitações de alteração de ponto.
+ * Esta página permite aos gestores visualizar, revisar e tomar 
+ * ações (aprovar, recusar ou editar) sobre pedidos de ajuste 
+ * enviados pelos colaboradores ou gerados pelo próprio sistema.
+ *
+ * Funcionalidades:
+ * - Listagem de solicitações com status 'Pendente'.
+ * - Cruzamento de dados entre Ajustes, Pontos e Usuários.
+ * - Tratamento nominal de campos técnicos (Helper Function).
+ * - Comparativo visual entre valor antigo e valor proposto.
+ * - Gestão de fluxo: Encaminhamento para edição, aprovação ou recusa.
+ *
+ * FLUXO DE EXECUÇÃO
+ * -------------------------------------------------------------
+ * 1. Valida nível de acesso administrativo (Nível >= 2).
+ * 2. Executa Query SQL complexa com múltiplos INNER JOINs para:
+ * a. Recuperar o nome do funcionário dono do ponto.
+ * b. Recuperar o nome do solicitante do ajuste (podem ser diferentes).
+ * c. Vincular a data original do ponto ao ajuste.
+ * 3. Define função 'nomeCampoAjuste' para converter nomes de colunas 
+ * do banco em termos amigáveis para a interface (UI).
+ * 4. Renderiza tabela dinâmica com ações contextuais para cada registro.
+ *
+ * SEGURANÇA
+ * -------------------------------------------------------------
+ * - Bloqueio de acesso para usuários de nível inferior a 2.
+ * - Uso de Prepared Statements e escaping de saída (htmlspecialchars).
+ * - Tratamento de IDs via GET nos links de ação para arquivos subsequentes.
+ *
+ * TABELAS UTILIZADAS
+ * -------------------------------------------------------------
+ * 1. ajustes_ponto: Armazena as solicitações e o histórico de mudanças.
+ * 2. ponto_dia: Fornece a referência temporal do registro original.
+ * 3. usuario (u/s): Utilizada duplamente para identificar funcionário e solicitante.
+ *
+ * -------------------------------------------------------------
+ * Data: 09/03/2026
+ * Versão: 1.0
+ * =============================================================
+ */
+
 session_start();
 date_default_timezone_set('America/Sao_Paulo');
 include("../../BD/conexao.php");
