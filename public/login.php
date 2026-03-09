@@ -50,10 +50,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $senha = $_POST['senha'];
 
         $stmt = $conn->prepare("
-            SELECT usuario.*, cargo.nome_cargo, cargo.nivel, cargo.id_cargo, usuario.senha_usuario
+            SELECT
+                email_usuario,
+                id_usuario,
+                nome_usuario,
+                senha_usuario,
+                cargo.id_cargo,
+                cargo.nivel,
+                conta_ativa
             FROM usuario
-            JOIN cargo ON usuario.id_cargo = cargo.id_cargo
-            WHERE usuario.email_usuario = ?
+            JOIN cargo ON cargo.id_cargo = usuario.id_cargo
+            WHERE email_usuario = ?;
         ");
 
         $stmt->bind_param("s", $email);
@@ -113,12 +120,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         header("Location: index.php");
                         $conn->close();
                         exit; 
+                    
                     }
                 } else {
-                    $erro_login = "E-mail ou senha incorretos.";
+                    $erro_login = "Verifique se sua conta esta ativa com seu supervisor";
                 }
             } else {
-            $erro_login = "Verifique o estado da sua conta com seu supervisor";
+                $erro_login = "E-mail ou senha incorretos.";
             }
         } else {
             $erro_login = "E-mail ou senha incorretos.";
