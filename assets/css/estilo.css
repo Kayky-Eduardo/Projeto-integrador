@@ -23,7 +23,6 @@
     --cor-fundo-nav-hover: #334155;
     --cor-titulo-tabela: #f1f5f9;
 
-
     /* Bordas */
     --cor-borda-padrao: #cbd5e1;
     --cor-borda-erro: #fecaca;
@@ -283,6 +282,7 @@ footer a {
 
 .btn-ativar {
     background-color: #2ecc71;
+    color: var(--cor-principal);
 }
 
 .btn-desativar {
@@ -449,6 +449,7 @@ footer a {
     border: 1px solid var(--cor-borda-padrao);
     border-radius: var(--raio-borda-grande);
     padding: 16px;
+    overflow: auto;
 }
 
 .tabela-padrao h2 {
@@ -486,6 +487,13 @@ footer a {
     width: auto;
     padding: 8px 10px;
     font-size: 0.8rem;
+}
+
+.tabela-vazia {
+    text-align: center;
+    padding: 20px;
+    font-weight: 500;
+    color: var(--cor-texto-secundario, #777);
 }
 
 /* FILTROS */
@@ -943,7 +951,6 @@ footer a {
 .solicitar-ajuste article {
     font-size: var(--tamanho-titulo-pagina);
     color: var(--cor-principal);
-    text-align: center;
     display: flex;
     flex-direction: column;
     margin-top: 16px;
@@ -951,6 +958,10 @@ footer a {
 
 .solicitar-ajuste label {
     margin-bottom: 10px;
+}
+
+.solicitar-ajuste p {
+    text-align: center;
 }
 
 
