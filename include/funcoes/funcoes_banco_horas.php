@@ -1,6 +1,5 @@
 <?php
-function adicionar_horas($conn, $id_usuario, $minutos, $tipo = 'hora_extra', $descricao = null)
-{
+function adicionar_horas($conn, $id_usuario, $minutos, $tipo = 'tempo_extra', $descricao = null){
     if ($minutos === null) {
         return;
     }
@@ -165,8 +164,7 @@ function get_banco_horas($conn, $id_usuario)
     ];
 }
 
-function retirar_horas($conn, $id_usuario, $minutos, $tipo = 'falta', $descricao = null)
-{
+function retirar_horas($conn, $id_usuario, $minutos, $tipo = 'falta', $descricao = null) {
     adicionar_horas($conn, $id_usuario, -abs($minutos), $tipo, $descricao);
 }
 

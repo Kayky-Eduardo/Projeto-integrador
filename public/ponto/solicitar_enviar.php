@@ -76,6 +76,32 @@ if ($tipo_ajuste === 'ponto') {
     }
 
     // 1. BUSCAR VALOR ANTIGO
+    // BUSCAR INICIO E FIM ATUAIS PARA VALIDAÇÃO
+    $busca_horarios = $conn->prepare("
+        SELECT inicio_ponto, fim_ponto 
+        FROM ponto_dia 
+        WHERE id_ponto = ?
+    ");
+    $busca_horarios->bind_param("i", $id_ponto);
+    $busca_horarios->execute();
+    $horarios = $busca_horarios->get_result()->fetch_assoc();
+
+    $inicio_atual = $horarios['inicio_ponto'] ? date("H:i", strtotime($horarios['inicio_ponto'])) : null;
+    $fim_atual    = $horarios['fim_ponto'] ? date("H:i", strtotime($horarios['fim_ponto'])) : null;
+
+    // VALIDAÇÃO DE COERÊNCIA
+    if ($campo_ponto === 'inicio_ponto' && $fim_atual !== null) {
+        if ($valor_novo_ponto > $fim_atual) {
+            die("Erro: A entrada não pode ser depois da saída.");
+        }
+    }
+
+    if ($campo_ponto === 'fim_ponto' && $inicio_atual !== null) {
+        if ($valor_novo_ponto < $inicio_atual) {
+            die("Erro: A saída não pode ser antes da entrada.");
+        }
+    }
+    // BUSCAR VALOR ANTIGO
     $busca_antigo = $conn->prepare("SELECT `$campo_ponto` FROM ponto_dia WHERE id_ponto = ?");
     $busca_antigo->bind_param("i", $id_ponto);
     $busca_antigo->execute();

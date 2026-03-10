@@ -37,23 +37,6 @@ if ($dados['total'] > 0) {
     exit;
 }
 
-$stmt = $conn->prepare(
-    "SELECT COUNT(*) AS total 
-     FROM ajustes_ponto 
-     WHERE id_usuario = ?"
-);
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$result = $stmt->get_result();
-$dados = $result->fetch_assoc();
-$stmt->close();
-
-if ($dados['total'] > 0) {
-    $_SESSION['erros'][] = "Não é possível excluir, pois já existem registros deste usuário!";
-    header("Location: editar.php?id=$id");
-    exit;
-}
-
 /* EXCLUI LOGIN */
 $stmt = $conn->prepare("DELETE FROM login WHERE id_usuario = ?");
 $stmt->bind_param("i", $id);
@@ -61,9 +44,15 @@ $stmt->execute();
 $stmt->close();
 
 /* EXCLUI USUÁRIO  */
-$stmt = $conn->prepare("DELETE FROM usuario WHERE id_usuario = ?");
-$stmt->bind_param("i", $id);
-$stmt->execute();
+try {
+    $stmt = $conn->prepare("DELETE FROM usuario WHERE id_usuario = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+} catch (mysqli_sql_exception $e) {
+    $_SESSION['erros'][] = "Não é possível excluir este usuário pois existem registros vinculados a ele.";
+    header("Location: editar.php?id=$id");
+    exit;
+}
 
 if ($stmt->affected_rows > 0) {
     header("Location: lista.php");

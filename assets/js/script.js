@@ -286,6 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             tr.querySelector("button").addEventListener("click", () => {
                 deslogarUsuario(usuario.id_login);
+                window.location.reload();
             });
 
             return tr;

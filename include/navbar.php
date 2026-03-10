@@ -114,8 +114,7 @@ if ($nivel >= 3) {
         <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
         <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
         <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
-        <a href="/projeto-integrador/public/config/pausa_config.php">Gerenciar Pausas</a>
-        <a href="/projeto-integrador/public/folha/gerar_folha.php">Ver Folha</a>
+        <a href="/projeto-integrador/public/ponto/pausas_e_ponto/pausa_config.php">Gerenciar Pausas</a>
         <a href="/projeto-integrador/public/folha/historico_folhas.php">Historico folha</a>
         <a href="/projeto-integrador/public/folha/gerar_folhas_todos.php">Gerar folha de pagamento</a>
 
@@ -135,12 +134,6 @@ if ($nivel >= 3) {
                     <li>
                         <a href="/projeto-integrador/public/relatorio/online.php">
                             Controle de Usuários
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="/projeto-integrador/public/ponto/historico.php">
-                            Histórico de Pontos
                         </a>
                     </li>
                 </ul>
@@ -163,10 +156,23 @@ if ($nivel >= 3) {
                     <li class="separador"></li>
 
                     <li>
+                        <a href="/projeto-integrador/public/ponto/historico.php">
+                            Histórico de Pontos
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/ponto/notificacoes.php">
+                            Notificações
+                        </a>
+                    </li>
+                    
+                    <li>
                         <a href="/projeto-integrador/public/logout.php" class="sair">
                             Sair
                         </a>
                     </li>
+
                 </ul>
             </li>
         </ul>
@@ -177,9 +183,8 @@ if ($nivel >= 3) {
         <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
         <a href="/projeto-integrador/public/ponto/pausas_e_ponto/registrar_ponto.php">Bater Ponto / Pausa</a>
         <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
-        <a href="/projeto-integrador/public/config/pausa_config.php">Gerenciar Pausas</a>
+        <a href="/projeto-integrador/public/ponto/pausas_e_ponto/pausa_config.php">Gerenciar Pausas</a>
         <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
-        <a href="/projeto-integrador/public/folha/gerar_folha.php">Ver Folha</a>
         <a href="/projeto-integrador/public/folha/historico_folhas.php">Historico folha</a>
         <a href="/projeto-integrador/public/folha/gerar_folhas_todos.php">Ver Folha todos</a>
 
@@ -201,12 +206,6 @@ if ($nivel >= 3) {
                             Controle de Usuários
                         </a>
                     </li>
-
-                    <li>
-                        <a href="/projeto-integrador/public/ponto/historico.php">
-                            Histórico de Pontos
-                        </a>
-                    </li>
                 </ul>
             </li>
         </ul>
@@ -218,6 +217,18 @@ if ($nivel >= 3) {
                 </a>
 
                 <ul class="dropdown-menu left">
+                    <li>
+                        <a href="/projeto-integrador/public/config/config.php">
+                            Configurações
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/ponto/historico.php">
+                            Histórico de Pontos
+                        </a>
+                    </li>
+
                     <li>
                         <a href="/projeto-integrador/public/relatorio/meu_banco_horas.php">
                             Meu Banco de Horas
@@ -244,7 +255,6 @@ if ($nivel >= 3) {
 } else {
     echo '
         <a href="/projeto-integrador/public/ponto/pausas_e_ponto/registrar_ponto.php">Bater Ponto / Pausa</a>
-        <a href="/projeto-integrador/public/folha/gerar_folha.php">Ver Folha</a>
 
         <ul class="nav-dropdown usuario">
             <li class="dropdown">
@@ -262,6 +272,12 @@ if ($nivel >= 3) {
                     <li>
                         <a href="/projeto-integrador/public/ponto/historico.php">
                             Meu Histórico
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/projeto-integrador/public/ponto/historico.php">
+                            Histórico de Pontos
                         </a>
                     </li>
 

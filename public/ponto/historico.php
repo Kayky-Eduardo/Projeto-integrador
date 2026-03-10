@@ -8,6 +8,25 @@ verificar_login($conn);
 $id_usuario = $_SESSION['id_usuario'];
 $nivel      = $_SESSION['nivel'];
 
+// validar ajuste em aberto
+function validar_ajustes_pendentes($conn, $id_usuario, $id_ponto) {
+    $validacao = $conn->prepare("
+    SELECT status 
+    FROM ajustes_ponto
+    WHERE id_usuario = ?
+    AND id_ponto = ?
+    ");
+    $validacao->bind_param("ii", $id_usuario, $id_ponto);
+    $validacao->execute();
+    $result = $validacao->get_result();
+
+    if ($validacao->affected_rows === 0) {
+        return true;
+    }
+
+    return false;
+}
+
 /* ======================
 FILTROS RECEBIDOS VIA GET
 ====================== */
@@ -42,7 +61,7 @@ $sql = "
 CONTROLE DE PERMISSÕES
 =================== */
 // Funcionário comum vê apenas seus dados
-if ($nivel < 2) {
+if ($nivel > 0) {
     $where[]  = "p.id_usuario = ?";
     $params[] = $id_usuario;
     $types   .= 'i';
@@ -165,10 +184,6 @@ while ($row = $batidas->fetch_assoc()) {
         <label>Até:</label>
         <input type="date" name="to" value="<?= htmlspecialchars($f_to) ?>">
 
-        <!-- Filtro por nome (RH) -->
-        <label>Nome:</label>
-        <input type="text" name="nome" value="<?= htmlspecialchars($f_nome) ?>">
-
         <!-- Filtro por status -->
         <label>Status:</label>
         <select name="status">
@@ -192,11 +207,7 @@ while ($row = $batidas->fetch_assoc()) {
             <th>Saída</th>
             <th>Pausas</th>
             <th>Status</th>
-
-            <!-- Só funcionário comum vê coluna de ação -->
-            <?php if ($nivel < 2): ?>
-                <th>Ação</th>
-            <?php endif; ?>
+            <th>Ação</th>
         </tr>
 
         <?php foreach ($pontos_agrupados as $r): ?>
@@ -224,14 +235,16 @@ while ($row = $batidas->fetch_assoc()) {
 
                 <!-- Status -->
                 <td><?= $r['status'] ?></td>
+                <?php $pode_solicitar = validar_ajustes_pendentes($conn, $id_usuario, $r['id_ponto']);?>
 
                 <!-- AÇÕES -->
-                <?php if ($nivel < 2): ?>
+                <?php if ($pode_solicitar): ?>
                     <td>
                         <a href="solicitar.php?id_ponto=<?= $r['id_ponto'] ?>">
                             Solicitar ajuste
                         </a>
                     </td>
+
                 <?php endif; ?>
             </tr>
         <?php endforeach; ?>

@@ -1,97 +1,4 @@
 <?php
-/*
- * =============================================================
- * ARQUIVO: ponto.php
- * MÓDULO: Controle de Jornada e Pausas (RH)
- * =============================================================
- * * DESCRIÇÃO GERAL
- * -------------------------------------------------------------
- * Módulo operacional destinado ao registro de entrada e saída
- * de funcionários, bem como ao gerenciamento de pausas diárias.
- *
- * Executa:
- * - Registro de ponto eletrônico (início e fim da jornada).
- * - Gerenciamento de pausas com limites configuráveis por tipo.
- * - Lógica de auto-fechamento de pausas excedidas (Garbage Collection).
- * - Validação de tempo mínimo e máximo de descanso.
- * - Controle de interdependência (Ex: Não encerra ponto com pausa ativa).
- * - Cronometragem em tempo real via JavaScript/DOM.
- * *
- * FLUXO DE EXECUÇÃO
- * -------------------------------------------------------------
- * 1. Inicializa fuso horário (America/Sao_Paulo) e verifica login.
- * 2. Executa rotina de "Auto-fechamento": atualiza pausas órfãs 
- * que ultrapassaram o 'tempo_max' definido na configuração.
- * 3. Se houver POST (registrar_ponto):
- * a. Abre novo registro se for o primeiro acesso do dia.
- * b. Encerra ponto existente se não houver pausas abertas.
- * 4. Se houver POST (pausa_iniciar):
- * a. Valida se o usuário já possui pausa ativa.
- * b. Checa o limite diário permitido para o tipo de pausa.
- * c. Persiste o início da pausa na tabela 'pausa'.
- * 5. Se houver POST (pausa_finalizar):
- * a. Calcula delta de tempo entre agora e o início.
- * b. Bloqueia fechamento se o tempo mínimo não foi atingido.
- * c. Grava fim da pausa e calcula duração final em minutos.
- * 6. Renderiza interface: badges dinâmicos de status e cronômetro.
- *
- *
- * SEGURANÇA
- * -------------------------------------------------------------
- * - Proteção contra manipulação de ID via variáveis de sessão.
- * - Uso de Prepared Statements (bind_param) em todas as inserções 
- * e atualizações de registros de tempo.
- * - Validação de integridade: impede encerramento de jornada com 
- * pendências de pausa aberta.
- * - Sanitização de saídas HTML via htmlspecialchars.
- *
- *
- * ACESSIBILIDADE E UX
- * -------------------------------------------------------------
- * - Cronômetro regressivo/progressivo via Data Attributes.
- * - Feedback visual de status através de badges (Ativo/Inativo).
- * - Desabilitação dinâmica de botões conforme estado do sistema 
- * (State Management em nível de interface).
- * - Exibição de limites de uso (Realizado/Disponível) no select.
- * - Notificações de erro centralizadas (box-erros).
- *
- *
- * DEPENDÊNCIAS
- * -------------------------------------------------------------
- * - "../../../BD/conexao.php": Conexão com a base de dados.
- * - "../../../include/verificacao.php": Script de controle de acesso.
- * - "../../../include/navbar.php": Navegação global.
- * - "PNotify": Biblioteca para notificações flutuantes.
- * - "../../../assets/js/script.js": Lógica do cronômetro e interface.
- *
- *
- * TABELAS UTILIZADAS
- * -------------------------------------------------------------
- * 1. ponto_dia
- * - Registra inicio_ponto, fim_ponto e data_ponto.
- * 2. pausa
- * - Armazena os eventos individuais de descanso do dia.
- * 3. pausa_config
- * - Contém as regras de negócio (tempo_min, tempo_max, limites).
- *
- *
- * BOAS PRÁTICAS APLICADAS
- * -------------------------------------------------------------
- * - Lógica de Backend robusta para tratar fechamentos anormais 
- * (Ex: queda de energia ou fechamento de aba).
- * - Cálculo de duração realizado no servidor para evitar fraudes 
- * no lado do cliente.
- * - Uso de subqueries SQL para otimizar a contagem de pausas 
- * em uma única consulta.
- * - Implementação de Pattern Post-Redirect-Get (PRG) para evitar 
- * reenvios de formulário no refresh.
- *
- * * -------------------------------------------------------------
- * Data: 08/03/2026
- * Versão: 1.0
- * =============================================================
- */
-
 session_start();
 date_default_timezone_set('America/Sao_Paulo');
 include __DIR__ . '/../../../BD/conexao.php';
@@ -125,13 +32,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bind_param("is", $id_usuario, $hoje);
             $stmt->execute();
         } elseif (empty($ponto['fim_ponto'])) {
-            // Regra: Não encerra ponto com pausa aberta
+            // Não encerra ponto com pausa aberta
             $checkPausa = $conn->query("SELECT id_pausa FROM pausa WHERE id_usuario = $id_usuario AND fim IS NULL");
 
             if ($checkPausa->num_rows > 0) {
                 $erro = "Encerre a pausa ativa antes de finalizar o ponto.";
             } else {
-                $conn->query("UPDATE ponto_dia SET fim_ponto = NOW() WHERE id_ponto = " . $ponto['id_ponto']);
+                //Não encerra ponto sem ter realizado ao menos uma pausa hoje
+                $checkPausaRealizada = $conn->query("
+                    SELECT id_pausa FROM pausa 
+                    WHERE id_usuario = $id_usuario 
+                    AND data = '$hoje' 
+                    AND fim IS NOT NULL
+                ");
+
+                if ($checkPausaRealizada->num_rows === 0) {
+                    $erro = "É necessário realizar ao menos uma pausa antes de finalizar o ponto.";
+                } else {
+                    $conn->query("UPDATE ponto_dia SET fim_ponto = NOW() WHERE id_ponto = " . $ponto['id_ponto']);
+                }
             }
         }
     } elseif ($acao === 'pausa_iniciar') {
@@ -279,19 +198,8 @@ $tiposPausa = $stmtTipos->get_result();
                 </ul>
             </section>
 
-            <section class="container bater-ponto">
-                <h2>Ponto</h2>
-
-                <form method="POST" class="form">
-                    <input type="hidden" name="acao" value="registrar_ponto">
-
-                    <button type="submit" class="btn btn-padrao" <?= ($pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
-                        <?= !$pontoIniciado ? 'Iniciar Ponto' : 'Finalizar Ponto' ?>
-                    </button>
-                </form>
-            </section>
-
-            <section class="container bater-ponto">
+            <?php if ($pontoIniciado && !$pontoFinalizado): ?>
+            <section class="container bater-ponto pausas">
                 <article>
                     <h2>Pausa</h2>
 
@@ -359,6 +267,20 @@ $tiposPausa = $stmtTipos->get_result();
                     <?php endif; ?>
                 </article>
             </section>
+            <?php endif; ?>
+            <section class="container bater-ponto">
+                <h2>Ponto</h2>
+
+                <form method="POST" class="form">
+                    <input type="hidden" name="acao" value="registrar_ponto">
+
+                    <button type="submit" class="btn btn-padrao" <?= ($pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
+                        <?= !$pontoIniciado ? 'Iniciar Ponto' : 'Finalizar Ponto' ?>
+                    </button>
+                </form>
+            </section>
+
+
         </section>
     </main>
 
