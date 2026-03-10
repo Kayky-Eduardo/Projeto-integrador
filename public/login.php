@@ -1,44 +1,105 @@
-<!--
-    MÓDULO: AUTENTICAÇÃO DO USUÁRIO
-
-    OBJETIVO
-        Realizar a validação de acesso ao sistema através de e-mail e senha
-
-    ESTRUTURA SEMÂNTICA
-        main      - Área principal do acesso
-        section   - Bloco central de autenticação
-        form      - Coleta de credenciais
-        fieldset  - Agrupamento de campos
-        label     - Identificação de campos
-        input     - Entrada de dados
-        button    - Ação de envio
-
-    FUNCIONALIDADES
-        1. Validação de e-mail e senha
-        2. Criação de sessão do usuário
-        3. Controle de login ativo
-        4. Inserção de histórico de login
-        5. Atualização automática de hash de senha
-        6. Mensagem de erro em caso de falha
-
-    ACESSIBILIDADE
-        - Uso semântico de HTML
-        - Leitores de tela reconhecem campos corretamente
-        - role="alert" para mensagens de erro
-
-    SEGURANÇA
-        - Senha verificada com password_verify
-        - Prepared Statements (mysqli)
-        - Proteção contra SQL Injection
-        - Hash automático quando detectada senha antiga
-
-    OBSERVAÇÕES TÉCNICAS
-        - Banco conectado via mysqli
-        - Sessão controlada por PHP
-        - Estilos centralizados em: ../assets/css/estilo.css
--->
-
 <?php
+/*
+ * =============================================================
+ * ARQUIVO: login.php
+ * MÓDULO: Autenticação de Usuário
+ * =============================================================
+ * 
+ * DESCRIÇÃO GERAL
+ * -------------------------------------------------------------
+ * Arquivo responsável pelo processo completo de autenticação de
+ * usuários no sistema.
+ *
+ * Executa:
+ * - Validação de credenciais (e-mail e senha)
+ * - Verificação de senha criptografada (password_verify)
+ * - Regeneração segura de sessão
+ * - Controle de sessão ativa (apenas um login por usuário)
+ * - Registro de login na tabela de auditoria
+ * - Rehash automático de senhas antigas
+ * 
+ *
+ * FLUXO DE EXECUÇÃO
+ * -------------------------------------------------------------
+ * 1. Verifica se a requisição é do tipo POST
+ * 2. Valida a existência dos campos 'email' e 'senha'
+ * 3. Consulta o usuário pelo e-mail (prepared statement)
+ * 4. Valida a senha utilizando hash seguro
+ * 5. Regenera o ID da sessão (proteção contra session fixation)
+ * 6. Finaliza possíveis sessões ativas anteriores do usuário
+ * 7. Registra o novo login na tabela 'login'
+ * 8. Atualiza o hash da senha, se necessário
+ * 9. Redireciona o usuário autenticado para a página inicial
+ *
+ *
+ * SEGURANÇA
+ * -------------------------------------------------------------
+ * - Uso exclusivo de prepared statements (anti-SQL Injection)
+ * - Senhas verificadas com password_verify()
+ * - Rehash automático via password_needs_rehash()
+ * - session_regenerate_id(true) após autenticação
+ * - Mensagens de erro genéricas (anti-enumeração de usuários)
+ * - Escapamento de saída com htmlspecialchars()
+ *
+ *
+ * ACESSIBILIDADE
+ * -------------------------------------------------------------
+ * - Uso correto de <fieldset> e <legend>
+ * - Mensagens de erro com role="alert"
+ * - Labels associados corretamente aos inputs
+ *
+ *
+ * DEPENDÊNCIAS
+ * -------------------------------------------------------------
+ * - "../BD/conexao.php": Responsável pela conexão com o banco de 
+ *   dados MySQL
+ *
+ *
+ * TABELAS UTILIZADAS
+ * -------------------------------------------------------------
+ * 1. usuario
+ *    - id_usuario
+ *    - nome_usuario
+ *    - email_usuario
+ *    - senha_usuario
+ *    - id_cargo
+ *
+ * 2. cargo
+ *    - id_cargo
+ *    - nivel
+ *
+ * 3. login
+ *    - id_login
+ *    - email_login
+ *    - id_usuario
+ *    - id_cargo
+ *    - data_inicio
+ *    - data_fim
+ *
+ *
+ * BOAS PRÁTICAS APLICADAS
+ * -------------------------------------------------------------
+ * - SELECTs enxutos (sem uso de *)
+ * - Separação clara de responsabilidades
+ * - Fechamento explícito de statements
+ * - Código legível e organizado
+ * - CSS com variáveis globais no :root
+ *
+ *
+ * OBSERVAÇÕES
+ * -------------------------------------------------------------
+ * - A conexão ($conn) não é fechada manualmente, pois o PHP
+ *   encerra automaticamente ao final do script.
+ * - Statements preparados são fechados explicitamente para
+ *   liberação imediata de recursos.
+ *
+ * 
+ * -------------------------------------------------------------
+ * Data: 23/01/2026
+ * Versão: 2.0
+ * =============================================================
+*/
+
 include("../BD/conexao.php");
 session_start();
 
