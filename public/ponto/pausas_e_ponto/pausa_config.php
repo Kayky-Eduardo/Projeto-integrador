@@ -29,6 +29,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 if ($stmt->execute()) {
                     $_SESSION['msg'] = 'Tipo de pausa criado.';
+                    $id_config = $conn->insert_id; 
+
+                    // Setor
+                    if (isset($_POST['setor']) && is_array($_POST['setor'])) {
+                        foreach ($_POST['setor'] as $s) {
+                            $id_setor = intval($s);
+                            $sql_setor = "INSERT INTO grupo_setor2 (id_setor, id_config) VALUES (?, ?)";
+                            $stmt_setor = $conn->prepare($sql_setor);
+                            $stmt_setor->bind_param("ii", $id_setor, $id_config);
+                            $stmt_setor->execute();
+                        }
+                    }
+                    $_SESSION['msg'] = 'Tipo de pausa e setores configurados com sucesso.';
                 }
             } catch (mysqli_sql_exception $e) {
                 // Código 1062 é o erro de Duplicate Entry no MySQL
@@ -45,11 +58,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+
 // ----------------------------------------------
 // LISTA TODOS OS TIPOS DE PAUSA CADASTRADOS
 // ----------------------------------------------
 $listSql = "SELECT * FROM pausa_config ORDER BY ativo DESC, id_config ASC";
 $listRes = $conn->query($listSql);
+
+$listSql = "SELECT nome_setor FROM setor WHERE id_config = id_config";
+$listRes = $conn->query($listSql);
+
+$listSetor = "SELECT * FROM setor";
+$setor = $conn->query($listSetor);
 
 ?>
 
@@ -95,6 +115,15 @@ $listRes = $conn->query($listSql);
             <input type="number" name="limite_pausa_diario" required>
         </p>
 
+        <p>
+            <!-- name="setor[]" o "[]" serve para que o php identifique que se trata de valores múltiplos -->
+            Selecione Setor:<br>
+            <?php foreach($setor as $s): ?>
+                <input type="checkbox" id="<?= $s['nome_setor'] ?>" name="setor[]" value="<?= $s['id_setor'] ?>">
+                <label for="<?= $s['nome_setor'] ?>"><?= $s['nome_setor'] ?></label><br>
+            <?php endforeach;?>
+        </p>
+
         <button type="submit">Criar pausa</button>
     </form>
 
@@ -106,6 +135,7 @@ $listRes = $conn->query($listSql);
             <tr>
                 <th>ID</th>
                 <th>Descrição</th>
+                <th>Setores</th>
                 <th>Min</th>
                 <th>Max</th>
                 <th>Limite diário</th>
@@ -119,6 +149,7 @@ $listRes = $conn->query($listSql);
             <tr>
                 <td><?= $row['id_config'] ?></td>
                 <td><?= htmlspecialchars($row['descricao_pausa']) ?></td>
+                <td></td>
                 <td><?= $row['tempo_min'] ?></td>
                 <td><?= $row['tempo_max'] ?></td>
                 <td><?php echo (intval($row['limite_pausa_diario']) == 0 ? "ilimitado" : intval($row['limite_pausa_diario'])) ?></td>
