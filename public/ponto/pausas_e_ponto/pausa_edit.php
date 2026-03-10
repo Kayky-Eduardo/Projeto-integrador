@@ -7,7 +7,7 @@ require __DIR__ . '/../../../include/verificacao.php';
 $id_config = intval($_POST['id_config'] ?? 0);
 
 if ($id_config <= 0) {
-    header("Location: pausa_config.php");
+    header("Location: ../../config/pausa_config.php");
     exit;
 }
 
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao'])) {
                 
                 if ($stmt->execute()) {
                     $_SESSION['msg'] = 'Pausa atualizada com sucesso.';
-                    header("Location: pausa_config.php"); // Volta para a lista após salvar
+                    header("Location: ../../config/pausa_config.php"); // Volta para a lista após salvar
                     exit;
                 }
             } catch (mysqli_sql_exception $e) {
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao'])) {
                 $stmt->bind_param("i", $id_config);
                 if ($stmt->execute()) {
                     $_SESSION['msg'] = 'Pausa excluída com sucesso.';
-                    header("Location: pausa_config.php");
+                    header("Location: ../../config/pausa_config.php");
                     exit;
                 } else {
                     $_SESSION['msg'] = 'Erro ao excluir a pausa.';
@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao'])) {
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ii", $novo_estado, $id_config);
         $stmt->execute();
-        header("Location: pausa_config.php");
+        header("Location: ../../config/pausa_config.php");
         exit;
     }
 
@@ -88,7 +88,7 @@ $stmt->execute();
 $row = $stmt->get_result()->fetch_assoc();
 
 if (!$row) {
-    header("Location: pausa_config.php");
+    header("Location: ../../config/pausa_config.php");
     exit;
 }
 
@@ -102,7 +102,7 @@ $status_acao = ($row['ativo'] == 0 ? 'ativar' : 'desativar');
     <title>Editar Pausa</title>
 </head>
 <body>
-    <a href="pausa_config.php">Voltar</a>
+    <a href="../../config/pausa_config.php">Voltar</a>
     <h2>Editar Pausa</h2>
 
     <?php if (!empty($_SESSION['msg'])): ?>

@@ -1,60 +1,49 @@
-<!--
-    MÓDULO: BANCO DE HORAS DO USUÁRIO
-
-    OBJETIVO
-        Permitir que o usuário autenticado visualize:
-        - Seu saldo atual de banco de horas
-        - O saldo anterior
-        - A data da última atualização
-        - O histórico de movimentações por período
-
-    CONTEXTO DAS MODIFICAÇÕES
-        Este arquivo foi refatorado para seguir o mesmo padrão estrutural, 
-        semântico e organizacional utilizado no restante do sistema.
-
-        As modificações NÃO alteram:
-        - As regras de negócio
-        - As funções existentes
-        - A estrutura do banco de dados
-        - A forma como os cálculos são realizados
-
-    PRINCIPAIS ALTERAÇÕES REALIZADAS
-        1. Remoção de JavaScript para carregamento de dados
-           - O histórico agora é processado diretamente via PHP
-           - Elimina dependência de fetch e API intermediária
-
-        2. Substituição de estruturas genéricas por semânticas
-           - Remoção de <div> para layout
-           - Uso de header, main, section e article
-
-        3. Padronização do fluxo de dados
-           - Filtro por período via formulário POST
-           - Processamento direto com get_banco_data()
-
-    ESTRUTURA SEMÂNTICA
-        header  - Cabeçalho da página e navegação
-        main    - Conteúdo principal
-        section - Agrupamento funcional de informações
-        article - Blocos individuais de dados
-        table   - Exibição do histórico de registros
-
-    FUNCIONALIDADES
-        1. Exibição do resumo do banco de horas
-        2. Filtro de histórico por intervalo de datas
-        3. Listagem detalhada de movimentações
-        4. Validação de acesso por sessão ativa
-
-    ACESSIBILIDADE
-        role="navigation"   - Identificação do navegador
-        role="main"         - Conteúdo principal da página
-        aria-label          - Descrição semântica das seções
-
-    OBSERVAÇÕES TÉCNICAS
-        - Navbar via include
-        - Funções reutilizadas de funcoes_banco_horas.php
--->
-
 <?php
+/*
+ * =============================================================
+ * ARQUIVO: banco_horas.php
+ * MÓDULO: Gestão de Saldo e Compensação (Financeiro/RH)
+ * =============================================================
+ * DESCRIÇÃO GERAL
+ * -------------------------------------------------------------
+ * Página híbrida que atua tanto como consulta individual de saldo 
+ * de horas para o colaborador, quanto como relatório consolidado 
+ * para o RH (Modo Relatório).
+ * * Funcionalidades:
+ * - Exibição de Resumo: Saldo anterior, saldo atual e última atualização.
+ * - Filtro Histórico: Consulta de evolução de saldo por período (POST).
+ * - Relatório Geral (Admin): Listagem de saldos de todos os usuários.
+ * - Busca Dinâmica: Filtro client-side para localização de usuários no relatório.
+ *
+ * FLUXO DE EXECUÇÃO
+ * -------------------------------------------------------------
+ * 1. Valida autenticação e nível de acesso.
+ * 2. Carrega biblioteca de funções específicas: 'funcoes_banco_horas.php'.
+ * 3. Se Modo Relatório (GET 'relatorio=1') + RH: 
+ * - Recupera lista global de saldos (get_banco_horas_todos).
+ * 4. Se Modo Usuário (Padrão):
+ * - Busca resumo do saldo atual (get_banco_horas).
+ * - Se houver requisição POST, busca detalhamento por data (get_banco_data).
+ * 5. Renderiza a interface condicional baseada no modo ativo.
+ *
+ * SEGURANÇA
+ * -------------------------------------------------------------
+ * - Verificação de privilégios para acesso ao Relatório Geral.
+ * - Tratamento de entradas POST para filtros de data.
+ * - Escapamento de dados de saída (htmlspecialchars) na listagem de nomes.
+ *
+ * TABELAS UTILIZADAS (Via Funções Externas)
+ * -------------------------------------------------------------
+ * 1. banco_horas: Registro de saldos atuais e anteriores.
+ * 2. historico_banco_horas: Log de movimentações e atualizações diárias.
+ * 3. usuario: Associação de nomes aos registros de saldo.
+ *
+ * -------------------------------------------------------------
+ * Data: 11/03/2026
+ * Versão: 1.1
+ * =============================================================
+ */
+
 session_start();
 include("../../BD/conexao.php");
 include("../../include/funcoes/funcoes_banco_horas.php");
