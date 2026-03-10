@@ -52,33 +52,12 @@ include("../../BD/conexao.php");
 require("../../include/verificacao.php");
 verificar_login($conn);
 
-// =====================
 // CONTROLE DE PERMISSÃO
-// =====================
-
-// Somente usuários de nível 2 ou maior (RH / Admin) podem acessar esta página
 if ($_SESSION['nivel'] < 2) {
     die("Acesso restrito.");
 }
 
-// ==================
 // CONSULTA PRINCIPAL
-// ==================
-
-/* 
-Busca todos os ajustes com status 'Pendente'
-
-Tabelas envolvidas:
-- ajustes_ponto (a): solicitações de ajuste
-- ponto_dia (p): registro original do ponto
-- usuario (u): funcionário dono do ponto
-- usuario (s): quem solicitou o ajuste
-
-Importante:
-Funcionário vem de p.id_usuario
-Solicitante vem de a.id_usuario
-*/
-
 $sql = "
 SELECT 
     a.*, 
@@ -94,6 +73,17 @@ ORDER BY a.data_solicitacao DESC
 ";
 
 $res = $conn->query($sql);
+
+function nomeCampoAjuste($campo)
+{
+    return match ($campo) {
+        'inicio_ponto' => 'Início Ponto',
+        'fim_ponto'    => 'Fim Ponto',
+        'inicio_pausa' => 'Início Pausa',
+        'fim_pausa'    => 'Fim Pausa',
+        default        => ucfirst(str_replace('_', ' ', $campo)),
+    };
+}
 ?>
 
 <!DOCTYPE html>
@@ -102,62 +92,62 @@ $res = $conn->query($sql);
 <head>
     <meta charset="UTF-8">
     <title>Ajustes Pendentes (RH)</title>
+    <title>Ajustes Pendentes</title>
+    <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
 
 <body>
-    <h1>Ajustes Pendentes</h1>
+    <nav>
+        <?php include("../../include/navbar.php"); ?>
+    </nav>
 
-    <!-- Volta para o painel geral do RH -->
-    <a href="../index.php">Voltar</a>
-    <br><br>
+    <main class="main-center">
+        <section class="pagina-padrao">
+            <h1 class="page-title">Ajustes Pendentes</h1>
 
-    <table border="1" cellpadding="8">
+            <section class="tabela-padrao">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Dia</th>
+                            <th>Campo</th>
+                            <th>Antes</th>
+                            <th>Depois</th>
+                            <th>Motivo</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
 
-        <!-- Cabeçalho da tabela -->
-        <tr>
-            <th>Funcionário</th>
-            <th>Dia</th>
-            <th>Campo</th>
-            <th>Antes</th>
-            <th>Depois</th>
-            <th>Motivo</th>
-            <th>Ação</th>
-        </tr>
+                    <tbody>
+                        <?php if ($res->num_rows === 0): ?>
+                            <tr>
+                                <td colspan="8" class="tabela-vazia">
+                                    Nenhum ajuste solicitado e/ou em revisão.
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php while ($r = $res->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($r['funcionario']) ?></td>
+                                    <td><?= htmlspecialchars($r['data_ponto']) ?></td>
+                                    <td><?= nomeCampoAjuste($r['campo']) ?></td>
+                                    <td><?= htmlspecialchars($r['valor_antigo']) ?></td>
+                                    <td><?= htmlspecialchars($r['valor_novo']) ?></td>
+                                    <td><?= htmlspecialchars($r['motivo']) ?></td>
 
-        <!-- Loop que percorre cada ajuste pendente -->
-        <?php while ($r = $res->fetch_assoc()): ?>
-            <tr>
-
-                <!-- Funcionário dono do ponto -->
-                <td><?= htmlspecialchars($r['funcionario']) ?></td>
-
-                <!-- Data do registro de ponto -->
-                <td><?= htmlspecialchars($r['data_ponto']) ?></td>
-
-                <!-- Campo que será alterado -->
-                <td><?= htmlspecialchars($r['campo']) ?></td>
-
-                <!-- Horário antigo -->
-                <td><?= htmlspecialchars($r['valor_antigo']) ?></td>
-
-                <!-- Novo horário solicitado -->
-                <td><?= htmlspecialchars($r['valor_novo']) ?></td>
-
-                <!-- Motivo do ajuste -->
-                <td><?= htmlspecialchars($r['motivo']) ?></td>
-
-                <!-- Ações do RH -->
-                <td>
-                    <!-- Aprova e aplica o ajuste -->
-                    <a href="aprovar.php?id=<?= htmlspecialchars($r['id_ajuste']) ?>">Aprovar</a> |
-
-                    <!-- Recusa o ajuste -->
-                    <a href="recusar.php?id=<?= htmlspecialchars($r['id_ajuste']) ?>">Recusar</a>
-                </td>
-
-            </tr>
-        <?php endwhile; ?>
-    </table>
+                                    <td>
+                                        <a class="btn-link btn-ativar" href="aprovar.php?id=<?= htmlspecialchars($r['id_ajuste']) ?>">Aprovar</a>
+                                        <a class="btn-link btn-desativar" href="recusar.php?id=<?= htmlspecialchars($r['id_ajuste']) ?>">Recusar</a>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </section>
+        </section>
+    </main>
 </body>
 
 </html>
