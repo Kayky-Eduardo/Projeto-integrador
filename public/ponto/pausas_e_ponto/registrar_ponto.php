@@ -50,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $erro = "É necessário realizar ao menos uma pausa antes de finalizar o ponto.";
                 } else {
                     $conn->query("UPDATE ponto_dia SET fim_ponto = NOW() WHERE id_ponto = " . $ponto['id_ponto']);
+                    $conn->query("UPDATE ponto_dia SET status = 'Finalizado' WHERE id_ponto = " . $ponto['id_ponto']);
                 }
             }
         }
