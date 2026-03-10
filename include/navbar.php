@@ -114,7 +114,7 @@ if ($nivel >= 3) {
         <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
         <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
         <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
-        <a href="/projeto-integrador/public/config/pausa_config.php">Gerenciar Pausas</a>
+        <a href="/projeto-integrador/public/ponto/pausas_e_ponto/pausa_config.php">Gerenciar Pausas</a>
         <a href="/projeto-integrador/public/folha/historico_folhas.php">Historico folha</a>
         <a href="/projeto-integrador/public/folha/gerar_folhas_todos.php">Gerar folha de pagamento</a>
 
@@ -183,7 +183,7 @@ if ($nivel >= 3) {
         <a href="/projeto-integrador/public/indicadores/indicadores.php">Indicadores</a>
         <a href="/projeto-integrador/public/ponto/pausas_e_ponto/registrar_ponto.php">Bater Ponto / Pausa</a>
         <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
-        <a href="/projeto-integrador/public/config/pausa_config.php">Gerenciar Pausas</a>
+        <a href="/projeto-integrador/public/ponto/pausas_e_ponto/pausa_config.php">Gerenciar Pausas</a>
         <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
         <a href="/projeto-integrador/public/folha/historico_folhas.php">Historico folha</a>
         <a href="/projeto-integrador/public/folha/gerar_folhas_todos.php">Ver Folha todos</a>

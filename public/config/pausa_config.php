@@ -1,7 +1,7 @@
 <?php
 session_start(); 
-include __DIR__ . '/../../BD/conexao.php';
-require __DIR__ . '/../../include/verificacao.php';
+include __DIR__ . '/../../../BD/conexao.php';
+require __DIR__ . '/../../../include/verificacao.php';
 // Se o formulário for enviado (método POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -60,7 +60,7 @@ $listRes = $conn->query($listSql);
 <title>Tipos de Pausa</title>
 </head>
 <body>
-    <a href="../index.php">Voltar</a>
+    <a href="../../index.php">Voltar</a>
 
     <h2>Gerenciar Tipo de Pausas</h2>
 
@@ -123,7 +123,7 @@ $listRes = $conn->query($listSql);
                 <td><?= $row['tempo_max'] ?></td>
                 <td><?php echo (intval($row['limite_pausa_diario']) == 0 ? "ilimitado" : intval($row['limite_pausa_diario'])) ?></td>
                 <td>
-                    <form method="POST" action="../ponto/pausas_e_ponto/pausa_edit.php">
+                    <form method="POST" action="pausa_edit.php">
                         <input type="hidden" name="id_config" value="<?= $row['id_config'] ?>">
                         <button style="background:none; border:none; color:blue; cursor:pointer;">
                             editar
