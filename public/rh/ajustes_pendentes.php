@@ -68,7 +68,6 @@ $res = $conn->query($sql);
         <!-- Cabeçalho da tabela -->
         <tr>
             <th>Funcionário</th>
-            <th>Solicitado por</th>
             <th>Dia</th>
             <th>Campo</th>
             <th>Antes</th>
@@ -83,9 +82,6 @@ $res = $conn->query($sql);
 
                 <!-- Funcionário dono do ponto -->
                 <td><?= htmlspecialchars($r['funcionario']) ?></td>
-
-                <!-- Quem solicitou o ajuste -->
-                <td><?= htmlspecialchars($r['solicitante']) ?></td>
 
                 <!-- Data do registro de ponto -->
                 <td><?= htmlspecialchars($r['data_ponto']) ?></td>
@@ -104,9 +100,6 @@ $res = $conn->query($sql);
 
                 <!-- Ações do RH -->
                 <td>
-                    <!-- Abre formulário para editar manualmente -->
-                    <a href="editar_ajuste.php?id=<?= htmlspecialchars($r['id_ajuste']) ?>">Editar</a> |
-
                     <!-- Aprova e aplica o ajuste -->
                     <a href="aprovar.php?id=<?= htmlspecialchars($r['id_ajuste']) ?>">Aprovar</a> |
 

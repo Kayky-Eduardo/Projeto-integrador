@@ -12,7 +12,7 @@ verificar_login($conn);
     <title>Relatório ponto</title>
     <!-- <link rel="stylesheet" href="../../assets/css/estilo.css"> -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <link rel="stylesheet" href="../../assets/css/estilo.css">
+
 </head>
 <header>
     <?php include "../../include/navbar.php"; ?>

@@ -1,7 +1,7 @@
  <?php
 // Conexão com banco de dados
 require_once "../../BD/conexao.php";
-require_once "../../include/funcoes/calculo_desconto_falta.php";
+require_once "../../include/funcoes/calculoDescontoFalta.php";
 session_start();
 
 // -----------------------------

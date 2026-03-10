@@ -32,13 +32,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bind_param("is", $id_usuario, $hoje);
             $stmt->execute();
         } elseif (empty($ponto['fim_ponto'])) {
-            // Regra: Não encerra ponto com pausa aberta
+            // Não encerra ponto com pausa aberta
             $checkPausa = $conn->query("SELECT id_pausa FROM pausa WHERE id_usuario = $id_usuario AND fim IS NULL");
 
             if ($checkPausa->num_rows > 0) {
                 $erro = "Encerre a pausa ativa antes de finalizar o ponto.";
             } else {
-                $conn->query("UPDATE ponto_dia SET fim_ponto = NOW() WHERE id_ponto = " . $ponto['id_ponto']);
+                //Não encerra ponto sem ter realizado ao menos uma pausa hoje
+                $checkPausaRealizada = $conn->query("
+                    SELECT id_pausa FROM pausa 
+                    WHERE id_usuario = $id_usuario 
+                    AND data = '$hoje' 
+                    AND fim IS NOT NULL
+                ");
+
+                if ($checkPausaRealizada->num_rows === 0) {
+                    $erro = "É necessário realizar ao menos uma pausa antes de finalizar o ponto.";
+                } else {
+                    $conn->query("UPDATE ponto_dia SET fim_ponto = NOW() WHERE id_ponto = " . $ponto['id_ponto']);
+                }
             }
         }
     } elseif ($acao === 'pausa_iniciar') {
@@ -186,19 +198,8 @@ $tiposPausa = $stmtTipos->get_result();
                 </ul>
             </section>
 
-            <section class="container bater-ponto">
-                <h2>Ponto</h2>
-
-                <form method="POST" class="form">
-                    <input type="hidden" name="acao" value="registrar_ponto">
-
-                    <button type="submit" class="btn btn-padrao" <?= ($pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
-                        <?= !$pontoIniciado ? 'Iniciar Ponto' : 'Finalizar Ponto' ?>
-                    </button>
-                </form>
-            </section>
-
-            <section class="container bater-ponto">
+            <?php if ($pontoIniciado && !$pontoFinalizado): ?>
+            <section class="container bater-ponto pausas">
                 <article>
                     <h2>Pausa</h2>
 
@@ -266,6 +267,20 @@ $tiposPausa = $stmtTipos->get_result();
                     <?php endif; ?>
                 </article>
             </section>
+            <?php endif; ?>
+            <section class="container bater-ponto">
+                <h2>Ponto</h2>
+
+                <form method="POST" class="form">
+                    <input type="hidden" name="acao" value="registrar_ponto">
+
+                    <button type="submit" class="btn btn-padrao" <?= ($pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
+                        <?= !$pontoIniciado ? 'Iniciar Ponto' : 'Finalizar Ponto' ?>
+                    </button>
+                </form>
+            </section>
+
+
         </section>
     </main>
 

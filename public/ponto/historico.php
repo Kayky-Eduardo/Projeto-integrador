@@ -8,6 +8,25 @@ verificar_login($conn);
 $id_usuario = $_SESSION['id_usuario'];
 $nivel      = $_SESSION['nivel'];
 
+// validar ajuste em aberto
+function validar_ajustes_pendentes($conn, $id_usuario, $id_ponto) {
+    $validacao = $conn->prepare("
+    SELECT status 
+    FROM ajustes_ponto
+    WHERE id_usuario = ?
+    AND id_ponto = ?
+    ");
+    $validacao->bind_param("ii", $id_usuario, $id_ponto);
+    $validacao->execute();
+    $result = $validacao->get_result();
+
+    if ($validacao->affected_rows === 0) {
+        return true;
+    }
+
+    return false;
+}
+
 /* ======================
 FILTROS RECEBIDOS VIA GET
 ====================== */
@@ -188,8 +207,6 @@ while ($row = $batidas->fetch_assoc()) {
             <th>Saída</th>
             <th>Pausas</th>
             <th>Status</th>
-
-            <!-- Só funcionário comum vê coluna de ação -->
             <th>Ação</th>
         </tr>
 
@@ -218,13 +235,17 @@ while ($row = $batidas->fetch_assoc()) {
 
                 <!-- Status -->
                 <td><?= $r['status'] ?></td>
+                <?php $pode_solicitar = validar_ajustes_pendentes($conn, $id_usuario, $r['id_ponto']);?>
 
                 <!-- AÇÕES -->
-                <td>
-                    <a href="solicitar.php?id_ponto=<?= $r['id_ponto'] ?>">
-                        Solicitar ajuste
-                    </a>
-                </td>
+                <?php if ($pode_solicitar): ?>
+                    <td>
+                        <a href="solicitar.php?id_ponto=<?= $r['id_ponto'] ?>">
+                            Solicitar ajuste
+                        </a>
+                    </td>
+
+                <?php endif; ?>
             </tr>
         <?php endforeach; ?>
     </table>
