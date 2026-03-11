@@ -154,7 +154,7 @@ function mostrar($valor, $tipo = null)
 
     <main class="main-center">
         <section class="pagina-padrao">
-            <h1 class="page-title">Histórico de Batidas</h1>
+            <h1 class="page-title">Histórico de Pontos</h1>
 
             <section class="container filtro-padrao">
                 <form method="get" class="form-linha">
