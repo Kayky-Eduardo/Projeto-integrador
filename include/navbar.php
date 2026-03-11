@@ -49,7 +49,7 @@ if ($nivel >= 3) {
 
         <ul class="nav-dropdown usuario">
             <li class="dropdown">
-                <a href="#" class="dropdown-toggle">
+                <a href="#" id="nome-usuario-navbar" data-id=' . $_SESSION["id_usuario"] . ' class="dropdown-toggle">
                     ' . $_SESSION["nome_usuario"] . ' ▾
                 </a>
 
@@ -113,7 +113,7 @@ if ($nivel >= 3) {
 
         <ul class="nav-dropdown usuario">
             <li class="dropdown">
-                <a href="#" class="dropdown-toggle">
+                <a href="#" id="nome-usuario-navbar" data-id=' . $_SESSION["id_usuario"] . ' class="dropdown-toggle">
                     ' . $_SESSION["nome_usuario"] . ' ▾
                 </a>
 
@@ -148,7 +148,7 @@ if ($nivel >= 3) {
 
         <ul class="nav-dropdown usuario">
             <li class="dropdown">
-                <a href="#" class="dropdown-toggle">
+                <a href="#" id="nome-usuario-navbar" data-id=' . $_SESSION["id_usuario"] . ' class="dropdown-toggle">
                     ' . $_SESSION["nome_usuario"] . ' ▾
                 </a>
 

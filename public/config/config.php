@@ -43,6 +43,8 @@ verificar_login($conn);
                 <label class="label" for="set-hora-max">Limite de hora extra:</label>
                 <input class="input" id="set-hora-max" type="time" required>
 
+                
+
                 <button type="submit" class="btn btn-padrao">Salvar configuração</button>
             </form>
 

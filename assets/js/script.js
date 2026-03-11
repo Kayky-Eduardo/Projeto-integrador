@@ -1,4 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
+    /* SETAR ID_USUARIO NO LOCAL STORAGE */
+    const id_usuario = document.getElementById("nome-usuario-navbar").dataset.id;
+
+    if (localStorage.getItem("id_usuario") == null) {
+        localStorage.setItem("id_usuario", id_usuario);
+    }
+
     /* CARROSSEL - INDEX*/
     const slides = document.querySelectorAll(".slide");
     const prev = document.querySelector(".prev");
@@ -363,6 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     btnFinalizar && (btnFinalizar.disabled = false);
                     statusMsg.textContent = "Tempo mínimo atingido.";
                     statusMsg.style.color = "green";
+                    localStorage.setItem("aviso", "Tempo mínimo de pausa atingido.")
                 }
 
                 if (decorridoSegundos >= maxSegundos) {
