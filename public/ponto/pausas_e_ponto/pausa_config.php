@@ -2,6 +2,7 @@
 session_start(); 
 include __DIR__ . '/../../../BD/conexao.php';
 require __DIR__ . '/../../../include/verificacao.php';
+verificar_login($conn);
 // Se o formulário for enviado (método POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -20,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['msg'] = 'Preencha os campos corretamente.';
         }else if ($tempo_min > $tempo_max  || $tempo_max === $tempo_min){
             $_SESSION['msg'] = 'Tempo Máximo deve ser maior que Tempo Mínimo.';
+        } else if (!isset($_POST['setor'])){
+            $_SESSION['msg'] = 'Selecione um Setor.';
         } else {
             try {
                 $sql = "INSERT INTO pausa_config (descricao_pausa, tempo_min, tempo_max, limite_pausa_diario)
@@ -29,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 if ($stmt->execute()) {
                     $_SESSION['msg'] = 'Tipo de pausa criado.';
-                    $id_config = $conn->insert_id; 
+                    $id_config = $conn->insert_id; // insert_id pega o último id INSERT(update ou delete não funciona)
 
                     // Setor
                     if (isset($_POST['setor']) && is_array($_POST['setor'])) {
@@ -65,11 +68,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $listSql = "SELECT * FROM pausa_config ORDER BY ativo DESC, id_config ASC";
 $listRes = $conn->query($listSql);
 
-$listSql = "SELECT nome_setor FROM setor WHERE id_config = id_config";
-$listRes = $conn->query($listSql);
-
 $listSetor = "SELECT * FROM setor";
 $setor = $conn->query($listSetor);
+
+function acharGrupo($conn, $id_config){
+    $listGrupoSetor = "
+    SELECT *,
+    s.nome_setor,
+    s.id_setor
+    FROM grupo_setor2 gs
+    LEFT JOIN setor s on s.id_setor = gs.id_setor
+    WHERE gs.id_config = ?";
+    $listGrupoSetor = $conn->prepare($listGrupoSetor);
+    $listGrupoSetor->bind_param("i", $id_config);
+    $listGrupoSetor->execute();
+    $result = $listGrupoSetor->get_result();
+    return $result;
+}
 
 ?>
 
@@ -149,7 +164,11 @@ $setor = $conn->query($listSetor);
             <tr>
                 <td><?= $row['id_config'] ?></td>
                 <td><?= htmlspecialchars($row['descricao_pausa']) ?></td>
-                <td></td>
+                <td>
+                    <?php $setor = acharGrupo($conn, $row['id_config']); foreach($setor as $gs):?>
+                    <p><?= $gs['nome_setor'] ?></p>
+                <?php endforeach;?>
+                </td>
                 <td><?= $row['tempo_min'] ?></td>
                 <td><?= $row['tempo_max'] ?></td>
                 <td><?php echo (intval($row['limite_pausa_diario']) == 0 ? "ilimitado" : intval($row['limite_pausa_diario'])) ?></td>
