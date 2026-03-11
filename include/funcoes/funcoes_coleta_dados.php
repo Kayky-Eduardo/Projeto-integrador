@@ -79,6 +79,18 @@ function verificar_tempo_por_ponto($conn, $id_ponto, $id_usuario) {
         - tempo maximo de trabalho
         - e o tempo trabalhado a partir do inico_ponto até agora
     */
+    $stmt_ponto_aberto = $conn->prepare("SELECT id_ponto FROM ponto_dia WHERE id_usuario = ?");
+    $stmt_ponto_aberto->bind_param("i", $id_usuario);
+    $stmt_ponto_aberto->execute();
+    $result_ponto_aberto = $stmt_ponto_aberto->get_result();
+    if ($result_ponto_aberto->num_rows === 0) {
+        return [
+            'tipo' => 'erro',
+            'resultado' => 0,
+            'mensagem' => 'Ponto não está ativo'
+        ];
+    }
+    
     $stmt = $conn->prepare("
         SELECT 
             TIME_TO_SEC(tempo_jornada.maximo_hora_extra) AS hora_extra,
@@ -118,7 +130,7 @@ function verificar_tempo_por_ponto($conn, $id_ponto, $id_usuario) {
     
     
     // Calcula pausas para descontar do tempo trabalhado
-    $tempo_pausas = calcular_tempo_pausas($conn, $id_ponto, $id_usuario);
+    $tempo_pausas = calcular_tempo_pausas($conn, $id_usuario, $id_ponto);
     $segundos_trabalhados_efetivos = $dados['segundos_trabalhados'] - $tempo_pausas;
 
     
@@ -130,7 +142,7 @@ function verificar_tempo_por_ponto($conn, $id_ponto, $id_usuario) {
             'segundos_trabalhados' => $segundos_trabalhados_efetivos,
             'segundos_jornada' => $dados['segundos_jornada'],
             'segundos_maximos' => $dados['segundos_maximos'],
-            'mensagem' => "Tempo máximo excedido. Hora extra máxima: "
+            'mensagem' => "Tempo máximo excedido."
             ];
     }
             
@@ -161,11 +173,11 @@ function verificar_tempo_por_ponto($conn, $id_ponto, $id_usuario) {
         'segundos_trabalhados' => $segundos_trabalhados_efetivos,
         'segundos_jornada' => $dados['segundos_jornada'],
         'segundos_maximos' => $dados['segundos_maximos'],
-        'tempo' => "$segundos_faltantes"
+        'segundos_faltantes' => "$segundos_faltantes"
     ];
 }
 
-function formatar_tempo($segundos){
+function formatar_tempo($segundos) {
     if ($segundos > 60) {
         $minutos = floor($segundos / 60);
     }
@@ -180,10 +192,10 @@ function formatar_tempo($segundos){
     $mins  = $resto % 60;
 
     if ($dias > 0) {
-        return sprintf('%s%dd %02d:%02d dias', $sinal, $dias, $horas, $mins);
+        return sprintf('%dd %02d:%02d dias', $dias, $horas, $mins);
     }
 
-    return sprintf('%s%02d:%02d horas', $sinal, $horas, $mins);
+    return sprintf('%02d:%02d horas', $horas, $mins);
 }
 
 function coleta_dado($conn, $id_usuario) {
@@ -195,33 +207,72 @@ function coleta_dado($conn, $id_usuario) {
         $tipo = $dados['tipo'];
         
         if ($tipo === "tempo_extra") {
-            $tempo = formatar_tempo($dados['segundos_restantes']);
-
-            return [
-                "mensagem" => "Você está em hora extra. Tempo Restante: " . $tempo,
-                "tempo_extra" => $dados['resultado'],
-                "tempo_restante" => $tempo,
-            ];
+            $minutos = floor($dados['segundos_restantes'] / 60);
+            
+            if ($minutos <= 60) {
+                $tempo = formatar_tempo($dados['segundos_restantes']);
+    
+                return [
+                    "coleta" => true,
+                    "mensagem" => "Você está em hora extra. Tempo de hora extra restante: " . $tempo,
+                    "tempo_extra" => $dados['resultado'],
+                    "tempo_restante" => $tempo,
+                ];
+            } else {
+                return [
+                    "coleta" => false,
+                    "mensagem" => "Muito tempo para acabar"
+                ];
+            }
         }
 
         if ($tipo === "tempo_faltante") {
-            $tempo = formatar_tempo($dados['tempo']);
+            $minutos = floor($dados['segundos_faltantes'] / 60);
+            
+            $tempo = formatar_tempo($dados['segundos_faltantes']);
 
-            return [
-                "mensagem" => "Ainda está dentro do tempo da jornada",
-                "tempo_faltante" => $tempo
-            ];
+            if ($minutos <= 60) {
+                return [
+                    "coleta" => true,
+                    "mensagem" => "faltam " . $tempo . " para completar a sua jornada",
+                    "tempo_faltante" => $tempo
+                ];
+            } else {
+                return [
+                    "coleta" => false,
+                    "mensagem" => "Avisar depois",
+                    "tempo_faltante" => $tempo
+                ];   
+            }
         }
 
         if ($tipo === "excedido") {
             $tempo = formatar_tempo($dados['resultado']);
 
             return [
-                "mensagem" => $dados['mensagem'] .  $tempo,
-                "tempo_trabalhado" => formatar_tempo($dados['segundos_trabalhados'])
+                "coleta" => true,
+                "mensagem" => $dados['mensagem'],
+                "tipo" => "excedido",
+                "tempo_trabalhado" => formatar_tempo($dados['segundos_trabalhados']),
+            ];
+        }
+
+        if ($tipo === "erro") {
+            return [
+                "coleta" => false,
+                "tipo" => "erro",
+                "mensagem" => $dados['mensagem']
             ];
         }
     } else {
+        /*
+        para verificar se tem ponto fechado com o usuario hoje,
+        exibir um 
+        SELECT id_ponto
+        FROM ponto_dia
+        WHERE id_usuario = ? AND data_ponto = CURDATE()
+        LIMIT 1;
+        */
         return [
             "coleta" => false,
             "mensagem" => "Não foi encontrado o id do ponto"
