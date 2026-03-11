@@ -160,7 +160,7 @@ nav a:focus {
 }
 
 .dropdown-menu.left {
-    left: 0;
+    right: 0;
 }
 
 .dropdown-menu .separador {
@@ -230,7 +230,7 @@ footer a {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 12px;
+    padding: 12px 20px;
     font-size: var(--tamanho-texto-padrao);
     font-weight: 500;
     border-radius: var(--raio-borda-padrao);
@@ -355,7 +355,7 @@ footer a {
     background-color: var(--cor-fundo-card);
     border: 1px solid var(--cor-borda-padrao);
     border-radius: var(--raio-borda-padrao);
-    padding: 0.6rem 2rem 0.6rem 0.8rem;
+    padding: 12px;
     font-size: var(--tamanho-texto-padrao);
     color: var(--cor-principal);
     cursor: pointer;
