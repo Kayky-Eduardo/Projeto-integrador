@@ -221,7 +221,7 @@ function coleta_dado($conn, $id_usuario) {
             } else {
                 return [
                     "coleta" => false,
-                    "mensagem" => "Muito tempo para acabar"
+                    "mensagem" => "Faltam $minutos para acabar a hora extra"
                 ];
             }
         }
