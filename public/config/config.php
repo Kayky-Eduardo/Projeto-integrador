@@ -3,6 +3,8 @@ session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require_once "../../include/verificacao.php";
 verificar_login($conn);
+$dias = ['seg', 'ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+
 ?>
 
 <!DOCTYPE html>
@@ -30,6 +32,8 @@ verificar_login($conn);
         </aside>
 
         <section class="container" aria-label="Definição de jornada">
+            <p id="resposta" role="alert" aria-live="polite" tabindex="0"></p>
+
             <h1>Definir Jornada de Trabalho</h1>
             <p>Configure a carga horária e o limite diário de horas extras.</p>
 
@@ -43,17 +47,23 @@ verificar_login($conn);
                 <label class="label" for="set-hora-max">Limite de hora extra:</label>
                 <input class="input" id="set-hora-max" type="time" required>
 
-                
+                <section class="container">
+                    <?php for($i=0; $i<7; $i++): ?>
+                        <label for="<?= $dias[$i]?>"><?= $dias[$i] ?></label>
+                        <input type="checkbox"  name="dia_semana" id="<?= $dias[$i] ?>">
+
+                    <?php endfor ?>
+                </section>
 
                 <button type="submit" class="btn btn-padrao">Salvar configuração</button>
             </form>
 
-            <p id="resposta" role="alert" aria-live="polite" tabindex="0"></p>
         </section>
 
     </main>
 
-    <script src="../../assets/js/script.js"></script>
+    <script src="../../assets/js/script.js">
+    </script>
 </body>
 
 </html>
