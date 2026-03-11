@@ -1,4 +1,5 @@
 <?php
+
 function evolucao_presenca($conn) {
     $data_inicio = date('Y-m-01'); // Primeiro dia do mês
     $data_fim = date('Y-m-d'); // Hoje
@@ -66,74 +67,68 @@ function calculo_total_usuarios($conn) {
     $total_usuarios = 0;
     
     if ($linha_total = $result_total->fetch_assoc()) {
-       return $total_usuarios = (int)$linha_total['total_usuarios'];
+       $total_usuarios = (int)$linha_total['total_usuarios'];
     }
-    $stmt_total->close();
     
+    $stmt_total->close();
     return $total_usuarios;
 }
 
 // realizando as pesquisas do status do funcionário
 // no banco de dados
 function dados_grafico($conn) {
+    // Presentes (excluindo quem está em pausa)
     $pesquisa_trabalhando = $conn->prepare("
         SELECT COUNT(*) AS total_trabalhando
         FROM ponto_dia
-        WHERE inicio_ponto IS NOT NULL AND (fim_ponto IS NULL OR fim_ponto = '00:00:00')
+        WHERE inicio_ponto IS NOT NULL 
+        AND (fim_ponto IS NULL OR fim_ponto = '00:00:00')
         AND data_ponto = CURDATE()
+        AND NOT EXISTS (
+            SELECT 1 FROM pausa
+            WHERE pausa.id_usuario = ponto_dia.id_usuario
+            AND (pausa.fim IS NULL OR pausa.fim = '' OR pausa.fim = '0000-00-00')
+            AND pausa.data = CURDATE()
+        )
     ");
-    
     $pesquisa_trabalhando->execute();
     $result = $pesquisa_trabalhando->get_result();
-    if ($linha = $result->fetch_assoc()) {
-        $numero_presente = $linha['total_trabalhando'];
-    } else {
-        $numero_presente = 0;
-    }
-  
-    $total_usuarios = calculo_total_usuarios($conn);
+    $numero_presente = ($linha = $result->fetch_assoc()) ? (int)$linha['total_trabalhando'] : 0;
 
-    $numero_ausentes = $total_usuarios - (int)$numero_presente;
-    
+    // Em pausa
     $pesquisa_pausa = $conn->prepare("
         SELECT COUNT(*) AS total_pausa
         FROM pausa
-        WHERE inicio IS NOT NULL AND (fim IS NULL or fim = '' or fim = '00:00:00')
-        AND data = CURDATE();
+        WHERE inicio IS NOT NULL 
+        AND (fim IS NULL OR fim = '' OR fim = '0000-00-00')
+        AND data = CURDATE()
     ");
     $pesquisa_pausa->execute();
     $result = $pesquisa_pausa->get_result();
+    $numero_pausa = ($linha = $result->fetch_assoc()) ? (int)$linha['total_pausa'] : 0;
 
-    if ($linha = $result->fetch_assoc()) {
-        $numero_pausa = (int)$linha['total_pausa'];
-    } else {
-        $numero_pausa = 0;
-     }
-    
-    // pesquisa horario completo
+    // Horário completo
     $pesquisa_horario_completo = $conn->prepare("
         SELECT COUNT(*) AS total_completo
         FROM ponto_dia
         WHERE inicio_ponto IS NOT NULL 
         AND (fim_ponto IS NOT NULL AND fim_ponto != '00:00:00')
-        AND data_ponto = CURDATE();
+        AND data_ponto = CURDATE()
     ");
     $pesquisa_horario_completo->execute();
-
     $result = $pesquisa_horario_completo->get_result();
+    $numero_horario_completo = ($linha = $result->fetch_assoc()) ? (int)$linha['total_completo'] : 0;
 
-    if ($linha = $result->fetch_assoc()) {
-        $numero_horario_completo = (int)$linha['total_completo'];
-    } else {
-        $numero_horario_completo = 0;
-    }
-    
-    // entregando uma array com os valores da pesquisas
-    $valores = [
-        $numero_presente, $numero_ausentes,
-        $numero_pausa, $numero_horario_completo
+    // Ausentes = total - todas as outras categorias
+    $total_usuarios = calculo_total_usuarios($conn);
+    $numero_ausentes = $total_usuarios - $numero_presente - $numero_pausa - $numero_horario_completo;
+
+    return [
+        $numero_presente,
+        $numero_ausentes,
+        $numero_pausa,
+        $numero_horario_completo
     ];
-    return $valores;
 }
 
 // realizando o filtro para trazer as informações
@@ -142,7 +137,8 @@ function filtrar($conn, $tipo) {
         $presentes = [];
         $filtro_presente = $conn->prepare("
         SELECT
-            usuario.email_usuario, ponto_dia.*,
+            usuario.email_usuario,
+            ponto_dia.*,
             TIMESTAMPDIFF(MINUTE, inicio_ponto, NOW()) AS tempo_logado
         FROM ponto_dia
         JOIN usuario ON ponto_dia.id_usuario = usuario.id_usuario
@@ -153,6 +149,28 @@ function filtrar($conn, $tipo) {
         $filtro_presente->execute();
         $result = $filtro_presente->get_result();
         while($linha = $result->fetch_assoc()){
+
+            // // verificando se não tem pausa em aberta com este id
+            // só pode ser contado como presente se não estiver com pausa aberta
+            // $linha_id_usuario = $linha['id_usuario'];
+
+            // $verificar_em_pausa = $conn->prepare("
+            //     SELECT
+            //         id_pausa,
+            //         inicio,
+            //         fim
+            //     FROM pausa
+            //     WHERE id_usuario = ?
+            // ");
+            // $verificar_em_pausa->bind_params("i", $linha_id_usuario);
+            // $verificar_em_pausa->execute();
+            // $resultado_verificacao = $verificar_em_pausa->get_result();
+
+            // if ($resultado_verificacao->fetch_assoc()['fim'] === null) {
+            //     // continua para o proximo usuario
+            // } else {
+            //     $presentes[] = $linha;
+            // }
             $presentes[] = $linha;
         }
         return $presentes;
@@ -257,17 +275,15 @@ function filtrar_usuario($conn, $id_usuario = null) {
     $coleta_usuario = $conn->prepare("
     SELECT saldo_minutos, nome_usuario, ultima_atualizacao
     FROM banco_horas
-    JOIN usuario ON banco_horas.id_usuario = usuario.id_usuario
-    WHERE ultima_atualizacao between ? AND ?;
+    JOIN usuario ON banco_horas.id_usuario = usuario.id_usuario;
     ");
-    $coleta_usuario->bind_param("ss", $data_inicio, $data_fim);
     $coleta_usuario->execute();
     
     $result = $coleta_usuario->get_result();
     $dados_grafico = [];
 
     while ($usuario = $result->fetch_assoc()) {
-        $saldo_minutos = $usuario['saldo_minutos'] > 0 ? $usuario['saldo_minutos'] / 60 : 0;
+        $saldo_minutos = $usuario['saldo_minutos'] / 60;
         $dados_grafico[] = [
             'nome_usuario' => $usuario['nome_usuario'],
             'saldo_horas' => $saldo_minutos,
@@ -276,13 +292,28 @@ function filtrar_usuario($conn, $id_usuario = null) {
     }
 
     $coleta_usuario->close();
+    
+    if (empty($dados_grafico)) {
+        return [
+            'sucesso' => false,
+            'periodo' => [
+                'inicio' => $data_inicio,
+                'fim' => $data_fim
+            ],
+            'usuarios' => [],
+            'mensagem' => 'Sem registros'
+        ];
+    }
 
     return [
+        'sucesso' => true,
         'periodo' => [
             'inicio' => $data_inicio,
             'fim' => $data_fim
         ],
+        'mensagem' => 'consulta concluida!',
         'usuarios' => $dados_grafico
+        
     ];
 }
 
@@ -312,32 +343,22 @@ function relatorio_ponto_filtrado($conn, $id_usuario) {
     return $usuario;
 }
 
-function get_logados($conn)
-{
-    $stmt = $conn->prepare("
-        SELECT
-            u.nome_usuario,
-            u.email_usuario,
-            l.id_login,
-            l.data_inicio,
-            TIMESTAMPDIFF(MINUTE, l.data_inicio, NOW()) AS tempo_logado
-        FROM login l
-        INNER JOIN usuario u ON u.id_usuario = l.id_usuario
-        WHERE l.data_fim IS NULL
-        AND MONTH(l.data_inicio) = MONTH(CURDATE())
-        ORDER BY l.data_inicio DESC
+function get_logados($conn) {
+    $coleta_usuario_tabela = $conn->prepare("
+    SELECT usuario.id_usuario, usuario.email_usuario, id_login, email_login, data_inicio,
+    TIMESTAMPDIFF(MINUTE, data_inicio, NOW()) AS tempo_logado
+    FROM login 
+    LEFT JOIN usuario on login.id_usuario = usuario.id_usuario
+    WHERE MONTH(data_inicio) = MONTH(CURDATE())
+    AND data_fim IS NULL;
     ");
-
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    $usuarios = [];
-
-    while ($row = $result->fetch_assoc()) {
-        $usuarios[] = $row;
+    $coleta_usuario_tabela->execute();
+    
+    $result = $coleta_usuario_tabela->get_result();
+    while($linha = $result->fetch_assoc()) {
+        $usuario[] = $linha;
     }
-
-    return $usuarios;
+    return $usuario;
 }
 
 // alterar para deslogar depois de um tempo
