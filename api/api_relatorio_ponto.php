@@ -28,10 +28,17 @@ if ($acao) {
             try {
                 $resultado = filtrar_usuario($conn, $input['id_usuario'] ?? null);
                 
-                echo json_encode([
-                    'sucesso' => true,
-                    'dados' => $resultado
-                ]);
+                if ($resultado['sucesso']) {
+                    echo json_encode([
+                        'sucesso' => true,
+                        'dados' => $resultado
+                    ]);
+                } else {
+                    echo json_encode([
+                        'sucesso' => false,
+                        'mensagem' => $resultado['mensagem']
+                    ]);
+                }
             } catch (Exception $e) {
                 echo json_encode([
                     'sucesso' => false,
@@ -61,7 +68,7 @@ if ($acao) {
             echo json_encode(get_logados($conn));
             exit;
         } else if ($acao_formatada === 'deslogar') {
-            echo json_encode(deslogar_usuario($conn, $input['id_login'] ?? 0));
+            echo json_encode(deslogar_usuario_tempo($conn, $input['id_login'] ?? 0));
             exit;
         } else if ($acao_formatada === 'evolucao_presenca') {
             try {

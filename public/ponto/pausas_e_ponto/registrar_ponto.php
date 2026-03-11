@@ -3,9 +3,9 @@ session_start();
 date_default_timezone_set('America/Sao_Paulo');
 include __DIR__ . '/../../../BD/conexao.php';
 require_once __DIR__ . '/../../../include/verificacao.php';
+verificar_login($conn);
 
 $id_usuario = $_SESSION['id_usuario'] ?? null;
-if (!$id_usuario) die("Acesso negado.");
 $hoje = date("Y-m-d");
 $erro = "";
 $desabilitar = "";
@@ -32,13 +32,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bind_param("is", $id_usuario, $hoje);
             $stmt->execute();
         } elseif (empty($ponto['fim_ponto'])) {
-            // Regra: Não encerra ponto com pausa aberta
+            // Não encerra ponto com pausa aberta
             $checkPausa = $conn->query("SELECT id_pausa FROM pausa WHERE id_usuario = $id_usuario AND fim IS NULL");
 
             if ($checkPausa->num_rows > 0) {
                 $erro = "Encerre a pausa ativa antes de finalizar o ponto.";
             } else {
-                $conn->query("UPDATE ponto_dia SET fim_ponto = NOW() WHERE id_ponto = " . $ponto['id_ponto']);
+                //Não encerra ponto sem ter realizado ao menos uma pausa hoje
+                $checkPausaRealizada = $conn->query("
+                    SELECT id_pausa FROM pausa 
+                    WHERE id_usuario = $id_usuario 
+                    AND data = '$hoje' 
+                    AND fim IS NOT NULL
+                ");
+
+                if ($checkPausaRealizada->num_rows === 0) {
+                    $erro = "É necessário realizar ao menos uma pausa antes de finalizar o ponto.";
+                } else {
+                    $conn->query("UPDATE ponto_dia SET fim_ponto = NOW() WHERE id_ponto = " . $ponto['id_ponto']);
+                    $conn->query("UPDATE ponto_dia SET status = 'Finalizado' WHERE id_ponto = " . $ponto['id_ponto']);
+                }
             }
         }
     } elseif ($acao === 'pausa_iniciar') {
@@ -186,19 +199,8 @@ $tiposPausa = $stmtTipos->get_result();
                 </ul>
             </section>
 
-            <section class="container bater-ponto">
-                <h2>Ponto</h2>
-
-                <form method="POST" class="form">
-                    <input type="hidden" name="acao" value="registrar_ponto">
-
-                    <button type="submit" class="btn btn-padrao" <?= ($pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
-                        <?= !$pontoIniciado ? 'Iniciar Ponto' : 'Finalizar Ponto' ?>
-                    </button>
-                </form>
-            </section>
-
-            <section class="container bater-ponto">
+            <?php if ($pontoIniciado && !$pontoFinalizado): ?>
+            <section class="container bater-ponto pausas">
                 <article>
                     <h2>Pausa</h2>
 
@@ -220,7 +222,7 @@ $tiposPausa = $stmtTipos->get_result();
                             <button type="submit" class="btn btn-padrao" <?= $disabled ?>>Iniciar Pausa</button>
                         <?php else: ?>
                             <input type="hidden" name="acao" value="pausa_finalizar">
-                            <button type="submit" class="btn btn-excluir" id="btnFinalizarPausa" <?= $disabled ?>>Finalizar Pausa</button>
+                            <button type="submit" class="btn btn-excluir" id="btnFinalizarPausa">Finalizar Pausa</button>
                             <p id="statusTempo" class="status-tempo"></p>
                         <?php endif; ?>
                     </form>
@@ -266,6 +268,20 @@ $tiposPausa = $stmtTipos->get_result();
                     <?php endif; ?>
                 </article>
             </section>
+            <?php endif; ?>
+            <section class="container bater-ponto">
+                <h2>Ponto</h2>
+
+                <form method="POST" class="form">
+                    <input type="hidden" name="acao" value="registrar_ponto">
+
+                    <button type="submit" class="btn btn-padrao" <?= ($pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
+                        <?= !$pontoIniciado ? 'Iniciar Ponto' : 'Finalizar Ponto' ?>
+                    </button>
+                </form>
+            </section>
+
+
         </section>
     </main>
 

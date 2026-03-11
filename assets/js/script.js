@@ -1,4 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
+    /* SETAR ID_USUARIO NO LOCAL STORAGE */
+    const id_usuario = document.getElementById("nome-usuario-navbar").dataset.id;
+
+    if (localStorage.getItem("id_usuario") == null) {
+        localStorage.setItem("id_usuario", id_usuario);
+    }
+
     /* CARROSSEL - INDEX*/
     const slides = document.querySelectorAll(".slide");
     const prev = document.querySelector(".prev");
@@ -166,6 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (formJornada) {
         const inputJornada = document.getElementById("set-jornada");
         const inputHoraExtra = document.getElementById("set-hora-max");
+        const inputDescricao = document.getElementById("set-descricao");
         const resposta = document.getElementById("resposta");
         const botaoSalvar = formJornada.querySelector("button");
 
@@ -173,10 +181,11 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             resposta.textContent = "";
             resposta.className = "";
+            const descricao = inputDescricao.value;
             const jornada = inputJornada.value;
             const horaExtra = inputHoraExtra.value;
 
-            if (!jornada || !horaExtra) {
+            if (!jornada || !horaExtra || !descricao) {
                 resposta.textContent = "Preencha todos os campos.";
                 resposta.className = "erro";
                 return;
@@ -201,7 +210,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     },
 
                     body: JSON.stringify({
-                        jornada,
+                        descricao: descricao,
+                        jornada: jornada,
                         hora_extra: horaExtra
                     })
                 });
@@ -307,7 +317,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id_login: idLogin })
             });
-            window.location.reload();
+
             carregarLogados();
         }
 
@@ -360,6 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     btnFinalizar && (btnFinalizar.disabled = false);
                     statusMsg.textContent = "Tempo mínimo atingido.";
                     statusMsg.style.color = "green";
+                    localStorage.setItem("aviso", "Tempo mínimo de pausa atingido.")
                 }
 
                 if (decorridoSegundos >= maxSegundos) {
@@ -371,6 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     let tempo = Math.round(segundosRestantes / 60);
                     if (tempo > 60) tempo = Math.round(tempo / 60);
 
+                    chamarPnotifyAviso()
                     PNotify.notice({
                         title: "Aviso de Tempo",
                         text: `Faltam ${tempo} minutos para o limite da sua pausa!`,
@@ -390,5 +402,66 @@ document.addEventListener("DOMContentLoaded", () => {
                 localStorage.setItem("aviso_sucesso", "true");
             });
         }
+    }
+
+    /* PNOTIFY */
+    function chamarPnotifyAviso(titulo, mensagem, milissegundos) {
+        const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_comum.mp3');
+
+        som_aviso.play();
+
+        let tempo = milissegundos ?? 5000;
+        PNotify.info({
+            title: titulo,
+            text: `${mensagem}`,
+            delay: tempo,
+        });
+    }
+
+    function chamarPnotifyAlert(titulo, mensagem, milissegundos) {
+        const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_erro.wav');
+
+        som_aviso.play();
+
+        let tempo = milissegundos ?? 5000;
+        PNotify.alert({
+            title: titulo,
+            text: `${mensagem}`,
+            delay: tempo,
+        });
+    }
+
+    function chamarPnotifySuccess(titulo, mensagem, milissegundos) {
+        let tempo = milissegundos ?? 5000;
+        PNotify.success({
+            title: titulo,
+            text: `${mensagem}`,
+            delay: tempo,    
+        });
+    }
+
+    if (localStorage.getItem("id_usuario")) {
+        let id_usuario = localStorage.getItem("id_usuario");
+        
+        fetch(`/projeto-integrador/api/api_consulta_aviso.php?id_usuario=${id_usuario}`, {
+            method: "GET",
+            headers: {"Content-Type": "application/json"},
+        })
+        .then((res)=> res.json())
+        .then((resposta) => {
+            if (resposta.sucesso) {
+                console.log(resposta.dados.mensagem);
+                chamarPnotifyAviso("Aviso", resposta.dados.mensagem, 5000);
+            } 
+        });
+    }
+
+    if (localStorage.getItem("aviso_sucesso") === "true") {        
+        PNotify.success({
+            title: 'Sucesso',
+            text: `Ação registrada com sucesso!}`,
+            delay: 3000
+        });
+        localStorage.removeItem("aviso_sucesso");
     }
 });

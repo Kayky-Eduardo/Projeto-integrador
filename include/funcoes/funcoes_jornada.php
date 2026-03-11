@@ -3,30 +3,34 @@
 
 function buscar_jornada_usuario($conn, $usuario_id, $data = null) {
     $data = $data ?? date('Y-m-d');
-    
+
     $stmt = $conn->prepare("
-        SELECT horas_diarias, dias_semana 
-        FROM jornadas_trabalho 
-        WHERE usuario_id = ? 
-        AND data_inicio <= ?
-        AND (data_fim IS NULL OR data_fim >= ?)
-        ORDER BY data_inicio DESC 
-        LIMIT 1"
-    );
-    $stmt->bind_param("iss", $usuario_id, $data, $data);
+        SELECT 
+            tempo_jornada.jornada AS horas_diarias,
+            tempo_jornada.dias_semana
+        FROM grupo_setor
+        JOIN setor 
+            ON setor.id_setor = grupo_setor.id_setor
+        JOIN tempo_jornada 
+            ON tempo_jornada.id_tempo = setor.id_tempo
+        WHERE grupo_setor.id_usuario = ?
+        LIMIT 1;
+    ");
+
+    $stmt->bind_param("i", $usuario_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $jornada = $result->fetch_assoc();
     $stmt->close();
-    
+
     // Retorna jornada padrão se não encontrar
     if (!$jornada) {
         return [
-            'horas_diarias' => 8.0,
+            'horas_diarias' => '08:00:00',
             'dias_semana' => json_encode([1, 2, 3, 4, 5])
         ];
     }
-    
+
     return $jornada;
 }
 
@@ -206,17 +210,20 @@ function verificar_feriado($conn, $data) {
 
 // Verifica a jornada de trabalho
 function verificar_jornada($conn, $usuario_id, $data_inicio, $data_fim) {
-    // Calcula horas trabalhadas (baseado nos pontos aprovados)
+    // calcula horas trabalhadas (baseado nos pontos aprovados)
     $trabalhadas = calcular_horas_trabalhadas($conn, $usuario_id, $data_inicio, $data_fim);
     
-    // Calcula horas esperadas (baseado na jornada configurada)
+    // calcula horas esperadas (baseado na jornada configurada)
     $esperadas = calcular_horas_esperadas($conn, $usuario_id, $data_inicio, $data_fim);
     
     $diferenca = $trabalhadas['total_horas'] - $esperadas['total_horas'];
+    
     $percentual = $esperadas['total_horas'] > 0 ?
     ($trabalhadas['total_horas'] / $esperadas['total_horas']) * 100 : 0;
     
-    $taxa_presenca = $trabalhadas['total_horas'] / $esperadas['total_horas'];
+    $taxa_presenca = $esperadas['total_horas'] > 0 ? 
+    $trabalhadas['total_horas'] / $esperadas['total_horas'] : 0;
+    
     return [
         'usuario_id' => $usuario_id,
         'horas_trabalhadas' => $trabalhadas['total_horas'],
@@ -238,32 +245,141 @@ function atualizar_assiduidade($conn, $usuario_id, $percentual) {
     return $sucesso;
 }
 
-function set_jornada($conn, $jornada, $hora_extra) {
+function set_jornada($conn, $descricao, $jornada, $hora_extra, $dias_semana = null) {    
+    if (empty(trim($descricao))) {
+        return [
+            'sucesso' => false,
+            'mensagem' => 'A descrição da jornada é obrigatória.',
+            'id_inserido' => null
+        ];
+    }
+    
+    $descricao = trim(strtolower($descricao));
+
+    if (strlen($descricao) > 100) {
+        return [
+            'sucesso' => false,
+            'mensagem' => 'A descrição não pode exceder 100 caracteres.',
+            'id_inserido' => null
+        ];
+    }
+        
+    $dias_semana_json = null;
+    if ($dias_semana !== null) {
+        if (empty($dias_semana)) {
+            return [
+                'sucesso' => false,
+                'mensagem' => 'Se informar dias da semana, ao menos um dia deve ser selecionado.',
+                'id_inserido' => null
+            ];
+        }
+                
+        foreach ($dias_semana as $dia) {
+            if ($dia < 1 || $dia > 7) {
+                return [
+                    'sucesso' => false,
+                    'mensagem' => 'Os dias da semana devem estar entre 1 (Segunda) e 7 (Domingo).',
+                    'id_inserido' => null
+                ];
+            }
+        }
+        
+        sort($dias_semana);
+        $dias_semana_json = json_encode($dias_semana);
+    }
+        
+    $stmt_verifica = $conn->prepare("
+        SELECT id_tempo 
+        FROM tempo_jornada 
+        WHERE LOWER(descricao) = ?
+    ");
+    $stmt_verifica->bind_param('s', $descricao);
+    $stmt_verifica->execute();
+    $resultado_verifica = $stmt_verifica->get_result();
+    
+    if ($resultado_verifica->num_rows > 0) {
+        $stmt_verifica->close();
+        return [
+            'sucesso' => false,
+            'mensagem' => 'Já existe uma jornada cadastrada com esta descrição.',
+            'id_inserido' => null
+        ];
+    }
+    $stmt_verifica->close();
+        
+    // Adiciona segundos ao formato (banco espera TIME completo HH:MM:SS)
+    $jornada_formatada = $jornada . ':00';
+    $hora_extra_formatada = $hora_extra . ':00';
+        
     $conn->begin_transaction();
-
+    
     try {
-        $conn->query("TRUNCATE TABLE tempo_jornada");
-
-        $jornada_formatada = $jornada . ':00';
-        $hora_extra_formatada = $hora_extra . ':00';
-
+        $dias = $dias_semana_json ?? json_encode([1, 2, 3, 4, 5, 6, 7]);
         $stmt = $conn->prepare("
-            INSERT INTO tempo_jornada (jornada, maximo_hora_extra)
-            VALUES (?, ?);
+            INSERT INTO tempo_jornada (descricao, jornada, maximo_hora_extra, dias_semana)
+            VALUES (?, ?, ?, ?)
         ");
-
-        $stmt->bind_param('ss', $jornada_formatada, $hora_extra_formatada);
+        
+        $stmt->bind_param('ssss', $descricao, $jornada_formatada, $hora_extra_formatada, $dias);
+        
         $sucesso = $stmt->execute();
-
+        
+        if (!$sucesso) {
+            throw new Exception("Falha ao executar a inserção: " . $stmt->error);
+        }
+        
+        $id_inserido = $stmt->insert_id;
         $stmt->close();
         $conn->commit();
-
-        return $sucesso;
+        
+        return [
+            'sucesso' => true,
+            'mensagem' => 'Jornada cadastrada com sucesso!',
+            'id_inserido' => $id_inserido
+        ];
+        
     } catch(Exception $e) {
         $conn->rollback();
-        throw new Exception("Erro ao configurar jornada: " . $e->getMessage());
+
+        return [
+            'sucesso' => false,
+            'mensagem' => 'Erro ao cadastrar jornada: ' . $e->getMessage(),
+            'id_inserido' => null
+        ];
     }
 }
+
+
+// função para atualizar a jornada no setor
+function atualizar_jornada($conn, $id_tempo, $id_setor) {
+    $stmt_update = $conn->prepare("UPDATE setor SET id_tempo = ? WHERE id_setor = ?");
+    $stmt_update->bind_param("ii", $id_tempo, $id_setor);
+    
+    if ($stmt_update->execute()) {
+        if ($stmt_update->affected_rows === 0) {
+            return [
+                'sucesso' => false,
+                'mensagem' => 'Nenhuma alteração foi realizada. A jornada pode já estar aplicada.'
+            ];
+        }
+        $stmt_update->close();
+        
+        return [
+            'sucesso' => true,
+            'mensagem' => 'Jornada atualizada com sucesso!'
+        ];
+
+    } else {
+        $erro = $stmt_update->error;
+        $stmt_update->close();
+        return [
+            'sucesso' => false,
+            'mensagem' => 'Erro ao atualizar jornada: ' . $erro
+        ];
+    }
+
+}
+
 
 function get_pessoas_setor($conn, $id_setor) {
     $stmt = $conn->prepare("
@@ -291,7 +407,7 @@ function get_pessoas_setor($conn, $id_setor) {
 
 function set_setor($conn, $usuarios_selecionados, $nome_setor, $id_setor, $id_tempo = null) {
     // Atualiza nome do setor e id_tempo
-    $stmt = $conn->prepare("UPDATE setor SET nome_setor = ? AND id_tempo = ? WHERE id_setor = ?");
+    $stmt = $conn->prepare("UPDATE setor SET nome_setor = ?, id_tempo = ? WHERE id_setor = ?");
     $stmt->bind_param("sii", $nome_setor, $id_tempo, $id_setor);
     $stmt->execute();
 
