@@ -345,7 +345,7 @@ function relatorio_ponto_filtrado($conn, $id_usuario) {
 
 function get_logados($conn) {
     $coleta_usuario_tabela = $conn->prepare("
-    SELECT usuario.id_usuario, usuario.email_usuario, id_login, email_login, data_inicio,
+    SELECT usuario.nome_usuario, usuario.email_usuario, id_login, email_login, data_inicio,
     TIMESTAMPDIFF(MINUTE, data_inicio, NOW()) AS tempo_logado
     FROM login 
     LEFT JOIN usuario on login.id_usuario = usuario.id_usuario
