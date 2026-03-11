@@ -130,7 +130,7 @@ function verificar_tempo_por_ponto($conn, $id_ponto, $id_usuario) {
     
     
     // Calcula pausas para descontar do tempo trabalhado
-    $tempo_pausas = calcular_tempo_pausas($conn, $id_ponto, $id_usuario);
+    $tempo_pausas = calcular_tempo_pausas($conn, $id_usuario, $id_ponto);
     $segundos_trabalhados_efetivos = $dados['segundos_trabalhados'] - $tempo_pausas;
 
     
