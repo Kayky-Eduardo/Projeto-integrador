@@ -275,10 +275,8 @@ function filtrar_usuario($conn, $id_usuario = null) {
     $coleta_usuario = $conn->prepare("
     SELECT saldo_minutos, nome_usuario, ultima_atualizacao
     FROM banco_horas
-    JOIN usuario ON banco_horas.id_usuario = usuario.id_usuario
-    WHERE ultima_atualizacao between ? AND ?;
+    JOIN usuario ON banco_horas.id_usuario = usuario.id_usuario;
     ");
-    $coleta_usuario->bind_param("ss", $data_inicio, $data_fim);
     $coleta_usuario->execute();
     
     $result = $coleta_usuario->get_result();
