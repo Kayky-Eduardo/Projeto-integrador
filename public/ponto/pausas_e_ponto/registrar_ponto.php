@@ -10,15 +10,6 @@ $hoje = date("Y-m-d");
 $erro = "";
 $desabilitar = "";
 
-// LÓGICA DE AUTO-FECHAMENTO (BACKEND)
-// Fecha pausas que excederam o tempo_max caso o usuário tenha fechado o navegador
-$conn->query("UPDATE pausa p 
-              JOIN pausa_config c ON p.id_config = c.id_config 
-              SET p.fim = DATE_ADD(p.inicio, INTERVAL c.tempo_max MINUTE), 
-                  p.duracao_minutos = c.tempo_max 
-              WHERE p.fim IS NULL AND p.id_usuario = $id_usuario 
-              AND TIMESTAMPDIFF(SECOND, p.inicio, NOW()) >= (c.tempo_max * 60)");
-
 // PROCESSAMENTO DE AÇÕES VIA POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $acao = $_POST['acao'] ?? '';
@@ -86,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmtLimite->execute();
                 $dados = $stmtLimite->get_result()->fetch_assoc();
 
-                if ($dados && $dados['total_realizado'] >= $dados['limite_pausa_diario']) {
+                if ($dados && $dados['total_realizado'] >= $dados['limite_pausa_diario'] && $dados['limite_pausa_diario'] !== 0) {
                     $erro = "Você já atingiu o limite diário dessa pausa.";
                 } else {
 
@@ -210,9 +201,9 @@ $tiposPausa = $stmtTipos->get_result();
                         <select id="tipo_pausa" name="id_config" class="select-padrao" required <?= (!$pontoIniciado || $pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
                             <?php while ($t = $tiposPausa->fetch_assoc()): ?>
                                 <option value="<?= $t['id_config'] ?>"
-                                    <?= ($t['total_realizado'] >= $t['limite_pausa_diario']) ? 'disabled' : '' ?>>
+                                    <?= ($t['total_realizado'] >= $t['limite_pausa_diario'] && $t['limite_pausa_diario'] !== 0) ? 'disabled' : '' ?>>
                                     <?= htmlspecialchars($t['descricao_pausa']) ?>
-                                    (<?= $t['total_realizado'] ?>/<?= $t['limite_pausa_diario'] ?>)
+                                    (<?= $t['total_realizado'] ?>/<?= ($t['limite_pausa_diario'] == 0) ? '∞' : $t['limite_pausa_diario'] ?>)
                                 </option>
                             <?php endwhile; ?>
                         </select>

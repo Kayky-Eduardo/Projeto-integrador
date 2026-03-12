@@ -374,8 +374,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 if (decorridoSegundos >= maxSegundos) {
-                    clearInterval(intervalId);
-                    document.getElementById("formPausa").submit();
+                    cronometro.style.color = "red";
+                    statusMsg.textContent = "Tempo máximo atingido.";
+                    statusMsg.style.color = "red";
+                    localStorage.setItem("aviso", "Tempo máximo de pausa atingido.")
                 }
 
                 if (segundosRestantes <= minSegundos && segundosRestantes > 0 && !avisoEmitido) {
