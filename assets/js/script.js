@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const jornada = inputJornada.value;
             const horaExtra = inputHoraExtra.value;
 
-            if (!jornada || !horaExtra || !descricao) {
+            if (!jornada || !horaExtra || !descricao || !diasSelecionados) {
                 resposta.textContent = "Preencha todos os campos.";
                 resposta.className = "erro";
                 return;
@@ -449,7 +449,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .then((res)=> res.json())
         .then((resposta) => {
             if (resposta.sucesso) {
-                console.log(resposta.dados.mensagem);
+                console.log(new Date.now());
                 chamarPnotifyAviso("Aviso", resposta.dados.mensagem, 5000);
             } 
         });
