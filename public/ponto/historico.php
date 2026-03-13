@@ -3,51 +3,38 @@ session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require __DIR__ . "/../../include/verificacao.php";
 verificar_login($conn);
-
-// Recupera dados da sessão
 $id_usuario = $_SESSION['id_usuario'];
 $nivel      = $_SESSION['nivel'];
 
-// validar ajuste em aberto
-function validar_ajustes_pendentes($conn, $id_usuario, $id_ponto) {
+function validar_ajustes_pendentes($conn, $id_usuario, $id_ponto)
+{
     $validacao = $conn->prepare("
     SELECT status 
     FROM ajustes_ponto
     WHERE id_usuario = ?
     AND id_ponto = ?
     ");
+
     $validacao->bind_param("ii", $id_usuario, $id_ponto);
     $validacao->execute();
     $result = $validacao->get_result();
 
     if ($validacao->affected_rows === 0) {
         return true;
-    } else {
-        $status = $result->fetch_assoc()['status'];
-        if ($status != "Revisar" || $status != "Em Andamento") {
-            return true;
-        }
     }
 
     return false;
 }
 
-/* ======================
-FILTROS RECEBIDOS VIA GET
-====================== */
 $f_from   = $_GET['from']   ?? '';
 $f_to     = $_GET['to']     ?? '';
 $f_status = $_GET['status'] ?? '';
 $f_nome   = $_GET['nome']   ?? '';
 
-// Arrays para montagem dinâmica da query
 $where  = [];
 $params = [];
 $types  = '';
 
-/* =======
-QUERY BASE
-======= */
 $sql = "
     SELECT 
         p.*, 
@@ -62,85 +49,57 @@ $sql = "
     LEFT JOIN pausa_config pc ON pc.id_config = ps.id_config
 ";
 
-/* ===================
-CONTROLE DE PERMISSÕES
-=================== */
-// Funcionário comum vê apenas seus dados
+/* CONTROLE DE PERMISSÕES */
 if ($nivel > 0) {
     $where[]  = "p.id_usuario = ?";
     $params[] = $id_usuario;
     $types   .= 'i';
 }
 
-/* ===========
-APLICA FILTROS
-=========== */
-
-// Filtro por data inicial
+/* FILTROS */
 if (!empty($f_from)) {
     $where[]  = "p.data_ponto >= ?";
     $params[] = $f_from;
     $types   .= 's';
 }
 
-// Filtro por data final
 if (!empty($f_to)) {
     $where[]  = "p.data_ponto <= ?";
     $params[] = $f_to;
     $types   .= 's';
 }
 
-// Filtro por status
 if (!empty($f_status)) {
     $where[]  = "p.status = ?";
     $params[] = $f_status;
     $types   .= 's';
 }
 
-// Filtro por nome do funcionário (RH)
 if (!empty($f_nome)) {
     $where[]  = "u.nome_usuario LIKE ?";
     $params[] = "%$f_nome%";
     $types   .= 's';
 }
 
-/* =================
-MONTA WHERE DINÂMICO
-================= */
 if ($where) {
     $sql .= " WHERE " . implode(" AND ", $where);
 }
 
-/* ==============
-ORDENA RESULTADOS
-============== */
 $sql .= " ORDER BY p.data_ponto DESC";
-
-/* ==================
-PREPARA E EXECUTA SQL
-================== */
 $stmt = $conn->prepare($sql);
 
-// Aplica parâmetros apenas se houver filtros
 if ($params) {
     $stmt->bind_param($types, ...$params);
 }
 
-// Executa a query
 $stmt->execute();
-
-// Recupera resultados
 $batidas = $stmt->get_result();
-
-// NOVO PROCESSAMENTO: Agrupar resultados por ID do Ponto
 $pontos_agrupados = [];
 
 while ($row = $batidas->fetch_assoc()) {
     $id_ponto = $row['id_ponto'];
 
-    // Se é a primeira vez que vemos este ponto, inicialize o registro principal
     if (!isset($pontos_agrupados[$id_ponto])) {
-        // Armazena todos os dados do dia, menos os específicos de pausa
         $pontos_agrupados[$id_ponto] = [
             'data_ponto'   => $row['data_ponto'],
             'nome'         => $row['nome'],
@@ -148,11 +107,10 @@ while ($row = $batidas->fetch_assoc()) {
             'fim_ponto'    => $row['fim_ponto'],
             'status'       => $row['status'],
             'id_ponto'     => $row['id_ponto'],
-            'pausas'       => [], // Array para armazenar todas as pausas
+            'pausas'       => [],
         ];
     }
 
-    // Se houver dados de pausa na linha (devido ao JOIN)
     if (!empty($row['inicio_pausa'])) {
         $pontos_agrupados[$id_ponto]['pausas'][] = [
             'descricao_pausa' => $row['descricao_pausa'],
@@ -161,7 +119,23 @@ while ($row = $batidas->fetch_assoc()) {
         ];
     }
 }
-// Agora, $pontos_agrupados é o array que você irá iterar no HTML.
+
+function mostrar($valor, $tipo = null)
+{
+    if (empty($valor)) {
+        return "-";
+    }
+
+    if ($tipo === "data") {
+        return date("d/m/Y", strtotime($valor));
+    }
+
+    if ($tipo === "hora") {
+        return date("H:i", strtotime($valor));
+    }
+
+    return htmlspecialchars($valor);
+}
 ?>
 
 <!DOCTYPE html>
@@ -170,90 +144,100 @@ while ($row = $batidas->fetch_assoc()) {
 <head>
     <meta charset="utf-8">
     <title>Histórico de Batidas</title>
+    <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
 
 <body>
+    <nav>
+        <?php include("../../include/navbar.php"); ?>
+    </nav>
 
-    <!-- Navegação -->
-    <a href="../index.php">Voltar</a>
-    <h1>Histórico de Batidas</h1>
+    <main class="main-center">
+        <section class="pagina-padrao">
+            <h1 class="page-title">Histórico de Pontos</h1>
 
-    <!-- FORMULÁRIO DE FILTRO -->
-    <form method="get">
+            <section class="container filtro-padrao">
+                <form method="get" class="form-linha">
+                    <article>
+                        <label class="label">De:</label>
+                        <input class="input" type="date" name="from" value="<?= htmlspecialchars($f_from) ?>">
+                    </article>
 
-        <!-- Filtro por data inicial -->
-        <label>De:</label>
-        <input type="date" name="from" value="<?= htmlspecialchars($f_from) ?>">
+                    <article>
+                        <label class="label">Até:</label>
+                        <input class="input" type="date" name="to" value="<?= htmlspecialchars($f_to) ?>">
+                    </article>
 
-        <!-- Filtro por data final -->
-        <label>Até:</label>
-        <input type="date" name="to" value="<?= htmlspecialchars($f_to) ?>">
+                    <article>
+                        <label class="label">Status:</label>
+                        <select class="select-padrao" name="status">
+                            <option value="">Todos</option>
+                            <option value="Em Andamento" <?= $f_status == 'Em Andamento' ? 'selected' : '' ?>>Em Andamento</option>
+                            <option value="Finalizado" <?= $f_status == 'Finalizado'   ? 'selected' : '' ?>>Finalizado</option>
+                            <option value="Revisar" <?= $f_status == 'Revisar'      ? 'selected' : '' ?>>Revisar</option>
+                            <option value="Aprovado" <?= $f_status == 'Aprovado'     ? 'selected' : '' ?>>Aprovado</option>
+                        </select>
+                    </article>
 
-        <!-- Filtro por status -->
-        <label>Status:</label>
-        <select name="status">
-            <option value="">Todos</option>
-            <option value="Em Andamento" <?= $f_status == 'Em Andamento' ? 'selected' : '' ?>>Em Andamento</option>
-            <option value="Finalizado" <?= $f_status == 'Finalizado'   ? 'selected' : '' ?>>Finalizado</option>
-            <option value="Revisar" <?= $f_status == 'Revisar'      ? 'selected' : '' ?>>Revisar</option>
-            <option value="Aprovado" <?= $f_status == 'Aprovado'     ? 'selected' : '' ?>>Aprovado</option>
-        </select>
+                    <button type="submit" class="btn btn-padrao">Filtrar</button>
+                </form>
+            </section>
 
-        <button type="submit">Filtrar</button>
-    </form>
-    <br>
+            <section class="tabela-padrao">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Funcionário</th>
+                            <th>Entrada</th>
+                            <th>Saída</th>
+                            <th>Pausas</th>
+                            <th>Status</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
 
-    <!-- TABELA DE RESULTADOS -->
-    <table border="1" cellpadding="8">
-        <tr>
-            <th>Data</th>
-            <th>Funcionário</th>
-            <th>Entrada</th>
-            <th>Saída</th>
-            <th>Pausas</th>
-            <th>Status</th>
-            <th>Ação</th>
-        </tr>
+                    <tbody>
+                        <?php foreach ($pontos_agrupados as $r): ?>
+                            <tr>
+                                <td><?= mostrar($r['data_ponto'], "data") ?></td>
+                                <td><?= mostrar($r['nome']) ?></td>
+                                <td><?= mostrar($r['inicio_ponto'], "hora") ?></td>
+                                <td><?= mostrar($r['fim_ponto'], "hora") ?></td>
 
-        <?php foreach ($pontos_agrupados as $r): ?>
-            <tr>
-                <!-- Data formatada -->
-                <td><?= date("d/m/Y", strtotime($r['data_ponto'])) ?></td>
+                                <td>
+                                    <?php
+                                    if (empty($r['pausas'])) {
+                                        echo "-";
+                                    } else {
+                                        foreach ($r['pausas'] as $pausa) {
+                                            $pausa_inicio = mostrar($pausa['inicio'], "hora");
+                                            $pausa_fim    = mostrar($pausa['fim'], "hora");
+                                            echo htmlspecialchars(ucfirst($pausa['descricao_pausa'])) . ": $pausa_inicio - $pausa_fim <br>";
+                                        }
+                                    }
+                                    ?>
+                                </td>
 
-                <!-- Nome do funcionário -->
-                <td><?= htmlspecialchars($r['nome']) ?></td>
+                                <td><?= mostrar($r['status']) ?></td>
+                                <?php $pode_solicitar = validar_ajustes_pendentes($conn, $id_usuario, $r['id_ponto']); ?>
 
-                <!-- Horários -->
-                <td><?= $r['inicio_ponto']   ? date("H:i", strtotime($r['inicio_ponto']))   : '--:--' ?></td>
-                <td><?= $r['fim_ponto']      ? date("H:i", strtotime($r['fim_ponto']))      : '--:--' ?></td>
-
-                <!-- Pausas -->
-                <td>
-                    <?php foreach($r['pausas'] as $pausa): ?>
-                        <?php 
-                            $pausa_inicio = ($pausa['inicio'] ? date("H:i", strtotime($pausa['inicio'] )) : '--');
-                            $pausa_fim    = ($pausa['fim']    ? date("H:i", strtotime($pausa['fim']    )) : '--');
-                            echo htmlspecialchars($pausa['descricao_pausa']) . ": " . $pausa_inicio . ":" . $pausa_fim . "<br>";
-                        ?>
-                    <?php endforeach; ?>
-                </td>
-
-                <!-- Status -->
-                <td><?= $r['status'] ?></td>
-                <?php $pode_solicitar = validar_ajustes_pendentes($conn, $id_usuario, $r['id_ponto']);?>
-
-                <!-- AÇÕES -->
-                <?php if ($pode_solicitar): ?>
-                    <td>
-                        <a href="solicitar.php?id_ponto=<?= $r['id_ponto'] ?>">
-                            Solicitar ajuste
-                        </a>
-                    </td>
-
-                <?php endif; ?>
-            </tr>
-        <?php endforeach; ?>
-    </table>
+                                <td>
+                                    <?php if ($pode_solicitar): ?>
+                                        <a class="btn-link btn-padrao" href="solicitar.php?id_ponto=<?= $r['id_ponto'] ?>">
+                                            Solicitar ajuste
+                                        </a>
+                                    <?php else: ?>
+                                        -
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </section>
+        </section>
+    </main>
 </body>
 
 </html>

@@ -237,6 +237,23 @@ while ($row = $result->fetch_assoc()) {
         ];
     }
 }
+
+function mostrar($valor, $formato = null)
+{
+    if (empty($valor)) {
+        return "-";
+    }
+
+    if ($formato === "data") {
+        return date("d/m/Y", strtotime($valor));
+    }
+
+    if ($formato === "hora") {
+        return date("H:i", strtotime($valor));
+    }
+
+    return htmlspecialchars($valor);
+}
 ?>
 
 <!DOCTYPE html>
@@ -258,7 +275,6 @@ while ($row = $result->fetch_assoc()) {
             <h1 class="page-title">Gerenciar Ponto</h1>
 
             <section class="container filtro-padrao">
-
                 <form method="get" class="form-linha">
                     <article>
                         <label class="label">De:</label>
@@ -300,36 +316,40 @@ while ($row = $result->fetch_assoc()) {
                             <th>Saída</th>
                             <th>Pausas</th>
                             <th>Status</th>
-                            <th>Ações</th>
+                            <th>Ação</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         <?php foreach ($pontos_agrupados as $r): ?>
                             <tr>
-                                <td><?= date("d/m/Y", strtotime($r['data_ponto'])) ?></td>
-                                <td><?= htmlspecialchars($r['nome']) ?></td>
-                                <td><?= $r['inicio_ponto'] ? date("H:i", strtotime($r['inicio_ponto'])) : '-' ?></td>
-                                <td><?= $r['fim_ponto'] ? date("H:i", strtotime($r['fim_ponto'])) : '-' ?></td>
+                                <td><?= mostrar($r['data_ponto'], "data") ?></td>
+                                <td><?= mostrar($r['nome']) ?></td>
+                                <td><?= mostrar($r['inicio_ponto'], "hora") ?></td>
+                                <td><?= mostrar($r['fim_ponto'], "hora") ?></td>
 
                                 <td>
-                                    <?php foreach ($r['pausas'] as $pausa): ?>
-                                        <?php
-                                        $pausa_inicio = ($pausa['inicio'] ? date("H:i", strtotime($pausa['inicio'])) : '--:--');
-                                        $pausa_fim    = ($pausa['fim']    ? date("H:i", strtotime($pausa['fim'])) : '--:--');
-                                        echo htmlspecialchars($pausa['descricao_pausa']) . " - " . $pausa_inicio . " - " . $pausa_fim . "<br>";
-                                        ?>
-                                    <?php endforeach; ?>
+                                    <?php
+                                    if (empty($r['pausas'])) {
+                                        echo "-";
+                                    } else {
+                                        foreach ($r['pausas'] as $pausa) {
+                                            $pausa_inicio = mostrar($pausa['inicio'], "hora");
+                                            $pausa_fim    = mostrar($pausa['fim'], "hora");
+                                            echo htmlspecialchars(ucfirst($pausa['descricao_pausa'])) . " - $pausa_inicio - $pausa_fim <br>";
+                                        }
+                                    }
+                                    ?>
                                 </td>
 
-                                <td><?= $r['status'] ?></td>
+                                <td><?= mostrar($r['status']) ?></td>
 
                                 <td>
                                     <?php if ($r['status'] !== 'Aprovado' && $r['status'] !== 'Em Andamento' && $r['status'] !== 'Revisar'): ?>
                                         <a class="btn-link btn-padrao" href="gerenciar.php?aprovar=<?= $r['id_ponto'] ?>">Aprovar</a>
+                                    <?php else: ?>
+                                        -
                                     <?php endif; ?>
-
-
                                 </td>
                             </tr>
                         <?php endforeach; ?>
