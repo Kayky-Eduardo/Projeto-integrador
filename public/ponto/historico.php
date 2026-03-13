@@ -6,21 +6,35 @@ verificar_login($conn);
 $id_usuario = $_SESSION['id_usuario'];
 $nivel      = $_SESSION['nivel'];
 
-function validar_ajustes_pendentes($conn, $id_usuario, $id_ponto)
-{
+function validar_ajustes_pendentes($conn, $id_usuario, $id_ponto) {
     $validacao = $conn->prepare("
     SELECT status 
     FROM ajustes_ponto
     WHERE id_usuario = ?
     AND id_ponto = ?
     ");
-
     $validacao->bind_param("ii", $id_usuario, $id_ponto);
     $validacao->execute();
     $result = $validacao->get_result();
 
     if ($validacao->affected_rows === 0) {
+        $validacao_ponto_aberto = $conn->prepare("
+        SELECT fim_ponto FROM ponto_dia WHERE id_ponto = ?
+        ");
+        $validacao_ponto_aberto->bind_param("i", $id_ponto);
+        $validacao_ponto_aberto->execute();
+        $result_validacao = $validacao_ponto_aberto->get_result();
+
+        if ($result_validacao->fetch_assoc()['fim_ponto'] === null) {
+            return false;
+        }
+        
         return true;
+    } else {
+        $status = $result->fetch_assoc()['status'];
+        if ($status != "Revisar" || $status != "Em Andamento") {
+            return true;
+        }
     }
 
     return false;
