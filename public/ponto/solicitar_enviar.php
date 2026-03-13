@@ -197,10 +197,6 @@ if ($ajuste_executado) {
     $up->bind_param("i", $id_ponto);
     $up->execute();
 
-    if (!$stmt->execute()) {
-        die("Erro SQL: " . $stmt->error);
-    }
-
     // Mensagem de sucesso e redirecionamento
     echo "
         <script>
