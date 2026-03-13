@@ -6,11 +6,6 @@ verificar_login($conn);
 $id_usuario = $_SESSION['id_usuario'];
 $nivel = $_SESSION['nivel'];
 
-if ($nivel < 2) {
-    header("Location: ../rh/ajustes_pendentes.php");
-    exit;
-}
-
 /* MARCAR TODAS COMO LIDAS  */
 if (isset($_POST['marcar_lidas'])) {
     $up = $conn->prepare("UPDATE notificacoes_ponto SET lida = 1 WHERE id_usuario = ?");
@@ -85,7 +80,7 @@ $notificacoes = $stmt->get_result();
         <section class="pagina-padrao">
             <h1 class="page-title">Notificações</h1>
 
-            <section class="container filtro-padrao">
+            <section class="container filtro-padrao linha-acoes">
                 <form method="get" class="form-linha">
                     <article>
                         <label class="label">De:</label>
@@ -97,18 +92,19 @@ $notificacoes = $stmt->get_result();
                         <input class="input" type="date" name="to" value="<?= htmlspecialchars($f_to) ?>">
                     </article>
 
-                    <article>
-                        <label class="label">
-                            <input type="checkbox" name="nao_lidas" value="1" <?= $somente_nao_lidas ? 'checked' : '' ?>>
-                            Somente não lidas
-                        </label>
-                    </article>
+                    <label class="toggle">
+                        <input type="checkbox" name="nao_lidas" value="1" <?= $somente_nao_lidas ? 'checked' : '' ?>>
+                        <span class="slider"></span>
+                        Somente não lidas
+                    </label>
 
-                    <button class="btn btn-padrao" type="submit">Filtrar</button>
+                    <button class="btn btn-padrao" type="submit">
+                        Filtrar
+                    </button>
                 </form>
 
-                <form method="post" class="form-linha">
-                    <button class="btn btn-padrao" type="submit" name="marcar_lidas">
+                <form method="post">
+                    <button class="btn btn-destaque" type="submit" name="marcar_lidas">
                         Marcar todas como lidas
                     </button>
                 </form>
@@ -127,10 +123,16 @@ $notificacoes = $stmt->get_result();
 
                     <tbody>
                         <?php while ($row = $notificacoes->fetch_assoc()): ?>
-                            <tr class="<?= $row['lida'] == 0 ? 'nao-lida' : '' ?>">
+                            <tr class="<?= $row['lida'] == 0 ? 'nao-lida' : '' ?> ">
                                 <td><?= date("d/m/Y H:i", strtotime($row['data_notificacao'])) ?></td>
                                 <td><?= htmlspecialchars($row['mensagem']) ?></td>
-                                <td><?= $row['lida'] == 1 ? 'Lida' : 'Não lida' ?></td>
+                                <td>
+                                    <?php if ($row['lida']): ?>
+                                        <span class="status-badge status-badge-ativo lida">Lida</span>
+                                    <?php else: ?>
+                                        <span class="status-badge status-badge-inativo">Não lida</span>
+                                    <?php endif; ?>
+                                </td>
 
                                 <td>
                                     <a class="btn-link btn-padrao" href="../ponto/historico.php?from=<?= $row['data_ponto'] ?>&to=<?= $row['data_ponto'] ?>">

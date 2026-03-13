@@ -57,6 +57,10 @@ if ($_SESSION['nivel'] < 2) {
     die("Acesso restrito.");
 }
 
+$teste = $conn->query("SELECT * FROM ajustes_ponto");
+
+
+
 // CONSULTA PRINCIPAL
 $sql = "
 SELECT 
@@ -122,7 +126,7 @@ function nomeCampoAjuste($campo)
                     <tbody>
                         <?php if ($res->num_rows === 0): ?>
                             <tr>
-                                <td colspan="8" class="tabela-vazia">
+                                <td class="tabela-vazia">
                                     Nenhum ajuste solicitado e/ou em revisão.
                                 </td>
                             </tr>

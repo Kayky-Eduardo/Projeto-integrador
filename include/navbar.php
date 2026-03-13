@@ -5,6 +5,25 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $nivel = $_SESSION['nivel'];
 
+$id_usuario = $_SESSION['id_usuario'] ?? null;
+$total_notificacoes = 0;
+
+if ($id_usuario) {
+
+    $sql = $conn->prepare("
+        SELECT COUNT(*) AS total
+        FROM notificacoes_ponto
+        WHERE id_usuario = ? AND lida = 0
+    ");
+
+    $sql->bind_param("i", $id_usuario);
+    $sql->execute();
+    $res = $sql->get_result();
+    $dados = $res->fetch_assoc();
+
+    $total_notificacoes = $dados['total'];
+}
+
 echo '<nav>';
 echo '<a href="/projeto-integrador/public/index.php">Início</a>';
 
@@ -179,8 +198,14 @@ if ($nivel >= 3) {
                     </li>
 
                     <li>
-                        <a href="/projeto-integrador/public/ponto/notificacoes.php">
+                        <a href="/projeto-integrador/public/ponto/notificacoes.php" class="item-notificacao">
                             Notificações
+
+                            ' . ($total_notificacoes > 0 ? '
+                                <span class="badge-notificacao">
+                                    ' . ($total_notificacoes > 99 ? "99+" : $total_notificacoes) . '
+                                </span>
+                            ' : '') . '
                         </a>
                     </li>
 
@@ -220,8 +245,14 @@ if ($nivel >= 3) {
                     </li>
 
                     <li>
-                        <a href="/projeto-integrador/public/ponto/notificacoes.php">
+                       <a href="/projeto-integrador/public/ponto/notificacoes.php" class="item-notificacao">
                             Notificações
+
+                            ' . ($total_notificacoes > 0 ? '
+                                <span class="badge-notificacao">
+                                    ' . ($total_notificacoes > 99 ? "99+" : $total_notificacoes) . '
+                                </span>
+                            ' : '') . '
                         </a>
                     </li>
 
