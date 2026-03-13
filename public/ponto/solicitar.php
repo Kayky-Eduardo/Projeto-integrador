@@ -1,4 +1,51 @@
 <?php
+/*
+ * =============================================================
+ * ARQUIVO: solicitar.php
+ * MÓDULO: Gestão de Divergências e Ajustes (Ponto Eletrônico)
+ * =============================================================
+ * DESCRIÇÃO GERAL
+ * -------------------------------------------------------------
+ * Interface que permite ao colaborador (ou RH) solicitar a 
+ * correção de horários em registros de ponto ou pausas já realizados.
+ * 
+ * Funcionalidades:
+ * - Identificação dinâmica do contexto (Funcionário vs. RH).
+ * - Validação de propriedade do registro (Segurança de Escopo).
+ * - Seleção condicional de campos via JavaScript (Ponto ou Pausa).
+ * - Recuperação de horários originais para comparação na interface.
+ * - Coleta de justificativa obrigatória para auditoria futura.
+ *
+ * FLUXO DE EXECUÇÃO
+ * -------------------------------------------------------------
+ * 1. Inicializa sessão e valida autenticação de usuário.
+ * 2. Define rota de retorno baseada no nível de acesso ($_SESSION['nivel']).
+ * 3. Valida o parâmetro 'id_ponto' via GET:
+ * - Se for RH (Nível >= 2): Acesso irrestrito ao ponto.
+ * - Se for Comum: Acesso restrito apenas aos próprios pontos.
+ * 4. Recupera dados do ponto e popula array de pausas associadas ao dia.
+ * 5. Renderiza formulário dinâmico com campos obrigatórios condicionais.
+ * 6. Envia os dados para processamento no arquivo 'solicitar_enviar.php'.
+ *
+ * SEGURANÇA
+ * -------------------------------------------------------------
+ * - Prepared Statements (bind_param) em todas as consultas SQL.
+ * - Validação de ID (intval) para prevenir injeção e acessos inválidos.
+ * - Verificação de nível de acesso para redirecionamento inteligente.
+ * - Escapamento de saída (htmlspecialchars) para descrições de pausas.
+ *
+ * TABELAS UTILIZADAS
+ * -------------------------------------------------------------
+ * 1. ponto_dia: Consulta dos horários de entrada e saída.
+ * 2. pausa: Listagem de intervalos realizados no dia solicitado.
+ * 3. pausa_config: Recuperação das descrições dos tipos de pausa.
+ *
+ * -------------------------------------------------------------
+ * Data: 10/03/2026
+ * Versão: 1.0
+ * =============================================================
+ */
+
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require __DIR__ . "/../../include/verificacao.php";
@@ -77,7 +124,7 @@ $sql_pausas = "
 
 $stmt_pausas = $conn->prepare($sql_pausas);
 // Usa id_usuario e data do registro do ponto ($reg) já validado
-$stmt_pausas->bind_param("is", $reg['id_usuario'], $reg['data_ponto']); 
+$stmt_pausas->bind_param("is", $reg['id_usuario'], $reg['data_ponto']);
 $stmt_pausas->execute();
 $pausas = $stmt_pausas->get_result();
 
@@ -86,7 +133,6 @@ $pausas_do_dia = [];
 while ($pausa_row = $pausas->fetch_assoc()) {
     $pausas_do_dia[] = $pausa_row;
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -95,103 +141,98 @@ while ($pausa_row = $pausas->fetch_assoc()) {
 <head>
     <meta charset="utf-8">
     <title>Solicitar Ajuste</title>
+    <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
 
 <body>
+    <nav>
+        <?php include("../../include/navbar.php"); ?>
+    </nav>
 
-    <!-- Título com a data do ponto -->
-    <h1>Solicitar ajuste do dia <?= htmlspecialchars($reg['data_ponto']) ?></h1>
+    <main class="main-center">
+        <section class="pagina-padrao">
+            <h1 class="page-title">
+                Solicitar ajuste para o dia <?= date('d-m-Y', strtotime($reg['data_ponto'])) ?>
+            </h1>
 
-    <!-- Formulário de envio do ajuste -->
-    <form method="POST" action="solicitar_enviar.php">
+            <section class="container solicitar-ajuste">
+                <form method="POST" action="solicitar_enviar.php" class="form">
+                    <input type="hidden" name="id_ponto" value="<?= $reg['id_ponto'] ?>">
 
-        <input type="hidden" name="id_ponto" value="<?= $reg['id_ponto'] ?>">
+                    <article>
+                        <label for="tipo_ajuste" class="label">O que deseja ajustar?</label>
+                        <select name="tipo_ajuste" id="tipo_ajuste" class="select-padrao" required onchange="mostrarCamposAjuste()">
+                            <option value="">Selecione...</option>
+                            <option value="ponto">Ponto</option>
+                            <option value="pausa">Pausa</option>
+                        </select>
+                    </article>
 
-        <label for="tipo_ajuste">O que deseja ajustar?</label>
-        <select name="tipo_ajuste" id="tipo_ajuste" required onchange="mostrarCamposAjuste()">
-            <option value="">Selecione...</option>
-            <option value="ponto">Ponto</option>
-            <option value="pausa">Pausa</option>
-        </select>
-        <br><br>
+                    <section id="ajuste_ponto" style="display:none;">
+                        <article>
+                            <label for="campo_ponto" class="label">Campo a ajustar:</label>
+                            <select name="campo_ponto" id="campo_ponto" class="select-padrao">
+                                <option value="inicio_ponto">Entrada (<?= $reg['inicio_ponto'] ? date("H:i", strtotime($reg['inicio_ponto'])) : '--:--' ?>)</option>
+                                <option value="fim_ponto">Saída (<?= $reg['fim_ponto'] ? date("H:i", strtotime($reg['fim_ponto'])) : '--:--' ?>)</option>
+                            </select>
+                        </article>
 
-        <!-- AJUSTE DE PONTO -->
-        <div id="ajuste_ponto" style="display:none;">
-            <hr>
-            <h3>Ajuste de Ponto</h3>
+                        <article>
+                            <label for="valor_novo_ponto" class="label">Novo horário:</label>
+                            <input type="time" name="valor_novo_ponto" id="valor_novo_ponto" class="input">
+                        </article>
+                    </section>
 
-            <label for="campo_ponto">Campo a ajustar:</label>
-            <select name="campo_ponto" id="campo_ponto">
-                <option value="inicio_ponto">Entrada (<?= $reg['inicio_ponto'] ? date("H:i", strtotime($reg['inicio_ponto'])) : '--:--' ?>)</option>
-                <option value="fim_ponto">Saída (<?= $reg['fim_ponto'] ? date("H:i", strtotime($reg['fim_ponto'])) : '--:--' ?>)</option>
-            </select>
-            <br><br>
+                    <section id="ajuste_pausa" style="display:none;">
+                        <article>
+                            <label for="id_pausa" class="label">Selecione a Pausa:</label>
+                            <select name="id_pausa" id="id_pausa" class="select-padrao">
+                                <option value="">Selecione a pausa...</option>
+                                <?php if (empty($pausas_do_dia)): ?>
+                                    <option disabled>Nenhuma pausa registrada neste dia.</option>
+                                <?php else: ?>
+                                    <?php foreach ($pausas_do_dia as $pausa): ?>
+                                        <option value="<?= $pausa['id_pausa'] ?>">
+                                            <?= htmlspecialchars($pausa['descricao_pausa']) ?> (Início: <?= date("H:i", strtotime($pausa['inicio_pausa'])) ?>, Fim: <?= date("H:i", strtotime($pausa['fim_pausa'])) ?>)
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </select>
+                        </article>
 
-            <label for="valor_novo_ponto">Novo horário:</label>
-            <input type="time" name="valor_novo_ponto" id="valor_novo_ponto">
-            <br><br>
-            <hr>
-        </div>
+                        <article>
+                            <label for="campo_pausa" class="label">Campo a ajustar:</label>
+                            <select name="campo_pausa" id="campo_pausa" class="select-padrao">
+                                <option value="inicio_pausa">Início</option>
+                                <option value="fim_pausa">Fim</option>
+                            </select>
+                        </article>
 
-        <!-- AJUSTE DE PAUSA -->
-        <div id="ajuste_pausa" style="display:none;">
-            <hr>
-            <h3>Ajuste de Pausas</h3>
+                        <article>
+                            <label for="pausa_nova" class="label">Novo Horário:</label>
+                            <input type="time" name="pausa_nova" id="pausa_nova" class="input">
+                        </article>
+                    </section>
 
-            <label for="id_pausa">Selecione a Pausa:</label>
-            <select name="id_pausa" id="id_pausa">
-                <option value="">Selecione a pausa...</option>
-                <?php if (empty($pausas_do_dia)): ?>
-                    <option disabled>Nenhuma pausa registrada neste dia.</option>
-                <?php else: ?>
-                    <?php foreach($pausas_do_dia as $pausa): ?>
-                        <option value="<?= $pausa['id_pausa'] ?>">
-                            <?= htmlspecialchars($pausa['descricao_pausa']) ?> (Início: <?= date("H:i", strtotime($pausa['inicio_pausa'])) ?>, Fim: <?= date("H:i", strtotime($pausa['fim_pausa'])) ?>)
-                        </option>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </select>
-            <br><br>
-            
-            <!-- Início código novo -->
+                    <article>
+                        <label for="justificativa" class="label">Justificativa:</label>
+                        <textarea name="justificativa" id="justificativa" class="input" placeholder="Escreva aqui a justificativa..." required></textarea>
+                    </article>
 
-            <label for="campo_pausa">Campo a ajustar:</label>
-            <select name="campo_pausa" id="campo_pausa">
-                <option value="inicio_pausa">Início</option>
-                <option value="fim_pausa">Fim</option>
-            </select>
-            <br><br>
+                    <button type="submit" class="btn btn-padrao">Enviar Solicitação</button>
+                    <div id="erro_validacao" class="erro-login" style="display:none;"></div>
 
-            <label for="pausa_nova">Novo Horário:</label>
-            <input type="time" name="pausa_nova" id="pausa_nova">
-            <br><br>
-            <hr>
+                </form>
+            </section>
+    </main>
 
-            <!-- fim do código novo -->
-        </div>
-        
-        <label for="justificativa">Justificativa:</label><br>
-        <textarea name="justificativa" id="justificativa" required></textarea>
-        <br><br>
-
-        <button type="submit">Enviar Solicitação</button>
-    </form>
-    <br>
-
-    <!-- Link para voltar -->
-    <a href="<?= $pagina_voltar ?>">Voltar</a>
-
-    <!-- Javascript -->
-     <script>
+    <script>
         function mostrarCamposAjuste() {
             const tipo = document.getElementById('tipo_ajuste').value;
             const ajustePonto = document.getElementById('ajuste_ponto');
             const ajustePausa = document.getElementById('ajuste_pausa');
-
-            // Reseta os displays
             ajustePonto.style.display = 'none';
             ajustePausa.style.display = 'none';
-
             document.getElementById('campo_ponto').required = false;
             document.getElementById('valor_novo_ponto').required = false;
             document.getElementById('id_pausa').required = false;
@@ -205,9 +246,129 @@ while ($pausa_row = $pausas->fetch_assoc()) {
             } else if (tipo === 'pausa') {
                 ajustePausa.style.display = 'block';
                 document.getElementById('id_pausa').required = true;
-                //Se selecionou pausa, exige que pelo menos um dos horários (início ou fim) seja preenchido
             }
         }
+        // Evento ao enviar o formulário
+        document.querySelector("form").addEventListener("submit", function(e) {
+
+            // Seleciona a div que exibirá mensagens de erro
+            const erroBox = document.getElementById("erro_validacao");
+            // Esconde a div de erro e limpa mensagens anteriores
+            erroBox.style.display = "none";
+            erroBox.innerHTML = "";
+
+            // Remove a classe de erro de ambos os campos (reset visual)
+            document.getElementById("valor_novo_ponto").classList.remove("input-erro");
+            document.getElementById("pausa_nova").classList.remove("input-erro");
+
+            // Pega o tipo de ajuste selecionado (ponto ou pausa)
+            const tipo = document.getElementById('tipo_ajuste').value;
+
+            // ===== VALIDAÇÃO DE PONTO =====
+            if (tipo === 'ponto') {
+                // Pega qual campo está sendo ajustado (inicio ou fim do ponto)
+                const campo = document.getElementById('campo_ponto').value;
+                // Pega o novo valor que o usuário inseriu
+                const novoValor = document.getElementById('valor_novo_ponto').value;
+
+                // Pega os horários atuais do registro (PHP inserindo no JS)
+                const inicioAtual = "<?= $reg['inicio_ponto'] ? date("H:i", strtotime($reg['inicio_ponto'])) : '' ?>";
+                const fimAtual = "<?= $reg['fim_ponto'] ? date("H:i", strtotime($reg['fim_ponto'])) : '' ?>";
+
+                // Se o usuário não digitou nada, sai da validação
+                if (!novoValor) return;
+
+                // Validação: entrada não pode ser depois da saída
+                if (campo === 'inicio_ponto' && fimAtual && novoValor > fimAtual) {
+                    e.preventDefault(); // impede o envio do formulário
+                    mostrarErro("A entrada não pode ser depois da saída.", "valor_novo_ponto");
+                    return;
+                }
+
+                // Validação: saída não pode ser antes da entrada
+                if (campo === 'fim_ponto' && inicioAtual && novoValor < inicioAtual) {
+                    e.preventDefault();
+                    mostrarErro("A saída não pode ser antes da entrada.", "valor_novo_ponto");
+                    return;
+                }
+            }
+
+            // ===== VALIDAÇÃO DE PAUSA =====
+            if (tipo === 'pausa') {
+                // Pega qual campo da pausa está sendo ajustado (inicio ou fim)
+                const campoPausa = document.getElementById('campo_pausa').value;
+                const novaHora = document.getElementById('pausa_nova').value;
+                
+                // Garante que o novo horário seja preenchido
+                if (novaHora == '') {
+                    e.preventDefault();
+                    mostrarErro("O novo horário deve ser atribuído");
+                    return;
+                };
+
+                // Pega os horários de entrada e saída do ponto
+                const inicioPonto = "<?= $reg['inicio_ponto'] ? date("H:i", strtotime($reg['inicio_ponto'])) : '' ?>";
+                const fimPonto = "<?= $reg['fim_ponto'] ? date("H:i", strtotime($reg['fim_ponto'])) : '' ?>";
+
+                // Pega o texto do select da pausa selecionada
+                const selectPausa = document.getElementById("id_pausa");
+                const textoSelecionado = selectPausa.options[selectPausa.selectedIndex].text;
+
+                // Extrai horários atuais da pausa usando regex
+                const match = textoSelecionado.match(/Início:\s(\d{2}:\d{2}),\sFim:\s(\d{2}:\d{2})/);
+                if (!match) return;
+
+                const inicioPausaAtual = match[1];
+                const fimPausaAtual = match[2];
+
+                // Se o usuário não digitou nada, sai da validação
+                if (!novaHora) return;
+
+                // Validações para início da pausa
+                if (campoPausa === 'inicio_pausa') {
+                    // Início da pausa não pode ser depois do fim da pausa
+                    if (novaHora > fimPausaAtual) {
+                        e.preventDefault();
+                        mostrarErro("O início da pausa não pode ser depois do fim.", "pausa_nova");
+                        return;
+                    }
+                    // Início da pausa não pode ser antes da entrada
+                    if (inicioPonto && novaHora < inicioPonto) {
+                        e.preventDefault();
+                        mostrarErro("A pausa não pode começar antes da entrada.", "pausa_nova");
+                        return;
+                    }
+                }
+
+                // Validações para fim da pausa
+                if (campoPausa === 'fim_pausa') {
+                    // Fim da pausa não pode ser antes do início
+                    if (novaHora < inicioPausaAtual) {
+                        e.preventDefault();
+                        mostrarErro("O fim da pausa não pode ser antes do início.", "pausa_nova");
+                        return;
+                    }
+                    // Fim da pausa não pode ser depois da saída
+                    if (fimPonto && novaHora > fimPonto) {
+                        e.preventDefault();
+                        mostrarErro("A pausa não pode terminar depois da saída.", "pausa_nova");
+                        return;
+                    }
+                }
+            }
+
+            // ===== Função auxiliar para mostrar erro e marcar campo =====
+            function mostrarErro(mensagem, campoErroId) {
+                erroBox.innerHTML = mensagem; // insere a mensagem de erro
+                erroBox.style.display = "block"; // mostra o box de erro
+                if (campoErroId) {
+                    // adiciona a classe que destaca visualmente o campo com erro
+                    document.getElementById(campoErroId).classList.add("input-erro");
+                }
+            }
+        });
+
     </script>
 </body>
+
 </html>

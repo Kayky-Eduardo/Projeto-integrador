@@ -22,6 +22,11 @@ function validar_ajustes_pendentes($conn, $id_usuario, $id_ponto) {
 
     if ($validacao->affected_rows === 0) {
         return true;
+    } else {
+        $status = $result->fetch_assoc()['status'];
+        if ($status != "Revisar" || $status != "Em Andamento") {
+            return true;
+        }
     }
 
     return false;
