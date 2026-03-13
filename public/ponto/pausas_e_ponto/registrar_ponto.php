@@ -229,7 +229,7 @@ $sqlTipos = "SELECT
 	 AND p.id_usuario = ?
 	 AND p.data = CURDATE()) as total_realizado
     FROM pausa_config pc
-    LEFT JOIN grupo_setor2 gs2 on gs2.id_config = pc.id_config
+    LEFT JOIN grupo_setor_pausa gs2 on gs2.id_config = pc.id_config
     LEFT JOIN grupo_setor gs on gs.id_setor = gs2.id_setor
     WHERE pc.ativo = 1 AND gs.id_usuario = ?";
 
