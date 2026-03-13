@@ -122,7 +122,7 @@ function nomeCampoAjuste($campo)
                     <tbody>
                         <?php if ($res->num_rows === 0): ?>
                             <tr>
-                                <td colspan="8" class="tabela-vazia">
+                                <td class="tabela-vazia" colspan="7">
                                     Nenhum ajuste solicitado e/ou em revisão.
                                 </td>
                             </tr>

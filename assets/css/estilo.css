@@ -299,6 +299,7 @@ footer a {
     color: var(--cor-principal);
 }
 
+
 /* INPUT */
 .input {
     width: 100%;
@@ -441,6 +442,28 @@ footer a {
 
 .status-badge-inativo {
     background: #ef4444;
+}
+
+/* BADGE DE NOTIFICAÇÃO */
+.item-notificacao {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.badge-notificacao {
+    background: var(--cor-perigo);
+    color: white;
+
+    font-size: 0.7rem;
+    font-weight: bold;
+
+    padding: 2px 7px;
+    border-radius: 999px;
+
+    min-width: 18px;
+    text-align: center;
 }
 
 /* TABELA */
@@ -962,6 +985,73 @@ footer a {
 
 .solicitar-ajuste p {
     text-align: center;
+}
+
+/* PÁGINA DE NOTIFICAÇÕES */
+/* Toggle Filtro */
+.toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--tamanho-texto-padrao);
+    font-weight: 600;
+    color: var(--cor-principal);
+    cursor: pointer;
+}
+
+.toggle input {
+    display: none;
+}
+
+.slider {
+    width: 42px;
+    height: 22px;
+    background: var(--cor-borda-padrao);
+    border-radius: 20px;
+    position: relative;
+    transition: background 0.2s;
+}
+
+.slider::before {
+    content: "";
+    width: 18px;
+    height: 18px;
+    background: white;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    border-radius: 50%;
+    transition: transform 0.2s;
+}
+
+.toggle input:checked + .slider {
+    background: var(--cor-destaque);
+}
+
+.toggle input:checked + .slider::before {
+    transform: translateX(20px);
+}
+
+.linha-acoes {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-content: center;
+}
+
+/* Notificação Não Lida */
+.nao-lida {
+    background: #f0f9ff;
+    font-weight: 600;
+    border-left: 4px solid var(--cor-destaque);
+}
+
+.nao-lida:hover {
+    background: #e0f2fe;
+}
+
+.lida {
+    font-weight: 600;
 }
 
 
