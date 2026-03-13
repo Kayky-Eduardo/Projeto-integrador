@@ -96,21 +96,12 @@ session_start();
 date_default_timezone_set('America/Sao_Paulo');
 include __DIR__ . '/../../../BD/conexao.php';
 require_once __DIR__ . '/../../../include/verificacao.php';
+verificar_login($conn);
 
 $id_usuario = $_SESSION['id_usuario'] ?? null;
-if (!$id_usuario) die("Acesso negado.");
 $hoje = date("Y-m-d");
 $erro = "";
 $desabilitar = "";
-
-// LÓGICA DE AUTO-FECHAMENTO (BACKEND)
-// Fecha pausas que excederam o tempo_max caso o usuário tenha fechado o navegador
-$conn->query("UPDATE pausa p 
-              JOIN pausa_config c ON p.id_config = c.id_config 
-              SET p.fim = DATE_ADD(p.inicio, INTERVAL c.tempo_max MINUTE), 
-                  p.duracao_minutos = c.tempo_max 
-              WHERE p.fim IS NULL AND p.id_usuario = $id_usuario 
-              AND TIMESTAMPDIFF(SECOND, p.inicio, NOW()) >= (c.tempo_max * 60)");
 
 // PROCESSAMENTO DE AÇÕES VIA POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -143,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $erro = "É necessário realizar ao menos uma pausa antes de finalizar o ponto.";
                 } else {
                     $conn->query("UPDATE ponto_dia SET fim_ponto = NOW() WHERE id_ponto = " . $ponto['id_ponto']);
+                    $conn->query("UPDATE ponto_dia SET status = 'Finalizado' WHERE id_ponto = " . $ponto['id_ponto']);
                 }
             }
         }
@@ -178,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmtLimite->execute();
                 $dados = $stmtLimite->get_result()->fetch_assoc();
 
-                if ($dados && $dados['total_realizado'] >= $dados['limite_pausa_diario']) {
+                if ($dados && $dados['total_realizado'] >= $dados['limite_pausa_diario'] && $dados['limite_pausa_diario'] !== 0) {
                     $erro = "Você já atingiu o limite diário dessa pausa.";
                 } else {
 
@@ -229,16 +221,20 @@ $pontoFinalizado = ($statusPonto && !empty($statusPonto['fim_ponto']));
 
 // Busca os tipos de pausa e já conta quantas o usuário fez hoje
 $sqlTipos = "SELECT 
-                pc.*, 
-                (SELECT COUNT(*) FROM pausa p 
-                 WHERE p.id_config = pc.id_config 
-                 AND p.id_usuario = ? 
-                 AND p.data = CURDATE()) as total_realizado
-             FROM pausa_config pc
-             WHERE pc.ativo = 1";
+	pc.*,
+    gs2.*,
+    gs.*,
+	(SELECT COUNT(*) FROM pausa p 
+	 WHERE p.id_config = pc.id_config 
+	 AND p.id_usuario = ?
+	 AND p.data = CURDATE()) as total_realizado
+    FROM pausa_config pc
+    LEFT JOIN grupo_setor_pausa gs2 on gs2.id_config = pc.id_config
+    LEFT JOIN grupo_setor gs on gs.id_setor = gs2.id_setor
+    WHERE pc.ativo = 1 AND gs.id_usuario = ?";
 
 $stmtTipos = $conn->prepare($sqlTipos);
-$stmtTipos->bind_param("i", $id_usuario);
+$stmtTipos->bind_param("ii", $id_usuario, $id_usuario);
 $stmtTipos->execute();
 $tiposPausa = $stmtTipos->get_result();
 ?>
@@ -302,9 +298,9 @@ $tiposPausa = $stmtTipos->get_result();
                         <select id="tipo_pausa" name="id_config" class="select-padrao" required <?= (!$pontoIniciado || $pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
                             <?php while ($t = $tiposPausa->fetch_assoc()): ?>
                                 <option value="<?= $t['id_config'] ?>"
-                                    <?= ($t['total_realizado'] >= $t['limite_pausa_diario']) ? 'disabled' : '' ?>>
+                                    <?= ($t['total_realizado'] >= $t['limite_pausa_diario'] && $t['limite_pausa_diario'] !== 0) ? 'disabled' : '' ?>>
                                     <?= htmlspecialchars($t['descricao_pausa']) ?>
-                                    (<?= $t['total_realizado'] ?>/<?= $t['limite_pausa_diario'] ?>)
+                                    (<?= $t['total_realizado'] ?>/<?= ($t['limite_pausa_diario'] == 0) ? '∞' : $t['limite_pausa_diario'] ?>)
                                 </option>
                             <?php endwhile; ?>
                         </select>
