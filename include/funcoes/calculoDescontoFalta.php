@@ -251,50 +251,5 @@ function calcularEAplicarDescontoFalta($conn, $id_usuario, $mes_comp, $user, $fo
     $sql_folha_upd->bind_param("dddi", $total_proventos, $total_descontos, $salario_liquido, $folha['id_folha']);
     $sql_folha_upd->execute();
 
-    /*
-        7. DEBUG: Exibe dados
-    */
-    echo "<hr>";
-    echo "DEBUG DESCONTO POR FALTA E HORAS EXTRAS<br><br>";
-    echo "Usuário ID: {$id_usuario}<br>";
-    echo "Mês competência: {$mes_comp}<br><br>";
-    echo "Minutos esperados no mês: {$minutos_esperados}<br>";
-    echo "Minutos trabalhados no mês: {$minutos_trabalhados}<br>";
-    echo "Diferença de minutos: {$diferenca_minutos}<br><br>";
-    echo "Salário bruto: R$ " . number_format($user['salario_bruto'], 2, ',', '.') . "<br>";
-    echo "Valor do minuto: R$ " . number_format($valor_minuto, 4, ',', '.') . "<br><br>";
-    echo "Minutos extras reais: {$minutos_extra_real}<br>";
-    echo "Minutos extras pagos: {$diferenca_minutos}<br>";
-    echo "Minutos extras excedentes: {$minutos_extra_excedente}<br>";
-
-    if ($diferenca_minutos < 0) {
-        echo "<span style='color:red; font-weight:bold'>";
-        echo "DESCONTO POR FALTA: R$ " . number_format(abs($diferenca_minutos) * $valor_minuto, 2, ',', '.');
-        echo "</span><br>";
-    } elseif ($diferenca_minutos > 0) {
-        echo "<span style='color:green; font-weight:bold'>";
-        echo "PROVENTO POR HORAS EXTRAS: R$ " . number_format($diferenca_minutos * $valor_minuto, 2, ',', '.');
-        echo "</span><br>";
-    } else {
-        echo "<span style='color:blue; font-weight:bold'>";
-        echo "Sem diferenças para aplicar descontos ou proventos";
-        echo "</span><br>";
-    }
-
-    echo "<br>EVENTOS<br>";
-    if (!empty($evento_desconto)) {
-        echo "Evento desconto ID: {$evento_desconto['id_evento']}<br>";
-    }
-    if (!empty($evento_provento)) {
-        echo "Evento provento ID: {$evento_provento['id_evento']}<br>";
-    }
-    echo "<br>FOLHA<br>";
-    echo "Total proventos: R$ " . number_format($total_proventos, 2, ',', '.') . "<br>";
-    echo "Total descontos (fixos + eventos): R$ " . number_format($total_descontos, 2, ',', '.') . "<br>";
-    echo "Salário líquido: R$ " . number_format($salario_liquido, 2, ',', '.') . "<br>";
-    echo "<hr>";
-
-    // Retorna o valor do desconto aplicado, zero se não houve falta
-    return ($diferenca_minutos < 0) ? abs($diferenca_minutos) * $valor_minuto : 0;
 }
 ?> 
