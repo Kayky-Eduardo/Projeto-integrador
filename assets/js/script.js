@@ -171,6 +171,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const formJornada = document.getElementById("form-jornada");
 
     if (formJornada) {
+        const checkboxesDias = document.querySelectorAll('input[name="dia_semana[]:checked"');
+        const diasSelecionados = Array.from(checkboxesDias).map(cb => parseInt(cb.value));
+
         const inputJornada = document.getElementById("set-jornada");
         const inputHoraExtra = document.getElementById("set-hora-max");
         const inputDescricao = document.getElementById("set-descricao");
@@ -331,15 +334,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* PONTO / PAUSA – REGISTRO DE PONTO */
     if (document.getElementById("formPausa")) {
-        if (localStorage.getItem("aviso_sucesso") === "true") {
-            PNotify.success({
-                title: "Sucesso",
-                text: "Ação registrada com sucesso!",
-                delay: 3000
-            });
-
-            localStorage.removeItem("aviso_sucesso");
-        }
 
         const el = document.getElementById("cronometro");
         const statusMsg = document.getElementById("statusTempo");
@@ -370,7 +364,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     btnFinalizar && (btnFinalizar.disabled = false);
                     statusMsg.textContent = "Tempo mínimo atingido.";
                     statusMsg.style.color = "green";
-                    localStorage.setItem("aviso", "Tempo mínimo de pausa atingido.")
+                    
+                    localStorage.setItem("Aviso", "Tempo mínimo de pausa atingido");
+                    localStorage.setItem("aviso_emitido", false);
                 }
 
                 if (decorridoSegundos >= maxSegundos) {
@@ -384,13 +380,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     let tempo = Math.round(segundosRestantes / 60);
                     if (tempo > 60) tempo = Math.round(tempo / 60);
 
-                    chamarPnotifyAviso()
-                    PNotify.notice({
-                        title: "Aviso de Tempo",
-                        text: `Faltam ${tempo} minutos para o limite da sua pausa!`,
-                        delay: 10000
-                    });
-
+                    chamarPnotifyAviso(
+                        "Aviso de Tempo",
+                        `Faltam ${tempo} minutos para o limite da sua pausa!`,
+                        100000
+                    );
+                    
                     avisoEmitido = true;
                 }
             }
@@ -401,7 +396,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (btnFinalizar) {
             btnFinalizar.addEventListener("click", () => {
-                localStorage.setItem("aviso_sucesso", "true");
+                chamarPnotifySuccess("Ação registrada!", "Sua ação foi registrada com sucesso!")
             });
         }
     }
@@ -434,6 +429,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function chamarPnotifySuccess(titulo, mensagem, milissegundos) {
+        const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_comum.mp3');
+
+        som_aviso.play();
+
         let tempo = milissegundos ?? 5000;
         PNotify.success({
             title: titulo,
@@ -456,14 +455,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 chamarPnotifyAviso("Aviso", resposta.dados.mensagem, 5000);
             } 
         });
-    }
-
-    if (localStorage.getItem("aviso_sucesso") === "true") {        
-        PNotify.success({
-            title: 'Sucesso',
-            text: `Ação registrada com sucesso!}`,
-            delay: 3000
-        });
-        localStorage.removeItem("aviso_sucesso");
+    } else if (localStorage.getItem("aviso") && localStorage.getItem("aviso_emitido") === false) {
+        let mensagem = localStorage.getItem("aviso");
+        chamarPnotifyAviso("Aviso", mensagem, 5000);
+        localStorage.setItem("aviso_emitido", true);
     }
 });
