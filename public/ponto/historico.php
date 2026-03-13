@@ -19,16 +19,16 @@ function validar_ajustes_pendentes($conn, $id_usuario, $id_ponto) {
 
     if ($validacao->affected_rows === 0) {
         $validacao_ponto_aberto = $conn->prepare("
-        SELECT fim_ponto FROM ponto_dia WHERE id_ponto = ?
+        SELECT status FROM ponto_dia WHERE id_ponto = ?
         ");
         $validacao_ponto_aberto->bind_param("i", $id_ponto);
         $validacao_ponto_aberto->execute();
         $result_validacao = $validacao_ponto_aberto->get_result();
 
-        if ($result_validacao->fetch_assoc()['fim_ponto'] === null) {
+        if ($result_validacao->fetch_assoc()['status'] === "Em Andamento") {
             return false;
         }
-        
+
         return true;
     } else {
         $status = $result->fetch_assoc()['status'];
