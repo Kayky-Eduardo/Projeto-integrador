@@ -1,4 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
+    /* SETAR ID_USUARIO NO LOCAL STORAGE */
+    const id_usuario = document.getElementById("nome-usuario-navbar").dataset.id;
+
+    if (localStorage.getItem("id_usuario") == null) {
+        localStorage.setItem("id_usuario", id_usuario);
+    }
+
     /* CARROSSEL - INDEX*/
     const slides = document.querySelectorAll(".slide");
     const prev = document.querySelector(".prev");
@@ -164,8 +171,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const formJornada = document.getElementById("form-jornada");
 
     if (formJornada) {
+        const checkboxesDias = document.querySelectorAll('input[name="dia_semana[]:checked"');
+        const diasSelecionados = Array.from(checkboxesDias).map(cb => parseInt(cb.value));
+
         const inputJornada = document.getElementById("set-jornada");
         const inputHoraExtra = document.getElementById("set-hora-max");
+        const inputDescricao = document.getElementById("set-descricao");
         const resposta = document.getElementById("resposta");
         const botaoSalvar = formJornada.querySelector("button");
 
@@ -173,10 +184,11 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             resposta.textContent = "";
             resposta.className = "";
+            const descricao = inputDescricao.value;
             const jornada = inputJornada.value;
             const horaExtra = inputHoraExtra.value;
 
-            if (!jornada || !horaExtra) {
+            if (!jornada || !horaExtra || !descricao) {
                 resposta.textContent = "Preencha todos os campos.";
                 resposta.className = "erro";
                 return;
@@ -201,7 +213,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     },
 
                     body: JSON.stringify({
-                        jornada,
+                        descricao: descricao,
+                        jornada: jornada,
                         hora_extra: horaExtra
                     })
                 });
@@ -286,7 +299,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             tr.querySelector("button").addEventListener("click", () => {
                 deslogarUsuario(usuario.id_login);
-                window.location.reload();
             });
 
             return tr;
@@ -308,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id_login: idLogin })
             });
-            window.location.reload();
+
             carregarLogados();
         }
 
@@ -322,15 +334,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* PONTO / PAUSA – REGISTRO DE PONTO */
     if (document.getElementById("formPausa")) {
-        if (localStorage.getItem("aviso_sucesso") === "true") {
-            PNotify.success({
-                title: "Sucesso",
-                text: "Ação registrada com sucesso!",
-                delay: 3000
-            });
-
-            localStorage.removeItem("aviso_sucesso");
-        }
 
         const el = document.getElementById("cronometro");
         const statusMsg = document.getElementById("statusTempo");
@@ -361,23 +364,28 @@ document.addEventListener("DOMContentLoaded", () => {
                     btnFinalizar && (btnFinalizar.disabled = false);
                     statusMsg.textContent = "Tempo mínimo atingido.";
                     statusMsg.style.color = "green";
+                    
+                    localStorage.setItem("Aviso", "Tempo mínimo de pausa atingido");
+                    localStorage.setItem("aviso_emitido", false);
                 }
 
                 if (decorridoSegundos >= maxSegundos) {
-                    clearInterval(intervalId);
-                    document.getElementById("formPausa").submit();
+                    cronometro.style.color = "red";
+                    statusMsg.textContent = "Tempo máximo atingido.";
+                    statusMsg.style.color = "red";
+                    localStorage.setItem("aviso", "Tempo máximo de pausa atingido.")
                 }
 
                 if (segundosRestantes <= minSegundos && segundosRestantes > 0 && !avisoEmitido) {
                     let tempo = Math.round(segundosRestantes / 60);
                     if (tempo > 60) tempo = Math.round(tempo / 60);
 
-                    PNotify.notice({
-                        title: "Aviso de Tempo",
-                        text: `Faltam ${tempo} minutos para o limite da sua pausa!`,
-                        delay: 10000
-                    });
-
+                    chamarPnotifyAviso(
+                        "Aviso de Tempo",
+                        `Faltam ${tempo} minutos para o limite da sua pausa!`,
+                        100000
+                    );
+                    
                     avisoEmitido = true;
                 }
             }
@@ -388,8 +396,68 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (btnFinalizar) {
             btnFinalizar.addEventListener("click", () => {
-                localStorage.setItem("aviso_sucesso", "true");
+                chamarPnotifySuccess("Ação registrada!", "Sua ação foi registrada com sucesso!")
             });
         }
+    }
+
+    /* PNOTIFY */
+    function chamarPnotifyAviso(titulo, mensagem, milissegundos) {
+        const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_comum.mp3');
+
+        som_aviso.play();
+
+        let tempo = milissegundos ?? 5000;
+        PNotify.info({
+            title: titulo,
+            text: `${mensagem}`,
+            delay: tempo,
+        });
+    }
+
+    function chamarPnotifyAlert(titulo, mensagem, milissegundos) {
+        const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_erro.wav');
+
+        som_aviso.play();
+
+        let tempo = milissegundos ?? 5000;
+        PNotify.alert({
+            title: titulo,
+            text: `${mensagem}`,
+            delay: tempo,
+        });
+    }
+
+    function chamarPnotifySuccess(titulo, mensagem, milissegundos) {
+        const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_comum.mp3');
+
+        som_aviso.play();
+
+        let tempo = milissegundos ?? 5000;
+        PNotify.success({
+            title: titulo,
+            text: `${mensagem}`,
+            delay: tempo,    
+        });
+    }
+
+    if (localStorage.getItem("id_usuario")) {
+        let id_usuario = localStorage.getItem("id_usuario");
+        
+        fetch(`/projeto-integrador/api/api_consulta_aviso.php?id_usuario=${id_usuario}`, {
+            method: "GET",
+            headers: {"Content-Type": "application/json"},
+        })
+        .then((res)=> res.json())
+        .then((resposta) => {
+            if (resposta.sucesso) {
+                console.log(resposta.dados.mensagem);
+                chamarPnotifyAviso("Aviso", resposta.dados.mensagem, 5000);
+            } 
+        });
+    } else if (localStorage.getItem("aviso") && localStorage.getItem("aviso_emitido") === false) {
+        let mensagem = localStorage.getItem("aviso");
+        chamarPnotifyAviso("Aviso", mensagem, 5000);
+        localStorage.setItem("aviso_emitido", true);
     }
 });
