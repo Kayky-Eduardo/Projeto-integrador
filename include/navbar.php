@@ -82,7 +82,7 @@ if ($nivel >= 3) {
                     </li>
 
                     <li>
-                        <a href="/projeto-integrador/public/ponto/pausas_e_ponto/pausa_config.php">
+                        <a href="/projeto-integrador/public/config/pausa_config.php">
                             Cadastrar Pausas
                         </a>
                     </li>
