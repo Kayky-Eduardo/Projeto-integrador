@@ -400,6 +400,56 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     }
+    //  FOLHA EDITAR
+    //CÓDIGO DAVI ↓↓↓↓↓
+    // deletar
+    document.querySelectorAll('.btn-deletar').forEach(botao => {
+        botao.addEventListener('click', function() {
+            const idEvento = this.getAttribute('data-id');
+            const resposta = confirm("Tem certeza que deseja deletar este evento?");
+
+            if (resposta) {
+                fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        confirmado: true, 
+                        acao: 'deletar', 
+                        id_evento: idEvento 
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg);// Recarrega para ver a mudança
+                })
+                .catch(err => console.error("Erro na requisição:", err));
+            }  
+        });
+    });
+    
+    // editar
+    document.querySelectorAll('.input-editar').forEach(input => {
+        input.addEventListener('change', function(event){
+            const idEditar = this.getAttribute('id');
+            const valorNovo = event.target.value;
+            fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        acao: 'editar',
+                        valor: valorNovo,
+                        id_editar : idEditar
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg); // Recarrega para ver a mudança
+                })
+                .catch(err => console.error("Erro na requisição:", err));
+        })
+        
+    });
+    //CÓDIGO DAVI ↑↑↑↑↑
 
     /* PNOTIFY */
     function chamarPnotifyAviso(titulo, mensagem, milissegundos) {

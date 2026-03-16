@@ -240,70 +240,71 @@ input[type="text"], input[type="email"] {
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="../../assets/js/script.js"></script>
 
 <script>
-    //CÓDIGO DAVI ↓↓↓↓↓
-    // deletar
-    document.querySelectorAll('.btn-deletar').forEach(botao => {
-        botao.addEventListener('click', function() {
-            const idEvento = this.getAttribute('data-id');
-            const resposta = confirm("Tem certeza que deseja deletar este evento?");
+    // //CÓDIGO DAVI ↓↓↓↓↓
+    // // deletar
+    // document.querySelectorAll('.btn-deletar').forEach(botao => {
+    //     botao.addEventListener('click', function() {
+    //         const idEvento = this.getAttribute('data-id');
+    //         const resposta = confirm("Tem certeza que deseja deletar este evento?");
 
-            if (resposta) {
-                fetch('', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        confirmado: true, 
-                        acao: 'deletar', 
-                        id_evento: idEvento 
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg);// Recarrega para ver a mudança
-                })
-                .catch(err => console.error("Erro na requisição:", err));
-            }  
-        });
-    });
+    //         if (resposta) {
+    //             fetch('', {
+    //                 method: 'POST',
+    //                 headers: { 'Content-Type': 'application/json' },
+    //                 body: JSON.stringify({ 
+    //                     confirmado: true, 
+    //                     acao: 'deletar', 
+    //                     id_evento: idEvento 
+    //                 })
+    //             })
+    //             .then(res => res.json())
+    //             .then(data => {
+    //                 if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg);// Recarrega para ver a mudança
+    //             })
+    //             .catch(err => console.error("Erro na requisição:", err));
+    //         }  
+    //     });
+    // });
     
-    // editar
-    document.querySelectorAll('.input-editar').forEach(input => {
-        input.addEventListener('change', function(event){
-            const idEditar = this.getAttribute('id');
-            const valorNovo = event.target.value;
-            fetch('', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        acao: 'editar',
-                        valor: valorNovo,
-                        id_editar : idEditar
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg); // Recarrega para ver a mudança
-                })
-                .catch(err => console.error("Erro na requisição:", err));
-        })
+    // // editar
+    // document.querySelectorAll('.input-editar').forEach(input => {
+    //     input.addEventListener('change', function(event){
+    //         const idEditar = this.getAttribute('id');
+    //         const valorNovo = event.target.value;
+    //         fetch('', {
+    //                 method: 'POST',
+    //                 headers: { 'Content-Type': 'application/json' },
+    //                 body: JSON.stringify({ 
+    //                     acao: 'editar',
+    //                     valor: valorNovo,
+    //                     id_editar : idEditar
+    //                 })
+    //             })
+    //             .then(res => res.json())
+    //             .then(data => {
+    //                 if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg); // Recarrega para ver a mudança
+    //             })
+    //             .catch(err => console.error("Erro na requisição:", err));
+    //     })
         
-    });
-    //CÓDIGO DAVI ↑↑↑↑↑
+    // });
+    // //CÓDIGO DAVI ↑↑↑↑↑
 
-    function chamarPnotifySuccess(titulo, mensagem, milissegundos) {
-        const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_comum.mp3');
+    // function chamarPnotifySuccess(titulo, mensagem, milissegundos) {
+    //     const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_comum.mp3');
 
-        som_aviso.play();
+    //     som_aviso.play();
 
-        let tempo = milissegundos ?? 5000;
-        PNotify.success({
-            title: titulo,
-            text: `${mensagem}`,
-            delay: tempo,    
-        });
-    }
+    //     let tempo = milissegundos ?? 5000;
+    //     PNotify.success({
+    //         title: titulo,
+    //         text: `${mensagem}`,
+    //         delay: tempo,    
+    //     });
+    // }
 </script>
 
 </body>
