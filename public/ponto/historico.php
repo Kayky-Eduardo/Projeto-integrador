@@ -17,7 +17,7 @@ function validar_ajustes_pendentes($conn, $id_usuario, $id_ponto) {
     $validacao->execute();
     $result = $validacao->get_result();
 
-    if ($validacao->affected_rows === 0) {
+    if ($validacao->num_rows === 0) {
         $validacao_ponto_aberto = $conn->prepare("
         SELECT status FROM ponto_dia WHERE id_ponto = ?
         ");
@@ -32,7 +32,7 @@ function validar_ajustes_pendentes($conn, $id_usuario, $id_ponto) {
         return true;
     } else {
         $status = $result->fetch_assoc()['status'];
-        if ($status != "Revisar" || $status != "Em Andamento") {
+        if ($status != "Revisar" && $status != "Em Andamento") {
             return true;
         }
     }
