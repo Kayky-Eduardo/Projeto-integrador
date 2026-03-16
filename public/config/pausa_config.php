@@ -2,6 +2,7 @@
 session_start(); 
 include __DIR__ . '/../../BD/conexao.php';
 require __DIR__ . '/../../include/verificacao.php';
+verificar_login($conn);
 // Se o formulário for enviado (método POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -20,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['msg'] = 'Preencha os campos corretamente.';
         }else if ($tempo_min > $tempo_max  || $tempo_max === $tempo_min){
             $_SESSION['msg'] = 'Tempo Máximo deve ser maior que Tempo Mínimo.';
+        } else if (!isset($_POST['setor'])){
+            $_SESSION['msg'] = 'Selecione um Setor.';
         } else {
             try {
                 $sql = "INSERT INTO pausa_config (descricao_pausa, tempo_min, tempo_max, limite_pausa_diario)
@@ -29,6 +32,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 if ($stmt->execute()) {
                     $_SESSION['msg'] = 'Tipo de pausa criado.';
+                    $id_config = $conn->insert_id; // insert_id pega o último id INSERT(update ou delete não funciona)
+
+                    // Setor
+                    if (isset($_POST['setor']) && is_array($_POST['setor'])) {
+                        foreach ($_POST['setor'] as $s) {
+                            $id_setor = intval($s);
+                            $sql_setor = "INSERT INTO grupo_setor_pausa (id_setor, id_config) VALUES (?, ?)";
+                            $stmt_setor = $conn->prepare($sql_setor);
+                            $stmt_setor->bind_param("ii", $id_setor, $id_config);
+                            $stmt_setor->execute();
+                        }
+                    }
+                    $_SESSION['msg'] = 'Tipo de pausa e setores configurados com sucesso.';
                 }
             } catch (mysqli_sql_exception $e) {
                 // Código 1062 é o erro de Duplicate Entry no MySQL
@@ -45,11 +61,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+
 // ----------------------------------------------
 // LISTA TODOS OS TIPOS DE PAUSA CADASTRADOS
 // ----------------------------------------------
 $listSql = "SELECT * FROM pausa_config ORDER BY ativo DESC, id_config ASC";
 $listRes = $conn->query($listSql);
+
+$listSetor = "SELECT * FROM setor";
+$setor = $conn->query($listSetor);
+
+function acharGrupo($conn, $id_config){
+    $listGrupoSetor = "
+    SELECT *,
+    s.nome_setor,
+    s.id_setor
+    FROM grupo_setor_pausa gs
+    LEFT JOIN setor s on s.id_setor = gs.id_setor
+    WHERE gs.id_config = ?";
+    $listGrupoSetor = $conn->prepare($listGrupoSetor);
+    $listGrupoSetor->bind_param("i", $id_config);
+    $listGrupoSetor->execute();
+    $result = $listGrupoSetor->get_result();
+    return $result;
+}
 
 ?>
 
@@ -95,6 +130,15 @@ $listRes = $conn->query($listSql);
             <input type="number" name="limite_pausa_diario" required>
         </p>
 
+        <p>
+            <!-- name="setor[]" o "[]" serve para que o php identifique que se trata de valores múltiplos -->
+            Selecione Setor:<br>
+            <?php foreach($setor as $s): ?>
+                <input type="checkbox" id="<?= $s['nome_setor'] ?>" name="setor[]" value="<?= $s['id_setor'] ?>">
+                <label for="<?= $s['nome_setor'] ?>"><?= $s['nome_setor'] ?></label><br>
+            <?php endforeach;?>
+        </p>
+
         <button type="submit">Criar pausa</button>
     </form>
 
@@ -106,6 +150,7 @@ $listRes = $conn->query($listSql);
             <tr>
                 <th>ID</th>
                 <th>Descrição</th>
+                <th>Setores</th>
                 <th>Min</th>
                 <th>Max</th>
                 <th>Limite diário</th>
@@ -119,6 +164,11 @@ $listRes = $conn->query($listSql);
             <tr>
                 <td><?= $row['id_config'] ?></td>
                 <td><?= htmlspecialchars($row['descricao_pausa']) ?></td>
+                <td>
+                    <?php $setor = acharGrupo($conn, $row['id_config']); foreach($setor as $gs):?>
+                    <p><?= $gs['nome_setor'] ?></p>
+                <?php endforeach;?>
+                </td>
                 <td><?= $row['tempo_min'] ?></td>
                 <td><?= $row['tempo_max'] ?></td>
                 <td><?php echo (intval($row['limite_pausa_diario']) == 0 ? "ilimitado" : intval($row['limite_pausa_diario'])) ?></td>

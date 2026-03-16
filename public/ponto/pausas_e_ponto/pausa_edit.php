@@ -2,7 +2,7 @@
 session_start(); 
 include __DIR__ . '/../../../BD/conexao.php';
 require __DIR__ . '/../../../include/verificacao.php';
-
+verificar_login($conn);
 // 1. Definição do ID (prioriza POST para ações, ou GET se você mudar o link na tabela)
 $id_config = intval($_POST['id_config'] ?? 0);
 
@@ -25,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao'])) {
             $_SESSION['msg'] = 'Preencha os campos corretamente.';
         } else if ($tempo_min >= $tempo_max) {
             $_SESSION['msg'] = 'Tempo Máximo deve ser maior que Tempo Mínimo.';
+        } else if (!isset($_POST['setor'])){
+            $_SESSION['msg'] = 'Selecione um Setor.';
         } else {
             try {
                 $sql = "UPDATE pausa_config SET descricao_pausa = ?, tempo_min = ?, tempo_max = ?, limite_pausa_diario = ? WHERE id_config = ?";
@@ -32,12 +34,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao'])) {
                 $stmt->bind_param("siiii", $descricao, $tempo_min, $tempo_max, $limite_pausa_diario, $id_config);
                 
                 if ($stmt->execute()) {
-                    $_SESSION['msg'] = 'Pausa atualizada com sucesso.';
+                    $setor_delete = "DELETE FROM grupo_setor_pausa WHERE id_config = ?";
+                    $stmt_delete = $conn->prepare($setor_delete);
+                    $stmt_delete->bind_param("i", $id_config);
+                    $stmt_delete->execute();
+
+                    // Setor
+                    if (isset($_POST['setor']) && is_array($_POST['setor'])) {
+                        foreach ($_POST['setor'] as $s) {
+                            $id_setor = intval($s);
+                            $sql_setor = "INSERT INTO grupo_setor_pausa (id_setor, id_config) VALUES (?, ?)";
+                            $stmt_setor = $conn->prepare($sql_setor);
+                            $stmt_setor->bind_param("ii", $id_setor, $id_config);
+                            $stmt_setor->execute();
+                        }
+                    }
+                    $_SESSION['msg'] = 'Tipo de pausa e setores reconfigurados com sucesso.';
                     header("Location: ../../config/pausa_config.php"); // Volta para a lista após salvar
                     exit;
                 }
             } catch (mysqli_sql_exception $e) {
-                $_SESSION['msg'] = ($e->getCode() === 1062) ? 'Erro: Nome já existe.' : 'Erro ao salvar.';
+                $_SESSION['msg'] = ($e->getCode() === 1062) ? 'Erro: Nome já existe.' : 'Erro ao salvar.' . $e;
             }
         }
     } else if($acao === 'excluir'){
@@ -93,6 +110,9 @@ if (!$row) {
 }
 
 $status_acao = ($row['ativo'] == 0 ? 'ativar' : 'desativar');
+
+$listSetor = "SELECT * FROM setor";
+$setor = $conn->query($listSetor);
 ?>
 
 <!DOCTYPE html>
@@ -131,6 +151,15 @@ $status_acao = ($row['ativo'] == 0 ? 'ativar' : 'desativar');
         <p>
             <label>Limite diário:</label><br>
             <input type="number" name="limite_pausa_diario" required value="<?= $row['limite_pausa_diario'] ?>">
+        </p>
+
+        <p>
+            <!-- name="setor[]" o "[]" serve para que o php identifique que se trata de valores múltiplos -->
+            Selecione Setor:<br>
+            <?php foreach($setor as $s): ?>
+                <input type="checkbox" id="<?= $s['nome_setor'] ?>" name="setor[]" value="<?= $s['id_setor'] ?>">
+                <label for="<?= $s['nome_setor'] ?>"><?= $s['nome_setor'] ?></label><br>
+            <?php endforeach;?>
         </p>
 
         <button type="submit" name="acao" value="salvar">Salvar Alterações</button>
