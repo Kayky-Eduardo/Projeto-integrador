@@ -173,7 +173,7 @@ $empresa = $sql_empresa->get_result()->fetch_assoc();
 <head>
 <meta charset="UTF-8">
 <title>Editar Holerite <?= $mes; ?></title>
-
+<?php include "../../include/link.html"; ?>
 <style>
 body { font-family: Arial; padding: 25px; }
 table { width: 100%; border-collapse: collapse; margin-top: 15px; }
@@ -261,7 +261,7 @@ input[type="text"], input[type="email"] {
                 })
                 .then(res => res.json())
                 .then(data => {
-                    if(data.status === 'sucesso') location.reload(); // Recarrega para ver a mudança
+                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg);// Recarrega para ver a mudança
                 })
                 .catch(err => console.error("Erro na requisição:", err));
             }  
@@ -284,8 +284,7 @@ input[type="text"], input[type="email"] {
                 })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.msg);
-                    if(data.status === 'sucesso') location.reload(); // Recarrega para ver a mudança
+                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg); // Recarrega para ver a mudança
                 })
                 .catch(err => console.error("Erro na requisição:", err));
         })
@@ -293,6 +292,18 @@ input[type="text"], input[type="email"] {
     });
     //CÓDIGO DAVI ↑↑↑↑↑
 
+    function chamarPnotifySuccess(titulo, mensagem, milissegundos) {
+        const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_comum.mp3');
+
+        som_aviso.play();
+
+        let tempo = milissegundos ?? 5000;
+        PNotify.success({
+            title: titulo,
+            text: `${mensagem}`,
+            delay: tempo,    
+        });
+    }
 </script>
 
 </body>

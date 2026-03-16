@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (isset($_POST['setor']) && is_array($_POST['setor'])) {
                         foreach ($_POST['setor'] as $s) {
                             $id_setor = intval($s);
-                            $sql_setor = "INSERT INTO grupo_setor2 (id_setor, id_config) VALUES (?, ?)";
+                            $sql_setor = "INSERT INTO grupo_setor_pausa (id_setor, id_config) VALUES (?, ?)";
                             $stmt_setor = $conn->prepare($sql_setor);
                             $stmt_setor->bind_param("ii", $id_setor, $id_config);
                             $stmt_setor->execute();
@@ -76,7 +76,7 @@ function acharGrupo($conn, $id_config){
     SELECT *,
     s.nome_setor,
     s.id_setor
-    FROM grupo_setor2 gs
+    FROM grupo_setor_pausa gs
     LEFT JOIN setor s on s.id_setor = gs.id_setor
     WHERE gs.id_config = ?";
     $listGrupoSetor = $conn->prepare($listGrupoSetor);
