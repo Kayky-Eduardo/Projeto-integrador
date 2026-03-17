@@ -50,7 +50,8 @@ $dias = ['seg', 'ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
                 <section class="container">
                     <?php for($i=0; $i<7; $i++): ?>
                         <label for="<?= $dias[$i]?>"><?= $dias[$i] ?></label>
-                        <input type="checkbox"  name="dia_semana" id="<?= $dias[$i] ?>">
+                        <input type="checkbox"  name="dia_semana" value="<?= $dias[$i] ?>"
+                         id="<?= $dias[$i] ?>">
 
                     <?php endfor ?>
                 </section>
