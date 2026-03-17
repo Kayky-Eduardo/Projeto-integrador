@@ -221,46 +221,7 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script>
-    //CÓDIGO DAVI ↓↓↓↓↓
-    
-    // alterar para revisado
-    btnRevisar = document.querySelector('.btn-salvar');
-    btnRevisar.addEventListener('click', function(){
-        let resposta = confirm('Tem certeza que deseja marcar como revisado? Sua folha não poderá ser modificada depois');
-        const idUsuario = this.getAttribute('id');
-        if (resposta){
-            fetch('', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        acao: 'revisar',
-                        id_usuario: idUsuario
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.msg);
-                    if(data.status === 'sucesso') location.reload(); // Recarrega para ver a mudança
-                })
-                .catch(err => console.error("Erro na requisição:", err));
-        }
-    })
-    //CÓDIGO DAVI ↑↑↑↑↑
-    window.onload = function () {
-        // Se não marcou como "acabou de recarregar"
-        if (!sessionStorage.getItem("justReloaded")) {
-            // Marca que acabou de recarregar
-            sessionStorage.setItem("justReloaded", "true");
-            // Recarrega a página
-            location.reload();
-        } else {
-            // Limpa a marca para a próxima vez que entrar na página
-            sessionStorage.removeItem("justReloaded");
-        }
-    };
-
-</script>
+<script src="../../assets/js/script.js"></script>
 
 </body>
 </html>

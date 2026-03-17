@@ -1,8 +1,9 @@
- <?php
+<?php
 // Conexão com banco de dados
-require_once "../../BD/conexao.php";
-require_once "../../include/funcoes/calculo_desconto_falta.php";
 session_start();
+include(__DIR__ . "/../../BD/conexao.php");
+require "../../include/verificacao.php";
+verificar_login($conn);
 
 // -----------------------------
 // 1. Recebe o mês (competência)
@@ -109,9 +110,6 @@ if (!$folha) {
 }
 
 
-//função e executa o cálculo e atualização do desconto
-$desconto = calcularEAplicarDescontoFalta($conn, $id_usuario, $mes_comp, $user, $folha);
-
 // -----------------------------
 // 8. Eventos
 // -----------------------------
@@ -129,25 +127,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
     $dados = json_decode(file_get_contents('php://input'), true);
 
-    if($dados){
+    if($dados && isset($dados['acao'])){
         $acao = $dados['acao'] ?? '';
-
-        if (isset($dados['confirmado']) && $dados['confirmado'] === true) {
-            $id_evento = $dados['id_evento'] ?? '';
-            //deletando evento
-            if ($acao == 'deletar' && !empty($id_evento)){
-                $sql= $conn->prepare("DELETE FROM eventos WHERE id_evento = ?");
-                $sql->bind_param('i', $id_evento);
+        // deletar
+        if ($acao == 'deletar' && !empty($dados['id_evento'])) {
+            if (isset($dados['confirmado']) && $dados['confirmado'] === true) {
+                $sql = $conn->prepare("DELETE FROM eventos WHERE id_evento = ?");
+                $sql->bind_param('i', $dados['id_evento']);
                 if ($sql->execute()) {
-                    echo json_encode(['status' => 'sucesso', 'msg' => 'Evento deletado!']);
+                echo json_encode(['status' => 'sucesso', 'msg' => 'Evento Deletado!']);
                 } else {
                     echo json_encode(['status' => 'erro', 'msg' => 'Erro ao deletar.']);
                 }
                 exit;
             }
+        } 
+        // editar
+        else if($acao == 'editar' && !empty($dados['id_editar'])) {
+            $sql = $conn->prepare("UPDATE eventos SET valor = ? WHERE id_evento = ?");
+            $sql->bind_param('di', $dados['valor'], $dados['id_editar']);
+            if ($sql->execute()) {
+                echo json_encode(['status' => 'sucesso', 'msg' => 'Evento Editado!']);
+            } else {
+                echo json_encode(['status' => 'erro', 'msg' => 'Erro ao editar.']);
+            }
+            exit;
         }
     }
 }
+// pegar valores de empresa
+$sql_empresa = $conn->prepare("
+    SELECT *
+    FROM empresas
+    WHERE id_empresa = 0
+");
+// $sql_empresa->bind_param("i", $id_usuario);
+$sql_empresa->execute();
+$empresa = $sql_empresa->get_result()->fetch_assoc();
 // CODIGUINHO DO DABI ↑
 
 ?>
@@ -157,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 <head>
 <meta charset="UTF-8">
 <title>Editar Holerite <?= $mes; ?></title>
-
+<?php include "../../include/link.html"; ?>
 <style>
 body { font-family: Arial; padding: 25px; }
 table { width: 100%; border-collapse: collapse; margin-top: 15px; }
@@ -173,17 +189,24 @@ input[type="text"], input[type="email"] {
 </head>
 
 <body>
-<a href="gerar_folhas_todos.php?$mes=<?= $mes ?>">voltar</a>
+    <a href="gerar_folhas_todos.php?$mes=<?= $mes ?>">voltar</a>
+
 
 <div id="holerite">
 
     <h1>EDITAR HOLERITE <?= date("m/Y", strtotime($mes_comp)); ?></h1>
 
     <table>
-        <tr class="titulo"><td colspan="2">Empregador</td></tr>
-        <tr><td>Nome:</td><td>Sem nome</td></tr>
-        <tr><td>Endereço:</td><td>Sem endereço</td></tr>
-        <tr><td>CNPJ:</td><td>Sem CNPJ</td></tr>
+        <tr class="titulo">
+        <td><b>Empresa</b></td>
+        <td><b><a href="criar_empresa.php">Editar</a></b></td>
+        </tr>
+        <tr><td>Nome:</td><td><?= isset($empresa["nome_fantasia"]) ? $empresa['nome_fantasia'] : 'Sem Nome'?></td></tr>
+        <tr><td>Endereço:</td><td>
+            <?= isset($empresa["uf"]) ? $empresa["uf"].' - '.$empresa['cidade']
+            .' - '.$empresa['bairro'].' - '. $empresa['numero'] : 'Sem endereço'?>
+        </td></tr>
+        <tr><td>CNPJ:</td><td><?= isset($empresa["cnpj"]) ? $empresa['cnpj'] : 'Sem CNPJ'?></td></tr>
 
         <tr class="titulo"><td colspan="2">Funcionário</td></tr>
         <tr><td>Nome:</td><td><?= $user["nome_usuario"]; ?></td></tr>
@@ -203,7 +226,7 @@ input[type="text"], input[type="email"] {
                     <tr>
                         <td><?= strtoupper($e["tipo"]) . " - " . $e["descricao"]; ?></td>
                         <td>R$ <input id="<?= $e["id_evento"] ?>" class="input-editar"
-                        type="number" step="0.01" value="<?= number_format($e["valor"],2,'.','.'); ?>"></input>
+                        type="number" step="0.01" value="<?= $e["valor"] ?>"></input>
                         <button type="button" class="btn-deletar" data-id="<?= $e["id_evento"] ?>">deletar</button></td>
                     </tr>
                 </form>
@@ -218,60 +241,7 @@ input[type="text"], input[type="email"] {
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<script>
-    //CÓDIGO DAVI ↓↓↓↓↓
-    // deletar
-    document.querySelectorAll('.btn-deletar').forEach(botao => {
-        botao.addEventListener('click', function() {
-            const idEvento = this.getAttribute('data-id');
-            const resposta = confirm("Tem certeza que deseja deletar este evento?");
-
-            if (resposta) {
-                fetch('', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        confirmado: true, 
-                        acao: 'deletar', 
-                        id_evento: idEvento 
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.status === 'sucesso') location.reload(); // Recarrega para ver a mudança
-                })
-                .catch(err => console.error("Erro na requisição:", err));
-            }  
-        });
-    });
-    
-    // editar
-    document.querySelectorAll('.input-editar').forEach(input => {
-        input.addEventListener('change', function(event){
-            const idEditar = this.getAttribute('id');
-            const valorNovo = event.target.value;
-            fetch('', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        acao: 'editar',
-                        valor: valorNovo,
-                        id_editar : idEditar
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.msg);
-                    if(data.status === 'sucesso') location.reload(); // Recarrega para ver a mudança
-                })
-                .catch(err => console.error("Erro na requisição:", err));
-        })
-        
-    });
-    //CÓDIGO DAVI ↑↑↑↑↑
-
-</script>
+<script src="../../assets/js/script.js"></script>
 
 </body>
 </html>

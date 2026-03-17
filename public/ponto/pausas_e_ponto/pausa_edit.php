@@ -105,7 +105,7 @@ $stmt->execute();
 $row = $stmt->get_result()->fetch_assoc();
 
 if (!$row) {
-    header("Location: pausa_config.php");
+    header("Location: ../../config/pausa_config.php");
     exit;
 }
 
@@ -122,7 +122,10 @@ $setor = $conn->query($listSetor);
     <title>Editar Pausa</title>
 </head>
 <body>
-    <a href="pausa_config.php">Voltar</a>
+    <?php include "../../../include/link.html";?>
+    <nav>
+        <?php include("../../../include/navbar.php"); ?>
+    </nav>
     <h2>Editar Pausa</h2>
 
     <?php if (!empty($_SESSION['msg'])): ?>

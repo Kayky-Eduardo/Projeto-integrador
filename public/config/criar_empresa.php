@@ -238,8 +238,7 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
                 })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.msg);
-                    if(data.status === 'sucesso') location.reload(); // Recarrega para ver a mudança
+                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg);; // Recarrega para ver a mudança
                 })
                 .catch(err => console.error("Erro na requisição:", err));
         }
@@ -259,8 +258,7 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
                 })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.msg);
-                    if(data.status === 'sucesso') location.reload(); // Recarrega para ver a mudança
+                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg); // Recarrega para ver a mudança
                 })
                 .catch(err => console.error("Erro na requisição:", err));
         }

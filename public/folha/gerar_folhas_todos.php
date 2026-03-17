@@ -214,7 +214,6 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn) {
     return [
         'id_usuario' => $id_usuario,
         'nome_usuario' => $usuario['nome_usuario'],
-        'salario_liquido' => $salario_liquido,
         'revisado' => 0
     ];
 }
