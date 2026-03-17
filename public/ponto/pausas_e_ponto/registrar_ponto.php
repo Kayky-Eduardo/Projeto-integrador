@@ -152,10 +152,7 @@ $tiposPausa = $stmtTipos->get_result();
 <head>
     <meta charset="UTF-8">
     <title>Ponto e Pausas</title>
-    <link href="https://cdn.jsdelivr.net/npm/@pnotify/core@5.2.0/dist/PNotify.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@pnotify/core@5.2.0/dist/BrightTheme.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@pnotify/core@5.2.0/dist/PNotify.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@pnotify/mobile@5.2.0/dist/PNotifyMobile.js"></script>
+    <?php include "../../../include/link.html"; ?>
 </head>
 
 <body>
