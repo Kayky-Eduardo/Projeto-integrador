@@ -3,6 +3,9 @@ session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
+
+// controla qual módulo será carregado
+$pagina = $_GET['pagina'] ?? 'jornada';
 ?>
 
 <!DOCTYPE html>
@@ -22,28 +25,50 @@ verificar_login($conn);
     <main class="configuracoes">
         <aside aria-label="Menu de configurações">
             <ul class="menu-config">
-                <li><a href="#" class="ativo">Definir Jornadas de Trabalho</a></li>
-                <li><a href="#">#</a></li>
-                <li><a href="#">#</a></li>
-                <li><a href="#">#</a></li>
+                <li>
+                    <a href="?pagina=jornada" class="<?= $pagina == 'jornada' ? 'ativo' : '' ?>">
+                        Definir Jornadas de Trabalho
+                    </a>
+                </li>
+                <li>
+                    <a href="?pagina=pausas" class="<?= $pagina == 'pausas' ? 'ativo' : '' ?>">
+                        Tipos de Pausa
+                    </a>
+                </li>
             </ul>
         </aside>
 
-        <section class="container" aria-label="Definição de jornada">
-            <h1>Definir Jornada de Trabalho</h1>
-            <p>Configure a carga horária e o limite diário de horas extras.</p>
+        <section class="container">
+            <?php
+            switch ($pagina) {
 
-            <form class="form-linha" id="form-jornada">
-                <label class="label" for="set-jornada">Jornada diária padrão:</label>
-                <input class="input" id="set-jornada" type="time" required>
+                case 'pausas':
+                    include(__DIR__ . "/pausa_config_content.php");
+                    break;
 
-                <label class="label" for="set-hora-max">Limite de hora extra:</label>
-                <input class="input" id="set-hora-max" type="time" required>
+                case 'jornada':
+                default:
+            ?>
+                    <h1>Definir Jornada de Trabalho</h1>
+                    <p>Configure a carga horária e o limite diário de horas extras.</p>
 
-                <button type="submit" class="btn btn-padrao">Salvar configuração</button>
-            </form>
+                    <form class="form-linha" id="form-jornada">
+                        <label class="label">Jornada diária padrão:</label>
+                        <input class="input" type="time" required>
 
-            <p id="resposta" role="alert" aria-live="polite" tabindex="0"></p>
+                        <label class="label">Limite de hora extra:</label>
+                        <input class="input" type="time" required>
+
+                        <button type="submit" class="btn btn-padrao">
+                            Salvar configuração
+                        </button>
+                    </form>
+
+                    <p id="resposta"></p>
+            <?php
+                    break;
+            }
+            ?>
         </section>
     </main>
 
