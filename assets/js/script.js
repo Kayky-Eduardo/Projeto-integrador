@@ -171,8 +171,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const formJornada = document.getElementById("form-jornada");
 
     if (formJornada) {
-        const checkboxesDias = document.querySelectorAll('input[name="dia_semana[]:checked"');
-
         const inputJornada = document.getElementById("set-jornada");
         const inputHoraExtra = document.getElementById("set-hora-max");
         const inputDescricao = document.getElementById("set-descricao");
@@ -180,12 +178,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const botaoSalvar = formJornada.querySelector("button");
 
         formJornada.addEventListener("submit", async (e) => {
-            const checkboxesDias = document.querySelectorAll('input[name="dia_semana"]:checked');
+            const checkboxesDias = document.querySelectorAll('input[name="dia_semana[]"]:checked');
             const diasSelecionados = Array.from(checkboxesDias).map(cb => parseInt(cb.value));
             
             e.preventDefault();
             resposta.textContent = "";
             resposta.className = "";
+
             const descricao = inputDescricao.value;
             const jornada = inputJornada.value;
             const horaExtra = inputHoraExtra.value;
@@ -227,11 +226,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 const data = await response.json();
-                resposta.textContent = data.mensagem;
-                resposta.className = data.sucesso ? "sucesso" : "erro";
+
+                if (data.sucesso) {
+                    // resposta.textContent = data.mensagem;
+                    resposta.textContent = "";
+                    // resposta.className = data.sucesso ? "sucesso" : "erro";
+                    chamarPnotifySuccess("Sucesso", "Jornada criada com sucesso!");
+                } else {
+                    
+                }
             } catch (error) {
-                resposta.textContent = "Falha na comunicação com o servidor.";
-                resposta.className = "erro";
+                chamarPnotifyAviso("Alerta", "Falha na comunicação com o servidor.");
+                resposta.textContent = "";
+                // resposta.textContent = "Falha na comunicação com o servidor.";
+                // resposta.className = "erro";
                 console.error(error);
             } finally {
                 botaoSalvar.disabled = false;

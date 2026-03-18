@@ -84,16 +84,16 @@ if ($metodo === 'GET') {
         $acao_formatada = strtolower($acao);
         if (in_array($acao_formatada, $white_list)) {
             if ($acao_formatada === 'jornada') {
-                if (!$input['jornada'] || $input['hora_extra'] === null) {
+                if (!$input['jornada'] || $input['hora_extra'] === null || $input['dias_semana'] == null) {
                     echo json_encode([
                         'sucesso' => false,
-                        'mensagem' => 'Parâmetros obrigatórios: jornada e hora extra'
+                        'mensagem' => 'Parâmetros obrigatórios: jornada, hora extra e dias da semana'
                     ]);
                     exit;
                 }
                 
                 try {
-                    $sucesso = set_jornada($conn, $input['descricao'], $input['jornada'], $input['hora_extra']);
+                    $sucesso = set_jornada($conn, $input['descricao'], $input['jornada'], $input['hora_extra'], $input['dias_semana']);
                     
                     echo json_encode([
                         'sucesso' => $sucesso,
