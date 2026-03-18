@@ -113,7 +113,11 @@ if ($tipo_ajuste === 'ponto') {
         : null;
 
     // Monta o novo valor (DateTime)
-    $valor_novo = $data . ' ' . $valor_novo_ponto . ':00';
+    if (!empty($data) && !empty($valor_novo_ponto)) {
+        $valor_novo = $data . ' ' . $valor_novo_ponto . ':00';
+    } else {
+        die("Erro: data ou hora inválida.");
+    }
 
     // 2. INSERIR SOLICITAÇÃO (Tabela: ajustes_ponto)
     $stmt = $conn->prepare("
@@ -144,35 +148,48 @@ elseif ($tipo_ajuste === 'pausa') {
         die("Campo de pausa inválido.");
     }
 
-    // 1. Validação de dados de pausa
-    if ($id_pausa <= 0 || (empty($campo_pausa) && empty($pausa_nova))) {
+    // Validação de dados de pausa
+    if ($id_pausa <= 0 || empty($campo_pausa) || empty($pausa_nova)) {
         die("Selecione a pausa e preencha o novo início ou fim.");
     }
 
-    // 2. BUSCA VALOR ANTIGO DA PAUSA (Segurança: Garante que a pausa pertence ao ponto)
+    // Busca a pausa no banco
     $busca_pausa = $conn->prepare("
         SELECT inicio, fim
         FROM pausa 
         WHERE id_pausa = ? AND id_usuario = ? AND data = ?
     ");
-    // O id_usuario e a data são recuperados do ponto já validado
     $busca_pausa->bind_param("iss", $id_pausa, $reg_ponto['id_usuario'], $data);
     $busca_pausa->execute();
     $reg_pausa = $busca_pausa->get_result()->fetch_assoc();
-    $valor_antigo = $reg_pausa ? date('Y-m-d H:i:s', strtotime($reg_pausa[$campo_pausa])) : null;
-    $valor_novo = $data . ' ' . $pausa_nova . ':00';
 
+    // Verifica se a pausa existe
     if (!$reg_pausa) {
         die("Pausa não encontrada ou não pertence ao ponto selecionado.");
     }
 
-    // 3. Processar e Inserir Ajustes para INÍCIO e/ou FIM
+    // Mapeia os nomes do campo do formulário para os nomes do banco
+    $mapaCampos = [
+        'inicio_pausa' => 'inicio',
+        'fim_pausa' => 'fim'
+    ];
+    $coluna_real = $mapaCampos[$campo_pausa];
+
+    // Valor antigo corretamente formatado
+    $valor_antigo = (!empty($reg_pausa[$coluna_real]) && strtotime($reg_pausa[$coluna_real]))
+        ? date('Y-m-d H:i:s', strtotime($reg_pausa[$coluna_real]))
+        : null;
+
+    // Valor novo formatado
+    $valor_novo = $data . ' ' . $pausa_nova . ':00';
+
+    // Inserir ajuste na tabela
     $stmt_fim = $conn->prepare("
-            INSERT INTO ajustes_ponto 
-                (id_ponto, id_pausa, id_usuario, campo, valor_antigo, valor_novo, motivo, status, data_solicitacao)
-            VALUES 
-                (?, ?, ?, ?, ?, ?, ?, 'Pendente', NOW())
-        ");
+        INSERT INTO ajustes_ponto 
+            (id_ponto, id_pausa, id_usuario, campo, valor_antigo, valor_novo, motivo, status, data_solicitacao)
+        VALUES 
+            (?, ?, ?, ?, ?, ?, ?, 'Pendente', NOW())
+    ");
     $stmt_fim->bind_param(
         "iiissss",
         $id_ponto,
@@ -183,7 +200,6 @@ elseif ($tipo_ajuste === 'pausa') {
         $valor_novo,
         $motivo
     );
-    // Usa OR lógico para manter a execução se o ajuste de início foi bem-sucedido
     $ajuste_executado = $stmt_fim->execute() || $ajuste_executado;
 }
 
