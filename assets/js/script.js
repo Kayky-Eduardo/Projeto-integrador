@@ -228,18 +228,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await response.json();
 
                 if (data.sucesso) {
-                    // resposta.textContent = data.mensagem;
                     resposta.textContent = "";
-                    // resposta.className = data.sucesso ? "sucesso" : "erro";
                     chamarPnotifySuccess("Sucesso", "Jornada criada com sucesso!");
+
                 } else {
-                    
+
+                    resposta.textContent = data.mensagem;
+                    resposta.className = "erro";
                 }
+
             } catch (error) {
                 chamarPnotifyAviso("Alerta", "Falha na comunicação com o servidor.");
                 resposta.textContent = "";
-                // resposta.textContent = "Falha na comunicação com o servidor.";
-                // resposta.className = "erro";
                 console.error(error);
             } finally {
                 botaoSalvar.disabled = false;

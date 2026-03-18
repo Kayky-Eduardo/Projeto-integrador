@@ -87,7 +87,7 @@ if ($metodo === 'GET') {
                 if (!$input['jornada'] || $input['hora_extra'] === null || $input['dias_semana'] == null) {
                     echo json_encode([
                         'sucesso' => false,
-                        'mensagem' => 'Parâmetros obrigatórios: jornada, hora extra e dias da semana'
+                        'mensagem' => 'Todos os parâmetros são obrigatórios'
                     ]);
                     exit;
                 }
