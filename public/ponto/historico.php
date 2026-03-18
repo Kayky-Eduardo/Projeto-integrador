@@ -1,4 +1,80 @@
 <?php
+/*
+ * =============================================================
+ * ARQUIVO: historico.php
+ * MÓDULO: Consulta de Histórico de Jornada (Colaborador / RH)
+ * =============================================================
+ * DESCRIÇÃO GERAL
+ * -------------------------------------------------------------
+ * Interface responsável pela visualização do histórico de registros 
+ * de ponto dos colaboradores no sistema.
+ *
+ * Permite ao usuário consultar jornadas anteriores, incluindo 
+ * horários de entrada, saída, pausas realizadas e status do ponto.
+ * Também disponibiliza a funcionalidade de solicitação de ajustes 
+ * de ponto, respeitando regras de validação de negócio.
+ *
+ * Funcionalidades:
+ * - Listagem de histórico de pontos (Entrada/Saída/Pausas).
+ * - Filtros dinâmicos por período e status.
+ * - Agrupamento de múltiplas pausas por registro.
+ * - Exibição detalhada de intervalos realizados.
+ * - Solicitação de ajuste de ponto com validação.
+ * - Formatação amigável de datas e horários.
+ *
+ * FLUXO DE EXECUÇÃO
+ * -------------------------------------------------------------
+ * 1. Inicializa a sessão e valida autenticação do usuário.
+ * 2. Recupera dados do usuário logado (id e nível de acesso).
+ * 3. Define filtros recebidos via GET (data, status).
+ * 4. Aplica controle de permissões:
+ *    - Usuários comuns visualizam apenas seus próprios registros.
+ * 5. Constrói query SQL dinâmica:
+ *    - INNER JOIN com tabela de usuários.
+ *    - LEFT JOIN com pausas (ligação por id_usuario + data).
+ * 6. Executa consulta utilizando prepared statements.
+ * 7. Agrupa resultados em array multidimensional:
+ *    - Cada ponto contém múltiplas pausas associadas.
+ * 8. Para cada registro:
+ *    - Executa validação de ajustes pendentes.
+ *    - Define se o usuário pode solicitar ajuste.
+ * 9. Renderiza tabela com dados formatados e ações disponíveis.
+ *
+ * SEGURANÇA
+ * -------------------------------------------------------------
+ * - Validação de sessão via função verificar_login.
+ * - Restrição de dados conforme nível de acesso do usuário.
+ * - Uso de prepared statements (bind_param) para evitar SQL Injection.
+ * - Escapamento de saída com htmlspecialchars (proteção contra XSS).
+ * - Validação de regras de negócio para solicitação de ajustes.
+ *
+ * TABELAS UTILIZADAS
+ * -------------------------------------------------------------
+ * 1. ponto_dia: Registros principais da jornada de trabalho.
+ * 2. usuario: Identificação do colaborador.
+ * 3. pausa: Registros de intervalos realizados.
+ * 4. pausa_config: Descrição dos tipos de pausa.
+ * 5. ajustes_ponto: Controle de solicitações de ajuste.
+ *
+ * OBSERVAÇÕES TÉCNICAS
+ * -------------------------------------------------------------
+ * - JOIN por chave composta (id_usuario + data) garante associação
+ *   correta entre ponto e pausas.
+ * - Agrupamento backend evita duplicidade de linhas na interface.
+ * - Função 'validar_ajustes_pendentes' controla regras de negócio:
+ *   • Impede múltiplas solicitações simultâneas;
+ *   • Bloqueia ajustes em pontos "Em Andamento";
+ *   • Permite apenas estados válidos para nova solicitação.
+ * - Função 'mostrar' padroniza formatação de data/hora e tratamento
+ *   de valores nulos.
+ * - Interface exibe "-" quando não há dados, mantendo consistência visual.
+ *
+ * -------------------------------------------------------------
+ * Data: 17/03/2026
+ * Versão: 1.0
+ * =============================================================
+ */
+
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require __DIR__ . "/../../include/verificacao.php";
@@ -6,21 +82,24 @@ verificar_login($conn);
 $id_usuario = $_SESSION['id_usuario'];
 $nivel      = $_SESSION['nivel'];
 
-function validar_ajustes_pendentes($conn, $id_usuario, $id_ponto) {
+function validar_ajustes_pendentes($conn, $id_usuario, $id_ponto)
+{
     $validacao = $conn->prepare("
-    SELECT status 
-    FROM ajustes_ponto
-    WHERE id_usuario = ?
-    AND id_ponto = ?
+        SELECT status 
+        FROM ajustes_ponto
+        WHERE id_usuario = ?
+        AND id_ponto = ?
     ");
+
     $validacao->bind_param("ii", $id_usuario, $id_ponto);
     $validacao->execute();
     $result = $validacao->get_result();
 
     if ($validacao->num_rows === 0) {
         $validacao_ponto_aberto = $conn->prepare("
-        SELECT status FROM ponto_dia WHERE id_ponto = ?
+            SELECT status FROM ponto_dia WHERE id_ponto = ?
         ");
+
         $validacao_ponto_aberto->bind_param("i", $id_ponto);
         $validacao_ponto_aberto->execute();
         $result_validacao = $validacao_ponto_aberto->get_result();
@@ -32,6 +111,7 @@ function validar_ajustes_pendentes($conn, $id_usuario, $id_ponto) {
         return true;
     } else {
         $status = $result->fetch_assoc()['status'];
+        
         if ($status != "Revisar" && $status != "Em Andamento") {
             return true;
         }
@@ -86,12 +166,6 @@ if (!empty($f_to)) {
 if (!empty($f_status)) {
     $where[]  = "p.status = ?";
     $params[] = $f_status;
-    $types   .= 's';
-}
-
-if (!empty($f_nome)) {
-    $where[]  = "u.nome_usuario LIKE ?";
-    $params[] = "%$f_nome%";
     $types   .= 's';
 }
 

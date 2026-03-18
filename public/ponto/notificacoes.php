@@ -1,4 +1,77 @@
 <?php
+/*
+ * =============================================================
+ * ARQUIVO: notificacoes.php
+ * MÓDULO: Central de Notificações de Ponto
+ * =============================================================
+ * DESCRIÇÃO GERAL
+ * -------------------------------------------------------------
+ * Interface responsável pela exibição e gerenciamento das 
+ * notificações relacionadas ao sistema de ponto eletrônico.
+ *
+ * Permite ao usuário visualizar mensagens geradas pelo sistema,
+ * acompanhar eventos relacionados aos seus registros de ponto
+ * e navegar diretamente para o dia correspondente.
+ *
+ * Também possibilita o controle de leitura das notificações,
+ * incluindo marcação individual (visual) e ação em massa.
+ *
+ * Funcionalidades:
+ * - Listagem de notificações ordenadas por status e data.
+ * - Destaque visual para notificações não lidas.
+ * - Filtro por período (data inicial e final).
+ * - Filtro para exibir apenas notificações não lidas.
+ * - Ação para marcar todas as notificações como lidas.
+ * - Redirecionamento para visualização do dia do ponto.
+ *
+ * FLUXO DE EXECUÇÃO
+ * -------------------------------------------------------------
+ * 1. Inicializa sessão e valida autenticação do usuário.
+ * 2. Recupera dados do usuário logado (id e nível).
+ * 3. Verifica requisição POST:
+ *    - Caso acionado, marca todas notificações como lidas.
+ *    - Redireciona para evitar reenvio de formulário.
+ * 4. Captura filtros via GET:
+ *    - Período (data inicial e final).
+ *    - Status de leitura (somente não lidas).
+ * 5. Monta cláusula WHERE dinâmica:
+ *    - Sempre filtra por id do usuário logado.
+ *    - Aplica filtros adicionais conforme parâmetros.
+ * 6. Executa consulta com JOIN:
+ *    - Relaciona notificações com registros de ponto.
+ * 7. Ordena resultados:
+ *    - Notificações não lidas primeiro.
+ *    - Em seguida por data decrescente.
+ * 8. Renderiza tabela com dados e ações disponíveis.
+ *
+ * SEGURANÇA
+ * -------------------------------------------------------------
+ * - Validação de sessão via verificar_login.
+ * - Restrição de acesso: usuário visualiza apenas suas notificações.
+ * - Uso de prepared statements para prevenir SQL Injection.
+ * - Escapamento de saída com htmlspecialchars (proteção contra XSS).
+ * - Redirecionamento após POST (Post/Redirect/Get).
+ *
+ * TABELAS UTILIZADAS
+ * -------------------------------------------------------------
+ * 1. notificacoes_ponto: Armazena mensagens e status de leitura.
+ * 2. ponto_dia: Referência ao registro de ponto relacionado.
+ *
+ * OBSERVAÇÕES TÉCNICAS
+ * -------------------------------------------------------------
+ * - Ordenação prioriza notificações não lidas para melhor UX.
+ * - Campo 'lida' funciona como flag booleana (0 = não lida, 1 = lida).
+ * - Ação "Marcar todas como lidas" atualiza em lote via SQL.
+ * - Filtro de datas utiliza função DATE() para ignorar horário.
+ * - Link "Ver dia" reaproveita módulo de histórico com filtro automático.
+ * - Classe CSS 'nao-lida' permite destaque visual na interface.
+ *
+ * -------------------------------------------------------------
+ * Data: 17/03/2026
+ * Versão: 1.0
+ * =============================================================
+ */
+
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require __DIR__ . "/../../include/verificacao.php";
