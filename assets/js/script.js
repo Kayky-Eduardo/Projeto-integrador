@@ -412,6 +412,94 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // EDITAR FOLHA
+    //CÓDIGO DAVI ↓↓↓↓↓
+    // deletar
+    document.querySelectorAll('.btn-deletar').forEach(botao => {
+        botao.addEventListener('click', function() {
+            const idEvento = this.getAttribute('data-id');
+            const resposta = confirm("Tem certeza que deseja deletar este evento?");
+
+            if (resposta) {
+                fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        confirmado: true, 
+                        acao: 'deletar', 
+                        id_evento: idEvento 
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg);// Recarrega para ver a mudança
+                })
+                .catch(err => console.error("Erro na requisição:", err));
+            }  
+        });
+    });
+    
+    // editar
+    document.querySelectorAll('.input-editar').forEach(input => {
+        input.addEventListener('change', function(event){
+            const idEditar = this.getAttribute('id');
+            const valorNovo = event.target.value;
+            fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        acao: 'editar',
+                        valor: valorNovo,
+                        id_editar : idEditar
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg); // Recarrega para ver a mudança
+                })
+                .catch(err => console.error("Erro na requisição:", err));
+        })
+        
+    });
+    //CÓDIGO DAVI ↑↑↑↑↑
+
+    // REVISAR FOLHA
+    // alterar para revisado
+    btnRevisar = document.querySelector('.btn-salvar');
+    btnRevisar.addEventListener('click', function(){
+        let resposta = confirm('Tem certeza que deseja marcar como revisado? Sua folha não poderá ser modificada depois');
+        const idUsuario = this.getAttribute('id');
+        if (resposta){
+            fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        acao: 'revisar',
+                        id_usuario: idUsuario
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg); // Recarrega para ver a mudança
+                })
+                .catch(err => console.error("Erro na requisição:", err));
+        }
+    })
+    //CÓDIGO DAVI ↑↑↑↑↑
+    window.onload = function () {
+        // Se não marcou como "acabou de recarregar"
+        if (!sessionStorage.getItem("justReloaded")) {
+            // Marca que acabou de recarregar
+            sessionStorage.setItem("justReloaded", "true");
+            // Recarrega a página
+            location.reload();
+        } else {
+            // Limpa a marca para a próxima vez que entrar na página
+            sessionStorage.removeItem("justReloaded");
+        }
+    };
+
+
     /* PNOTIFY */
     function chamarPnotifyAviso(titulo, mensagem, milissegundos) {
         const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_comum.mp3');
