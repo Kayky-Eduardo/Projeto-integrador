@@ -48,11 +48,10 @@ $dias = ['seg', 'ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
                 <input class="input" id="set-hora-max" type="time" required>
 
                 <section class="container">
-                    <?php for($i=0; $i<7; $i++): ?>
-                        <label for="<?= $dias[$i]?>"><?= $dias[$i] ?></label>
-                        <input type="checkbox"  name="dia_semana" id="<?= $dias[$i] ?>">
-
-                    <?php endfor ?>
+               <?php for($i=0; $i<7; $i++): ?>
+                    <label for="<?= $dias[$i] ?>"><?= $dias[$i] ?></label>
+                    <input type="checkbox" name="dia_semana" id="<?= $dias[$i] ?>" value="<?= $i + 1 ?>">
+                <?php endfor ?>
                 </section>
 
                 <button type="submit" class="btn btn-padrao">Salvar configuração</button>

@@ -172,7 +172,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (formJornada) {
         const checkboxesDias = document.querySelectorAll('input[name="dia_semana[]:checked"');
-        const diasSelecionados = Array.from(checkboxesDias).map(cb => parseInt(cb.value));
 
         const inputJornada = document.getElementById("set-jornada");
         const inputHoraExtra = document.getElementById("set-hora-max");
@@ -181,6 +180,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const botaoSalvar = formJornada.querySelector("button");
 
         formJornada.addEventListener("submit", async (e) => {
+            const checkboxesDias = document.querySelectorAll('input[name="dia_semana"]:checked');
+            const diasSelecionados = Array.from(checkboxesDias).map(cb => parseInt(cb.value));
+            
             e.preventDefault();
             resposta.textContent = "";
             resposta.className = "";
@@ -188,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const jornada = inputJornada.value;
             const horaExtra = inputHoraExtra.value;
 
-            if (!jornada || !horaExtra || !descricao || !diasSelecionados) {
+            if (!jornada || !horaExtra || !descricao) {
                 resposta.textContent = "Preencha todos os campos.";
                 resposta.className = "erro";
                 return;
@@ -215,7 +217,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify({
                         descricao: descricao,
                         jornada: jornada,
-                        hora_extra: horaExtra
+                        hora_extra: horaExtra,
+                        dias_semana: diasSelecionados
                     })
                 });
 
@@ -370,8 +373,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 if (decorridoSegundos >= maxSegundos) {
-                    clearInterval(intervalId);
-                    document.getElementById("formPausa").submit();
+                    cronometro.style.color = "red";
+                    statusMsg.textContent = "Tempo máximo atingido.";
+                    statusMsg.style.color = "red";
+                    localStorage.setItem("aviso", "Tempo máximo de pausa atingido.")
                 }
 
                 if (segundosRestantes <= minSegundos && segundosRestantes > 0 && !avisoEmitido) {
@@ -449,7 +454,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .then((res)=> res.json())
         .then((resposta) => {
             if (resposta.sucesso) {
-                console.log(new Date.now());
+                console.log(resposta.dados.mensagem);
                 chamarPnotifyAviso("Aviso", resposta.dados.mensagem, 5000);
             } 
         });
@@ -458,4 +463,4 @@ document.addEventListener("DOMContentLoaded", () => {
         chamarPnotifyAviso("Aviso", mensagem, 5000);
         localStorage.setItem("aviso_emitido", true);
     }
-});
+})
