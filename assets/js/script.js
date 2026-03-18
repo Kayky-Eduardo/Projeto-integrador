@@ -426,6 +426,26 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    function chamarPnotifyConfirm(titulo, mensagem, milissegundos) {
+        let tempo = milissegundos ?? 5000;
+
+        const notice = PNotify.notice({
+        title: titulo,
+        text: mensagem,
+        icon: 'fas fa-question-circle',
+        hide: false,
+        destroy: true,
+        closer: false,
+        sticker: false,
+        modules: new Map([
+            ...PNotify.defaultModules,
+            [PNotifyConfirm, {
+            confirm: true
+            }]
+        ])
+        });
+    }
+
     function chamarPnotifyAlert(titulo, mensagem, milissegundos) {
         const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_erro.wav');
 
