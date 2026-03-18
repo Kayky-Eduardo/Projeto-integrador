@@ -1,8 +1,10 @@
 <?php
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
-require "../../include/verificacao.php";
+require_once "../../include/verificacao.php";
 verificar_login($conn);
+$dias = ['seg', 'ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+
 ?>
 
 <!DOCTYPE html>
@@ -11,7 +13,7 @@ verificar_login($conn);
 <head>
     <meta charset="UTF-8">
     <title>Configurações</title>
-    <link rel="stylesheet" href="../../assets/css/estilo.css">
+    <?php include("../../include/link.html"); ?>
 </head>
 
 <body>
@@ -22,7 +24,7 @@ verificar_login($conn);
     <main class="configuracoes">
         <aside aria-label="Menu de configurações">
             <ul class="menu-config">
-                <li><a href="#" class="ativo">#</a></li>
+                <li><a href="#" class="ativo">Definir Jornadas de Trabalho</a></li>
                 <li><a href="#">#</a></li>
                 <li><a href="#">#</a></li>
                 <li><a href="#">#</a></li>
@@ -30,11 +32,38 @@ verificar_login($conn);
         </aside>
 
         <section class="container" aria-label="Definição de jornada">
-            DEFAULT
+            <p id="resposta" role="alert" aria-live="polite" tabindex="0"></p>
+
+            <h1>Definir Jornada de Trabalho</h1>
+            <p>Configure a carga horária e o limite diário de horas extras.</p>
+
+            <form class="form-linha" id="form-jornada">
+                <label class="label" for="set-descricao">Descrição da jornada:</label>
+                <input class="input" id="set-descricao" type="text" placeholder="Descrição da jornada" required>
+
+                <label class="label" for="set-jornada">Jornada diária padrão:</label>
+                <input class="input" id="set-jornada" type="time" required>
+
+                <label class="label" for="set-hora-max">Limite de hora extra:</label>
+                <input class="input" id="set-hora-max" type="time" required>
+
+                <section class="container">
+               <?php for($i=0; $i<7; $i++): ?>
+                    <label for="<?= $dias[$i] ?>"><?= $dias[$i] ?></label>
+                    <input type="checkbox" name="dia_semana[]"
+                    id="<?= $dias[$i] ?>" value="<?= $i + 1 ?>">
+                <?php endfor ?>
+                </section>
+
+                <button type="submit" class="btn btn-padrao">Salvar configuração</button>
+            </form>
+
         </section>
+
     </main>
 
-    <script src="../../assets/js/script.js"></script>
+    <script src="../../assets/js/script.js">
+    </script>
 </body>
 
 </html>

@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
     /* SETAR ID_USUARIO NO LOCAL STORAGE */
-    if (localStorage.getItem("id_usuario") == null) {
-        const id_usuario = document.getElementById("nome-usuario-navbar").dataset.id;
+    const id_usuario = document.getElementById("nome-usuario-navbar").dataset.id;
 
+    if (localStorage.getItem("id_usuario") == null) {
         localStorage.setItem("id_usuario", id_usuario);
     }
 
@@ -171,9 +171,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const formJornada = document.getElementById("form-jornada");
 
     if (formJornada) {
-        const checkboxesDias = document.querySelectorAll('input[name="dia_semana[]:checked"');
-        const diasSelecionados = Array.from(checkboxesDias).map(cb => parseInt(cb.value));
-
         const inputJornada = document.getElementById("set-jornada");
         const inputHoraExtra = document.getElementById("set-hora-max");
         const inputDescricao = document.getElementById("set-descricao");
@@ -181,9 +178,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const botaoSalvar = formJornada.querySelector("button");
 
         formJornada.addEventListener("submit", async (e) => {
+            const checkboxesDias = document.querySelectorAll('input[name="dia_semana[]"]:checked');
+            const diasSelecionados = Array.from(checkboxesDias).map(cb => parseInt(cb.value));
+            
             e.preventDefault();
             resposta.textContent = "";
             resposta.className = "";
+
             const descricao = inputDescricao.value;
             const jornada = inputJornada.value;
             const horaExtra = inputHoraExtra.value;
@@ -215,7 +216,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify({
                         descricao: descricao,
                         jornada: jornada,
-                        hora_extra: horaExtra
+                        hora_extra: horaExtra,
+                        dias_semana: diasSelecionados
                     })
                 });
 
@@ -224,11 +226,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 const data = await response.json();
-                resposta.textContent = data.mensagem;
-                resposta.className = data.sucesso ? "sucesso" : "erro";
+
+                if (data.sucesso) {
+                    resposta.textContent = "";
+                    chamarPnotifySuccess("Sucesso", "Jornada criada com sucesso!");
+
+                } else {
+
+                    resposta.textContent = data.mensagem;
+                    resposta.className = "erro";
+                }
+
             } catch (error) {
-                resposta.textContent = "Falha na comunicação com o servidor.";
-                resposta.className = "erro";
+                chamarPnotifyAviso("Alerta", "Falha na comunicação com o servidor.");
+                resposta.textContent = "";
                 console.error(error);
             } finally {
                 botaoSalvar.disabled = false;
@@ -401,94 +412,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // EDITAR FOLHA
-    //CÓDIGO DAVI ↓↓↓↓↓
-    // deletar
-    document.querySelectorAll('.btn-deletar').forEach(botao => {
-        botao.addEventListener('click', function() {
-            const idEvento = this.getAttribute('data-id');
-            const resposta = confirm("Tem certeza que deseja deletar este evento?");
-
-            if (resposta) {
-                fetch('', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        confirmado: true, 
-                        acao: 'deletar', 
-                        id_evento: idEvento 
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg);// Recarrega para ver a mudança
-                })
-                .catch(err => console.error("Erro na requisição:", err));
-            }  
-        });
-    });
-    
-    // editar
-    document.querySelectorAll('.input-editar').forEach(input => {
-        input.addEventListener('change', function(event){
-            const idEditar = this.getAttribute('id');
-            const valorNovo = event.target.value;
-            fetch('', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        acao: 'editar',
-                        valor: valorNovo,
-                        id_editar : idEditar
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg); // Recarrega para ver a mudança
-                })
-                .catch(err => console.error("Erro na requisição:", err));
-        })
-        
-    });
-    //CÓDIGO DAVI ↑↑↑↑↑
-
-    // REVISAR FOLHA
-    // alterar para revisado
-    btnRevisar = document.querySelector('.btn-salvar');
-    btnRevisar.addEventListener('click', function(){
-        let resposta = confirm('Tem certeza que deseja marcar como revisado? Sua folha não poderá ser modificada depois');
-        const idUsuario = this.getAttribute('id');
-        if (resposta){
-            fetch('', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        acao: 'revisar',
-                        id_usuario: idUsuario
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg); // Recarrega para ver a mudança
-                })
-                .catch(err => console.error("Erro na requisição:", err));
-        }
-    })
-    //CÓDIGO DAVI ↑↑↑↑↑
-    window.onload = function () {
-        // Se não marcou como "acabou de recarregar"
-        if (!sessionStorage.getItem("justReloaded")) {
-            // Marca que acabou de recarregar
-            sessionStorage.setItem("justReloaded", "true");
-            // Recarrega a página
-            location.reload();
-        } else {
-            // Limpa a marca para a próxima vez que entrar na página
-            sessionStorage.removeItem("justReloaded");
-        }
-    };
-
-
     /* PNOTIFY */
     function chamarPnotifyAviso(titulo, mensagem, milissegundos) {
         const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_comum.mp3');
@@ -548,4 +471,4 @@ document.addEventListener("DOMContentLoaded", () => {
         chamarPnotifyAviso("Aviso", mensagem, 5000);
         localStorage.setItem("aviso_emitido", true);
     }
-});
+})
