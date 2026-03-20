@@ -115,6 +115,24 @@ if ($tipo_ajuste === 'ponto') {
     // Monta o novo valor (DateTime)
     $valor_novo = $data . ' ' . $valor_novo_ponto . ':00';
 
+    $verifica = $conn->prepare("
+        SELECT COUNT(*) as total 
+        FROM ajustes_ponto 
+        WHERE id_usuario = ? 
+        AND id_ponto = ? 
+        AND motivo = ?
+        AND data_solicitacao > NOW() - INTERVAL 3 SECOND
+    ");
+
+    $verifica->bind_param("iis", $id_usuario, $id_ponto, $motivo);
+    $verifica->execute();
+
+    $result = $verifica->get_result()->fetch_assoc();
+
+    if ($result['total'] > 0) {
+        die("Solicitação duplicada detectada.");
+    }
+
     // 2. INSERIR SOLICITAÇÃO (Tabela: ajustes_ponto)
     $stmt = $conn->prepare("
         INSERT INTO ajustes_ponto 

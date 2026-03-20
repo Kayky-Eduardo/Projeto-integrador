@@ -51,65 +51,32 @@ include(__DIR__ . "/../../BD/conexao.php");
 require __DIR__ . "/../../include/verificacao.php";
 verificar_login($conn);
 
-// ID do usuário logado
 $id_usuario = $_SESSION['id_usuario'];
 $nivel = $_SESSION['nivel'];
 
-// =======================
-// DEFINIR PÁGINA DE VOLTA
-// =======================
-// Usuário comum volta para histórico
-// RH volta para gerenciar
-$pagina_voltar = ($nivel >= 2) ? "../ponto/gerenciar.php" : "../ponto/historico.php";
 
-// ================
-// VALIDAR id_ponto
-// ================
-// Captura o ID do ponto passado pela URL
+/* VALIDAR id_ponto */
 $id_ponto = isset($_GET['id_ponto']) ? intval($_GET['id_ponto']) : 0;
 
-// Se o ID for inválido, bloqueia o acesso
 if ($id_ponto <= 0) {
     echo "<p>Registro inválido. <a href=\"$pagina_voltar\">Voltar</a></p>";
     exit;
 }
 
-// ==========================
-// BUSCAR O REGISTRO DO PONTO
-// ==========================
-// Funcionário só pode ver o seu próprio ponto
-// RH pode ver de qualquer usuário
-
-// Caso seja RH, busca pelo id_ponto apenas
-if ($nivel >= 2) {
-    $stmt = $conn->prepare("SELECT * FROM ponto_dia WHERE id_ponto = ?");
-    $stmt->bind_param("i", $id_ponto);
-} else {
-    // Funcionário só acessa pontos que pertencem a ele
-    $stmt = $conn->prepare("SELECT * FROM ponto_dia WHERE id_ponto = ? AND id_usuario = ?");
-    $stmt->bind_param("ii", $id_ponto, $id_usuario);
-}
-
-// Executa a consulta
+/* BUSCAR O REGISTRO DO PONTO */
+$stmt = $conn->prepare("SELECT * FROM ponto_dia WHERE id_ponto = ? AND id_usuario = ?");
+$stmt->bind_param("ii", $id_ponto, $id_usuario);
 $stmt->execute();
-
-// Obtém o resultado
 $res = $stmt->get_result();
-
-// Recupera os dados do ponto
 $reg = $res->fetch_assoc();
 
-// Se não encontrar, mostra erro de permissão ou inexistência
 if (!$reg) {
     echo "<p>Ponto não encontrado ou você não tem permissão. 
           <a href=\"$pagina_voltar\">Voltar</a></p>";
     exit;
 }
 
-// -- Código Davi --
-// ==========================
-// BUSCAR AS PAUSAS DO PONTO
-// ==========================
+/* BUSCAR AS PAUSAS DO PONTO */
 $sql_pausas = "
     SELECT 
         ps.id_pausa, 
@@ -123,13 +90,11 @@ $sql_pausas = "
 ";
 
 $stmt_pausas = $conn->prepare($sql_pausas);
-// Usa id_usuario e data do registro do ponto ($reg) já validado
 $stmt_pausas->bind_param("is", $reg['id_usuario'], $reg['data_ponto']);
 $stmt_pausas->execute();
 $pausas = $stmt_pausas->get_result();
-
-// Armazena as pausas em um array para uso no formulário
 $pausas_do_dia = [];
+
 while ($pausa_row = $pausas->fetch_assoc()) {
     $pausas_do_dia[] = $pausa_row;
 }
@@ -179,7 +144,13 @@ while ($pausa_row = $pausas->fetch_assoc()) {
 
                         <article>
                             <label for="valor_novo_ponto" class="label">Novo horário:</label>
-                            <input type="time" name="valor_novo_ponto" id="valor_novo_ponto" class="input">
+                            <input
+                                type="time"
+                                name="valor_novo_ponto"
+                                id="valor_novo_ponto"
+                                class="input"
+                                data-inicio="<?= $reg['inicio_ponto'] ? date("H:i", strtotime($reg['inicio_ponto'])) : '' ?>"
+                                data-fim="<?= $reg['fim_ponto'] ? date("H:i", strtotime($reg['fim_ponto'])) : '' ?>">
                         </article>
                     </section>
 
@@ -226,149 +197,7 @@ while ($pausa_row = $pausas->fetch_assoc()) {
             </section>
     </main>
 
-    <script>
-        function mostrarCamposAjuste() {
-            const tipo = document.getElementById('tipo_ajuste').value;
-            const ajustePonto = document.getElementById('ajuste_ponto');
-            const ajustePausa = document.getElementById('ajuste_pausa');
-            ajustePonto.style.display = 'none';
-            ajustePausa.style.display = 'none';
-            document.getElementById('campo_ponto').required = false;
-            document.getElementById('valor_novo_ponto').required = false;
-            document.getElementById('id_pausa').required = false;
-            document.getElementById('campo_pausa').required = false;
-            document.getElementById('pausa_nova').required = false;
-
-            if (tipo === 'ponto') {
-                ajustePonto.style.display = 'block';
-                document.getElementById('campo_ponto').required = true;
-                document.getElementById('valor_novo_ponto').required = true;
-            } else if (tipo === 'pausa') {
-                ajustePausa.style.display = 'block';
-                document.getElementById('id_pausa').required = true;
-            }
-        }
-        // Evento ao enviar o formulário
-        document.querySelector("form").addEventListener("submit", function(e) {
-
-            // Seleciona a div que exibirá mensagens de erro
-            const erroBox = document.getElementById("erro_validacao");
-            // Esconde a div de erro e limpa mensagens anteriores
-            erroBox.style.display = "none";
-            erroBox.innerHTML = "";
-
-            // Remove a classe de erro de ambos os campos (reset visual)
-            document.getElementById("valor_novo_ponto").classList.remove("input-erro");
-            document.getElementById("pausa_nova").classList.remove("input-erro");
-
-            // Pega o tipo de ajuste selecionado (ponto ou pausa)
-            const tipo = document.getElementById('tipo_ajuste').value;
-
-            // ===== VALIDAÇÃO DE PONTO =====
-            if (tipo === 'ponto') {
-                // Pega qual campo está sendo ajustado (inicio ou fim do ponto)
-                const campo = document.getElementById('campo_ponto').value;
-                // Pega o novo valor que o usuário inseriu
-                const novoValor = document.getElementById('valor_novo_ponto').value;
-
-                // Pega os horários atuais do registro (PHP inserindo no JS)
-                const inicioAtual = "<?= $reg['inicio_ponto'] ? date("H:i", strtotime($reg['inicio_ponto'])) : '' ?>";
-                const fimAtual = "<?= $reg['fim_ponto'] ? date("H:i", strtotime($reg['fim_ponto'])) : '' ?>";
-
-                // Se o usuário não digitou nada, sai da validação
-                if (!novoValor) return;
-
-                // Validação: entrada não pode ser depois da saída
-                if (campo === 'inicio_ponto' && fimAtual && novoValor > fimAtual) {
-                    e.preventDefault(); // impede o envio do formulário
-                    mostrarErro("A entrada não pode ser depois da saída.", "valor_novo_ponto");
-                    return;
-                }
-
-                // Validação: saída não pode ser antes da entrada
-                if (campo === 'fim_ponto' && inicioAtual && novoValor < inicioAtual) {
-                    e.preventDefault();
-                    mostrarErro("A saída não pode ser antes da entrada.", "valor_novo_ponto");
-                    return;
-                }
-            }
-
-            // ===== VALIDAÇÃO DE PAUSA =====
-            if (tipo === 'pausa') {
-                // Pega qual campo da pausa está sendo ajustado (inicio ou fim)
-                const campoPausa = document.getElementById('campo_pausa').value;
-                const novaHora = document.getElementById('pausa_nova').value;
-                
-                // Garante que o novo horário seja preenchido
-                if (novaHora == '') {
-                    e.preventDefault();
-                    mostrarErro("O novo horário deve ser atribuído");
-                    return;
-                };
-
-                // Pega os horários de entrada e saída do ponto
-                const inicioPonto = "<?= $reg['inicio_ponto'] ? date("H:i", strtotime($reg['inicio_ponto'])) : '' ?>";
-                const fimPonto = "<?= $reg['fim_ponto'] ? date("H:i", strtotime($reg['fim_ponto'])) : '' ?>";
-
-                // Pega o texto do select da pausa selecionada
-                const selectPausa = document.getElementById("id_pausa");
-                const textoSelecionado = selectPausa.options[selectPausa.selectedIndex].text;
-
-                // Extrai horários atuais da pausa usando regex
-                const match = textoSelecionado.match(/Início:\s(\d{2}:\d{2}),\sFim:\s(\d{2}:\d{2})/);
-                if (!match) return;
-
-                const inicioPausaAtual = match[1];
-                const fimPausaAtual = match[2];
-
-                // Se o usuário não digitou nada, sai da validação
-                if (!novaHora) return;
-
-                // Validações para início da pausa
-                if (campoPausa === 'inicio_pausa') {
-                    // Início da pausa não pode ser depois do fim da pausa
-                    if (novaHora > fimPausaAtual) {
-                        e.preventDefault();
-                        mostrarErro("O início da pausa não pode ser depois do fim.", "pausa_nova");
-                        return;
-                    }
-                    // Início da pausa não pode ser antes da entrada
-                    if (inicioPonto && novaHora < inicioPonto) {
-                        e.preventDefault();
-                        mostrarErro("A pausa não pode começar antes da entrada.", "pausa_nova");
-                        return;
-                    }
-                }
-
-                // Validações para fim da pausa
-                if (campoPausa === 'fim_pausa') {
-                    // Fim da pausa não pode ser antes do início
-                    if (novaHora < inicioPausaAtual) {
-                        e.preventDefault();
-                        mostrarErro("O fim da pausa não pode ser antes do início.", "pausa_nova");
-                        return;
-                    }
-                    // Fim da pausa não pode ser depois da saída
-                    if (fimPonto && novaHora > fimPonto) {
-                        e.preventDefault();
-                        mostrarErro("A pausa não pode terminar depois da saída.", "pausa_nova");
-                        return;
-                    }
-                }
-            }
-
-            // ===== Função auxiliar para mostrar erro e marcar campo =====
-            function mostrarErro(mensagem, campoErroId) {
-                erroBox.innerHTML = mensagem; // insere a mensagem de erro
-                erroBox.style.display = "block"; // mostra o box de erro
-                if (campoErroId) {
-                    // adiciona a classe que destaca visualmente o campo com erro
-                    document.getElementById(campoErroId).classList.add("input-erro");
-                }
-            }
-        });
-
-    </script>
+    <script src="../../assets/js/script.js"></script>
 </body>
 
 </html>

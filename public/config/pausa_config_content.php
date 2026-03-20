@@ -81,14 +81,14 @@ function acharGrupo($conn, $id_config)
     <label class="label">Descrição:</label>
     <input class="input" type="text" name="descricao" required>
 
-    <label>Tempo mínimo:</label>
-    <input type="number" name="tempo_min" required>
+    <label class="label">Tempo mínimo:</label>
+    <input class="input" type="number" name="tempo_min" required>
 
-    <label>Tempo máximo:</label>
-    <input type="number" name="tempo_max" required>
+    <label class="label">Tempo máximo:</label>
+    <input class="input" type="number" name="tempo_max" required>
 
-    <label>Limite diário:</label>
-    <input type="number" name="limite_pausa_diario" required>
+    <label class="label">Limite diário:</label>
+    <input class="input" type="number" name="limite_pausa_diario" required>
 
     <p>Setores:</p>
     <?php foreach ($setor as $s): ?>
@@ -96,49 +96,55 @@ function acharGrupo($conn, $id_config)
         <?= $s['nome_setor'] ?><br>
     <?php endforeach; ?>
 
-    <button type="submit">Criar pausa</button>
+    <button type="submit" class="btn btn-padrao">Criar pausa</button>
 </form>
 
 <hr>
 
-<table border="1">
-    <tr>
-        <th>ID</th>
-        <th>Descrição</th>
-        <th>Setores</th>
-        <th>Min</th>
-        <th>Max</th>
-        <th>Limite</th>
-        <th>Ações</th>
-    </tr>
+<section class="tabela-padrao">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Descrição</th>
+                <th>Setores</th>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Limite</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
 
-    <?php while ($row = $listRes->fetch_assoc()): ?>
-        <tr>
-            <td><?= $row['id_config'] ?></td>
-            <td><?= htmlspecialchars($row['descricao_pausa']) ?></td>
+        <tbody>
+            <?php while ($row = $listRes->fetch_assoc()): ?>
+                <tr>
+                    <td><?= $row['id_config'] ?></td>
+                    <td><?= htmlspecialchars($row['descricao_pausa']) ?></td>
 
-            <td>
-                <?php
-                $grupos = acharGrupo($conn, $row['id_config']);
-                foreach ($grupos as $g) {
-                    echo htmlspecialchars($g['nome_setor']) . "<br>";
-                }
-                ?>
-            </td>
+                    <td>
+                        <?php
+                        $grupos = acharGrupo($conn, $row['id_config']);
+                        foreach ($grupos as $g) {
+                            echo htmlspecialchars($g['nome_setor']) . "<br>";
+                        }
+                        ?>
+                    </td>
 
-            <td><?= $row['tempo_min'] ?></td>
-            <td><?= $row['tempo_max'] ?></td>
-            <td><?= $row['limite_pausa_diario'] == 0 ? "Ilimitado" : $row['limite_pausa_diario'] ?></td>
+                    <td><?= $row['tempo_min'] ?></td>
+                    <td><?= $row['tempo_max'] ?></td>
+                    <td><?= $row['limite_pausa_diario'] == 0 ? "Ilimitado" : $row['limite_pausa_diario'] ?></td>
 
-            <td>
-                <form method="POST" action="../ponto/pausas_e_ponto/pausa_edit.php">
-                    <input type="hidden" name="id_config" value="<?= $row['id_config'] ?>">
+                    <td>
+                        <form method="POST" action="../ponto/pausas_e_ponto/pausa_edit.php">
+                            <input type="hidden" name="id_config" value="<?= $row['id_config'] ?>">
 
-                    <button class="btn-link btn-padrao" type="submit">
-                        Editar
-                    </button>
-                </form>
-            </td>
-        </tr>
-    <?php endwhile; ?>
-</table>
+                            <button class="btn-link btn-padrao" type="submit">
+                                Editar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            <?php endwhile; ?>
+        </tbody>
+    </table>
+</section>

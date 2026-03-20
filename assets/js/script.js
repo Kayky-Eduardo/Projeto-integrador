@@ -392,4 +392,134 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     }
+
+    /* SOLICITAÇÃO DE AJUSTE – VALIDAÇÃO FORMULÁRIO */
+    const formAjuste = document.querySelector("form");
+
+    if (formAjuste && document.getElementById("tipo_ajuste")) {
+
+        formAjuste.addEventListener("submit", function (e) {
+
+            const erroBox = document.getElementById("erro_validacao");
+            erroBox.style.display = "none";
+            erroBox.innerHTML = "";
+
+            const campoPontoInput = document.getElementById("valor_novo_ponto");
+            const campoPausaInput = document.getElementById("pausa_nova");
+
+            campoPontoInput?.classList.remove("input-erro");
+            campoPausaInput?.classList.remove("input-erro");
+
+            const tipo = document.getElementById('tipo_ajuste').value;
+
+            if (tipo === 'ponto') {
+                const campo = document.getElementById('campo_ponto').value;
+                const novoValor = campoPontoInput.value;
+
+                const inicioAtual = campoPontoInput.dataset.inicio || "";
+                const fimAtual = campoPontoInput.dataset.fim || "";
+
+                if (!novoValor) return;
+
+                if (campo === 'inicio_ponto' && fimAtual && novoValor > fimAtual) {
+                    e.preventDefault();
+                    mostrarErro("A entrada não pode ser depois da saída.", "valor_novo_ponto");
+                    return;
+                }
+
+                if (campo === 'fim_ponto' && inicioAtual && novoValor < inicioAtual) {
+                    e.preventDefault();
+                    mostrarErro("A saída não pode ser antes da entrada.", "valor_novo_ponto");
+                    return;
+                }
+            }
+
+            if (tipo === 'pausa') {
+                const campoPausa = document.getElementById('campo_pausa').value;
+                const novaHora = campoPausaInput.value;
+
+                if (!novaHora) {
+                    e.preventDefault();
+                    mostrarErro("O novo horário deve ser atribuído");
+                    return;
+                }
+
+                const inicioPonto = campoPontoInput.dataset.inicio || "";
+                const fimPonto = campoPontoInput.dataset.fim || "";
+
+                const selectPausa = document.getElementById("id_pausa");
+                const textoSelecionado = selectPausa.options[selectPausa.selectedIndex].text;
+
+                const match = textoSelecionado.match(/Início:\s(\d{2}:\d{2}),\sFim:\s(\d{2}:\d{2})/);
+                if (!match) return;
+
+                const inicioPausaAtual = match[1];
+                const fimPausaAtual = match[2];
+
+                if (campoPausa === 'inicio_pausa') {
+                    if (novaHora > fimPausaAtual) {
+                        e.preventDefault();
+                        mostrarErro("O início da pausa não pode ser depois do fim.", "pausa_nova");
+                        return;
+                    }
+
+                    if (inicioPonto && novaHora < inicioPonto) {
+                        e.preventDefault();
+                        mostrarErro("A pausa não pode começar antes da entrada.", "pausa_nova");
+                        return;
+                    }
+                }
+
+                if (campoPausa === 'fim_pausa') {
+                    if (novaHora < inicioPausaAtual) {
+                        e.preventDefault();
+                        mostrarErro("O fim da pausa não pode ser antes do início.", "pausa_nova");
+                        return;
+                    }
+
+                    if (fimPonto && novaHora > fimPonto) {
+                        e.preventDefault();
+                        mostrarErro("A pausa não pode terminar depois da saída.", "pausa_nova");
+                        return;
+                    }
+                }
+            }
+
+            function mostrarErro(mensagem, campoErroId) {
+                erroBox.innerHTML = mensagem;
+                erroBox.style.display = "block";
+
+                if (campoErroId) {
+                    document.getElementById(campoErroId)?.classList.add("input-erro");
+                }
+            }
+        });
+    }
+    
+    window.mostrarCamposAjuste = function () {
+        const tipo = document.getElementById('tipo_ajuste').value;
+
+        const ajustePonto = document.getElementById('ajuste_ponto');
+        const ajustePausa = document.getElementById('ajuste_pausa');
+
+        ajustePonto.style.display = 'none';
+        ajustePausa.style.display = 'none';
+
+        document.getElementById('campo_ponto').required = false;
+        document.getElementById('valor_novo_ponto').required = false;
+        document.getElementById('id_pausa').required = false;
+        document.getElementById('campo_pausa').required = false;
+        document.getElementById('pausa_nova').required = false;
+
+        if (tipo === 'ponto') {
+            ajustePonto.style.display = 'block';
+            document.getElementById('campo_ponto').required = true;
+            document.getElementById('valor_novo_ponto').required = true;
+        }
+
+        if (tipo === 'pausa') {
+            ajustePausa.style.display = 'block';
+            document.getElementById('id_pausa').required = true;
+        }
+    };
 });
