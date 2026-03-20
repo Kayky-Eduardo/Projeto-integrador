@@ -6,22 +6,14 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $id_usuario = $_SESSION['id_usuario'] ?? 0;
 $nivel = $_SESSION['nivel'] ?? 0;
-
-// Recebe filtros do formulário (caso existam)
-// Se não houver filtro, usa string vazia
-$filtroInicio = $_GET["inicio"] ?? "";    // Data de início no formato YYYY-MM
-$filtroFim    = $_GET["fim"] ?? "";       // Data de fim no formato YYYY-MM
-$filtroUser   = $_GET["usuario"] ?? "";   // ID do usuário selecionado
-
-// Paginação
-$paginaAtual = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1; // Página atual (padrão = 1)
-$registrosPorPagina = 16; // Quantos registros mostrar por página
-$offset = ($paginaAtual - 1) * $registrosPorPagina; // Calcula o deslocamento (OFFSET) para o SQL
-
-// Busca todos os usuários para preencher o <select> no formulário
+$filtroInicio = $_GET["inicio"] ?? "";
+$filtroFim    = $_GET["fim"] ?? "";
+$filtroUser   = $_GET["usuario"] ?? "";
+$paginaAtual = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
+$registrosPorPagina = 16;
+$offset = ($paginaAtual - 1) * $registrosPorPagina;
 $users = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY nome_usuario");
 
-// Contagem total de registros (para calcular o total de páginas)
 $sqlCount = "
     SELECT COUNT(*) as total
     FROM folhas f
@@ -29,26 +21,20 @@ $sqlCount = "
     WHERE 1
 ";
 
-// Aplica filtros se existirem
 if (!empty($filtroInicio)) {
-    // Filtra pelo mês de competência maior ou igual à data inicial
     $sqlCount .= " AND f.mes_competencia >= '" . $conn->real_escape_string($filtroInicio . "-01") . "'";
 }
 if (!empty($filtroFim)) {
-    // Filtra pelo mês de competência menor ou igual à data final
     $sqlCount .= " AND f.mes_competencia <= '" . $conn->real_escape_string($filtroFim . "-01") . "'";
 }
 if (!empty($filtroUser)) {
-    // Filtra pelo usuário selecionado
     $sqlCount .= " AND f.id_usuario = " . intval($filtroUser);
 }
 
-// Executa a query de contagem
 $resultCount = $conn->query($sqlCount);
-$totalRegistros = $resultCount->fetch_assoc()['total']; // Total de registros que atendem aos filtros
-$totalPaginas = ceil($totalRegistros / $registrosPorPagina); // Calcula o total de páginas
+$totalRegistros = $resultCount->fetch_assoc()['total'];
+$totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 
-// SQL principal para exibir os registros com filtros e paginação
 $sql = "
     SELECT f.*,
            u.nome_usuario, u.id_usuario, u.id_cargo
@@ -57,120 +43,128 @@ $sql = "
     WHERE 1
 ";
 
-// Aplica os mesmos filtros da contagem
 if (!empty($filtroInicio)) {
     $sql .= " AND f.mes_competencia >= '" . $conn->real_escape_string($filtroInicio . "-01") . "'";
 }
+
 if (!empty($filtroFim)) {
     $sql .= " AND f.mes_competencia <= '" . $conn->real_escape_string($filtroFim . "-01") . "'";
 }
+
 if (!empty($filtroUser)) {
     $sql .= " AND f.id_usuario = " . intval($filtroUser);
 }
 
-// Garante que o usuário logado só veja o histórico de quem tiver nível inferior ao dele
-if ($nivel != 2){
+if ($nivel != 2) {
     $sql .= " AND f.id_usuario = " . intval($id_usuario);
 }
+
 $sql .= " AND f.revisado = 1";
-
-// Ordena os resultados do mais recente para o mais antigo
 $sql .= " ORDER BY f.mes_competencia DESC";
-
-// Aplica limite e offset para paginação
 $sql .= " LIMIT $registrosPorPagina OFFSET $offset";
-
-// Executa a query final para exibir os registros
 $result = $conn->query($sql);
 ?>
 
-
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="UTF-8">
-<title>Histórico de Folhas</title>
-<style> 
-table {border-collapse: collapse; width: 100%; margin-top: 20px;}
-td, th {border: 1px solid #444; padding: 8px;}
-</style>
+    <meta charset="UTF-8">
+    <title>Histórico de Folhas</title>
+    <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
+
 <body>
+    <nav>
+        <?php include("../../include/navbar.php"); ?>
+    </nav>
 
-<a href="../">voltar</a>
-<h2>Histórico de Folhas de Pagamento</h2>
+    <main class="main-center">
+        <section class="pagina-padrao">
+            <h1 class="page-title">Histórico de Folhas de Pagamento</h1>
 
-<!-- Formulário de filtros -->
-<form method="GET">
-    <label>Início:</label>
-    <input type="month" name="inicio" value="<?= $filtroInicio ?>">
+            <section class="filtro-padrao">
+                <form class="form-linha" method="GET">
+                    <article>
+                        <label class="label">Início:</label>
+                        <input class="input" type="month" name="inicio" value="<?= $filtroInicio ?>">
+                    </article>
 
-    <label>Fim:</label>
-    <input type="month" name="fim" value="<?= $filtroFim ?>">
+                    <article>
+                        <label class="label">Fim:</label>
+                        <input class="input" type="month" name="fim" value="<?= $filtroFim ?>">
+                    </article>
 
-    <label>Funcionário:</label>
-    <select name="usuario">
-        <option value="">-- Todos --</option>
-        <?php if ($nivel == 2):?>
-            <?php while ($u = $users->fetch_assoc()): ?>
-                <option value="<?= $u['id_usuario'] ?>"
-                    <?= ($u['id_usuario'] == $filtroUser) ? 'selected' : '' ?>>
-                    <?= $u['nome_usuario'] ?> (ID: <?= $u['id_usuario'] ?>)
-                </option>
-            <?php endwhile; ?>
-        <?php endif; ?>
-        
-    </select>
+                    <article>
+                        <label class="label">Funcionário:</label>
+                        <select class="select-padrao" name="usuario">
+                            <option value="">Todos</option>
+                            <?php if ($nivel == 2): ?>
+                                <?php while ($u = $users->fetch_assoc()): ?>
+                                    <option value="<?= $u['id_usuario'] ?>"
+                                        <?= ($u['id_usuario'] == $filtroUser) ? 'selected' : '' ?>>
+                                        <?= $u['nome_usuario'] ?> (ID: <?= $u['id_usuario'] ?>)
+                                    </option>
+                                <?php endwhile; ?>
+                            <?php endif; ?>
+                        </select>
+                    </article>
 
-    <button type="submit">Filtrar</button>
-</form>
+                    <button class="btn btn-padrao" type="submit">Filtrar</button>
+                </form>
+            </section>
 
-<!-- Tabela de resultados -->
-<table>
-    <thead>
-        <tr>
-            <th>Mês</th>
-            <th>Funcionário</th>
-            <th>Salário Líquido</th>
-            <th>Ação</th>
-        </tr>
-    </thead>
-    <tbody>
-<?php if ($result->num_rows == 0): ?>
-        <tr><td colspan="4">Nenhuma folha encontrada.</td></tr>
-<?php else: ?>
-    <?php while ($f = $result->fetch_assoc()): ?>
-            <tr>
-                <td><?= substr($f["mes_competencia"], 0, 7) ?></td>
-                <td><?= $f["nome_usuario"] ?></td>
-                <td>R$ <?= number_format($f["salario_liquido"], 2, ',', '.') ?></td>
-                <td>
-                    <a href="../../api/api_gerar_pdf.php?mes=<?= substr($f["mes_competencia"], 0, 7) ?>&id_usuario=<?= $f['id_usuario'] ?>" target="_blank">
-                        Abrir PDF
-                    </a>
-                </td>
-            </tr>
-    <?php endwhile; ?>
-<?php endif; ?>
-    </tbody>
-</table>
+            <section class="tabela-padrao">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mês</th>
+                            <th>Funcionário</th>
+                            <th>Salário Líquido</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
 
-<!-- Links de paginação -->
-<div style="margin-top: 20px;">
-<?php if ($totalPaginas > 1): // Só mostra a paginação se houver mais de 1 página ?>
+                    <tbody>
+                        <?php if ($result->num_rows == 0): ?>
+                            <tr>
+                                <td colspan="4">Nenhuma folha encontrada.</td>
+                            </tr>
+                        <?php else: ?>
+                            <?php while ($f = $result->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?= substr($f["mes_competencia"], 0, 7) ?></td>
+                                    <td><?= $f["nome_usuario"] ?></td>
+                                    <td>R$ <?= number_format($f["salario_liquido"], 2, ',', '.') ?></td>
+                                    <td>
+                                        <a class="btn-link btn-padrao" href="../../api/api_gerar_pdf.php?mes=<?= substr($f["mes_competencia"], 0, 7) ?>&id_usuario=<?= $f['id_usuario'] ?>" target="_blank">
+                                            Abrir PDF
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </section>
 
-    <?php for ($i = 1; $i <= $totalPaginas; $i++): // Loop para gerar links de cada página ?>
-        
-        <?php if ($i == $paginaAtual): // Se for a página atual, não cria link, apenas destaca ?>
-            <strong><?= $i ?></strong> <!-- Página atual em negrito -->
-        <?php else: // Se não for a página atual, cria um link clicável ?>
-            <a href="?inicio=<?= $filtroInicio ?>&fim=<?= $filtroFim ?>&usuario=<?= $filtroUser ?>&pagina=<?= $i ?>">
-                <?= $i ?>
-            </a>
-        <?php endif; ?> 
-        &nbsp; <!-- Pequeno espaço entre os números -->
-    <?php endfor; ?>
-<?php endif; ?>
-</div>
+            <section style="margin-top: 20px;">
+                <?php if ($totalPaginas > 1): ?>
+
+                    <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
+                        <?php if ($i == $paginaAtual): ?>
+                            <strong><?= $i ?></strong>
+                        <?php else: ?>
+                            <a href="?inicio=<?= $filtroInicio ?>&fim=<?= $filtroFim ?>&usuario=<?= $filtroUser ?>&pagina=<?= $i ?>">
+                                <?= $i ?>
+                            </a>
+                        <?php endif; ?>
+                        &nbsp;
+                    <?php endfor; ?>
+                <?php endif; ?>
+            </section>
+        </section>
+    </main>
 </body>
+
 </html>

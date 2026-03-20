@@ -2,16 +2,26 @@
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/funcoes/funcoes_calculo.php";
+
+// Correção da lógica de erro de acesso
 $msg_acesso = $_GET['erro'] ?? '';
+
+// Recupera as mensagens da sessão APENAS se elas existirem
 $mensagem_evento = $_SESSION['msg'] ?? '';
 $cor_evento = $_SESSION['cor'] ?? '';
+
+// Limpa a sessão para que a mensagem não reapareça em futuros refreshes manuais
 unset($_SESSION['msg'], $_SESSION['cor']);
 
-/* 1. Recebe mês do formulário */
-$mes = date('Y-m');
+// --------------------------
+// 1. Recebe mês do formulário
+// --------------------------
+$mes = date('Y-m'); // default: mês atual
 $mes_padrao = $mes . "-01";
 
-/* 2. Buscar todos os usuários ativos */
+// --------------------------
+// 2. Buscar todos os usuários ativos
+// --------------------------
 $sql = "SELECT u.id_usuario,
         u.nome_usuario,
         u.id_cargo,
@@ -20,15 +30,15 @@ $sql = "SELECT u.id_usuario,
         FROM usuario u
         JOIN cargo c ON c.id_cargo = u.id_cargo
         WHERE conta_ativa = 1";
-
 $result = $conn->query($sql);
 $usuarios = [];
-
 while ($row = $result->fetch_assoc()) {
     $usuarios[] = $row;
 }
 
-/* 3. Adicionar evento (form separado) */
+// --------------------------
+// 3. Adicionar evento (form separado)
+// --------------------------
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
     if (isset($_POST['add_evento'])) {
         $id_usuario_evento = $_POST['id_usuario_evento'] ?? null;
@@ -41,11 +51,11 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
             $stmt = $conn->prepare("
                 SELECT * FROM folhas WHERE mes_competencia = ? AND revisado = 0
             ");
-
             $stmt->bind_param("s", $mes_padrao);
             $stmt->execute();
             $verificacao = $stmt->get_result();
 
+            // se folha não for revisada
             if (($verificacao->num_rows > 0)) {
                 foreach ($usuarios as $u) {
                     $stmtInsert = $conn->prepare("
@@ -55,59 +65,66 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                     $stmtInsert->bind_param("issds", $u['id_usuario'], $tipo, $descricao, $valor, $mes_padrao);
                     $stmtInsert->execute();
                 }
-
                 $_SESSION['msg'] = "Evento adicionado com sucesso!";
                 $_SESSION['cor'] = "green";
+
+                // limpa o post
                 header("Location: " . $_SERVER['PHP_SELF']);
-                exit;
+                exit; // exit obrigatório: Mata o script para não renderizar o resto
             } else {
                 $_SESSION['msg'] = "Todas as folhas já foram revisadas!";
                 $_SESSION['cor'] = "red";
                 header("Location: " . $_SERVER['PHP_SELF']);
-                exit;
+                exit; // exit obrigatório: Mata o script para não renderizar o resto
             }
         }
 
         if ($id_usuario_evento && $tipo && $valor > 0 && $data == date('Y-m')) {
+            // busca retornar true caso a folha não tenha sido revisada
             $stmt = $conn->prepare("
                 SELECT * FROM folhas WHERE id_usuario = ? AND mes_competencia = ? AND revisado = 0
             ");
-
             $stmt->bind_param("is", $id_usuario_evento, $mes_padrao);
             $stmt->execute();
             $verificacao = $stmt->get_result();
 
+            // se folha não for revisada
             if (($verificacao->num_rows > 0)) {
                 $stmtInsert = $conn->prepare("
-                    INSERT INTO eventos (id_usuario, tipo, descricao, valor, mes_competencia)
-                    VALUES (?, ?, ?, ?, ?)
+                INSERT INTO eventos (id_usuario, tipo, descricao, valor, mes_competencia)
+                VALUES (?, ?, ?, ?, ?)
                 ");
-
                 $stmtInsert->bind_param("issds", $id_usuario_evento, $tipo, $descricao, $valor, $mes_padrao);
                 $stmtInsert->execute();
                 $_SESSION['msg'] = "Evento adicionado com sucesso!";
                 $_SESSION['cor'] = "green";
+
+                // limpa o post
                 header("Location: " . $_SERVER['PHP_SELF']);
-                exit;
+                exit; // exit obrigatório: Mata o script para não renderizar o resto
             } else {
                 $_SESSION['msg'] = "Folha do Evento já foi revisada!";
                 $_SESSION['cor'] = "red";
                 header("Location: " . $_SERVER['PHP_SELF']);
-                exit;
+                exit; // exit obrigatório: Mata o script para não renderizar o resto
             }
         } else {
             $_SESSION['msg'] = "Preencha todos os campos corretamente.";
             $_SESSION['cor'] = 'red';
             header("Location: " . $_SERVER['PHP_SELF']);
-            exit;
+            exit; // exit obrigatório: Mata o script para não renderizar o resto
         }
     }
 }
 
-/*4. Função para gerar folha de um usuário */
+// --------------------------
+// 4. Função para gerar folha de um usuário
+// --------------------------
 function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn)
 {
     $id_usuario = $usuario['id_usuario'];
+
+    // Verifica se a folha já existe e se está revisada
     $stmtCheck = $conn->prepare("SELECT id_folha, salario_liquido, revisado FROM folhas WHERE id_usuario = ? AND mes_competencia = ?");
     $stmtCheck->bind_param("is", $id_usuario, $mes_padrao);
     $stmtCheck->execute();
@@ -115,6 +132,7 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn)
     $folhaExistente = $resCheck->fetch_assoc();
     $stmtCheck->close();
 
+    // Se folha revisada, interrompe execução para este usuário.
     if ($folhaExistente && $folhaExistente['revisado'] == 1) {
         return [
             'id_usuario' => $id_usuario,
@@ -124,38 +142,45 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn)
         ];
     }
 
+    // --- Buscar salário ---
     $stmt = $conn->prepare("
         SELECT c.salario_bruto 
         FROM usuario u
         JOIN cargo c ON c.id_cargo = u.id_cargo
         WHERE u.id_usuario = ?
     ");
-
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
     $userData = $stmt->get_result()->fetch_assoc();
     if (!$userData) return null;
 
     $salario_bruto = floatval($userData['salario_bruto']);
+
+    // --- Buscar eventos ---
     $stmt2 = $conn->prepare("SELECT tipo, valor FROM eventos WHERE id_usuario = ? AND mes_competencia = ?");
     $stmt2->bind_param("is", $id_usuario, $mes_padrao);
     $stmt2->execute();
     $resEventos = $stmt2->get_result();
+
     $total_proventos = 0;
     $total_descontos = 0;
-
     while ($evt = $resEventos->fetch_assoc()) {
         if ($evt["tipo"] === "provento") $total_proventos += floatval($evt["valor"]);
         else $total_descontos += floatval($evt["valor"]);
     }
 
+    // --- Cálculos legais ---
     $fgts = calcularFGTS($salario_bruto);
     $inss = calcularINSS($salario_bruto);
     $irrf = calcularIRRF($salario_bruto, $inss, 0);
     $vt   = calcularVT($salario_bruto, 300);
+
+    // O total de descontos soma os eventos variáveis + os descontos legais compulsórios
     $descontos_totais_calculados = $total_descontos + $inss + $irrf + $vt;
     $salario_liquido = calcularSalarioLiquido($salario_bruto, $total_proventos, $descontos_totais_calculados);
 
+    // --- Salvar no banco ---
+    // se folha existe mas revisado = 0, da update
     if ($folhaExistente && $folhaExistente['revisado'] == 0) {
         $stmtUpdate = $conn->prepare("
             UPDATE folhas SET
@@ -163,7 +188,6 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn)
                 fgts = ?, inss = ?, irrf = ?, vt = ?, salario_liquido = ?
             WHERE id_folha = ?
         ");
-
         $stmtUpdate->bind_param(
             "dddddddii",
             $salario_bruto,
@@ -176,16 +200,14 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn)
             $salario_liquido,
             $folhaExistente['id_folha']
         );
-
         $stmtUpdate->execute();
         $stmtUpdate->close();
-    } else {
+    } else { // caso folha não exista 
         $stmtInsert = $conn->prepare("
             INSERT INTO folhas 
             (id_usuario, mes_competencia, salario_bruto, total_proventos, total_descontos, fgts, inss, irrf, vt, salario_liquido, revisado)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
         ");
-
         $stmtInsert->bind_param(
             "issddddddd",
             $id_usuario,
@@ -199,7 +221,6 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn)
             $vt,
             $salario_liquido
         );
-
         $stmtInsert->execute();
         $stmtInsert->close();
     }
@@ -207,30 +228,28 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn)
     return [
         'id_usuario' => $id_usuario,
         'nome_usuario' => $usuario['nome_usuario'],
-        'salario_liquido' => $salario_liquido,
         'revisado' => 0
     ];
 }
 
-/* 5. Gerar folhas se botão foi clicado */
+// --------------------------
+// 5. Gerar folhas se botão foi clicado
+// --------------------------
 $folhas_geradas = [];
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
     $msg_acesso = '';
     $acao = $_POST['acao'] ?? '';
-
     if ($acao === 'gerar') {
         foreach ($usuarios as $usuario) {
             $folha = gerarFolhaUsuario($usuario, $mes_padrao, $conn);
             if ($folha) $folhas_geradas[] = $folha;
         }
     }
-
     if ($acao === 'revisar') {
         $stmtRevisar = $conn->prepare('SELECT revisado FROM folhas WHERE revisado = 0 AND mes_competencia = ?');
         $stmtRevisar->bind_param('s', $mes_padrao);
         $stmtRevisar->execute();
         $totalLinhas = $stmtRevisar->get_result();
-
         if ($totalLinhas->num_rows > 0) {
             $stmt5 = $conn->prepare('UPDATE folhas SET revisado = 1 WHERE mes_competencia = ?');
             $stmt5->bind_param('s', $mes_padrao);
