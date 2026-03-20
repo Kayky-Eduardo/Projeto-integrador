@@ -364,6 +364,7 @@ footer a {
     background-repeat: no-repeat;
     background-position: right 0.6rem center;
     background-size: 14px;
+    width: 100%;
 }
 
 /* FORMULÁRIO  */
@@ -1052,6 +1053,45 @@ footer a {
 
 .lida {
     font-weight: 600;
+}
+
+/* PÁGINA DE VISUALIZAÇÃO DE FOLHA DE PAGAMENTO */
+.ver-folha {
+    width: 50%;
+    margin: 0 auto;
+    min-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ver-folha h2 {
+    font-size: var(--tamanho-titulo-padrao);
+}
+
+.ver-folha input, h2 {
+    text-align: center;
+}
+
+/* PÁGINA DE GERAÇÃO DE FOLHAS DE PAGAMENTO */
+.gerar-folhas {
+    width: 50%;
+    margin: 0 auto;
+    min-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.gerar-folhas h2 {
+    font-size: var(--tamanho-titulo-padrao);
+    text-align: center;
+}
+
+.gerar-folhas article {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 

@@ -10,7 +10,9 @@ require_once "../include/funcoes/calculo_desconto_falta.php";
 // 1. Recebe o mês (competência)
 // -----------------------------
 $mes = $_GET["mes"] ?? null;
-if (!$mes) { die("Mês não informado."); }
+if (!$mes) {
+    die("Mês não informado.");
+}
 
 $mes_comp = $mes . "-01";
 
@@ -83,13 +85,15 @@ $folha = $sql_folha->get_result()->fetch_assoc();
 // 7.1 Verifica se a folha existe
 // -----------------------------
 if (!$folha) {
-    ?>
+?>
     <!DOCTYPE html>
     <html lang="pt-BR">
+
     <head>
         <meta charset="UTF-8">
         <title>Holerite não encontrado</title>
     </head>
+
     <body>
         <div>
             <h2>Holerite não encontrado</h2>
@@ -99,14 +103,15 @@ if (!$folha) {
             </p>
         </div>
     </body>
+
     </html>
-    <?php
+<?php
     exit;
 }
 
 //função e executa o cálculo e atualização do desconto
 $desconto = calcularEAplicarDescontoFalta($conn, $id_usuario, $mes_comp, $user, $folha);
- 
+
 // Buscar novamente a folha atualizada
 $sql_folha = $conn->prepare("
     SELECT *
@@ -131,135 +136,204 @@ $eventos = $sql_eventos->get_result()->fetch_all(MYSQLI_ASSOC);
 
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="UTF-8">
-<title>Holerite <?php echo $mes; ?></title>
-<!--Isso so ta aqui pq sem css fica muito feio a folha de pagamento (pode arrancar daqui depois Bruno✌)-->
-<style>
-body { font-family: Arial; padding: 25px; }
-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-td, th { border: 1px solid #444; padding: 8px; }
-.titulo { background: #ddd; font-weight: bold; }
-h1 { text-align: center; }
-button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
-</style>
+    <meta charset="UTF-8">
+    <title>Holerite <?php echo $mes; ?></title>
+    <!--Isso so ta aqui pq sem css fica muito feio a folha de pagamento (pode arrancar daqui depois Bruno✌)-->
+    <style>
+        body {
+            font-family: Arial;
+            padding: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        td,
+        th {
+            border: 1px solid #444;
+            padding: 8px;
+        }
+
+        .titulo {
+            background: #ddd;
+            font-weight: bold;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
 </head>
+
 <body>
-<button id="btnGerarPdf">Baixar PDF</button>
+    <button id="btnGerarPdf">Baixar PDF</button>
 
 
-<div id="holerite">
+    <div id="holerite">
 
-<h1>HOLERITE <?php echo date("m/Y", strtotime($mes_comp)); ?></h1>
+        <h1>HOLERITE <?php echo date("m/Y", strtotime($mes_comp)); ?></h1>
 
-<table>
-    <tr class="titulo"><td colspan="2">Empresa</td></tr>
-    <tr><td>Nome:</td><td>Sem nome</td></tr>
-
-    <tr class="titulo"><td colspan="2">Funcionário</td></tr>
-    <tr><td>Nome:</td><td><?php echo $user["nome_usuario"]; ?></td></tr>
-    <tr><td>CPF:</td><td><?php echo $user["cpf_usuario"]; ?></td></tr>
-    <tr><td>Cargo:</td><td><?php echo $user["nome_cargo"]; ?></td></tr>
-    <tr>
-        <td>Admissão:</td>
-        <td><?php echo date("d/m/Y", strtotime($user["data_admissao"])); ?></td>
-    </tr>
-
-    <tr class="titulo"><td colspan="2">Proventos e Descontos</td></tr>
-
-    <?php if (count($eventos) == 0): ?>
-        <tr><td colspan="2">Nenhum evento cadastrado.</td></tr>
-    <?php else: ?>
-        <?php foreach ($eventos as $e): ?>
-            <tr>
-                <td><?php echo strtoupper($e["tipo"]) . " - " . $e["descricao"]; ?></td>
-                <td>R$ <?php echo number_format($e["valor"], 2, ',', '.'); ?></td>
+        <table>
+            <tr class="titulo">
+                <td colspan="2">Empresa</td>
             </tr>
-        <?php endforeach; ?>
-    <?php endif; ?>
+            <tr>
+                <td>Nome:</td>
+                <td>Sem nome</td>
+            </tr>
 
-    <tr class="titulo"><td colspan="2">Resumo</td></tr>
-    <tr><td>Salário Bruto:</td><td>R$ <?php echo number_format($folha["salario_bruto"],2,',','.'); ?></td></tr>
-    <tr><td>VT:</td><td>R$ <?php echo number_format($folha["vt"],2,',','.'); ?></td></tr>
-    <tr><td>INSS:</td><td>R$ <?php echo number_format($folha["inss"],2,',','.'); ?></td></tr>
-    <tr><td>IRRF:</td><td>R$ <?php echo number_format($folha["irrf"],2,',','.'); ?></td></tr>
-    <tr><td>Total Proventos:</td><td>R$ <?php echo number_format($folha["total_proventos"],2,',','.'); ?></td></tr>
-    <tr><td>Total Descontos:</td><td>R$ <?php echo number_format($folha["total_descontos"],2,',','.'); ?></td></tr>
-    <tr class="titulo">
-        <td><b>Salário Líquido</b></td>
-        <td><b>R$ <?php echo number_format($folha["salario_liquido"],2,',','.'); ?></b></td>
-    </tr>
-</table>
+            <tr class="titulo">
+                <td colspan="2">Funcionário</td>
+            </tr>
+            <tr>
+                <td>Nome:</td>
+                <td><?php echo $user["nome_usuario"]; ?></td>
+            </tr>
+            <tr>
+                <td>CPF:</td>
+                <td><?php echo $user["cpf_usuario"]; ?></td>
+            </tr>
+            <tr>
+                <td>Cargo:</td>
+                <td><?php echo $user["nome_cargo"]; ?></td>
+            </tr>
+            <tr>
+                <td>Admissão:</td>
+                <td><?php echo date("d/m/Y", strtotime($user["data_admissao"])); ?></td>
+            </tr>
 
-<br>
-<div style="text-align:center;">Gerado automaticamente</div>
+            <tr class="titulo">
+                <td colspan="2">Proventos e Descontos</td>
+            </tr>
 
-</div>
+            <?php if (count($eventos) == 0): ?>
+                <tr>
+                    <td colspan="2">Nenhum evento cadastrado.</td>
+                </tr>
+            <?php else: ?>
+                <?php foreach ($eventos as $e): ?>
+                    <tr>
+                        <td><?php echo strtoupper($e["tipo"]) . " - " . $e["descricao"]; ?></td>
+                        <td>R$ <?php echo number_format($e["valor"], 2, ',', '.'); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+            <tr class="titulo">
+                <td colspan="2">Resumo</td>
+            </tr>
+            <tr>
+                <td>Salário Bruto:</td>
+                <td>R$ <?php echo number_format($folha["salario_bruto"], 2, ',', '.'); ?></td>
+            </tr>
+            <tr>
+                <td>VT:</td>
+                <td>R$ <?php echo number_format($folha["vt"], 2, ',', '.'); ?></td>
+            </tr>
+            <tr>
+                <td>INSS:</td>
+                <td>R$ <?php echo number_format($folha["inss"], 2, ',', '.'); ?></td>
+            </tr>
+            <tr>
+                <td>IRRF:</td>
+                <td>R$ <?php echo number_format($folha["irrf"], 2, ',', '.'); ?></td>
+            </tr>
+            <tr>
+                <td>Total Proventos:</td>
+                <td>R$ <?php echo number_format($folha["total_proventos"], 2, ',', '.'); ?></td>
+            </tr>
+            <tr>
+                <td>Total Descontos:</td>
+                <td>R$ <?php echo number_format($folha["total_descontos"], 2, ',', '.'); ?></td>
+            </tr>
+            <tr class="titulo">
+                <td><b>Salário Líquido</b></td>
+                <td><b>R$ <?php echo number_format($folha["salario_liquido"], 2, ',', '.'); ?></b></td>
+            </tr>
+        </table>
 
-<script>
+        <br>
+        <div style="text-align:center;">Gerado automaticamente</div>
 
-document.addEventListener("DOMContentLoaded", () => {
-  document
-    .getElementById("btnGerarPdf")
-    .addEventListener("click", gerarPDF);
-});
+    </div>
 
-// Recebe o nome do funcionário vindo do PHP e adiciona barras de escape para evitar problemas com aspas
-const nomeFuncionario = "<?php echo addslashes($user['nome_usuario']); ?>";
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-// Recebe o mês/ano da competência (ex: "01-2026") vindo do PHP
-const mesCompetencia  = "<?php echo date('m-Y', strtotime($mes_comp)); ?>";
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            document
+                .getElementById("btnGerarPdf")
+                .addEventListener("click", gerarPDF);
+        });
 
-async function gerarPDF() {
+        // Recebe o nome do funcionário vindo do PHP e adiciona barras de escape para evitar problemas com aspas
+        const nomeFuncionario = "<?php echo addslashes($user['nome_usuario']); ?>";
 
-    // Importa o construtor jsPDF do objeto global window.jspdf
-    const { jsPDF } = window.jspdf;
+        // Recebe o mês/ano da competência (ex: "01-2026") vindo do PHP
+        const mesCompetencia = "<?php echo date('m-Y', strtotime($mes_comp)); ?>";
 
-    // Seleciona o elemento HTML que contém o holerite
-    const element = document.getElementById("holerite");
+        async function gerarPDF() {
 
-    // Converte o elemento HTML em um canvas usando html2canvas
-    // scale: 2 aumenta a resolução da imagem gerada
-    const canvas = await html2canvas(element, { scale: 2 });
+            // Importa o construtor jsPDF do objeto global window.jspdf
+            const {
+                jsPDF
+            } = window.jspdf;
 
-    // Converte o canvas em uma imagem no formato PNG (base64)
-    const imgData = canvas.toDataURL("image/png");
+            // Seleciona o elemento HTML que contém o holerite
+            const element = document.getElementById("holerite");
 
-    // Cria um novo documento PDF
-    // "p" = orientação retrato (portrait)
-    // "mm" = unidade de medida em milímetros
-    // "a4" = tamanho da página
-    const pdf = new jsPDF("p", "mm", "a4");
+            // Converte o elemento HTML em um canvas usando html2canvas
+            // scale: 2 aumenta a resolução da imagem gerada
+            const canvas = await html2canvas(element, {
+                scale: 2
+            });
 
-    // Obtém a largura da página do PDF
-    const pageWidth = pdf.internal.pageSize.getWidth();
+            // Converte o canvas em uma imagem no formato PNG (base64)
+            const imgData = canvas.toDataURL("image/png");
 
-    // Calcula a altura da imagem mantendo a proporção original
-    const imgHeight = (canvas.height * pageWidth) / canvas.width;
+            // Cria um novo documento PDF
+            // "p" = orientação retrato (portrait)
+            // "mm" = unidade de medida em milímetros
+            // "a4" = tamanho da página
+            const pdf = new jsPDF("p", "mm", "a4");
 
-    // Adiciona a imagem gerada ao PDF
-    // Parâmetros: imagem, formato, posição X, posição Y, largura, altura
-    pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
+            // Obtém a largura da página do PDF
+            const pageWidth = pdf.internal.pageSize.getWidth();
 
-    // Remove acentos e normaliza o nome do funcionário
-    // Também substitui espaços por "_" para evitar problemas no nome do arquivo
-    const nomeLimpo = nomeFuncionario
-        .normalize("NFD")              // Normaliza caracteres com acentos
-        .replace(/[\u0300-\u036f]/g, "") // Remove os acentos
-        .replace(/\s+/g, "_");           // Substitui espaços por "_"
+            // Calcula a altura da imagem mantendo a proporção original
+            const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
-    // Monta o nome final do arquivo PDF
-    // Exemplo: holerite_Joao_Silva_01-2026.pdf
-    const nomeArquivo = `holerite_${nomeLimpo}_${mesCompetencia}.pdf`;
+            // Adiciona a imagem gerada ao PDF
+            // Parâmetros: imagem, formato, posição X, posição Y, largura, altura
+            pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
 
-    // Salva o PDF com o nome definido
-    pdf.save(nomeArquivo);
-}
+            // Remove acentos e normaliza o nome do funcionário
+            // Também substitui espaços por "_" para evitar problemas no nome do arquivo
+            const nomeLimpo = nomeFuncionario
+                .normalize("NFD") // Normaliza caracteres com acentos
+                .replace(/[\u0300-\u036f]/g, "") // Remove os acentos
+                .replace(/\s+/g, "_"); // Substitui espaços por "_"
 
-</script>
+            // Monta o nome final do arquivo PDF
+            // Exemplo: holerite_Joao_Silva_01-2026.pdf
+            const nomeArquivo = `holerite_${nomeLimpo}_${mesCompetencia}.pdf`;
 
+            // Salva o PDF com o nome definido
+            pdf.save(nomeArquivo);
+        }
+    </script>
 </body>
+
 </html>

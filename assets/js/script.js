@@ -495,7 +495,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-    
+
     window.mostrarCamposAjuste = function () {
         const tipo = document.getElementById('tipo_ajuste').value;
 
@@ -522,4 +522,79 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('id_pausa').required = true;
         }
     };
+
+    /* VISUALIZAR FOLHA – FOLHA DE PAGAMENTO */
+    const btnGerarPDF = document.getElementById("btnGerarPDF");
+    const inputMes = document.getElementById("mes");
+
+    if (btnGerarPDF && inputMes) {
+
+        btnGerarPDF.addEventListener("click", () => {
+
+            const mes = inputMes.value;
+            const atual = new Date().toISOString().slice(0, 7);
+
+            if (!mes || !/^\d{4}-\d{2}$/.test(mes)) {
+                alert("Selecione um mês válido no formato YYYY-MM");
+                return;
+            }
+
+            if (mes > atual) {
+                alert("Você não pode escolher um mês futuro.");
+                return;
+            }
+
+            window.open(`../../api/api_gerar_pdf.php?mes=${mes}`, "_blank");
+        });
+    }
+
+    /* GERAR FOLHAS – FOLHA DE PAGAMENTO */
+    const mesGerar = document.getElementById('mesGerar');
+    const mesEvento = document.getElementById('mesEvento');
+    const btnEvento = document.getElementById('add_evento');
+    const btnGerar = document.getElementById('gerar_folhas');
+    const btnRevisao = document.querySelector('.btn-revisar');
+    const inputAcao = document.getElementById('inputAcao');
+    const form = document.getElementById('Form');
+
+    function ouvirEventos(mes, btn, btn2 = null) {
+        if (!mes || !btn) return;
+
+        const dataFixa = mes.value;
+
+        mes.addEventListener('input', (event) => {
+            const data = event.target.value;
+
+            if (dataFixa === data) {
+                btn.removeAttribute('disabled');
+                if (btn2) btn2.removeAttribute('disabled');
+            } else {
+                btn.setAttribute('disabled', 'true');
+                if (btn2) btn2.setAttribute('disabled', 'true');
+            }
+        });
+    }
+
+    ouvirEventos(mesGerar, btnGerar, btnRevisao);
+    ouvirEventos(mesEvento, btnEvento);
+
+    if (btnGerar) {
+        btnGerar.addEventListener('click', () => {
+            inputAcao.value = 'gerar';
+            form.submit();
+        });
+    }
+
+    if (btnRevisao) {
+        btnRevisao.addEventListener('click', () => {
+            const confirmacao = confirm(`Deseja marcar todas as folhas como revisado?
+                    As folhas não poderão ser modificadas depois`
+            );
+
+            if (confirmacao) {
+                inputAcao.value = 'revisar';
+                form.submit();
+            }
+        });
+    }
 });
