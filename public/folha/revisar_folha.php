@@ -68,23 +68,6 @@ $sql_folha->bind_param("is", $id_usuario, $mes_comp);
 $sql_folha->execute();
 $folha = $sql_folha->get_result()->fetch_assoc();
 
-// Eventos
-$eventos = [];
-
-if ($folha) {
-    // $desconto = calcularEAplicarDescontoFalta($conn, $id_usuario, $mes_comp, $user, $folha);
-
-    $sql_eventos = $conn->prepare("
-        SELECT tipo, descricao, valor 
-        FROM eventos 
-        WHERE id_usuario = ? AND mes_competencia = ?
-    ");
-
-    $sql_eventos->bind_param("is", $id_usuario, $mes_comp);
-    $sql_eventos->execute();
-    $eventos = $sql_eventos->get_result()->fetch_all(MYSQLI_ASSOC);
-}
-
 // POST revisar
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $dados = json_decode(file_get_contents('php://input'), true);
@@ -112,15 +95,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Holerite <?php echo $mes; ?></title>
 
     <style>
-        body {
-            font-family: Arial;
-            padding: 25px;
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
         }
 
         td,
@@ -172,14 +149,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <tr class="titulo">
                             <td colspan="2">Empresa</td>
                         </tr>
+
                         <tr>
                             <td>Nome:</td>
                             <td>Sem nome</td>
                         </tr>
+
                         <tr>
                             <td>Endereço:</td>
                             <td>Sem endereço</td>
                         </tr>
+
                         <tr>
                             <td>CNPJ:</td>
                             <td>Sem CNPJ</td>
@@ -188,18 +168,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <tr class="titulo">
                             <td colspan="2">Funcionário</td>
                         </tr>
+
                         <tr>
                             <td>Nome:</td>
                             <td><?= $user["nome_usuario"] ?></td>
                         </tr>
+
                         <tr>
                             <td>CPF:</td>
                             <td><?= $user["cpf_usuario"] ?></td>
                         </tr>
+
                         <tr>
                             <td>Cargo:</td>
                             <td><?= $user["nome_cargo"] ?></td>
                         </tr>
+
                         <tr>
                             <td>Admissão:</td>
                             <td><?= date("d/m/Y", strtotime($user["data_admissao"])) ?></td>
@@ -225,26 +209,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <tr class="titulo">
                             <td colspan="2">Resumo</td>
                         </tr>
+
                         <tr>
                             <td>Salário Bruto:</td>
                             <td>R$ <?= number_format($folha["salario_bruto"], 2, ',', '.') ?></td>
                         </tr>
+
                         <tr>
                             <td>Total Proventos:</td>
                             <td>R$ <?= number_format($folha["total_proventos"], 2, ',', '.') ?></td>
                         </tr>
+
                         <tr>
                             <td>Total Descontos:</td>
                             <td>R$ <?= number_format($folha["total_descontos"], 2, ',', '.') ?></td>
                         </tr>
+
                         <tr>
                             <td>VT:</td>
                             <td>R$ <?= number_format($folha["vt"], 2, ',', '.') ?></td>
                         </tr>
+
                         <tr>
                             <td>INSS:</td>
                             <td>R$ <?= number_format($folha["inss"], 2, ',', '.') ?></td>
                         </tr>
+
                         <tr>
                             <td>IRRF:</td>
                             <td>R$ <?= number_format($folha["irrf"], 2, ',', '.') ?></td>
@@ -255,16 +245,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <td><b>R$ <?= number_format($folha["salario_liquido"], 2, ',', '.') ?></b></td>
                         </tr>
                     </table>
+                </article>
 
-                    <button class="btn-salvar" id="<?= $id_usuario ?>">Marcar como Revisado</button>
-                    </div>
-
-                <?php endif; ?>
-
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-                <script src="../../assets/js/script.js"></script>
+                <button class="btn btn-padrao" id="<?= $id_usuario ?>">Marcar como Revisado</button>
+            <?php endif; ?>
         </section>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const btn = document.querySelector(".btn-padrao");
+
+                if (btn) {
+                    btn.addEventListener("click", () => {
+                        const idUsuario = btn.id;
+
+                        fetch(window.location.href, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    acao: "revisar",
+                                    id_usuario: idUsuario
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                alert(data.msg);
+                            })
+                            .catch(err => {
+                                console.error("Erro:", err);
+                            });
+                    });
+                }
+            });
+        </script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        <script src="../../assets/js/script.js"></script>
     </main>
 </body>
 
