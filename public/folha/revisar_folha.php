@@ -76,10 +76,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_usuario = $dados['id_usuario'];
         $sql = $conn->prepare("UPDATE folhas SET revisado = 1 WHERE id_usuario = ? AND revisado = 0");
         $sql->bind_param('i', $id_usuario);
+        $ok = $sql->execute();
 
         echo json_encode([
-            'status' => $sql->execute() ? 'sucesso' : 'erro',
-            'msg' => $sql->execute() ? 'Folha Revisada!' : 'Erro ao revisar.'
+            'status' => $ok ? 'sucesso' : 'erro',
+            'msg' => $ok ? 'Folha Revisada!' : 'Erro ao revisar.'
         ]);
 
         exit;
@@ -247,42 +248,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </table>
                 </article>
 
-                <button class="btn btn-padrao" id="<?= $id_usuario ?>">Marcar como Revisado</button>
+                <button class="btn btn-padrao" data-id="<?= $id_usuario ?>">Marcar como Revisado</button>
             <?php endif; ?>
         </section>
-        <script>
-            document.addEventListener("DOMContentLoaded", () => {
-                const btn = document.querySelector(".btn-padrao");
-
-                if (btn) {
-                    btn.addEventListener("click", () => {
-                        const idUsuario = btn.id;
-
-                        fetch(window.location.href, {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json"
-                                },
-                                body: JSON.stringify({
-                                    acao: "revisar",
-                                    id_usuario: idUsuario
-                                })
-                            })
-                            .then(res => res.json())
-                            .then(data => {
-                                alert(data.msg);
-                            })
-                            .catch(err => {
-                                console.error("Erro:", err);
-                            });
-                    });
-                }
-            });
-        </script>
-
+        
+        <script src="../../assets/js/script.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-        <script src="../../assets/js/script.js"></script>
     </main>
 </body>
 

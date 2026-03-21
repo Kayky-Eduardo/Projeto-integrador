@@ -597,4 +597,36 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+    /* MARCAR FOLHA COMO REVISADA */
+    const btnRevisarFolha = document.querySelector(".btn-padrao");
+
+    if (btnRevisarFolha) {
+        btnRevisarFolha.addEventListener("click", () => {
+
+            const idUsuario = btnRevisarFolha.dataset.id;
+
+            fetch(window.location.href, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    acao: "revisar",
+                    id_usuario: idUsuario
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.msg);
+
+                    if (data.status === "sucesso") {
+                        window.location.href = "gerar_folhas_todos.php?mes=" + new URLSearchParams(window.location.search).get("mes");
+                    }
+                })
+                .catch(err => {
+                    console.error("Erro:", err);
+                });
+        });
+    }
 });
