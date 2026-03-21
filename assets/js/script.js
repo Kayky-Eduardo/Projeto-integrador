@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
     /* SETAR ID_USUARIO NO LOCAL STORAGE */
-    const id_usuario = document.getElementById("nome-usuario-navbar").dataset.id;
-
+    
     if (localStorage.getItem("id_usuario") == null) {
+        const id_usuario = document.getElementById("nome-usuario-navbar").dataset.id;
         localStorage.setItem("id_usuario", id_usuario);
     }
 
