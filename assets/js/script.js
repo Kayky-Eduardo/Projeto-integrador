@@ -629,4 +629,80 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
         });
     }
+
+    /* EDITAR E DELETAR EVENTOS (HOLERITE) */
+
+    // DELETAR
+    document.querySelectorAll(".btn-deletar").forEach(btn => {
+        btn.addEventListener("click", async () => {
+
+            const id = btn.dataset.id;
+
+            const confirmar = confirm("Tem certeza que deseja deletar este evento?");
+            if (!confirmar) return;
+
+            try {
+                const response = await fetch(window.location.href, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        acao: "deletar",
+                        id_evento: id,
+                        confirmado: true
+                    })
+                });
+
+                const data = await response.json();
+                alert(data.msg);
+
+                if (data.status === "sucesso") {
+                    location.reload();
+                }
+
+            } catch (erro) {
+                console.error("Erro:", erro);
+                alert("Erro ao deletar evento.");
+            }
+        });
+    });
+
+
+    // EDITAR FOLHA (quando sair do input)
+    document.querySelectorAll(".input-editar").forEach(input => {
+
+        input.addEventListener("change", async () => {
+
+            const id = input.id;
+            const valor = input.value;
+
+            try {
+                const response = await fetch(window.location.href, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        acao: "editar",
+                        id_editar: id,
+                        valor: valor
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === "sucesso") {
+                    console.log("Atualizado!");
+                } else {
+                    alert(data.msg);
+                }
+
+            } catch (erro) {
+                console.error("Erro:", erro);
+                alert("Erro ao editar.");
+            }
+        });
+
+    });
 });

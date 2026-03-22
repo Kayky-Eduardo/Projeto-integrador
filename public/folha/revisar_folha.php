@@ -86,6 +86,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
+
+$meses = [
+    "01" => "janeiro",
+    "02" => "fevereiro",
+    "03" => "março",
+    "04" => "abril",
+    "05" => "maio",
+    "06" => "junho",
+    "07" => "julho",
+    "08" => "agosto",
+    "09" => "setembro",
+    "10" => "outubro",
+    "11" => "novembro",
+    "12" => "dezembro"
+];
+
+$mes_num = date("m", strtotime($mes_comp));
+$ano = date("Y", strtotime($mes_comp));
+
+$mes_formatado = ucfirst($meses[$mes_num]) . " de " . $ano;
 ?>
 
 <!DOCTYPE html>
@@ -143,7 +163,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </p>
                 </article>
             <?php else: ?>
-                <h1 class="page-title">HOLERITE <?php echo date("m/Y", strtotime($mes_comp)); ?></h1>
+                <h1 class="page-title">
+                    Holerite - <?= $mes_formatado; ?>
+                </h1>
 
                 <article id="holerite">
                     <table>
@@ -251,7 +273,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button class="btn btn-padrao" data-id="<?= $id_usuario ?>">Marcar como Revisado</button>
             <?php endif; ?>
         </section>
-        
+
         <script src="../../assets/js/script.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
