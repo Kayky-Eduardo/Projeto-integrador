@@ -83,12 +83,6 @@ if ($nivel >= 3) {
                         </a>
                     </li>
 
-                    <li>
-                        <a href="/projeto-integrador/public/config/pausa_config.php">
-                            Cadastrar Pausas
-                        </a>
-                    </li>
-
                     <li class="separador"></li>
 
                     <li>
