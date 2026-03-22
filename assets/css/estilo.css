@@ -763,6 +763,59 @@ footer a {
     font-size: var(--tamanho-texto-padrao);
 }
 
+.tabela-config {
+    box-shadow: 1px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* CONFIGURAÇÕES DE JORNADA */
+.box-config {
+    display: inline-block;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.box-config input {
+    display: none;
+}
+
+.box-config span {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #f0f0f0;
+    transition: 0.2s;
+    font-size: 14px;
+}
+
+.box-config span:hover {
+    background: #dcdcdc;
+}
+
+.box-config input:checked + span {
+    background: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
+
+.badge-dia {
+    display: inline-block;
+    background: var(--cor-texto-branco);
+    padding: 4px 8px;
+    margin: 2px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+/* CONFIGURAÇÕES DE PAUSA */
+.form-config {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
 /* LISTA DE USUÁRIOS */
 
 /* Ações */

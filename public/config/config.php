@@ -3,9 +3,98 @@ session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
-
-// controla qual módulo será carregado
 $pagina = $_GET['pagina'] ?? 'jornada';
+$dias = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    // PAUSA
+    if (isset($_POST['pausa']) && $_POST['pausa'] === 'criar') {
+
+        $descricao = strtolower(trim($_POST['descricao']));
+        $tempo_min = intval($_POST['tempo_min']);
+        $tempo_max = intval($_POST['tempo_max']);
+        $limite_pausa_diario = intval($_POST['limite_pausa_diario'] ?? 0);
+
+        if ($descricao === '' || $tempo_min < 0 || $tempo_max < 0) {
+            $_SESSION['msg'] = 'Preencha os campos corretamente.';
+        } else if ($tempo_min >= $tempo_max) {
+            $_SESSION['msg'] = 'Tempo máximo deve ser maior que o mínimo.';
+        } else if (!isset($_POST['setor'])) {
+            $_SESSION['msg'] = 'Selecione um setor.';
+        } else {
+
+            try {
+                $sql = "INSERT INTO pausa_config 
+                        (descricao_pausa, tempo_min, tempo_max, limite_pausa_diario)
+                        VALUES (?, ?, ?, ?)";
+
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("siii", $descricao, $tempo_min, $tempo_max, $limite_pausa_diario);
+
+                if ($stmt->execute()) {
+
+                    $id_config = $conn->insert_id;
+
+                    foreach ($_POST['setor'] as $s) {
+                        $id_setor = intval($s);
+
+                        $sql_setor = "INSERT INTO grupo_setor_pausa (id_setor, id_config) VALUES (?, ?)";
+                        $stmt_setor = $conn->prepare($sql_setor);
+                        $stmt_setor->bind_param("ii", $id_setor, $id_config);
+                        $stmt_setor->execute();
+                    }
+
+                    $_SESSION['msg'] = 'Tipo de pausa criado com sucesso.';
+                }
+            } catch (mysqli_sql_exception $e) {
+                if ($e->getCode() === 1062) {
+                    $_SESSION['msg'] = 'Erro: Este nome já existe.';
+                } else {
+                    $_SESSION['msg'] = 'Erro ao salvar.';
+                }
+            }
+        }
+
+        header("Location: config.php?pagina=pausas");
+        exit;
+    }
+
+    // JORNADA
+    if (isset($_POST['acao_jornada']) && $_POST['acao_jornada'] === 'criar') {
+        $descricao = strtolower(trim($_POST['descricao']));
+        $jornada = $_POST['jornada'];
+        $hora_extra = $_POST['hora_extra'];
+        $dias = $_POST['dias'] ?? [];
+
+        if ($descricao === '' || !$jornada || !$hora_extra) {
+            $_SESSION['msg'] = 'Preencha todos os campos.';
+        } else if (empty($dias)) {
+            $_SESSION['msg'] = 'Selecione ao menos um dia.';
+        } else {
+
+            try {
+                $dias_json = json_encode(array_map('intval', $dias));
+
+                $sql = "INSERT INTO tempo_jornada 
+                        (descricao, jornada, maximo_hora_extra, dias_semana)
+                        VALUES (?, ?, ?, ?)
+                ";
+
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("ssss", $descricao, $jornada, $hora_extra, $dias_json);
+
+                if ($stmt->execute()) {
+                    $_SESSION['msg'] = 'Jornada criada com sucesso.';
+                }
+            } catch (mysqli_sql_exception $e) {
+                $_SESSION['msg'] = 'Erro ao salvar jornada.';
+            }
+        }
+
+        header("Location: config.php?pagina=jornada");
+        exit;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -14,6 +103,7 @@ $pagina = $_GET['pagina'] ?? 'jornada';
 <head>
     <meta charset="UTF-8">
     <title>Configurações</title>
+    <?php include("../../include/link.html"); ?>
     <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
 
@@ -38,7 +128,7 @@ $pagina = $_GET['pagina'] ?? 'jornada';
             </ul>
         </aside>
 
-        <section class="container">
+        <section class="pagina-padrao">
             <?php
             switch ($pagina) {
 
@@ -48,24 +138,7 @@ $pagina = $_GET['pagina'] ?? 'jornada';
 
                 case 'jornada':
                 default:
-            ?>
-                    <h1>Definir Jornada de Trabalho</h1>
-                    <p>Configure a carga horária e o limite diário de horas extras.</p>
-
-                    <form class="form-linha" id="form-jornada">
-                        <label class="label">Jornada diária padrão:</label>
-                        <input class="input" type="time" required>
-
-                        <label class="label">Limite de hora extra:</label>
-                        <input class="input" type="time" required>
-
-                        <button type="submit" class="btn btn-padrao">
-                            Salvar configuração
-                        </button>
-                    </form>
-
-                    <p id="resposta"></p>
-            <?php
+                    include(__DIR__ . "/jornada_config_content.php");
                     break;
             }
             ?>
