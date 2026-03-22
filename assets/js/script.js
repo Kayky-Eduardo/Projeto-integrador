@@ -705,4 +705,40 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
     });
+
+    /* GERAR PDF – HOLERITE */
+    const btnGerarPdf = document.getElementById("btnGerarPdf");
+
+    if (btnGerarPdf) {
+
+        btnGerarPdf.addEventListener("click", async () => {
+
+            try {
+                const element = document.getElementById("holerite");
+
+                if (!element) {
+                    alert("Elemento do holerite não encontrado.");
+                    return;
+                }
+
+                const { jsPDF } = window.jspdf;
+
+                const canvas = await html2canvas(element, { scale: 2 });
+                const imgData = canvas.toDataURL("image/png");
+
+                const pdf = new jsPDF("p", "mm", "a4");
+
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const imgHeight = (canvas.height * pageWidth) / canvas.width;
+
+                pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
+
+                pdf.save("holerite.pdf");
+
+            } catch (erro) {
+                console.error("Erro ao gerar PDF:", erro);
+                alert("Erro ao gerar PDF.");
+            }
+        });
+    }
 });
