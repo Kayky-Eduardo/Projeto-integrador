@@ -173,7 +173,7 @@ function acharGrupo($conn, $id_config){
                 <td><?= $row['tempo_max'] ?></td>
                 <td><?php echo (intval($row['limite_pausa_diario']) == 0 ? "ilimitado" : intval($row['limite_pausa_diario'])) ?></td>
                 <td>
-                    <form method="POST" action="../ponto/pausas_e_ponto/pausa_edit.php">
+                    <form method="POST" action="config_pausa/pausa_edit.php">
                         <input type="hidden" name="id_config" value="<?= $row['id_config'] ?>">
                         <button style="background:none; border:none; color:blue; cursor:pointer;">
                             editar

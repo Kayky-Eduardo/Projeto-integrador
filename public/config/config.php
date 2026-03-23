@@ -43,8 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $stmt_setor->bind_param("ii", $id_setor, $id_config);
                         $stmt_setor->execute();
                     }
-
-                    $_SESSION['msg'] = 'Tipo de pausa criado com sucesso.';
                 }
             } catch (mysqli_sql_exception $e) {
                 if ($e->getCode() === 1062) {
@@ -84,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->bind_param("ssss", $descricao, $jornada, $hora_extra, $dias_json);
 
                 if ($stmt->execute()) {
-                    $_SESSION['msg'] = 'Jornada criada com sucesso.';
+                    $_SESSION['msg'] = '';
                 }
             } catch (mysqli_sql_exception $e) {
                 $_SESSION['msg'] = 'Erro ao salvar jornada.';
@@ -116,10 +114,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <aside aria-label="Menu de configurações">
             <ul class="menu-config">
                 <li>
+                    <a href="?pagina=empresa" class="<?= $pagina == 'empresa' ? 'ativo' : '' ?>">
+                        Dados da Empresa
+                    </a>
+                </li>
+
+                <li>
                     <a href="?pagina=jornada" class="<?= $pagina == 'jornada' ? 'ativo' : '' ?>">
                         Definir Jornadas de Trabalho
                     </a>
                 </li>
+
                 <li>
                     <a href="?pagina=pausas" class="<?= $pagina == 'pausas' ? 'ativo' : '' ?>">
                         Tipos de Pausa
@@ -131,14 +136,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <section class="pagina-padrao">
             <?php
             switch ($pagina) {
+                case 'empresa':
+                    include(__DIR__ . "/config_empresa/empresa_config_content.php");
+                    break;
 
                 case 'pausas':
-                    include(__DIR__ . "/pausa_config_content.php");
+                    include(__DIR__ . "/config_pausa/pausa_config_content.php");
                     break;
 
                 case 'jornada':
                 default:
-                    include(__DIR__ . "/jornada_config_content.php");
+                    include(__DIR__ . "/config_jornada/jornada_config_content.php");
                     break;
             }
             ?>

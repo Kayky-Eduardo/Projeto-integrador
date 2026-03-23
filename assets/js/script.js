@@ -741,4 +741,52 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+    // CONFIGURAÇÕES – EMPRESA
+    document.addEventListener("DOMContentLoaded", () => {
+        const btnSalvar = document.querySelector('.btn-salvar');
+        const btnExcluir = document.querySelector('.btn-excluir');
+
+        if (btnSalvar) {
+            btnSalvar.addEventListener('click', function () {
+                if (!confirm('Salvar dados?')) return;
+                const idUsuario = this.dataset.id;
+                const formData = new FormData(document.getElementById('meuForm'));
+                let dicionario = {};
+                formData.forEach((v, k) => dicionario[k] = v);
+
+                fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        acao: 'salvar',
+                        id_usuario: idUsuario,
+                        dicionario
+                    })
+                })
+                    .then(r => r.json())
+                    .then(d => {
+                        alert(d.msg);
+                        if (d.status === 'sucesso') location.reload();
+                    });
+            });
+        }
+
+        if (btnExcluir) {
+            btnExcluir.addEventListener('click', function () {
+                if (!confirm('Excluir dados?')) return;
+
+                fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ acao: 'excluir' })
+                })
+                    .then(r => r.json())
+                    .then(d => {
+                        alert(d.msg);
+                        if (d.status === 'sucesso') location.reload();
+                    });
+            });
+        }
+    });
 });
