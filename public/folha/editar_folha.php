@@ -230,8 +230,7 @@ $mes_formatado = ucfirst($meses[$mes_num]) . " de " . $ano;
                 <article id="holerite">
                     <table>
                         <tr class="titulo">
-                            <td>Empresa</td>
-                            <td><a href="criar_empresa.php">Editar</a></td>
+                            <td colspan="2">Empresa</td>
                         </tr>
 
                         <tr>
@@ -295,13 +294,13 @@ $mes_formatado = ucfirst($meses[$mes_num]) . " de " . $ano;
                                         <span>R$</span>
 
                                         <input id="<?= $e["id_evento"] ?>"
-                                            class="input-editar"
+                                            class="input input-editar"
                                             type="number"
                                             step="0.01"
                                             value="<?= $e["valor"] ?>">
 
                                         <button type="button"
-                                            class="btn-deletar"
+                                            class="btn btn-padrao btn-deletar"
                                             data-id="<?= $e["id_evento"] ?>">
                                             deletar
                                         </button>
