@@ -121,13 +121,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <li>
                     <a href="?pagina=jornada" class="<?= $pagina == 'jornada' ? 'ativo' : '' ?>">
-                        Definir Jornadas de Trabalho
+                        Jornadas de Trabalho
                     </a>
                 </li>
 
                 <li>
                     <a href="?pagina=pausas" class="<?= $pagina == 'pausas' ? 'ativo' : '' ?>">
                         Tipos de Pausa
+                    </a>
+                </li>
+
+                <li>
+                    <a href="?pagina=setores" class="<?= $pagina == 'setores' ? 'ativo' : '' ?>">
+                        Setores
                     </a>
                 </li>
             </ul>
@@ -147,6 +153,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 case 'jornada':
                 default:
                     include(__DIR__ . "/config_jornada/jornada_config_content.php");
+                    break;
+                    
+                case 'setores':
+                    include(__DIR__ . "/config_setor/setor_config_content.php");
                     break;
             }
             ?>

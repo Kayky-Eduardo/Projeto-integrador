@@ -1,7 +1,7 @@
 <?php
 session_start();
-include(__DIR__ . "/../../BD/conexao.php");
-require "../../include/verificacao.php";
+include(__DIR__ . "/../../../BD/conexao.php");
+require "../../../include/verificacao.php";
 verificar_login($conn);
 
 // Buscar todos os usuários para o select
@@ -13,7 +13,7 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastrar Setor</title>
-        <?php include("../../include/link.html"); ?>
+        <?php include("../../../include/link.html"); ?>
     <style>
         .caixa_select {
             position: relative;
@@ -39,7 +39,7 @@ $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY 
 </head>
 <body>
     <header>
-        <?php include("../../include/navbar.php");?>
+        <?php include("../../../include/navbar.php");?>
     </header>
 
     <main>

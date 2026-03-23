@@ -4,7 +4,7 @@ $result = $conn->query($sql);
 ?>
 
 <section class="container">
-    <h1 class="page-title">Definir Jornada de Trabalho</h1>
+    <h1 class="page-title">Definir Jornadas de Trabalho</h1>
 
     <?php if (!empty($_SESSION['msg'])): ?>
         <p><?= htmlspecialchars($_SESSION['msg']); ?></p>

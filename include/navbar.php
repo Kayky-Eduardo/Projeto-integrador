@@ -13,8 +13,6 @@ if ($nivel >= 3) {
         <a href="/projeto-integrador/public/usuario/lista.php">Usuários</a>
         <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
         <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
-        <a href="/projeto-integrador/public/setor/setores.php">Setores</a>
-        <a href="/projeto-integrador/public/cargo/cargos.php">Cargos</a>
 
         <ul class="nav-dropdown">
             <li class="dropdown">
@@ -100,8 +98,6 @@ if ($nivel >= 3) {
         <a href="/projeto-integrador/public/ponto/pausas_e_ponto/registrar_ponto.php">Bater Ponto / Pausa</a>
         <a href="/projeto-integrador/public/ponto/gerenciar.php">Gerenciar Pontos</a>
         <a href="/projeto-integrador/public/rh/ajustes_pendentes.php">Ajustes Pendentes</a>
-        <a href="/projeto-integrador/public/setor/setores.php">Setores</a>
-        <a href="/projeto-integrador/public/cargo/cargos.php">Cargos</a>
 
         <ul class="nav-dropdown">
             <li class="dropdown">
