@@ -5,33 +5,38 @@ require "../../include/verificacao.php";
 verificar_login($conn);
 
 $erro = "";
+$erro_pagina = "";
 $max = $_SESSION['nivel'] >= 3 ? 3 : 2;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['nome_cargo'], $_POST['nivel'], $_POST['salario'])) {
-        if (!empty($_POST['nome_cargo']) && !empty($_POST['nivel']) && !empty($_POST['salario'])) {
-            $nome_cargo = $_POST['nome_cargo'];
+        if ($_SESSION['nivel'] < (int)$_POST['nivel']) {
+            $erro_pagina = "Não é possível criar um cargo com nível maior que o seu!";
+        } else {
+            if (!empty($_POST['nome_cargo']) && !empty($_POST['nivel']) && !empty($_POST['salario'])) {
+                $nome_cargo = $_POST['nome_cargo'];
 
-            $stmt_validacao = $conn->prepare("SELECT id_cargo FROM cargo WHERE nome_cargo = ?");
-            $stmt_validacao->bind_param("s", $nome_cargo);
-            $stmt_validacao->execute();
-            $validacao = $stmt_validacao->get_result();
-            if ($validacao->num_rows === 0) {
-                $stmt = $conn->prepare("
-                INSERT INTO cargo (nome_cargo, salario_bruto, nivel) VALUES
-                (?, ?, ?)
-                ");
-                $stmt->bind_param("sdi", $nome_cargo, $_POST['salario'], $_POST['nivel']);
-                if ($stmt->execute()) {
-                    header("Location: cargos.php");
+                $stmt_validacao = $conn->prepare("SELECT id_cargo FROM cargo WHERE nome_cargo = ?");
+                $stmt_validacao->bind_param("s", $nome_cargo);
+                $stmt_validacao->execute();
+                $validacao = $stmt_validacao->get_result();
+                if ($validacao->num_rows === 0) {
+                    $stmt = $conn->prepare("
+                    INSERT INTO cargo (nome_cargo, salario_bruto, nivel) VALUES
+                    (?, ?, ?)
+                    ");
+                    $stmt->bind_param("sdi", $nome_cargo, $_POST['salario'], $_POST['nivel']);
+                    if ($stmt->execute()) {
+                        header("Location: cargos.php");
+                    } else {
+                        $erro = "Verifique se está tudo preenchido de forma correta.";
+                    }
                 } else {
-                    $erro = "Verifique se está tudo preenchido de forma correta.";
+                    $erro = "Já existe um cargo com este nome!"; 
                 }
             } else {
-                $erro = "Já existe um cargo com este nome!"; 
+                $erro = "Preencha todos os campos!";
             }
-        } else {
-            $erro = "Preencha todos os campos!";
         }
     }
 }
@@ -51,13 +56,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <h2>Cadastrar Novo cargo</h2>
 
-    <?php if (!empty($erro)): ?>
-        <p class="erro" role="alert">
-            <?= htmlspecialchars($erro) ?>
-        </p>
-    <?php endif; ?>
 
     <form id="form-cargo" method="POST">
+        <?php if (!empty($erro)): ?>
+            <p class="erro" role="alert">
+                <?= htmlspecialchars($erro) ?>
+            </p>
+        <?php endif; ?>
+
+        <?php if (!empty($erro_pagina)): ?>
+            <strong>Aviso:</strong>
+            <p class="erro_pagina" role="alert">
+                <?= htmlspecialchars($erro_pagina) ?>
+            </p>
+        <?php endif; ?>
+
         <fieldset>
             <label>Nome do Cargo:</label><br>
             <input type="text" id="nome_cargo" name="nome_cargo"

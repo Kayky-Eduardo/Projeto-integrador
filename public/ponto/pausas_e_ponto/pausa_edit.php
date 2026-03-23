@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao'])) {
                 $stmt->bind_param("i", $id_config);
                 if ($stmt->execute()) {
                     $_SESSION['msg'] = 'Pausa excluída com sucesso.';
-                    header("Location: pausa_config.php");
+                    header("Location: ../../config/pausa_config.php");
                     exit;
                 } else {
                     $_SESSION['msg'] = 'Erro ao excluir a pausa.';

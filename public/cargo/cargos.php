@@ -37,13 +37,15 @@ $result = $conn->query("SELECT * FROM cargo");
             echo "<td>".$row["nome_cargo"]."</td>";
             echo "<td>".$row["salario_bruto"]."</td>";
             echo "<td>".$row["nivel"]."</td>";
-            echo '
-            <td>
-                <form action="editar_cargo.php" method="GET">
-                    <input type="hidden" name="id" value="'. $row['id_cargo'] . '">
-                    <button type="submit">Editar</button>
-                </form>
-            </td>';            
+            if ($_SESSION['nivel'] >= $row['nivel']) {
+                echo '
+                <td>
+                    <form action="editar_cargo.php" method="GET">
+                        <input type="hidden" name="id" value="'. $row['id_cargo'] . '">
+                        <button type="submit">Editar</button>
+                    </form>
+                </td>';            
+            }
             echo "</tr>";
         }
     } else {
