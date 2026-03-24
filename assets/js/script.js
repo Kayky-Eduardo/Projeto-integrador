@@ -850,4 +850,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         aplicarFiltroPausa();
     }
+
+    // CONFIGURAÇÃO - SETORES
+    
 });

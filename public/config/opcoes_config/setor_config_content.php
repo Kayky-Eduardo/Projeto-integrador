@@ -70,7 +70,12 @@ unset($_SESSION['old_setor']);
                         <tr>
                             <td><?= $row["nome_setor"] ?></td>
                             <td>
-                                <button>Editar</button>
+                                <button
+                                    class="btn btn-padrao btn-editar-setor"
+                                    data-id="<?= $row['id_setor'] ?>"
+                                    data-nome="<?= htmlspecialchars($row['nome_setor']) ?>">
+                                    Gerenciar Setor
+                                </button>
                             </td>
                         </tr>
                     <?php endwhile; ?>
