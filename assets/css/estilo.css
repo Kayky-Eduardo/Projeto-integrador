@@ -781,6 +781,18 @@ footer a {
     box-shadow: 1px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* EDIÇÃO DE CONFIGURAÇÕES */
+.edit-config {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.edit-config a {
+    text-decoration: none;
+}
+
 /* CONFIGURAÇÕES DE JORNADA */
 .box-config {
     display: inline-block;

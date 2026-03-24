@@ -114,47 +114,57 @@ $listSetor = "SELECT * FROM setor";
 $setor = $conn->query($listSetor);
 ?>
 
-<a href="../config/config.php?pagina=pausas">Voltar</a>
-<h2>Editar Pausa</h2>
+<h1 class="page-title">Editar Pausa</h1>
 
 <?php if (!empty($_SESSION['msg'])): ?>
     <p><strong><?= htmlspecialchars($_SESSION['msg']); ?></strong></p>
     <?php unset($_SESSION['msg']); ?>
 <?php endif; ?>
 
-<form method="POST">
+<form class="form-config form-config-edit" method="POST">
     <input type="hidden" name="id_config" value="<?= $id_config ?>">
 
-    <p>
-        <label>Descrição:</label><br>
-        <input type="text" name="descricao" required value="<?= htmlspecialchars($row['descricao_pausa']) ?>">
-    </p>
+    <section class="form-linha">
+        <article>
+            <label class="label">Descrição:</label>
+            <input class="input" type="text" name="descricao" required value="<?= htmlspecialchars($row['descricao_pausa']) ?>">
+        </article>
 
-    <p>
-        <label>Tempo mínimo (min):</label><br>
-        <input type="number" name="tempo_min" required value="<?= $row['tempo_min'] ?>">
-    </p>
+        <article>
+            <label class="label">Tempo mínimo:</label>
+            <input class="input" type="number" name="tempo_min" required value="<?= $row['tempo_min'] ?>">
+        </article>
 
-    <p>
-        <label>Tempo máximo (min):</label><br>
-        <input type="number" name="tempo_max" required value="<?= $row['tempo_max'] ?>">
-    </p>
+        <article>
+            <label class="label">Tempo máximo:</label>
+            <input class="input" type="number" name="tempo_max" required value="<?= $row['tempo_max'] ?>">
+        </article>
 
-    <p>
-        <label>Limite diário:</label><br>
-        <input type="number" name="limite_pausa_diario" required value="<?= $row['limite_pausa_diario'] ?>">
-    </p>
+        <article>
+            <label class="label">Limite diário:</label>
+            <input class="input" type="number" name="limite_pausa_diario" required value="<?= $row['limite_pausa_diario'] ?>">
+        </article>
+    </section>
 
-    <p>
-        <!-- name="setor[]" o "[]" serve para que o php identifique que se trata de valores múltiplos -->
-        Selecione Setor:<br>
-        <?php foreach ($setor as $s): ?>
-            <input type="checkbox" id="<?= $s['nome_setor'] ?>" name="setor[]" value="<?= $s['id_setor'] ?>">
-            <label for="<?= $s['nome_setor'] ?>"><?= $s['nome_setor'] ?></label><br>
-        <?php endforeach; ?>
-    </p>
+    <section class="form-linha">
+        <article>
+            <p>Selecione Setor:</p>
+        </article>
 
-    <button type="submit" name="acao" value="salvar">Salvar Alterações</button>
-    <button type="submit" name="acao" value="<?= $status_acao ?>"><?= ucfirst($status_acao) ?></button>
-    <button type="submit" name="acao" value="excluir">Excluir</button>
+        <article>
+            <?php foreach ($setor as $s): ?>
+                <label class="label box-config">
+                    <input type="checkbox" id="<?= $s['nome_setor'] ?>" name="setor[]" value="<?= $s['id_setor'] ?>">
+                    <span><?= ucfirst($s['nome_setor']) ?></span>
+                </label>
+            <?php endforeach; ?>
+        </article>
+    </section>
+
+    <section class="edit-config">
+        <button class="btn btn-padrao" type="submit" name="acao" value="salvar">Salvar Alterações</button>
+        <button class="btn btn-destaque" type="submit" name="acao" value="<?= $status_acao ?>"><?= ucfirst($status_acao) ?></button>
+        <button class="btn btn-excluir" type="submit" name="acao" value="excluir">Excluir</button>
+        <a class="btn btn-voltar" href="../config/config.php?pagina=pausas">Voltar</a>
+    </section>
 </form>
