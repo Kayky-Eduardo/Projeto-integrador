@@ -55,7 +55,7 @@ if (!empty($filtroUser)) {
     $sql .= " AND f.id_usuario = " . intval($filtroUser);
 }
 
-if ($nivel != 2) {
+if ($nivel > 3) {
     $sql .= " AND f.id_usuario = " . intval($id_usuario);
 }
 

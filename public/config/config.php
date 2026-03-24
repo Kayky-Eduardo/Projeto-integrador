@@ -5,10 +5,10 @@ require "../../include/verificacao.php";
 verificar_login($conn);
 $pagina = $_GET['pagina'] ?? 'empresa';
 $dias = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // EMPRESA
     if (isset($_POST['acao_empresa'])) {
-
         if ($_POST['acao_empresa'] === 'editar') {
             $_SESSION['modo_edicao_empresa'] = true;
             header("Location: config.php?pagina=empresa");
@@ -16,9 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($_POST['acao_empresa'] === 'salvar') {
-
             $id_usuario = $_SESSION['id_usuario'];
-
             $razao = $_POST['razao_social'] ?? '';
             $fantasia = $_POST['nome_fantasia'] ?? '';
             $cnpj = $_POST['cnpj'] ?? '';
@@ -31,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (empty($razao) || empty($cnpj)) {
                 $_SESSION['erros'][] = 'Preencha os campos obrigatórios.';
             } else {
-
                 $check = $conn->query("SELECT id_modificador FROM empresas LIMIT 1");
 
                 if ($check->num_rows > 0) {
@@ -83,97 +80,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // PAUSA
-    if (isset($_POST['pausa']) && $_POST['pausa'] === 'criar') {
-
-        $descricao = strtolower(trim($_POST['descricao']));
-        $tempo_min = intval($_POST['tempo_min']);
-        $tempo_max = intval($_POST['tempo_max']);
-        $limite_pausa_diario = intval($_POST['limite_pausa_diario'] ?? 0);
-
-        if ($descricao === '' || $tempo_min < 0 || $tempo_max < 0) {
-            $_SESSION['erros'][] = 'Preencha os campos corretamente.';
-            $_SESSION['old_pausa'] = $_POST;
-        } else if ($tempo_min >= $tempo_max) {
-            $_SESSION['erros'][] = 'Tempo máximo deve ser maior que o mínimo.';
-            $_SESSION['old_pausa'] = $_POST;
-        } else if (!isset($_POST['setor'])) {
-            $_SESSION['erros'][] = 'Selecione um setor.';
-            $_SESSION['old_pausa'] = $_POST;
-        } else {
-            try {
-                $sql = "INSERT INTO pausa_config 
-                        (descricao_pausa, tempo_min, tempo_max, limite_pausa_diario)
-                        VALUES (?, ?, ?, ?)";
-
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("siii", $descricao, $tempo_min, $tempo_max, $limite_pausa_diario);
-
-                if ($stmt->execute()) {
-                    $id_config = $conn->insert_id;
-
-                    foreach ($_POST['setor'] as $s) {
-                        $id_setor = intval($s);
-
-                        $sql_setor = "INSERT INTO grupo_setor_pausa (id_setor, id_config) VALUES (?, ?)";
-                        $stmt_setor = $conn->prepare($sql_setor);
-                        $stmt_setor->bind_param("ii", $id_setor, $id_config);
-                        $stmt_setor->execute();
-                    }
-
-                    unset($_SESSION['old_pausa']);
-                }
-            } catch (mysqli_sql_exception $e) {
-                if ($e->getCode() === 1062) {
-                    $_SESSION['erros'][] = 'Erro: Este nome já existe.';
-                } else {
-                    $_SESSION['erros'][] = 'Erro ao salvar.';
-                }
-            }
-        }
-
-        header("Location: config.php?pagina=pausas");
-        exit;
-    }
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao'])) {
-
-        $id_config = intval($_POST['id_config']);
-        $acao = $_POST['acao'];
-
-        if ($acao === 'excluir') {
-
-            $sql = "SELECT 1 FROM pausa WHERE id_config = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("i", $id_config);
-            $stmt->execute();
-
-            if ($stmt->get_result()->num_rows > 0) {
-                $_SESSION['erros'][] = 'Não é possível excluir. Existem registros vinculados a esta pausa.';
-            } else {
-                $sql = "DELETE FROM pausa_config WHERE id_config = ?";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("i", $id_config);
-                $stmt->execute();
-            }
-
-            header("Location: " . $_SERVER['REQUEST_URI']);
-            exit;
-        }
-
-        if ($acao === 'ativar' || $acao === 'desativar') {
-
-            $novo_estado = ($acao === 'ativar') ? 1 : 0;
-
-            $sql = "UPDATE pausa_config SET ativo = ? WHERE id_config = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ii", $novo_estado, $id_config);
-            $stmt->execute();
-            header("Location: " . $_SERVER['REQUEST_URI']);
-            exit;
-        }
-    }
-
     // JORNADA
     if (isset($_POST['acao_jornada']) && $_POST['acao_jornada'] === 'criar') {
         $descricao = strtolower(trim($_POST['descricao']));
@@ -213,7 +119,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (isset($_POST['acao_jornada_btn'])) {
-
         $id_tempo = intval($_POST['id_tempo']);
         $acao = $_POST['acao_jornada_btn'];
 
@@ -227,8 +132,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($resultado->num_rows > 0) {
                 $_SESSION['erros'][] = 'Não é possível excluir. Existem setores vinculados a esta jornada.';
             } else {
-
-                // 🗑️ Pode excluir
                 $sql = "DELETE FROM tempo_jornada WHERE id_tempo = ?";
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param("i", $id_tempo);
@@ -240,12 +143,95 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($acao === 'ativar' || $acao === 'desativar') {
-
             $novo_estado = ($acao === 'ativar') ? 1 : 0;
-
             $sql = "UPDATE tempo_jornada SET ativo = ? WHERE id_tempo = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("ii", $novo_estado, $id_tempo);
+            $stmt->execute();
+            header("Location: " . $_SERVER['REQUEST_URI']);
+            exit;
+        }
+    }
+
+    // PAUSA
+    if (isset($_POST['pausa']) && $_POST['pausa'] === 'criar') {
+        $descricao = strtolower(trim($_POST['descricao']));
+        $tempo_min = intval($_POST['tempo_min']);
+        $tempo_max = intval($_POST['tempo_max']);
+        $limite_pausa_diario = intval($_POST['limite_pausa_diario'] ?? 0);
+
+        if ($descricao === '' || $tempo_min < 0 || $tempo_max < 0) {
+            $_SESSION['erros'][] = 'Preencha os campos corretamente.';
+            $_SESSION['old_pausa'] = $_POST;
+        } else if ($tempo_min >= $tempo_max) {
+            $_SESSION['erros'][] = 'Tempo máximo deve ser maior que o mínimo.';
+            $_SESSION['old_pausa'] = $_POST;
+        } else if (!isset($_POST['setor'])) {
+            $_SESSION['erros'][] = 'Selecione um setor.';
+            $_SESSION['old_pausa'] = $_POST;
+        } else {
+            try {
+                $sql = "INSERT INTO pausa_config 
+                        (descricao_pausa, tempo_min, tempo_max, limite_pausa_diario)
+                        VALUES (?, ?, ?, ?)";
+
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("siii", $descricao, $tempo_min, $tempo_max, $limite_pausa_diario);
+
+                if ($stmt->execute()) {
+                    $id_config = $conn->insert_id;
+
+                    foreach ($_POST['setor'] as $s) {
+                        $id_setor = intval($s);
+                        $sql_setor = "INSERT INTO grupo_setor_pausa (id_setor, id_config) VALUES (?, ?)";
+                        $stmt_setor = $conn->prepare($sql_setor);
+                        $stmt_setor->bind_param("ii", $id_setor, $id_config);
+                        $stmt_setor->execute();
+                    }
+
+                    unset($_SESSION['old_pausa']);
+                }
+            } catch (mysqli_sql_exception $e) {
+                if ($e->getCode() === 1062) {
+                    $_SESSION['erros'][] = 'Erro: Este nome já existe.';
+                } else {
+                    $_SESSION['erros'][] = 'Erro ao salvar.';
+                }
+            }
+        }
+
+        header("Location: config.php?pagina=pausas");
+        exit;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao'])) {
+        $id_config = intval($_POST['id_config']);
+        $acao = $_POST['acao'];
+
+        if ($acao === 'excluir') {
+            $sql = "SELECT 1 FROM pausa WHERE id_config = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $id_config);
+            $stmt->execute();
+
+            if ($stmt->get_result()->num_rows > 0) {
+                $_SESSION['erros'][] = 'Não é possível excluir. Existem registros vinculados a esta pausa.';
+            } else {
+                $sql = "DELETE FROM pausa_config WHERE id_config = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("i", $id_config);
+                $stmt->execute();
+            }
+
+            header("Location: " . $_SERVER['REQUEST_URI']);
+            exit;
+        }
+
+        if ($acao === 'ativar' || $acao === 'desativar') {
+            $novo_estado = ($acao === 'ativar') ? 1 : 0;
+            $sql = "UPDATE pausa_config SET ativo = ? WHERE id_config = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ii", $novo_estado, $id_config);
             $stmt->execute();
             header("Location: " . $_SERVER['REQUEST_URI']);
             exit;
@@ -286,13 +272,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <li>
                     <a href="?pagina=pausas" class="<?= $pagina == 'pausas' ? 'ativo' : '' ?>">
-                        Tipos de Pausa
+                        Pausas
                     </a>
                 </li>
 
                 <li>
                     <a href="?pagina=setores" class="<?= $pagina == 'setores' ? 'ativo' : '' ?>">
                         Setores
+                    </a>
+                </li>
+
+                <li>
+                    <a href="?pagina=cargos" class="<?= $pagina == 'cargos' ? 'ativo' : '' ?>">
+                        Cargos
                     </a>
                 </li>
             </ul>
@@ -316,6 +308,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 case 'setores':
                     include(__DIR__ . "/opcoes_config/setor_config_content.php");
+                    break;
+
+                case 'cargos':
+                    include(__DIR__ . "/opcoes_config/cargo_config_content.php");
                     break;
             }
             ?>

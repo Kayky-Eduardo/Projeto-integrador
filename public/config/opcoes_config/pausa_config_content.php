@@ -75,9 +75,7 @@ unset($_SESSION['msg']);
         <section class="form-linha">
             <article>
                 <p class="label">Setores:</p>
-            </article>
 
-            <article>
                 <?php foreach ($setor as $s): ?>
                     <label class="label box-config">
                         <input type="checkbox" name="setor[]" value="<?= $s['id_setor'] ?>"
@@ -85,9 +83,7 @@ unset($_SESSION['msg']);
                         <span><?= ucfirst($s['nome_setor']) ?></span>
                     </label>
                 <?php endforeach; ?>
-            </article>
-
-            <article>
+                
                 <button type="submit" class="btn btn-padrao">Criar pausa</button>
             </article>
         </section>

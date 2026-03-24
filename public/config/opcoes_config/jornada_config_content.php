@@ -28,9 +28,7 @@ unset($_SESSION['erros']);
 
     <form class="form-linha form-config" method="POST">
         <section class="form-linha">
-            <article>
-                <input type="hidden" name="acao_jornada" value="criar">
-            </article>
+            <input type="hidden" name="acao_jornada" value="criar">
 
             <article>
                 <label class="label">Descrição:</label>
@@ -53,10 +51,8 @@ unset($_SESSION['erros']);
 
         <section class="form-linha">
             <article>
-                <p class="label">Dias da semana:</p>
-            </article>
+                <label class="label">Dias da semana:</label>
 
-            <article>
                 <?php
                 $dias = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
                 foreach ($dias as $i => $dia):

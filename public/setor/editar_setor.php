@@ -1,7 +1,7 @@
 <?php
 session_start();
-include(__DIR__ . "/../../../BD/conexao.php");
-require "../../../include/verificacao.php";
+include(__DIR__ . "/../../BD/conexao.php");
+require "../../include/verificacao.php";
 verificar_login($conn);
 
 
@@ -62,7 +62,7 @@ $jornada_atual = $atual->get_result()->fetch_assoc();  // Nome consistente
 </head>
 <body>
     <header>
-        <?php include("../../../include/navbar.php");?>
+        <?php include("../../include/navbar.php");?>
     </header>
     <main>
         <h2>Editar Setor</h2>

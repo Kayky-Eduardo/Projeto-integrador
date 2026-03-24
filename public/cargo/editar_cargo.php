@@ -9,13 +9,11 @@ if(isset($_GET['id'])) {
     $id_cargo = $_GET['id'];
 }
 
-$erro = "";
 if (isset($_SESSION['erro_deletar_cargo'])) {
     $erro = $_SESSION['erro_deletar_cargo'];
     unset($_SESSION['erro_deletar_cargo']);
 }
 
-$erro_pagina = "";
 $max = $_SESSION['nivel'] >= 3 ? 3 : 2;
 
 $stmt = $conn->prepare("SELECT * FROM cargo WHERE id_cargo = ?");
@@ -23,6 +21,13 @@ $stmt->bind_param("i", $id_cargo);
 $stmt->execute();
 $cargo = $stmt->get_result()->fetch_assoc();
 
+
+if ($cargo['nivel'] > $_SESSION['nivel']) {
+    header("Location: cargos.php");
+}
+
+$erro = "";
+$erro_pagina = "";
 $validacao = "";
 
 if ($cargo['nivel'] > $_SESSION['nivel']) {
@@ -36,31 +41,36 @@ if (!$cargo) {
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['nome_cargo'], $_POST['nivel'], $_POST['salario'])) {
-        if (!empty($_POST['nome_cargo']) && !empty($_POST['nivel']) && !empty($_POST['salario'])) {
-            $stmt_validacao = $conn->prepare("SELECT id_cargo FROM cargo WHERE nome_cargo = ?");
-            $stmt_validacao->bind_param("s", $nome_cargo);
-            $stmt_validacao->execute();
-            $validacao = $stmt_validacao->get_result();
-            if ($validacao->num_rows === 0) {
-                $stmt = $conn->prepare("UPDATE cargo
-                SET nome_cargo = ?,
-                salario_bruto = ?,
-                nivel = ?
-                where id_cargo = ?;
-                ");
-                $stmt->bind_param("sdii", $_POST['nome_cargo'], $_POST['salario'], $_POST['nivel'], $id_cargo);
-                if ($stmt->execute()) {
-                    header("Location: cargos.php");
+        if ($_SESSION['nivel'] < (int)$_POST['nivel']) {
+            $erro_pagina = "Não é possível criar um cargo com nível maior que o seu!";
+        } else {
+            if (!empty($_POST['nome_cargo']) && !empty($_POST['nivel']) && !empty($_POST['salario'])) {
+                $stmt_validacao = $conn->prepare("SELECT id_cargo FROM cargo WHERE nome_cargo = ?");
+                $stmt_validacao->bind_param("s", $nome_cargo);
+                $stmt_validacao->execute();
+                $validacao = $stmt_validacao->get_result();
+                if ($validacao->num_rows === 0) {
+                    $stmt = $conn->prepare("UPDATE cargo
+                    SET nome_cargo = ?,
+                    salario_bruto = ?,
+                    nivel = ?
+                    where id_cargo = ?;
+                    ");
+                    $stmt->bind_param("sdii", $_POST['nome_cargo'], $_POST['salario'], $_POST['nivel'], $id_cargo);
+                    if ($stmt->execute()) {
+                        header("Location: cargos.php");
+                    } else {
+                        $erro_pagina = "Verifique se está tudo preenchido de forma correta.";
+                    }
                 } else {
-                    $erro_pagina = "Verifique se está tudo preenchido de forma correta.";
+                    $erro_pagina = "Já existe um cargo com este nome!"; 
                 }
             } else {
-                $erro_pagina = "Já existe um cargo com este nome!"; 
+                $erro_pagina = "Preencha todos os campos!";
             }
-        } else {
-            $erro_pagina = "Preencha todos os campos!";
         }
-    }
+
+        }
 }
 ?>
 <!DOCTYPE html>
@@ -79,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <h2>Editar cargo</h2>
 
-    <div id="mensagem"></div>
+    <p id="mensagem"></p>
 
     
     <form id="form-cargo" method="POST">
@@ -123,11 +133,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             step="1" max="<?=$max?>" min="1" required>
             <br><br>
             
-            </div>
-    
             <button id="editar" type="submit">Salvar</button>
             <a class="btn-excluir" href="deletar_cargo.php?cargo=<?= $id_cargo ?>">Excluir</a>
-    
             <a href="cargos.php">Voltar</a>
             <br>
         </fieldset>
