@@ -862,86 +862,61 @@ document.addEventListener("DOMContentLoaded", () => {
             const painel = document.getElementById("editar-usuarios-setor");
             painel.classList.remove("hidden");
 
-            await carregarUsuariosSetor(setorAtual);
+            await carregarListas(setorAtual);
         });
     });
 
-    async function carregarUsuariosSetor(idSetor) {
+    async function carregarListas(idSetor) {
 
-        const response = await fetch(`../../api/api_setores.php?acao=get_pessoas_setor`, {
+        // 🔹 usuários no setor
+        const res1 = await fetch(`../../api/api_setores.php?acao=get_pessoas_setor`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id_setor: idSetor })
         });
 
-        const resultado = await response.json();
+        const dadosSetor = await res1.json();
 
-        if (!resultado.sucesso) return;
-
-        const usuariosNoSetor = resultado.dados.map(u => parseInt(u.id_usuario));
-
-        document.querySelectorAll('input[name="usuarios_editar[]"]').forEach(cb => {
-            cb.checked = usuariosNoSetor.includes(parseInt(cb.value));
+        // 🔹 usuários sem setor
+        const res2 = await fetch(`../../api/api_setores.php?acao=get_sem_setor`, {
+            method: 'POST'
         });
 
-        atualizarContadorEditar();
+        const dadosSemSetor = await res2.json();
+
+        const containerSetor = document.getElementById("usuarios-no-setor");
+        const containerLivre = document.getElementById("usuarios-sem-setor");
+
+        containerSetor.innerHTML = "";
+        containerLivre.innerHTML = "";
+
+        dadosSetor.dados.forEach(u => {
+            const label = document.createElement("label");
+
+            label.innerHTML = `
+            <input type="checkbox" checked value="${u.id_usuario}">
+            ${u.nome_usuario}
+        `;
+
+            containerSetor.appendChild(label);
+        });
+
+        dadosSemSetor.dados.forEach(u => {
+            const label = document.createElement("label");
+
+            label.innerHTML = `
+            <input type="checkbox" value="${u.id_usuario}">
+            ${u.nome_usuario}
+        `;
+
+            containerLivre.appendChild(label);
+        });
     }
-
-    function atualizarContadorEditar() {
-        const marcados = document.querySelectorAll('input[name="usuarios_editar[]"]:checked');
-        document.getElementById("contador-editar").innerText = marcados.length;
-    }
-
-    document.querySelectorAll('input[name="usuarios_editar[]"]').forEach(cb => {
-        cb.addEventListener("change", atualizarContadorEditar);
-    });
-
-    document.getElementById("btn-ativar-editar").addEventListener("click", async () => {
-
-        const container = document.getElementById("opcoes_select_editar");
-        container.classList.toggle("oculto");
-
-        // Se já carregou uma vez, não precisa buscar de novo
-        if (container.dataset.carregado) return;
-
-        try {
-            const response = await fetch(`../../api/api_setores.php?acao=get_sem_setor`, {
-                method: 'POST'
-            });
-
-            const resultado = await response.json();
-
-            if (!resultado.sucesso) {
-                alert("Erro ao carregar usuários");
-                return;
-            }
-
-            container.innerHTML = "";
-
-            resultado.dados.forEach(u => {
-                const label = document.createElement("label");
-                label.classList.add("label");
-
-                label.innerHTML = `
-                <input type="checkbox" name="usuarios_editar[]" value="${u.id_usuario}">
-                ${u.nome_usuario}
-            `;
-
-                container.appendChild(label);
-            });
-
-            container.dataset.carregado = true;
-
-        } catch (erro) {
-            console.error(erro);
-            alert("Erro ao buscar usuários");
-        }
-    });
 
     document.getElementById("salvar-edicao-setor").addEventListener("click", async () => {
 
         const usuariosSelecionados = Array.from(
-            document.querySelectorAll('input[name="usuarios_editar[]"]:checked')
+            document.querySelectorAll('#editar-usuarios-setor input[type="checkbox"]:checked')
         ).map(cb => parseInt(cb.value));
 
         try {
@@ -950,7 +925,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     id_setor: parseInt(setorAtual),
-                    usuarios_selecionado: usuariosSelecionados
+                    usuarios_selecionado: usuariosSelecionados,
+                    nome_setor: "temp", // ⚠️ importante por causa da API atual
+                    id_tempo: 1 // ⚠️ mantém compatível
                 })
             });
 

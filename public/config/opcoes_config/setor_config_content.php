@@ -58,21 +58,17 @@ unset($_SESSION['old_setor']);
     <section id="editar-usuarios-setor" class="hidden">
         <h3>Editar usuários do setor</h3>
 
-        <button class="btn-ativar" id="btn-ativar-editar" type="button">
-            <span id="contador-editar">0</span> selecionados
-        </button>
+        <section class="listas-setor">
 
-        <div id="opcoes_select_editar" class="oculto">
-            <?php
-            $usuarios = $conn->query("SELECT id_usuario, nome_usuario FROM usuario ORDER BY nome_usuario");
-            while ($u = $usuarios->fetch_assoc()):
-            ?>
-                <label class="label">
-                    <input type="checkbox" name="usuarios_editar[]" value="<?= $u['id_usuario'] ?>">
-                    <?= htmlspecialchars($u['nome_usuario']) ?>
-                </label>
-            <?php endwhile; ?>
-        </div>
+            <article>
+                <h4>No setor</h4>
+                <article id="usuarios-no-setor"></article>
+            </article>
+            <article>
+                <h4>Sem setor</h4>
+                <article id="usuarios-sem-setor"></article>
+            </article>
+        </section>
 
         <button id="salvar-edicao-setor" class="btn btn-padrao">Salvar</button>
     </section>
