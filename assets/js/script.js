@@ -160,69 +160,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    /*  CONFIGURAÇÕES – JORNADA  */
-    const formJornada = document.getElementById("form-jornada");
-
-    if (formJornada) {
-        const inputJornada = document.getElementById("set-jornada");
-        const inputHoraExtra = document.getElementById("set-hora-max");
-        const resposta = document.getElementById("resposta");
-        const botaoSalvar = formJornada.querySelector("button");
-
-        formJornada.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            resposta.textContent = "";
-            resposta.className = "";
-            const jornada = inputJornada.value;
-            const horaExtra = inputHoraExtra.value;
-
-            if (!jornada || !horaExtra) {
-                resposta.textContent = "Preencha todos os campos.";
-                resposta.className = "erro";
-                return;
-            }
-
-            if (jornada === "00:00") {
-                resposta.textContent = "A jornada diária não pode ser zero.";
-                resposta.className = "erro";
-                return;
-            }
-
-            try {
-                botaoSalvar.disabled = true;
-                resposta.textContent = "Salvando configuração...";
-                resposta.className = "info";
-
-                const response = await fetch("../../api/api_jornada.php?acao=jornada", {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        jornada,
-                        hora_extra: horaExtra
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error("Erro HTTP");
-                }
-
-                const data = await response.json();
-                resposta.textContent = data.mensagem;
-                resposta.className = data.sucesso ? "sucesso" : "erro";
-            } catch (error) {
-                resposta.textContent = "Falha na comunicação com o servidor.";
-                resposta.className = "erro";
-                console.error(error);
-            } finally {
-                botaoSalvar.disabled = false;
-            }
-        });
-    }
-
     /* ONLINE – USUÁRIOS LOGADOS */
     const tabelaOnline = document.getElementById("tabela-online");
     const filtroOnline = document.getElementById("filtro-online");
@@ -790,6 +727,96 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // CONFIGURAÇÃO SETORES
+    /*  CONFIGURAÇÕES – JORNADA  */
+    const formJornada = document.getElementById("form-jornada");
 
+    if (formJornada) {
+        const inputJornada = document.getElementById("set-jornada");
+        const inputHoraExtra = document.getElementById("set-hora-max");
+        const resposta = document.getElementById("resposta");
+        const botaoSalvar = formJornada.querySelector("button");
+
+        formJornada.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            resposta.textContent = "";
+            resposta.className = "";
+            const jornada = inputJornada.value;
+            const horaExtra = inputHoraExtra.value;
+
+            if (!jornada || !horaExtra) {
+                resposta.textContent = "Preencha todos os campos.";
+                resposta.className = "erro";
+                return;
+            }
+
+            if (jornada === "00:00") {
+                resposta.textContent = "A jornada diária não pode ser zero.";
+                resposta.className = "erro";
+                return;
+            }
+
+            try {
+                botaoSalvar.disabled = true;
+                resposta.textContent = "Salvando configuração...";
+                resposta.className = "info";
+
+                const response = await fetch("../../api/api_jornada.php?acao=jornada", {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        jornada,
+                        hora_extra: horaExtra
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Erro HTTP");
+                }
+
+                const data = await response.json();
+                resposta.textContent = data.mensagem;
+                resposta.className = data.sucesso ? "sucesso" : "erro";
+            } catch (error) {
+                resposta.textContent = "Falha na comunicação com o servidor.";
+                resposta.className = "erro";
+                console.error(error);
+            } finally {
+                botaoSalvar.disabled = false;
+            }
+        });
+    }
+
+    const filtroJornada = document.getElementById("filtro-jornada");
+    const linhasJornada = document.querySelectorAll(".tabela-config tbody tr");
+
+    if (filtroJornada && linhasJornada.length) {
+
+        filtroJornada.addEventListener("change", aplicarFiltroJornada);
+
+        function aplicarFiltroJornada() {
+            const valor = filtroJornada.value;
+
+            linhasJornada.forEach(linha => {
+                const status = linha.dataset.status;
+
+                let mostrar = true;
+
+                if (valor === "ativos" && status !== "ativo") {
+                    mostrar = false;
+                }
+
+                if (valor === "inativos" && status !== "inativo") {
+                    mostrar = false;
+                }
+
+                linha.style.display = mostrar ? "" : "none";
+            });
+        }
+
+        aplicarFiltroJornada();
+    }
 });

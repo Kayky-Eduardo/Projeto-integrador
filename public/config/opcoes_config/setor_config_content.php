@@ -40,8 +40,8 @@ unset($_SESSION['old_setor']);
                     while ($j = $jornadas->fetch_assoc()):
                     ?>
                         <option value="<?= $j['id_tempo'] ?>"
-                            <?= (isset($old['id_tempo']) && $old['id_tempo'] == $j['id_tempo']) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($j['descricao'] ?: 'Sem descrição') ?>
+                            <?= ((isset($old['id_tempo']) && $old['id_tempo'] == $j['id_tempo']) ? 'selected' : '') ?>>
+                            <?= ucfirst(htmlspecialchars($j['descricao'] ?: 'Sem descrição')) ?>
                         </option>
                     <?php endwhile; ?>
                 </select>

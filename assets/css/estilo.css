@@ -769,6 +769,13 @@ footer a {
     justify-content: center;
 }
 
+.filtro-status-config {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+}
+
 /* Menu lateral de configurações */
 .menu-config {
     list-style: none;

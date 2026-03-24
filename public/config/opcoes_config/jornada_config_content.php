@@ -71,6 +71,14 @@ unset($_SESSION['erros']);
         </section>
     </form>
 
+    <section class="form-config">
+        <select id="filtro-jornada" class="select-padrao">
+            <option value="ativos" selected>Ativos</option>
+            <option value="inativos">Inativos</option>
+            <option value="todos">Todos</option>
+        </select>
+    </section>
+
     <section class="tabela-padrao tabela-config">
         <table>
             <thead>
@@ -85,7 +93,7 @@ unset($_SESSION['erros']);
 
             <tbody>
                 <?php while ($row = $result->fetch_assoc()): ?>
-                    <tr>
+                    <tr data-status="<?= $row['ativo'] ? 'ativo' : 'inativo' ?>">
                         <td><?= htmlspecialchars(ucfirst($row['descricao'])) ?></td>
                         <td><?= $row['jornada'] ?></td>
                         <td><?= $row['maximo_hora_extra'] ?></td>
