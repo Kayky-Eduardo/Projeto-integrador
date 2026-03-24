@@ -10,7 +10,6 @@ verificar_login($conn);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório ponto</title>
-    <!-- <link rel="stylesheet" href="../../assets/css/estilo.css"> -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <?php include "../../include/link.html" ?>
 
@@ -66,71 +65,10 @@ verificar_login($conn);
                     <td>-</td>
                 </tr>
             </tbody>
-        </table>
-        <!-- Perfil de usuario geral(com filtro), porém irei fazer um para o profissional ver o próprio -->
-        <hr>
-        <h3>Perfil de usuario(ADM)</h3>
-        <!--
-        select para mostrar os usuarios, o valor das options vai ser o id, e para o usuario vai aparecer
-        o nome do usuário
-         -->
-        <select id="filtro-usuarios">Usuarios</select>
-        <!-- ficar embaixo do filtro -->
-        <section>
-            <table>
-                <thead>
-                    <th>ID</th>
-                    <th>Email</th>
-                    <th>Inicio</th>
-                    <th>Saida</th>
-                    <th>Tempo trabalhado</th>
-                    <th>Tempo logado</th>
-                </thead>
-                <tbody id="filtro-usuarios-tabela">
-                    <tr>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                    </tr>
-                </tbody>
-            </table>
+        </table>           
     </section>
 
     <section id="exibicao-hora-extra"></section>
-    </section>
-    <section class="container">        
-        <section class="formulario">
-            <article class="form-group">
-                <label for="usuarioId">ID do Usuário:</label>
-                <input type="number" id="usuarioId" value="1" min="1">
-            </article>
-            
-            <article class="form-group">
-                <label for="dataInicio">Data Início:</label>
-                <input type="date" id="dataInicio">
-            </article>
-            
-            <article class="form-group">
-                <label for="dataFim">Data Fim:</label>
-                <input type="date" id="dataFim">
-            </article>
-            
-            <button id="btnVerificar">
-                Verificar Jornada
-            </button>
-        </section>
-        
-        <span id="loading" class="loading" style="display: none;">
-            Carregando...
-        </span>
-        
-        <span id="error" class="error" style="display: none;"></span>
-        
-        <p id="resultado"></p>
-        <p id="detalhes"></p>
     </section>
     <script type="text/javascript">
         // Validar mais tarde
@@ -294,52 +232,6 @@ verificar_login($conn);
                 })
             }
 
-            async function exibicao_usuarios_option() {
-                select.innerHTML = `<option value="">Selecione um usuario</option>`
-                await fetch("../../api/api_relatorio_ponto.php?acao=usuarios")
-                .then((coleta_usuarios) => coleta_usuarios.json())
-                .then((resposta_usuarios) => {
-                    resposta_usuarios.forEach(u => {
-                        const tag_option = document.createElement("option");
-                        tag_option.value = u.id_usuario;
-                        tag_option.textContent = u.nome_usuario;
-                        select.appendChild(tag_option);
-                    })
-                });
-            }
-            
-            select.addEventListener("change", async function () {
-                const exibicao_hora_extra = document.getElementById("exibicao-hora-extra");
-
-                exibicao_hora_extra.innerHTML = "";
-
-                const id_usuario = this.value;
-
-                await fetch("../../api/api_relatorio_ponto.php?acao=get_horas",
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id_usuario })
-                })
-                .then((coleta_hora_extra) => coleta_hora_extra.json())
-                .then((resposta) => {
-                    const tag_h1 = document.createElement("h1");
-                    const tag_h2 = document.createElement("h2");
-        
-                    tag_h1.textContent = "Hora Extra";
-        
-                    // Usa direto o valor retornado pela API
-                    tag_h2.textContent = resposta.dados.saldo_formatado ?? "00:00";
-        
-                    exibicao_hora_extra.appendChild(tag_h1);
-                    exibicao_hora_extra.appendChild(tag_h2);
-        
-                    filtrar_tabela_hora(id_usuario);
-                });
-
-            });
-            exibicao_usuarios_option();
-
             async function verificar_jornada(usuarioId, dataInicio, dataFim) {
                 try {
                     const params = new URLSearchParams({
@@ -369,90 +261,11 @@ verificar_login($conn);
         function formatarPercentual(percentual) {
             return percentual.toFixed(2).replace('.', ',') + '%';
         }
-
-        function exibir_resultado(resultado, elementoId) {
-            const elemento = document.getElementById(elementoId);
-            
-            if (!elemento) {
-                console.log('Elemento não encontrado:', elementoId);
-                return;
-            }
-            
-            const simboloDiferenca = resultado.diferenca >= 0 ? '+' : '';
-            
-            elemento.innerHTML = `
-                <section class="jornada-resultado">
-                    <h3>Verificação de Jornada</h3>
-                    <article class="jornada-info">
-                        <p><strong>Usuário ID:</strong> ${resultado.usuario_id}</p>
-                    </article>
-                    
-                    <section class="jornada-metricas">
-                        <article class="metrica">
-                            <span class="label">Horas Trabalhadas:</span>
-                            <span class="valor">${formatarHoras(resultado.horas_trabalhadas)}</span>
-                        </article>
-                        <article class="metrica">
-                            <span class="label">Horas Esperadas:</span>
-                            <span class="valor">${formatarHoras(resultado.horas_esperadas)}</span>
-                        </article>
-                        <article class="metrica">
-                            <span class="label">Diferença:</span>
-                            <span class="valor">${simboloDiferenca}${formatarHoras(resultado.diferenca)}</span>
-                        </article>
-                        <article class="metrica">
-                            <span class="label">Cumprimento:</span>
-                            <span class="valor">${formatarPercentual(resultado.percentual)}</span>
-                        </article>
-                    </section>
-                </section>
-            `;
-        }
-
-        async function buscar_jornada() {
-            const usuarioId = document.getElementById('usuarioId').value;
-            const dataInicio = document.getElementById('dataInicio').value;
-            const dataFim = document.getElementById('dataFim').value;
-            
-            if (!usuarioId || !dataInicio || !dataFim) {
-                console.log('Preencha todos os campos!');
-                return;
-            }
-                document.getElementById('loading').style.display = 'block';
-                document.getElementById('error').style.display = 'none';
-                limpar_resultado();
-                
-            try {
-                const resultado = await verificar_jornada(usuarioId, dataInicio, dataFim);
-                
-                exibir_resultado(resultado, 'resultado');
-                
-            } catch (error) {
-                console.log('Erro ao buscar dados: ' + error.message);
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
-        }
-        
-        document.getElementById("btnVerificar").addEventListener("click", function () {
-            buscar_jornada();
-        })
         
         function limpar_resultado() {
             document.getElementById('resultado').innerHTML = '';
             document.getElementById('detalhes').innerHTML = '';
         }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputs = document.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        buscar_jornada();
-                    }
-                });
-            });
-        });
 
         async function carregar_grafico_bar1() {
             try {
