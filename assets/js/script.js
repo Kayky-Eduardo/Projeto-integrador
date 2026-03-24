@@ -791,30 +791,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const filtroJornada = document.getElementById("filtro-jornada");
-    const linhasJornada = document.querySelectorAll(".tabela-config tbody tr");
+    const linhasJornada = document.querySelectorAll("#tabela-jornada tbody tr");
 
     if (filtroJornada && linhasJornada.length) {
-
         filtroJornada.addEventListener("change", aplicarFiltroJornada);
 
         function aplicarFiltroJornada() {
             const valor = filtroJornada.value;
+            let visiveis = 0;
 
             linhasJornada.forEach(linha => {
+                if (linha.id === "linha-vazia-jornada") return;
                 const status = linha.dataset.status;
-
                 let mostrar = true;
-
-                if (valor === "ativos" && status !== "ativo") {
-                    mostrar = false;
-                }
-
-                if (valor === "inativos" && status !== "inativo") {
-                    mostrar = false;
-                }
-
+                if (valor === "ativos" && status !== "ativo") mostrar = false;
+                if (valor === "inativos" && status !== "inativo") mostrar = false;
                 linha.style.display = mostrar ? "" : "none";
+                if (mostrar) visiveis++;
             });
+
+            const linhaVazia = document.getElementById("linha-vazia-jornada");
+
+            if (visiveis === 0) {
+                let texto = "Nenhuma jornada encontrada.";
+                if (valor === "ativos") texto = "Nenhuma jornada ativa encontrada.";
+                if (valor === "inativos") texto = "Nenhuma jornada inativa encontrada.";
+                linhaVazia.style.display = "";
+                linhaVazia.querySelector("td").innerText = texto;
+            } else {
+                linhaVazia.style.display = "none";
+            }
         }
 
         aplicarFiltroJornada();
@@ -822,7 +828,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // CONFIGURAÇÕES - PAUSAS
     const filtroPausa = document.getElementById("filtro-pausa");
-    const linhasPausa = document.querySelectorAll(".tabela-config tbody tr");
+    const linhasPausa = document.querySelectorAll("#tabela-pausa tbody tr");
 
     if (filtroPausa && linhasPausa.length) {
 
@@ -830,22 +836,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
         function aplicarFiltroPausa() {
             const valor = filtroPausa.value;
+            let visiveis = 0;
 
             linhasPausa.forEach(linha => {
+                if (linha.id === "linha-vazia-pausa") return;
                 const status = linha.dataset.status;
-
                 let mostrar = true;
-
-                if (valor === "ativos" && status !== "ativo") {
-                    mostrar = false;
-                }
-
-                if (valor === "inativos" && status !== "inativo") {
-                    mostrar = false;
-                }
-
+                if (valor === "ativos" && status !== "ativo") mostrar = false;
+                if (valor === "inativos" && status !== "inativo") mostrar = false;
                 linha.style.display = mostrar ? "" : "none";
+                if (mostrar) visiveis++;
             });
+
+            const linhaVazia = document.getElementById("linha-vazia-pausa");
+
+            if (visiveis === 0) {
+                let texto = "Nenhuma pausa encontrada.";
+                if (valor === "ativos") texto = "Nenhuma pausa ativa encontrada.";
+                if (valor === "inativos") texto = "Nenhuma pausa inativa encontrada.";
+                linhaVazia.style.display = "";
+                linhaVazia.querySelector("td").innerText = texto;
+            } else {
+                linhaVazia.style.display = "none";
+            }
         }
 
         aplicarFiltroPausa();
@@ -856,11 +869,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(".btn-editar-setor").forEach(btn => {
         btn.addEventListener("click", async () => {
-
             setorAtual = btn.dataset.id;
             const nomeSetor = btn.dataset.nome;
 
-            // 🔥 atualiza o título
             document.getElementById("titulo-setor").innerText =
                 `Gerenciar Usuários de ${nomeSetor}`;
 
@@ -940,4 +951,49 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Erro ao salvar");
         }
     });
+
+    const filtroSetor = document.getElementById("filtro-setor");
+
+    if (filtroSetor) {
+        function aplicarFiltroSetor() {
+            const valor = filtroSetor.value;
+            let visiveis = 0;
+
+            document.querySelectorAll("#tabela-setores tbody tr").forEach(tr => {
+                if (tr.id === "linha-vazia") return;
+
+                const status = tr.dataset.status;
+
+                if (valor === "todos") {
+                    tr.style.display = "";
+                    visiveis++;
+                } else if (valor === "ativos" && status === "ativo") {
+                    tr.style.display = "";
+                    visiveis++;
+                } else if (valor === "inativos" && status === "inativo") {
+                    tr.style.display = "";
+                    visiveis++;
+                } else {
+                    tr.style.display = "none";
+                }
+            });
+
+            const linhaVazia = document.getElementById("linha-vazia");
+
+            if (visiveis === 0) {
+                let texto = "Nenhum setor encontrado.";
+
+                if (valor === "ativos") texto = "Nenhum setor ativo encontrado.";
+                if (valor === "inativos") texto = "Nenhum setor inativo encontrado.";
+
+                linhaVazia.style.display = "";
+                linhaVazia.querySelector("td").innerText = texto;
+            } else {
+                linhaVazia.style.display = "none";
+            }
+        }
+
+        filtroSetor.addEventListener("change", aplicarFiltroSetor);
+        aplicarFiltroSetor();
+    }
 });

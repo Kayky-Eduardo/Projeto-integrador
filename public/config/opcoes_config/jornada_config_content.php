@@ -80,7 +80,7 @@ unset($_SESSION['erros']);
     </section>
 
     <section class="tabela-padrao tabela-config">
-        <table>
+        <table id="tabela-jornada">
             <thead>
                 <tr>
                     <th>Descrição</th>
@@ -143,6 +143,10 @@ unset($_SESSION['erros']);
                         </td>
                     </tr>
                 <?php endwhile; ?>
+
+                <tr id="linha-vazia-jornada" style="display: none;">
+                    <td colspan="5">Nenhuma jornada encontrada.</td>
+                </tr>
             </tbody>
         </table>
     </section>

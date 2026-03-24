@@ -98,7 +98,7 @@ unset($_SESSION['msg']);
     </section>
 
     <section class="tabela-padrao tabela-config">
-        <table>
+        <table id="tabela-pausa">
             <thead>
                 <tr>
                     <th>Descrição</th>
@@ -148,6 +148,10 @@ unset($_SESSION['msg']);
                         </td>
                     </tr>
                 <?php endwhile; ?>
+
+                <tr id="linha-vazia-pausa" style="display: none;">
+                    <td colspan="6">Nenhuma pausa encontrada.</td>
+                </tr>
             </tbody>
         </table>
     </section>

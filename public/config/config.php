@@ -272,6 +272,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
+
+if (isset($_POST['acao_setor_btn'])) {
+    $id_setor = intval($_POST['id_setor']);
+    $acao = $_POST['acao_setor_btn'];
+
+    if ($acao === 'excluir') {
+        $sql = "SELECT 1 FROM grupo_setor WHERE id_setor = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id_setor);
+        $stmt->execute();
+
+        if ($stmt->get_result()->num_rows > 0) {
+            $_SESSION['erros'][] = 'Não é possível excluir. Existem usuários vinculados a este setor.';
+        } else {
+            $sql = "DELETE FROM setor WHERE id_setor = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $id_setor);
+            $stmt->execute();
+        }
+
+        header("Location: " . $_SERVER['REQUEST_URI']);
+        exit;
+    }
+
+    if ($acao === 'ativar' || $acao === 'desativar') {
+        $novo_estado = ($acao === 'ativar') ? 1 : 0;
+        $sql = "UPDATE setor SET ativo = ? WHERE id_setor = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ii", $novo_estado, $id_setor);
+        $stmt->execute();
+        header("Location: " . $_SERVER['REQUEST_URI']);
+        exit;
+    }
+}
 ?>
 
 <!DOCTYPE html>
