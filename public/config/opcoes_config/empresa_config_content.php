@@ -2,15 +2,13 @@
 $sql_empresa = $conn->prepare("SELECT * FROM empresas");
 $sql_empresa->execute();
 $empresa = $sql_empresa->get_result()->fetch_assoc();
-$modo_edicao = isset($_SESSION['modo_edicao_empresa'])
-    ? true
-    : empty($empresa);
+$modo_edicao = empty($empresa) || isset($_GET['editar']);
 ?>
 
 <section class="container">
     <h1 class="page-title">Dados da Empresa</h1>
 
-    <form clas id="meuForm" method="POST">
+    <form class="form" id="meuForm" method="POST">
         <section class="form-empresa">
             <article>
                 <label class="label">Razão Social</label>
@@ -95,9 +93,27 @@ $modo_edicao = isset($_SESSION['modo_edicao_empresa'])
         </section>
 
         <section class="form-linha">
-            <button type="submit" class="btn btn-padrao btn-empresa-config" name="acao_empresa" value="<?= $modo_edicao ? 'salvar' : 'editar' ?>">
-                <?= $modo_edicao ? 'Salvar' : 'Editar' ?>
-            </button>
+            <?php if ($modo_edicao): ?>
+
+                <!-- BOTÃO SALVAR -->
+                <button type="submit"
+                    class="btn btn-padrao btn-empresa-config"
+                    name="acao_empresa"
+                    value="salvar">
+                    Salvar
+                </button>
+
+            <?php else: ?>
+
+                <!-- BOTÃO EDITAR -->
+                <a href="?pagina=empresa&editar=1">
+                    <button type="button"
+                        class="btn btn-padrao btn-empresa-config">
+                        Editar
+                    </button>
+                </a>
+
+            <?php endif; ?>
         </section>
     </form>
 </section>
