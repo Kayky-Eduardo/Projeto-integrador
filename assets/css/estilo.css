@@ -818,6 +818,32 @@ footer a {
     text-decoration: none;
 }
 
+/* CONFIGURAÇÕES DA EMPRESA */
+.form-empresa {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+    gap: 20px;
+}
+
+/* VALOR (MODO VISUAL) */
+.info-valor {
+    padding: 10px 12px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #333;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+}
+
+/* LINHA DO BOTÃO */
+.btn-empresa-config {
+    margin-top: 10px;
+    align-items: center;
+}
+
 /* CONFIGURAÇÕES DE JORNADA */
 .box-config {
     display: inline-block;

@@ -10,10 +10,8 @@ $modo_edicao = isset($_SESSION['modo_edicao_empresa'])
 <section class="container">
     <h1 class="page-title">Dados da Empresa</h1>
 
-    <form class="form" id="empresa-form-config" method="POST">
-        <section class="form">
-
-            <!-- RAZÃO SOCIAL -->
+    <form clas id="meuForm" method="POST">
+        <section class="form-empresa">
             <article>
                 <label class="label">Razão Social</label>
                 <?php if ($modo_edicao): ?>
@@ -24,7 +22,6 @@ $modo_edicao = isset($_SESSION['modo_edicao_empresa'])
                 <?php endif; ?>
             </article>
 
-            <!-- NOME FANTASIA -->
             <article>
                 <label class="label">Nome Fantasia</label>
                 <?php if ($modo_edicao): ?>
@@ -35,7 +32,6 @@ $modo_edicao = isset($_SESSION['modo_edicao_empresa'])
                 <?php endif; ?>
             </article>
 
-            <!-- CNPJ -->
             <article>
                 <label class="label">CNPJ</label>
                 <?php if ($modo_edicao): ?>
@@ -46,7 +42,6 @@ $modo_edicao = isset($_SESSION['modo_edicao_empresa'])
                 <?php endif; ?>
             </article>
 
-            <!-- UF -->
             <article>
                 <label class="label">UF</label>
                 <?php if ($modo_edicao): ?>
@@ -57,7 +52,6 @@ $modo_edicao = isset($_SESSION['modo_edicao_empresa'])
                 <?php endif; ?>
             </article>
 
-            <!-- CIDADE -->
             <article>
                 <label class="label">Cidade</label>
                 <?php if ($modo_edicao): ?>
@@ -68,7 +62,6 @@ $modo_edicao = isset($_SESSION['modo_edicao_empresa'])
                 <?php endif; ?>
             </article>
 
-            <!-- BAIRRO -->
             <article>
                 <label class="label">Bairro</label>
                 <?php if ($modo_edicao): ?>
@@ -79,7 +72,6 @@ $modo_edicao = isset($_SESSION['modo_edicao_empresa'])
                 <?php endif; ?>
             </article>
 
-            <!-- NUMERO -->
             <article>
                 <label class="label">Número</label>
                 <?php if ($modo_edicao): ?>
@@ -90,7 +82,6 @@ $modo_edicao = isset($_SESSION['modo_edicao_empresa'])
                 <?php endif; ?>
             </article>
 
-            <!-- CEP -->
             <article>
                 <label class="label">CEP</label>
                 <?php if ($modo_edicao): ?>
@@ -104,11 +95,7 @@ $modo_edicao = isset($_SESSION['modo_edicao_empresa'])
         </section>
 
         <section class="form-linha">
-            <button type="submit"
-                class="btn btn-padrao"
-                name="acao_empresa"
-                value="<?= $modo_edicao ? 'salvar' : 'editar' ?>">
-
+            <button type="submit" class="btn btn-padrao btn-empresa-config" name="acao_empresa" value="<?= $modo_edicao ? 'salvar' : 'editar' ?>">
                 <?= $modo_edicao ? 'Salvar' : 'Editar' ?>
             </button>
         </section>
