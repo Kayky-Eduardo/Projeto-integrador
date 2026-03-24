@@ -858,17 +858,31 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener("click", async () => {
 
             setorAtual = btn.dataset.id;
+            const nomeSetor = btn.dataset.nome;
+
+            // 🔥 atualiza o título
+            document.getElementById("titulo-setor").innerText =
+                `Gerenciar Usuários de ${nomeSetor}`;
 
             const painel = document.getElementById("editar-usuarios-setor");
             painel.classList.remove("hidden");
-
             await carregarListas(setorAtual);
         });
     });
 
-    async function carregarListas(idSetor) {
+    function criarCheckboxUsuario(usuario, checked = false) {
+        const label = document.createElement("label");
+        label.classList.add("label", "box-config");
 
-        // 🔹 usuários no setor
+        label.innerHTML = `
+            <input class="input" type="checkbox" value="${usuario.id_usuario}" ${checked ? "checked" : ""}>
+            <span>${usuario.nome_usuario}</span>
+        `;
+
+        return label;
+    }
+
+    async function carregarListas(idSetor) {
         const res1 = await fetch(`../../api/api_setores.php?acao=get_pessoas_setor`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -877,44 +891,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const dadosSetor = await res1.json();
 
-        // 🔹 usuários sem setor
         const res2 = await fetch(`../../api/api_setores.php?acao=get_sem_setor`, {
             method: 'POST'
         });
 
         const dadosSemSetor = await res2.json();
-
         const containerSetor = document.getElementById("usuarios-no-setor");
         const containerLivre = document.getElementById("usuarios-sem-setor");
-
         containerSetor.innerHTML = "";
         containerLivre.innerHTML = "";
 
         dadosSetor.dados.forEach(u => {
-            const label = document.createElement("label");
-
-            label.innerHTML = `
-            <input type="checkbox" checked value="${u.id_usuario}">
-            ${u.nome_usuario}
-        `;
-
-            containerSetor.appendChild(label);
+            containerSetor.appendChild(criarCheckboxUsuario(u, true));
         });
 
         dadosSemSetor.dados.forEach(u => {
-            const label = document.createElement("label");
-
-            label.innerHTML = `
-            <input type="checkbox" value="${u.id_usuario}">
-            ${u.nome_usuario}
-        `;
-
-            containerLivre.appendChild(label);
+            containerLivre.appendChild(criarCheckboxUsuario(u, false));
         });
     }
 
     document.getElementById("salvar-edicao-setor").addEventListener("click", async () => {
-
         const usuariosSelecionados = Array.from(
             document.querySelectorAll('#editar-usuarios-setor input[type="checkbox"]:checked')
         ).map(cb => parseInt(cb.value));
@@ -926,8 +922,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify({
                     id_setor: parseInt(setorAtual),
                     usuarios_selecionado: usuariosSelecionados,
-                    nome_setor: "temp", // ⚠️ importante por causa da API atual
-                    id_tempo: 1 // ⚠️ mantém compatível
+                    nome_setor: "temp",
+                    id_tempo: 1
                 })
             });
 
@@ -939,7 +935,6 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 alert("Erro: " + resultado.mensagem);
             }
-
         } catch (error) {
             console.error(error);
             alert("Erro ao salvar");

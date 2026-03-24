@@ -56,21 +56,25 @@ unset($_SESSION['old_setor']);
     </form>
 
     <section id="editar-usuarios-setor" class="hidden">
-        <h3>Editar usuários do setor</h3>
+        <section class="form-config">
+            <h1 id="titulo-setor" class="page-title">
+                Gerenciar Usuários do Setor
+            </h1>
+            
+            <button id="salvar-edicao-setor" class="btn btn-padrao">Salvar</button>
+        </section>
 
         <section class="listas-setor">
-
             <article>
-                <h4>No setor</h4>
+                <label class="label">No setor</label>
                 <article id="usuarios-no-setor"></article>
             </article>
+
             <article>
-                <h4>Sem setor</h4>
+                <label class="label">Sem setor</label>
                 <article id="usuarios-sem-setor"></article>
             </article>
         </section>
-
-        <button id="salvar-edicao-setor" class="btn btn-padrao">Salvar</button>
     </section>
 
     <section class="tabela-padrao tabela-config">
@@ -90,7 +94,8 @@ unset($_SESSION['old_setor']);
                             <td>
                                 <button
                                     class="btn btn-padrao btn-editar-setor"
-                                    data-id="<?= $row['id_setor'] ?>">
+                                    data-id="<?= $row['id_setor'] ?>"
+                                    data-nome="<?= htmlspecialchars($row['nome_setor']) ?>">
                                     Gerenciar Setor
                                 </button>
                             </td>

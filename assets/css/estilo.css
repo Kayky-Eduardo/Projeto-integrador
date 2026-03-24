@@ -383,6 +383,7 @@ footer a {
     background-position: right 0.6rem center;
     background-size: 14px;
     width: 100%;
+    padding-right: 30px;
 }
 
 /* FORMULÁRIO  */
@@ -921,6 +922,8 @@ footer a {
     padding: 10px;
     max-height: 300px;
     overflow-y: auto;
+    margin-bottom: 15px;    
+    border-radius: var(--raio-borda-padrao);
 }
 
 /* LISTA DE USUÁRIOS */
