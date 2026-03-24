@@ -1,5 +1,5 @@
 <?php
-$listSql = "SELECT * FROM pausa_config ORDER BY ativo DESC, id_config ASC";
+$listSql = "SELECT * FROM pausa_config ORDER BY ativo DESC, descricao_pausa ASC";
 $listRes = $conn->query($listSql);
 $listSetor = "SELECT * FROM setor";
 $setor = $conn->query($listSetor);
@@ -83,11 +83,19 @@ unset($_SESSION['msg']);
                         <span><?= ucfirst($s['nome_setor']) ?></span>
                     </label>
                 <?php endforeach; ?>
-                
+
                 <button type="submit" class="btn btn-padrao">Criar pausa</button>
             </article>
         </section>
     </form>
+
+    <section class="filtro-status-config">
+        <select id="filtro-pausa" class="select-padrao">
+            <option value="ativos" selected>Ativos</option>
+            <option value="inativos">Inativos</option>
+            <option value="todos">Todos</option>
+        </select>
+    </section>
 
     <section class="tabela-padrao tabela-config">
         <table>
@@ -104,7 +112,7 @@ unset($_SESSION['msg']);
 
             <tbody>
                 <?php while ($row = $listRes->fetch_assoc()): ?>
-                    <tr>
+                    <tr data-status="<?= $row['ativo'] ? 'ativo' : 'inativo' ?>">
                         <td><?= htmlspecialchars(ucfirst($row['descricao_pausa'])) ?></td>
 
                         <td>

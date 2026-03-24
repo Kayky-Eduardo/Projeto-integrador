@@ -819,4 +819,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
         aplicarFiltroJornada();
     }
+
+    // CONFIGURAÇÕES - PAUSAS
+    const filtroPausa = document.getElementById("filtro-pausa");
+    const linhasPausa = document.querySelectorAll(".tabela-config tbody tr");
+
+    if (filtroPausa && linhasPausa.length) {
+
+        filtroPausa.addEventListener("change", aplicarFiltroPausa);
+
+        function aplicarFiltroPausa() {
+            const valor = filtroPausa.value;
+
+            linhasPausa.forEach(linha => {
+                const status = linha.dataset.status;
+
+                let mostrar = true;
+
+                if (valor === "ativos" && status !== "ativo") {
+                    mostrar = false;
+                }
+
+                if (valor === "inativos" && status !== "inativo") {
+                    mostrar = false;
+                }
+
+                linha.style.display = mostrar ? "" : "none";
+            });
+        }
+
+        aplicarFiltroPausa();
+    }
 });
