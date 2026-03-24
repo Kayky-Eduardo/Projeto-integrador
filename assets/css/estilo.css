@@ -723,12 +723,21 @@ footer a {
 /* CONFIGURAÇÕES */
 .pagina-config {
     width: 100%;
+    flex: 1;
+    min-width: 0;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
 }
 
 .configuracoes {
     display: flex;
     gap: 1.5rem;
     width: 100%;
+    align-items: flex-start;
+}
+
+.configuracoes aside {
+    flex: 0 0 220px;
 }
 
 /* Menu lateral de configurações */
@@ -740,6 +749,7 @@ footer a {
     gap: 8px;
     background-color: var(--cor-principal);
     border-radius: var(--raio-borda-grande);
+    white-space: nowrap;
 }
 
 .menu-config a {
