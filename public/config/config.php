@@ -6,6 +6,82 @@ verificar_login($conn);
 $pagina = $_GET['pagina'] ?? 'empresa';
 $dias = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // EMPRESA
+    if (isset($_POST['acao_empresa'])) {
+
+        if ($_POST['acao_empresa'] === 'editar') {
+            $_SESSION['modo_edicao_empresa'] = true;
+            header("Location: config.php?pagina=empresa");
+            exit;
+        }
+
+        if ($_POST['acao_empresa'] === 'salvar') {
+
+            $id_usuario = $_SESSION['id_usuario'];
+
+            $razao = $_POST['razao_social'] ?? '';
+            $fantasia = $_POST['nome_fantasia'] ?? '';
+            $cnpj = $_POST['cnpj'] ?? '';
+            $uf = $_POST['estado'] ?? '';
+            $cidade = $_POST['cidade'] ?? '';
+            $bairro = $_POST['bairro'] ?? '';
+            $numero = $_POST['numero'] ?? '';
+            $cep = $_POST['cep'] ?? '';
+
+            if (empty($razao) || empty($cnpj)) {
+                $_SESSION['erros'][] = 'Preencha os campos obrigatórios.';
+            } else {
+
+                $check = $conn->query("SELECT id_modificador FROM empresas LIMIT 1");
+
+                if ($check->num_rows > 0) {
+                    $sql = $conn->prepare("UPDATE empresas SET
+                    id_modificador=?,
+                    data_modificacao=CURDATE(),
+                    razao_social=?, nome_fantasia=?, cnpj=?, uf=?, cidade=?, bairro=?, numero=?, cep=?");
+
+                    $sql->bind_param(
+                        "issssssss",
+                        $id_usuario,
+                        $razao,
+                        $fantasia,
+                        $cnpj,
+                        $uf,
+                        $cidade,
+                        $bairro,
+                        $numero,
+                        $cep
+                    );
+                } else {
+                    $sql = $conn->prepare("INSERT INTO empresas
+                    (id_modificador, data_modificacao, razao_social, nome_fantasia, cnpj, uf, cidade, bairro, numero, cep)
+                    VALUES (?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)");
+
+                    $sql->bind_param(
+                        "issssssss",
+                        $id_usuario,
+                        $razao,
+                        $fantasia,
+                        $cnpj,
+                        $uf,
+                        $cidade,
+                        $bairro,
+                        $numero,
+                        $cep
+                    );
+                }
+
+                if ($sql->execute()) {
+                    unset($_SESSION['modo_edicao_empresa']);
+                } else {
+                    $_SESSION['erros'][] = 'Erro ao salvar empresa.';
+                }
+            }
+
+            header("Location: config.php?pagina=empresa");
+            exit;
+        }
+    }
 
     // PAUSA
     if (isset($_POST['pausa']) && $_POST['pausa'] === 'criar') {
