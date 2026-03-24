@@ -280,6 +280,12 @@ footer a {
     color: var(--cor-principal);
 }
 
+.btn-ativar,
+.btn-desativar {
+    min-width: 120px;
+    text-align: center;
+}
+
 .btn-ativar {
     background-color: #2ecc71;
     color: var(--cor-principal);
@@ -290,8 +296,20 @@ footer a {
     color: var(--cor-principal);
 }
 
+.btn-ativar:hover {
+    background-color: #27ae60;
+}
+
+.btn-desativar:hover {
+    background-color: #ea580c;
+}
+
 .btn-excluir {
     background-color: var(--cor-perigo);
+}
+
+.btn-excluir:hover {
+    background-color: #b91c1c;
 }
 
 .btn-voltar {
@@ -740,6 +758,17 @@ footer a {
     flex: 0 0 220px;
 }
 
+.tabela-config {
+    box-shadow: 1px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.acoes-config {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    justify-content: center;
+}
+
 /* Menu lateral de configurações */
 .menu-config {
     list-style: none;
@@ -775,10 +804,6 @@ footer a {
 #resposta {
     margin-top: 1rem;
     font-size: var(--tamanho-texto-padrao);
-}
-
-.tabela-config {
-    box-shadow: 1px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* EDIÇÃO DE CONFIGURAÇÕES */

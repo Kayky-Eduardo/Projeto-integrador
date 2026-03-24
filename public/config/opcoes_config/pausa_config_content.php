@@ -103,12 +103,21 @@ function acharGrupo($conn, $id_config)
                         <td><?= $row['tempo_max'] ?></td>
                         <td><?= $row['limite_pausa_diario'] == 0 ? "Ilimitado" : $row['limite_pausa_diario'] ?></td>
 
-                        <td>
-                            <form method="POST" action="config_pausa/pausa_edit.php">
+                        <td class="acoes-config">
+                            <form method="POST">
                                 <input type="hidden" name="id_config" value="<?= $row['id_config'] ?>">
+                                <button
+                                    class="btn <?= $row['ativo'] ? 'btn-desativar' : 'btn-ativar' ?>"
+                                    name="acao"
+                                    value="<?= $row['ativo'] ? 'desativar' : 'ativar' ?>">
+                                    <?= $row['ativo'] ? 'Desativar' : 'Ativar' ?>
+                                </button>
+                            </form>
 
-                                <button class="btn-link btn-padrao btn-editar-config"  data-id="<?= $row['id_config'] ?>">
-                                    Editar
+                            <form method="POST">
+                                <input type="hidden" name="id_config" value="<?= $row['id_config'] ?>">
+                                <button class="btn btn-excluir" name="acao" value="excluir">
+                                    Excluir
                                 </button>
                             </form>
                         </td>

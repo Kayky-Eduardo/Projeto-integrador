@@ -57,6 +57,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao'])) {
+
+        $id_config = intval($_POST['id_config']);
+        $acao = $_POST['acao'];
+
+        if ($acao === 'excluir') {
+
+            $sql = "SELECT 1 FROM pausa WHERE id_config = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $id_config);
+            $stmt->execute();
+
+            if ($stmt->get_result()->num_rows > 0) {
+                $_SESSION['msg'] = 'Erro: Não é possível excluir esta pausa.';
+            } else {
+                $sql = "DELETE FROM pausa_config WHERE id_config = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("i", $id_config);
+                $stmt->execute();
+
+                $_SESSION['msg'] = 'Pausa excluída com sucesso.';
+            }
+
+            header("Location: " . $_SERVER['REQUEST_URI']);
+            exit;
+        }
+
+        if ($acao === 'ativar' || $acao === 'desativar') {
+
+            $novo_estado = ($acao === 'ativar') ? 1 : 0;
+
+            $sql = "UPDATE pausa_config SET ativo = ? WHERE id_config = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ii", $novo_estado, $id_config);
+            $stmt->execute();
+
+            $_SESSION['msg'] = 'Status atualizado com sucesso.';
+
+            header("Location: " . $_SERVER['REQUEST_URI']);
+            exit;
+        }
+    }
+
     // JORNADA
     if (isset($_POST['acao_jornada']) && $_POST['acao_jornada'] === 'criar') {
         $descricao = strtolower(trim($_POST['descricao']));
@@ -143,20 +186,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php
             switch ($pagina) {
                 case 'empresa':
-                    include(__DIR__ . "/config_empresa/empresa_config_content.php");
+                    include(__DIR__ . "/opcoes_config/empresa_config_content.php");
                     break;
 
                 case 'pausas':
-                    include(__DIR__ . "/config_pausa/pausa_config_content.php");
+                    include(__DIR__ . "/opcoes_config/pausa_config_content.php");
                     break;
 
                 case 'jornada':
                 default:
-                    include(__DIR__ . "/config_jornada/jornada_config_content.php");
+                    include(__DIR__ . "/opcoes_config/jornada_config_content.php");
                     break;
-                    
+
                 case 'setores':
-                    include(__DIR__ . "/config_setor/setor_config_content.php");
+                    include(__DIR__ . "/opcoes_config/setor_config_content.php");
                     break;
             }
             ?>

@@ -789,22 +789,4 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     });
-
-    // Editar Configurações
-    document.addEventListener("click", function (e) {
-        if (e.target.classList.contains("btn-editar-config")) {
-            e.preventDefault();
-
-            const id = e.target.getAttribute("data-id");
-
-            fetch(`config_pausa/pausa_edit.php?id_config=${id}`)
-                .then(res => res.text())
-                .then(html => {
-                    document.getElementById("container-config").innerHTML = html;
-                })
-                .catch(err => {
-                    console.error("Erro ao carregar edição:", err);
-                });
-        }
-    });
 });
