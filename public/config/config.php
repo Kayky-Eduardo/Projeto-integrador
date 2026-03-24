@@ -3,7 +3,7 @@ session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
-$pagina = $_GET['pagina'] ?? 'jornada';
+$pagina = $_GET['pagina'] ?? 'empresa';
 $dias = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
