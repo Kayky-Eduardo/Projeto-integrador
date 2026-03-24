@@ -45,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $stmt_setor->execute();
                     }
 
-                    $_SESSION['msg'] = 'Pausa criada com sucesso.';
                     unset($_SESSION['old_pausa']);
                 }
             } catch (mysqli_sql_exception $e) {
@@ -80,8 +79,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param("i", $id_config);
                 $stmt->execute();
-
-                $_SESSION['msg'] = 'Pausa excluída com sucesso.';
             }
 
             header("Location: " . $_SERVER['REQUEST_URI']);
@@ -96,9 +93,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("ii", $novo_estado, $id_config);
             $stmt->execute();
-
-            $_SESSION['msg'] = 'Status atualizado com sucesso.';
-
             header("Location: " . $_SERVER['REQUEST_URI']);
             exit;
         }
@@ -131,7 +125,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->bind_param("ssss", $descricao, $jornada, $hora_extra, $dias_json);
 
                 if ($stmt->execute()) {
-                    $_SESSION['msg'] = 'Jornada criada com sucesso.';
                     unset($_SESSION['old_jornada']);
                 }
             } catch (mysqli_sql_exception $e) {
@@ -164,8 +157,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param("i", $id_tempo);
                 $stmt->execute();
-
-                $_SESSION['msg'] = 'Jornada excluída com sucesso.';
             }
 
             header("Location: " . $_SERVER['REQUEST_URI']);
@@ -180,9 +171,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("ii", $novo_estado, $id_tempo);
             $stmt->execute();
-
-            $_SESSION['msg'] = 'Status atualizado com sucesso.';
-
             header("Location: " . $_SERVER['REQUEST_URI']);
             exit;
         }

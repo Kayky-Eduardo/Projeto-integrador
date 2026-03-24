@@ -5,9 +5,6 @@ $old = $_SESSION['old_jornada'] ?? [];
 
 $erros = $_SESSION['erros'] ?? [];
 unset($_SESSION['erros']);
-
-$sucesso = $_SESSION['msg'] ?? null;
-unset($_SESSION['msg']);
 ?>
 
 <section class="container">
