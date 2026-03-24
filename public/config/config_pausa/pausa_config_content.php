@@ -19,7 +19,7 @@ function acharGrupo($conn, $id_config)
 }
 ?>
 
-<section class="container">
+<section class="container" id="container-config">
     <h1 class="page-title">Gerenciar Tipos de Pausa</h1>
 
     <?php if (!empty($_SESSION['msg'])): ?>
@@ -27,7 +27,7 @@ function acharGrupo($conn, $id_config)
         <?php unset($_SESSION['msg']); ?>
     <?php endif; ?>
 
-    <form class="form-linha form-config" method="POST">
+    <form class="form-config" method="POST">
         <input type="hidden" name="pausa" value="criar">
 
         <section class="form-linha">
@@ -52,7 +52,7 @@ function acharGrupo($conn, $id_config)
             </article>
         </section>
 
-        <section class="form-linha form-config">
+        <section class="form-linha">
             <article>
                 <p class="label">Setores:</p>
             </article>
@@ -60,9 +60,10 @@ function acharGrupo($conn, $id_config)
             <article>
                 <?php foreach ($setor as $s): ?>
                     <label class="label box-config">
-                        <input class="input" type="checkbox" name="setor[]" value="<?= $s['id_setor'] ?>">
+                        <input type="checkbox" name="setor[]" value="<?= $s['id_setor'] ?>">
                         <span><?= ucfirst($s['nome_setor']) ?></span>
-                    <?php endforeach; ?>
+                    </label>
+                <?php endforeach; ?>
             </article>
 
             <article>
@@ -106,7 +107,7 @@ function acharGrupo($conn, $id_config)
                             <form method="POST" action="config_pausa/pausa_edit.php">
                                 <input type="hidden" name="id_config" value="<?= $row['id_config'] ?>">
 
-                                <button class="btn-link btn-padrao" type="submit">
+                                <button class="btn-link btn-padrao btn-editar-config"  data-id="<?= $row['id_config'] ?>">
                                     Editar
                                 </button>
                             </form>

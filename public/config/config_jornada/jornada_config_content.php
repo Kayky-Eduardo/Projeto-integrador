@@ -33,22 +33,26 @@ $result = $conn->query($sql);
             </article>
         </section>
 
-        <section class="form-linha form-config">
-            <p class="label">Dias da semana:</p>
+        <section class="form-linha">
+            <article>
+                <p class="label">Dias da semana:</p>
+            </article>
 
-            <?php
-            $dias = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
-            foreach ($dias as $i => $dia):
-            ?>
-                <label class="label box-config">
-                    <input class="input" type="checkbox" name="dias[]" value="<?= $i + 1 ?>">
-                    <span><?= ucfirst($dia) ?></span>
-                </label>
-            <?php endforeach; ?>
+            <article>
+                <?php
+                $dias = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
+                foreach ($dias as $i => $dia):
+                ?>
+                    <label class="label box-config">
+                        <input class="input" type="checkbox" name="dias[]" value="<?= $i + 1 ?>">
+                        <span><?= ucfirst($dia) ?></span>
+                    </label>
+                <?php endforeach; ?>
 
-            <button type="submit" class="btn btn-padrao">
-                Salvar configuração
-            </button>
+                <button type="submit" class="btn btn-padrao">
+                    Salvar configuração
+                </button>
+            </article>
         </section>
     </form>
 

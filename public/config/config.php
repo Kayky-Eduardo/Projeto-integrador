@@ -139,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </ul>
         </aside>
 
-        <section class="pagina-padrao">
+        <section class="pagina-padrao pagina-config">
             <?php
             switch ($pagina) {
                 case 'empresa':

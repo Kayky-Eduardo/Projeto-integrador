@@ -721,6 +721,10 @@ footer a {
 }
 
 /* CONFIGURAÇÕES */
+.pagina-config {
+    width: 100%;
+}
+
 .configuracoes {
     display: flex;
     gap: 1.5rem;
@@ -791,7 +795,7 @@ footer a {
     background: #dcdcdc;
 }
 
-.box-config input:checked + span {
+.box-config input:checked+span {
     background: #4CAF50;
     color: white;
     font-weight: bold;
@@ -809,15 +813,22 @@ footer a {
 /* CONFIGURAÇÕES DE PAUSA */
 .form-config {
     display: flex;
-    flex-direction: row;
-    gap: 20px;
+    flex-direction: column;
+    gap: 6px;
     justify-content: center;
     align-items: center;
     margin-bottom: 20px;
+    white-space: nowrap;
+}
+
+.form-config article {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
 }
 
 /* LISTA DE USUÁRIOS */
-
 /* Ações */
 .usuarios-acoes {
     display: flex;
@@ -1078,11 +1089,11 @@ footer a {
     transition: transform 0.2s;
 }
 
-.toggle input:checked + .slider {
+.toggle input:checked+.slider {
     background: var(--cor-destaque);
 }
 
-.toggle input:checked + .slider::before {
+.toggle input:checked+.slider::before {
     transform: translateX(20px);
 }
 
@@ -1122,7 +1133,8 @@ footer a {
     font-size: var(--tamanho-titulo-padrao);
 }
 
-.ver-folha input, h2 {
+.ver-folha input,
+h2 {
     text-align: center;
 }
 
