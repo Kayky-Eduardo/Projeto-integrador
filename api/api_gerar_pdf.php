@@ -116,6 +116,9 @@ $mes_num = date("m", strtotime($mes_comp));
 $ano = date("Y", strtotime($mes_comp));
 
 $mes_formatado = ucfirst($meses[$mes_num]) . " de " . $ano;
+
+$sql_empresa = $conn->query("SELECT * FROM empresas LIMIT 1");
+$empresa = $sql_empresa->fetch_assoc();
 ?>
 
 <!DOCTYPE html>
@@ -185,7 +188,7 @@ $mes_formatado = ucfirst($meses[$mes_num]) . " de " . $ano;
 
                         <tr>
                             <td>Nome:</td>
-                            <td>Sem nome</td>
+                            <td><?= $empresa['razao_social'] ?? 'Não informado' ?></td>
                         </tr>
 
                         <tr class="titulo">
