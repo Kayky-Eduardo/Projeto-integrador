@@ -114,7 +114,7 @@ $listSetor = "SELECT * FROM setor";
 $setor = $conn->query($listSetor);
 ?>
 
-<a href="../../config/pausa_config.php">Voltar</a>
+<a href="../config/config.php?pagina=pausas">Voltar</a>
 <h2>Editar Pausa</h2>
 
 <?php if (!empty($_SESSION['msg'])): ?>
