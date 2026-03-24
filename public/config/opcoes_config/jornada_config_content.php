@@ -1,6 +1,7 @@
 <?php
 $sql = "SELECT * FROM tempo_jornada ORDER BY ativo DESC, descricao ASC";
 $result = $conn->query($sql);
+$old = $_SESSION['old_jornada'] ?? [];
 ?>
 
 <section class="container">
@@ -19,17 +20,20 @@ $result = $conn->query($sql);
 
             <article>
                 <label class="label">Descrição:</label>
-                <input class="input" type="text" name="descricao" required>
+                <input class="input" type="text" name="descricao"
+                    value="<?= $old['descricao'] ?? '' ?>" required>
             </article>
 
             <article>
                 <label class="label">Jornada diária:</label>
-                <input class="input" type="time" name="jornada" required>
+                <input class="input" type="time" name="jornada"
+                    value="<?= $old['jornada'] ?? '' ?>" required>
             </article>
 
             <article>
                 <label class="label">Limite hora extra:</label>
-                <input class="input" type="time" name="hora_extra" required>
+                <input class="input" type="time" name="hora_extra"
+                    value="<?= $old['hora_extra'] ?? '' ?>" required>
             </article>
         </section>
 
@@ -44,7 +48,8 @@ $result = $conn->query($sql);
                 foreach ($dias as $i => $dia):
                 ?>
                     <label class="label box-config">
-                        <input class="input" type="checkbox" name="dias[]" value="<?= $i + 1 ?>">
+                        <input class="input" type="checkbox" name="dias[]" value="<?= $i + 1 ?>"
+                            <?= (isset($old['dias']) && in_array($i + 1, $old['dias'])) ? 'checked' : '' ?>>
                         <span><?= ucfirst($dia) ?></span>
                     </label>
                 <?php endforeach; ?>

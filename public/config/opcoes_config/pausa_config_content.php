@@ -3,6 +3,7 @@ $listSql = "SELECT * FROM pausa_config ORDER BY ativo DESC, id_config ASC";
 $listRes = $conn->query($listSql);
 $listSetor = "SELECT * FROM setor";
 $setor = $conn->query($listSetor);
+$old = $_SESSION['old_pausa'] ?? [];
 
 function acharGrupo($conn, $id_config)
 {
@@ -33,22 +34,26 @@ function acharGrupo($conn, $id_config)
         <section class="form-linha">
             <article>
                 <label class="label">Descrição:</label>
-                <input class="input" type="text" name="descricao" required>
+                <input class="input" type="text" name="descricao"
+                    value="<?= $old['descricao'] ?? '' ?>" required>
             </article>
 
             <article>
                 <label class="label">Tempo mínimo:</label>
-                <input class="input" type="number" name="tempo_min" required>
+                <input class="input" type="number" name="tempo_min"
+                    value="<?= $old['tempo_min'] ?? '' ?>" required>
             </article>
 
             <article>
                 <label class="label">Tempo máximo:</label>
-                <input class="input" type="number" name="tempo_max" required>
+                <input class="input" type="number" name="tempo_max"
+                    value="<?= $old['tempo_max'] ?? '' ?>" required>
             </article>
 
             <article>
                 <label class="label">Limite diário:</label>
-                <input class="input" type="number" name="limite_pausa_diario" required>
+                <input class="input" type="number" name="limite_pausa_diario"
+                    value="<?= $old['limite_pausa_diario'] ?? '' ?>" required>
             </article>
         </section>
 
@@ -60,7 +65,8 @@ function acharGrupo($conn, $id_config)
             <article>
                 <?php foreach ($setor as $s): ?>
                     <label class="label box-config">
-                        <input type="checkbox" name="setor[]" value="<?= $s['id_setor'] ?>">
+                        <input type="checkbox" name="setor[]" value="<?= $s['id_setor'] ?>"
+                            <?= (isset($old['setor']) && in_array($s['id_setor'], $old['setor'])) ? 'checked' : '' ?>>
                         <span><?= ucfirst($s['nome_setor']) ?></span>
                     </label>
                 <?php endforeach; ?>

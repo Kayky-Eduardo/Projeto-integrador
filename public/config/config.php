@@ -17,12 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($descricao === '' || $tempo_min < 0 || $tempo_max < 0) {
             $_SESSION['msg'] = 'Preencha os campos corretamente.';
+            $_SESSION['old_pausa'] = $_POST;
         } else if ($tempo_min >= $tempo_max) {
             $_SESSION['msg'] = 'Tempo máximo deve ser maior que o mínimo.';
+            $_SESSION['old_pausa'] = $_POST;
         } else if (!isset($_POST['setor'])) {
             $_SESSION['msg'] = 'Selecione um setor.';
+            $_SESSION['old_pausa'] = $_POST;
         } else {
-
             try {
                 $sql = "INSERT INTO pausa_config 
                         (descricao_pausa, tempo_min, tempo_max, limite_pausa_diario)
@@ -32,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->bind_param("siii", $descricao, $tempo_min, $tempo_max, $limite_pausa_diario);
 
                 if ($stmt->execute()) {
-
                     $id_config = $conn->insert_id;
 
                     foreach ($_POST['setor'] as $s) {
@@ -43,6 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $stmt_setor->bind_param("ii", $id_setor, $id_config);
                         $stmt_setor->execute();
                     }
+
+                    $_SESSION['msg'] = 'Pausa criada com sucesso.';
+                    unset($_SESSION['old_pausa']);
                 }
             } catch (mysqli_sql_exception $e) {
                 if ($e->getCode() === 1062) {
@@ -109,8 +113,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($descricao === '' || !$jornada || !$hora_extra) {
             $_SESSION['msg'] = 'Preencha todos os campos.';
+            $_SESSION['old_jornada'] = $_POST;
         } else if (empty($dias)) {
             $_SESSION['msg'] = 'Selecione ao menos um dia.';
+            $_SESSION['old_jornada'] = $_POST;
         } else {
 
             try {
@@ -125,7 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->bind_param("ssss", $descricao, $jornada, $hora_extra, $dias_json);
 
                 if ($stmt->execute()) {
-                    $_SESSION['msg'] = '';
+                    $_SESSION['msg'] = 'Jornada criada com sucesso.';
+                    unset($_SESSION['old_jornada']);
                 }
             } catch (mysqli_sql_exception $e) {
                 $_SESSION['msg'] = 'Erro ao salvar jornada.';
