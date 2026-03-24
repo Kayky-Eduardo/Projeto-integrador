@@ -426,23 +426,38 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function chamarPnotifyConfirm(titulo, mensagem, milissegundos) {
-        let tempo = milissegundos ?? 5000;
+    function chamarPnotifyConfirm(titulo, mensagem, funcaoConfirmar, funcaoCancelar) {
+        const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_comum.mp3');
+        som_aviso.play();
 
-        const notice = PNotify.notice({
-        title: titulo,
-        text: mensagem,
-        icon: 'fas fa-question-circle',
-        hide: false,
-        destroy: true,
-        closer: false,
-        sticker: false,
-        modules: new Map([
-            ...PNotify.defaultModules,
-            [PNotifyConfirm, {
-            confirm: true
-            }]
-        ])
+        PNotify.confirm({
+            title: titulo,
+            text: mensagem,
+            icon: 'fas fa-question-circle',
+            hide: false,
+            closer: false,
+            sticker: false,
+            modules: {
+                Confirm: {
+                    confirm: true,
+                    buttons: [{
+                            text: 'Confirmar',
+                            primary: true,
+                            click: (notice) => {
+                                notice.close();
+                                if (typeof funcaoConfirmar === 'function') funcaoConfirmar();
+                            }
+                        },
+                        {
+                            text: 'Cancelar',
+                            click: (notice) => {
+                                notice.close();
+                                if (typeof funcaoCancelar === 'function') funcaoCancelar();
+                            }
+                        }
+                    ]
+                }
+            }
         });
     }
 
