@@ -852,5 +852,120 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // CONFIGURAÇÃO - SETORES
-    
+    let setorAtual = null;
+
+    document.querySelectorAll(".btn-editar-setor").forEach(btn => {
+        btn.addEventListener("click", async () => {
+
+            setorAtual = btn.dataset.id;
+
+            const painel = document.getElementById("editar-usuarios-setor");
+            painel.classList.remove("hidden");
+
+            await carregarUsuariosSetor(setorAtual);
+        });
+    });
+
+    async function carregarUsuariosSetor(idSetor) {
+
+        const response = await fetch(`../../api/api_setores.php?acao=get_pessoas_setor`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_setor: idSetor })
+        });
+
+        const resultado = await response.json();
+
+        if (!resultado.sucesso) return;
+
+        const usuariosNoSetor = resultado.dados.map(u => parseInt(u.id_usuario));
+
+        document.querySelectorAll('input[name="usuarios_editar[]"]').forEach(cb => {
+            cb.checked = usuariosNoSetor.includes(parseInt(cb.value));
+        });
+
+        atualizarContadorEditar();
+    }
+
+    function atualizarContadorEditar() {
+        const marcados = document.querySelectorAll('input[name="usuarios_editar[]"]:checked');
+        document.getElementById("contador-editar").innerText = marcados.length;
+    }
+
+    document.querySelectorAll('input[name="usuarios_editar[]"]').forEach(cb => {
+        cb.addEventListener("change", atualizarContadorEditar);
+    });
+
+    document.getElementById("btn-ativar-editar").addEventListener("click", async () => {
+
+        const container = document.getElementById("opcoes_select_editar");
+        container.classList.toggle("oculto");
+
+        // Se já carregou uma vez, não precisa buscar de novo
+        if (container.dataset.carregado) return;
+
+        try {
+            const response = await fetch(`../../api/api_setores.php?acao=get_sem_setor`, {
+                method: 'POST'
+            });
+
+            const resultado = await response.json();
+
+            if (!resultado.sucesso) {
+                alert("Erro ao carregar usuários");
+                return;
+            }
+
+            container.innerHTML = "";
+
+            resultado.dados.forEach(u => {
+                const label = document.createElement("label");
+                label.classList.add("label");
+
+                label.innerHTML = `
+                <input type="checkbox" name="usuarios_editar[]" value="${u.id_usuario}">
+                ${u.nome_usuario}
+            `;
+
+                container.appendChild(label);
+            });
+
+            container.dataset.carregado = true;
+
+        } catch (erro) {
+            console.error(erro);
+            alert("Erro ao buscar usuários");
+        }
+    });
+
+    document.getElementById("salvar-edicao-setor").addEventListener("click", async () => {
+
+        const usuariosSelecionados = Array.from(
+            document.querySelectorAll('input[name="usuarios_editar[]"]:checked')
+        ).map(cb => parseInt(cb.value));
+
+        try {
+            const response = await fetch(`../../api/api_setores.php?acao=set_setor`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id_setor: parseInt(setorAtual),
+                    usuarios_selecionado: usuariosSelecionados
+                })
+            });
+
+            const resultado = await response.json();
+
+            if (resultado.sucesso) {
+                alert("Atualizado com sucesso!");
+                location.reload();
+            } else {
+                alert("Erro: " + resultado.mensagem);
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao salvar");
+        }
+    });
 });

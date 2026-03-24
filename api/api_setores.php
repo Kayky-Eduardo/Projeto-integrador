@@ -1,17 +1,11 @@
 <?php
-// Configuração de erros (não exibir na tela, apenas logar)
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
-
-// Iniciar buffer de saída para capturar qualquer output indesejado
 ob_start();
-
-// Header DEVE ser enviado antes de qualquer output
 header("Content-Type: application/json");
 
 try {
-    // Verificar método da requisição
     $metodo = $_SERVER['REQUEST_METHOD'];
 
     if ($metodo === 'GET') {
@@ -22,19 +16,14 @@ try {
         throw new Exception("Método não permitido: $metodo");
     }
 
-    // Ler e decodificar input JSON
     $input = json_decode(file_get_contents('php://input'), true);
-
-
-    // Obter ação da query string
     $acao = $_GET['acao'] ?? null;
 
     if (!$acao) {
         throw new Exception("Parâmetro 'acao' não especificado");
     }
 
-    // Lista de ações permitidas
-    $white_list = ['set_setor', 'get_pessoas_setor', 'cadastrar_setor'];
+    $white_list = ['set_setor', 'get_pessoas_setor', 'cadastrar_setor', 'get_sem_setor'];
 
     if (!in_array($acao, $white_list)) {
         throw new Exception("Ação não permitida: $acao");
@@ -61,20 +50,21 @@ try {
 
         // Validar parâmetros obrigatórios
         if (!isset($input['id_setor'], $input['usuarios_selecionado'])) {
-            throw new Exception("Parâmetro obrigatório: id_setor, nome_setor, usuarios_selecionado");
+            throw new Exception("Parâmetros obrigatórios: id_setor e usuarios_selecionado");
         }
 
-        if (!isset($input['nome_setor']) || trim($input['nome_setor']) === '') {
-            throw new Exception("Parâmetro obrigatório: ");
-        }
+        // Buscar dados atuais do setor
+        $stmt = $conn->prepare("SELECT nome_setor, id_tempo FROM setor WHERE id_setor = ?");
+        $stmt->bind_param("i", $input['id_setor']);
+        $stmt->execute();
+        $dados = $stmt->get_result()->fetch_assoc();
 
-        // Executar função
         set_setor(
             $conn,
             $input['usuarios_selecionado'],
-            $input['nome_setor'],
+            $dados['nome_setor'],
             $input['id_setor'],
-            $input['id_tempo']
+            $dados['id_tempo']
         );
 
         $resposta = [
@@ -103,6 +93,27 @@ try {
         $resposta = [
             'sucesso' => true,
             'dados' => $resultado
+        ];
+    } elseif ($acao === 'get_sem_setor') {
+
+        $sql = "
+        SELECT u.id_usuario, u.nome_usuario
+        FROM usuario u
+        LEFT JOIN grupo_setor gs ON gs.id_usuario = u.id_usuario
+        WHERE gs.id_usuario IS NULL
+        ORDER BY u.nome_usuario
+    ";
+
+        $result = $conn->query($sql);
+
+        $usuarios = [];
+        while ($row = $result->fetch_assoc()) {
+            $usuarios[] = $row;
+        }
+
+        $resposta = [
+            'sucesso' => true,
+            'dados' => $usuarios
         ];
     }
 
