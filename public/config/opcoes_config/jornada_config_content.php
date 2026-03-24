@@ -1,5 +1,5 @@
 <?php
-$sql = "SELECT * FROM tempo_jornada ORDER BY id_tempo DESC";
+$sql = "SELECT * FROM tempo_jornada ORDER BY ativo DESC, descricao ASC";
 $result = $conn->query($sql);
 ?>
 
@@ -64,6 +64,7 @@ $result = $conn->query($sql);
                     <th>Jornada</th>
                     <th>Hora Extra</th>
                     <th>Dias</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
 
@@ -100,6 +101,22 @@ $result = $conn->query($sql);
                                 echo '-';
                             }
                             ?>
+                        </td>
+
+                        <td class="acoes-config">
+                            <form method="POST">
+                                <input type="hidden" name="id_tempo" value="<?= $row['id_tempo'] ?>">
+                                <button class="btn <?= $row['ativo'] ? 'btn-desativar' : 'btn-ativar' ?>" name="acao_jornada_btn" value="<?= $row['ativo'] ? 'desativar' : 'ativar' ?>">
+                                    <?= $row['ativo'] ? 'Desativar' : 'Ativar' ?>
+                                </button>
+                            </form>
+
+                            <form method="POST">
+                                <input type="hidden" name="id_tempo" value="<?= $row['id_tempo'] ?>">
+                                <button class="btn btn-excluir" name="acao_jornada_btn" value="excluir">
+                                    Excluir
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 <?php endwhile; ?>

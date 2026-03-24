@@ -135,6 +135,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: config.php?pagina=jornada");
         exit;
     }
+
+    if (isset($_POST['acao_jornada_btn'])) {
+
+        $id_tempo = intval($_POST['id_tempo']);
+        $acao = $_POST['acao_jornada_btn'];
+
+        if ($acao === 'excluir') {
+
+            // 🔍 Verifica se existem setores vinculados
+            $sql = "SELECT 1 FROM setor WHERE id_tempo = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $id_tempo);
+            $stmt->execute();
+            $resultado = $stmt->get_result();
+
+            if ($resultado->num_rows > 0) {
+
+                $_SESSION['msg'] = 'Erro: Não é possível excluir. Existem setores vinculados a esta jornada.';
+            } else {
+
+                // 🗑️ Pode excluir
+                $sql = "DELETE FROM tempo_jornada WHERE id_tempo = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("i", $id_tempo);
+                $stmt->execute();
+
+                $_SESSION['msg'] = 'Jornada excluída com sucesso.';
+            }
+
+            header("Location: " . $_SERVER['REQUEST_URI']);
+            exit;
+        }
+
+        if ($acao === 'ativar' || $acao === 'desativar') {
+
+            $novo_estado = ($acao === 'ativar') ? 1 : 0;
+
+            $sql = "UPDATE tempo_jornada SET ativo = ? WHERE id_tempo = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ii", $novo_estado, $id_tempo);
+            $stmt->execute();
+
+            $_SESSION['msg'] = 'Status atualizado com sucesso.';
+
+            header("Location: " . $_SERVER['REQUEST_URI']);
+            exit;
+        }
+    }
 }
 ?>
 
