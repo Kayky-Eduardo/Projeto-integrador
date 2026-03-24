@@ -16,13 +16,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $limite_pausa_diario = intval($_POST['limite_pausa_diario'] ?? 0);
 
         if ($descricao === '' || $tempo_min < 0 || $tempo_max < 0) {
-            $_SESSION['msg'] = 'Preencha os campos corretamente.';
+            $_SESSION['erros'][] = 'Preencha os campos corretamente.';
             $_SESSION['old_pausa'] = $_POST;
         } else if ($tempo_min >= $tempo_max) {
-            $_SESSION['msg'] = 'Tempo máximo deve ser maior que o mínimo.';
+            $_SESSION['erros'][] = 'Tempo máximo deve ser maior que o mínimo.';
             $_SESSION['old_pausa'] = $_POST;
         } else if (!isset($_POST['setor'])) {
-            $_SESSION['msg'] = 'Selecione um setor.';
+            $_SESSION['erros'][] = 'Selecione um setor.';
             $_SESSION['old_pausa'] = $_POST;
         } else {
             try {
@@ -50,9 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             } catch (mysqli_sql_exception $e) {
                 if ($e->getCode() === 1062) {
-                    $_SESSION['msg'] = 'Erro: Este nome já existe.';
+                    $_SESSION['erros'][] = 'Erro: Este nome já existe.';
                 } else {
-                    $_SESSION['msg'] = 'Erro ao salvar.';
+                    $_SESSION['erros'][] = 'Erro ao salvar.';
                 }
             }
         }
@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute();
 
             if ($stmt->get_result()->num_rows > 0) {
-                $_SESSION['msg'] = 'Erro: Não é possível excluir esta pausa.';
+                $_SESSION['erros'][] = 'Não é possível excluir. Existem registros vinculados a esta pausa.';
             } else {
                 $sql = "DELETE FROM pausa_config WHERE id_config = ?";
                 $stmt = $conn->prepare($sql);
@@ -112,10 +112,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dias = $_POST['dias'] ?? [];
 
         if ($descricao === '' || !$jornada || !$hora_extra) {
-            $_SESSION['msg'] = 'Preencha todos os campos.';
+            $_SESSION['erros'][] = 'Preencha todos os campos.';
             $_SESSION['old_jornada'] = $_POST;
         } else if (empty($dias)) {
-            $_SESSION['msg'] = 'Selecione ao menos um dia.';
+            $_SESSION['erros'][] = 'Selecione ao menos um dia.';
             $_SESSION['old_jornada'] = $_POST;
         } else {
 
@@ -135,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     unset($_SESSION['old_jornada']);
                 }
             } catch (mysqli_sql_exception $e) {
-                $_SESSION['msg'] = 'Erro ao salvar jornada.';
+                $_SESSION['erros'][] = 'Erro ao salvar jornada.';
             }
         }
 
@@ -149,8 +149,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $acao = $_POST['acao_jornada_btn'];
 
         if ($acao === 'excluir') {
-
-            // 🔍 Verifica se existem setores vinculados
             $sql = "SELECT 1 FROM setor WHERE id_tempo = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("i", $id_tempo);
@@ -158,8 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $resultado = $stmt->get_result();
 
             if ($resultado->num_rows > 0) {
-
-                $_SESSION['msg'] = 'Erro: Não é possível excluir. Existem setores vinculados a esta jornada.';
+                $_SESSION['erros'][] = 'Não é possível excluir. Existem setores vinculados a esta jornada.';
             } else {
 
                 // 🗑️ Pode excluir

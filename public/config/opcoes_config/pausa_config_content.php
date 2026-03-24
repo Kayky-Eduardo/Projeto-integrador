@@ -18,10 +18,25 @@ function acharGrupo($conn, $id_config)
     $stmt->execute();
     return $stmt->get_result();
 }
+
+$erros = $_SESSION['erros'] ?? [];
+unset($_SESSION['erros']);
+unset($_SESSION['msg']);
 ?>
 
 <section class="container" id="container-config">
     <h1 class="page-title">Gerenciar Tipos de Pausa</h1>
+
+    <?php if (!empty($erros)): ?>
+        <article class="box-erros">
+            <strong>Erros encontrados:</strong>
+            <ul class="lista-erro erro">
+                <?php foreach ($erros as $erro): ?>
+                    <li><?= htmlspecialchars($erro) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </article>
+    <?php endif; ?>
 
     <?php if (!empty($_SESSION['msg'])): ?>
         <p><?= htmlspecialchars($_SESSION['msg']); ?></p>

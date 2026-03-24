@@ -2,10 +2,27 @@
 $sql = "SELECT * FROM tempo_jornada ORDER BY ativo DESC, descricao ASC";
 $result = $conn->query($sql);
 $old = $_SESSION['old_jornada'] ?? [];
+
+$erros = $_SESSION['erros'] ?? [];
+unset($_SESSION['erros']);
+
+$sucesso = $_SESSION['msg'] ?? null;
+unset($_SESSION['msg']);
 ?>
 
 <section class="container">
     <h1 class="page-title">Definir Jornadas de Trabalho</h1>
+
+    <?php if (!empty($erros)): ?>
+        <article class="box-erros">
+            <strong>Erros encontrados:</strong>
+            <ul class="lista-erro erro">
+                <?php foreach ($erros as $erro): ?>
+                    <li><?= htmlspecialchars($erro) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </article>
+    <?php endif; ?>
 
     <?php if (!empty($_SESSION['msg'])): ?>
         <p><?= htmlspecialchars($_SESSION['msg']); ?></p>
