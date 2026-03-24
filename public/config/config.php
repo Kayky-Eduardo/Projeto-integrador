@@ -237,6 +237,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
     }
+
+    // SETORES
+    if (isset($_POST['acao_setor']) && $_POST['acao_setor'] === 'criar') {
+        $nome = trim($_POST['nome_setor'] ?? '');
+        $id_tempo = intval($_POST['id_tempo'] ?? 0);
+
+        if ($nome === '' || !$id_tempo) {
+            $_SESSION['erros'][] = 'Preencha todos os campos.';
+            $_SESSION['old_setor'] = $_POST;
+        } else {
+            try {
+                $sql = "INSERT INTO setor (nome_setor, id_tempo) VALUES (?, ?)";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("si", $nome, $id_tempo);
+
+                if ($stmt->execute()) {
+                    unset($_SESSION['old_setor']);
+                } else {
+                    $_SESSION['erros'][] = 'Erro ao cadastrar setor.';
+                    $_SESSION['old_setor'] = $_POST;
+                }
+            } catch (mysqli_sql_exception $e) {
+                if ($e->getCode() == 1062) {
+                    $_SESSION['erros'][] = 'Esse setor já existe.';
+                } else {
+                    $_SESSION['erros'][] = 'Erro ao cadastrar setor.';
+                }
+                $_SESSION['old_setor'] = $_POST;
+            }
+        }
+
+        header("Location: config.php?pagina=setores");
+        exit;
+    }
 }
 ?>
 
