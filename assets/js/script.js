@@ -941,7 +941,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const resultado = await response.json();
 
             if (resultado.sucesso) {
-                alert("Atualizado com sucesso!");
                 location.reload();
             } else {
                 alert("Erro: " + resultado.mensagem);
