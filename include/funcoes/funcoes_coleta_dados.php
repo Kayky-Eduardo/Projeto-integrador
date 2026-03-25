@@ -72,7 +72,7 @@ function calcular_tempo_pausas($conn, $id_usuario, $id_ponto) {
     return $pausas_finalizadas;
 }
 
-function verificar_tempo_por_ponto($conn, $id_ponto, $id_usuario) {
+function verificar_tempo_por_ponto($conn, $id_ponto, $id_usuario, $finalizar = null) {
     /* verifica:
         - quanto tempo de hora extra o setor dele pode ter
         - tempo da jornada de trabalho
@@ -133,6 +133,16 @@ function verificar_tempo_por_ponto($conn, $id_ponto, $id_usuario) {
     $tempo_pausas = calcular_tempo_pausas($conn, $id_usuario, $id_ponto);
     $segundos_trabalhados_efetivos = $dados['segundos_trabalhados'] - $tempo_pausas;
 
+    if (!empty($finalizar)) {
+        return [
+            'tipo' => 'finalizar',
+            'resultado' => $dados['hora_extra'],
+            'segundos_trabalhados' => $segundos_trabalhados_efetivos,
+            'segundos_jornada' => $dados['segundos_jornada'],
+            'segundos_maximos' => $dados['segundos_maximos'],
+            'mensagem' => "Tempo máximo excedido."
+        ];
+    }
     
     // Verifica se excedeu o tempo máximo
     if ($segundos_trabalhados_efetivos >= $dados['segundos_maximos']) {

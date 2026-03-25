@@ -71,7 +71,7 @@
 
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
-require __DIR__ . "/../../include/verificacao.php";
+include "../../include/verificacao.php";
 verificar_login($conn);
 date_default_timezone_set('America/Sao_Paulo');
 
@@ -114,18 +114,18 @@ if (isset($_GET['aprovar'])) {
     $stmt = $conn->prepare("UPDATE ponto_dia SET status = 'Aprovado' WHERE id_ponto = ?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
+    
+    // $coleta_tempo = $conn->prepare("
+    //     SELECT
+    //     TIMESTAMPDIFF(MINUTE, inicio_ponto, fim_ponto) as duracao
+    //     FROM ponto_dia
+    //     WHERE id_ponto = ?;
+    // ");
 
-    $coleta_tempo = $conn->prepare("
-        SELECT
-        TIMESTAMPDIFF(MINUTE, inicio_ponto, fim_ponto) as duracao
-        FROM ponto_dia
-        WHERE id_ponto = ?;
-    ");
-
-    $coleta_tempo->bind_param("i", $id);
-    $coleta_tempo->execute();
-    $resultado = $coleta_tempo->get_result();
-    $resultado = $resultado->fetch_assoc()['duracao'];
+    // $coleta_tempo->bind_param("i", $id);
+    // $coleta_tempo->execute();
+    // $resultado = $coleta_tempo->get_result();
+    // $resultado = $resultado->fetch_assoc()['duracao'];
 
     $user = $conn->query("
         SELECT id_usuario 
@@ -133,10 +133,13 @@ if (isset($_GET['aprovar'])) {
         WHERE id_ponto = $id
     ")->fetch_assoc();
 
-    $dados = [
-        "resultado" => $resultado,
-        "mensagem" => "Ponto aprovado"
-    ];
+    // $dados = [
+        // "resultado" => $resultado,
+        // "mensagem" => "Ponto aprovado"
+    // ];
+
+    $resultado_tempo = verificar_tempo_por_ponto($conn, $id, $user['id_usuario'], "finalizar");
+    verificar_tipo($conn, $user['id_usuario'], $resultado_tempo);
 
     criar_notificacao($conn, $user['id_usuario'], $id, "Seu ponto foi aprovado.");
     header("Location: gerenciar.php");
