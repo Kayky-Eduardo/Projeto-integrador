@@ -56,34 +56,20 @@ function verificar_login($conn) {
 }
 
 function verificar_tipo($conn, $id_usuario, $resultado_tempo, $tipo_dado = null) {
-    $tipo = $tipo_dado ?? $resultado_tempo['tipo'];
-    $tempo = $resultado_tempo['resultado'];
+    $tipo     = $tipo_dado ?? $resultado_tempo['tipo'];
+    $tempo    = $resultado_tempo['resultado']; // segundos (positivo=extra, negativo=faltou, 0=exato)
+    $minutos = (int) round(abs($tempo) / 60);
     $mensagem = $resultado_tempo['mensagem'] ?? "";
 
-    if ($tipo == "finalizar") {
+    if ($tipo === "finalizar") {
         if ($tempo > 0) {
-            adicionar_horas($conn, $id_usuario, $tempo);
-        } else if ($tempo == 0) {
-            adicionar_horas($conn, $id_usuario, $tempo, "horario_completo");
+            adicionar_horas($conn, $id_usuario, $minutos);
+        } elseif ($tempo === 0) {
+            adicionar_horas($conn, $id_usuario, 0, "horario_completo");
         } else {
-            retirar_horas($conn, $id_usuario, $tempo);
+            retirar_horas($conn, $id_usuario, abs($minutos));
         }
-    }
-
-    if ($tipo === "excedido") {
-        adicionar_horas($conn, $id_usuario, $tempo);
-        fechar_pontos_pendentes($conn, $id_usuario);
-    
-    } else if ($tipo === "tempo_extra") {
-        // return [
-        //     "tipo_aviso" => "aviso_hora_extra",
-        //     "segundos_restante" => $resultado_tempo["segundos_restante"]
-        // ];
-        // adicionar_horas($conn, $id_usuario, $tempo);
-        // fechar_pontos_pendentes($conn, $id_usuario);
-    } else if ($tipo === "tempo_faltante") {
-        // retirar_horas($conn, $id_usuario, $tempo);
-        // fechar_pontos_pendentes($conn, $id_usuario);
+        return;
     }
 }
 

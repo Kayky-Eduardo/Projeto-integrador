@@ -73,116 +73,128 @@ function calcular_tempo_pausas($conn, $id_usuario, $id_ponto) {
 }
 
 function verificar_tempo_por_ponto($conn, $id_ponto, $id_usuario, $finalizar = null) {
-    /* verifica:
-        - quanto tempo de hora extra o setor dele pode ter
-        - tempo da jornada de trabalho
-        - tempo maximo de trabalho
-        - e o tempo trabalhado a partir do inico_ponto até agora
-    */
     $stmt_ponto_aberto = $conn->prepare("SELECT id_ponto FROM ponto_dia WHERE id_usuario = ?");
     $stmt_ponto_aberto->bind_param("i", $id_usuario);
     $stmt_ponto_aberto->execute();
     $result_ponto_aberto = $stmt_ponto_aberto->get_result();
     if ($result_ponto_aberto->num_rows === 0) {
         return [
-            'tipo' => 'erro',
+            'tipo'      => 'erro',
             'resultado' => 0,
-            'mensagem' => 'Ponto não está ativo'
+            'mensagem'  => 'Ponto não está ativo'
         ];
     }
-    
-    $stmt = $conn->prepare("
-        SELECT 
-            TIME_TO_SEC(tempo_jornada.maximo_hora_extra) AS hora_extra,
-            TIME_TO_SEC(tempo_jornada.jornada) AS segundos_jornada,
-            TIME_TO_SEC(ADDTIME(tempo_jornada.jornada, tempo_jornada.maximo_hora_extra)) AS segundos_maximos,
-            TIMESTAMPDIFF(SECOND, ponto_dia.inicio_ponto, NOW()) AS segundos_trabalhados,
-            ponto_dia.inicio_ponto,
-            tempo_jornada.jornada AS jornada_formatada
-        FROM ponto_dia
-        JOIN grupo_setor
-            ON grupo_setor.id_usuario = ponto_dia.id_usuario
-        JOIN setor
-            ON setor.id_setor = grupo_setor.id_setor
-        JOIN tempo_jornada
-            ON tempo_jornada.id_tempo = setor.id_tempo
-        WHERE ponto_dia.id_ponto = ?
-            AND ponto_dia.id_usuario = ?
-            AND ponto_dia.fim_ponto IS NULL
-        LIMIT 1;
-    ");
-    
+
+    // Se for finalizar, o ponto já tem fim_ponto — usa fim_ponto no lugar de NOW()
+    // e remove o filtro fim_ponto IS NULL
+    if (!empty($finalizar)) {
+        $stmt = $conn->prepare("
+            SELECT 
+                TIME_TO_SEC(tempo_jornada.maximo_hora_extra)                          AS hora_extra,
+                TIME_TO_SEC(tempo_jornada.jornada)                                    AS segundos_jornada,
+                TIME_TO_SEC(ADDTIME(tempo_jornada.jornada, tempo_jornada.maximo_hora_extra)) AS segundos_maximos,
+                TIMESTAMPDIFF(SECOND, ponto_dia.inicio_ponto, ponto_dia.fim_ponto)    AS segundos_trabalhados,
+                ponto_dia.inicio_ponto,
+                tempo_jornada.jornada AS jornada_formatada
+            FROM ponto_dia
+            JOIN grupo_setor  ON grupo_setor.id_usuario  = ponto_dia.id_usuario
+            JOIN setor        ON setor.id_setor           = grupo_setor.id_setor
+            JOIN tempo_jornada ON tempo_jornada.id_tempo  = setor.id_tempo
+            WHERE ponto_dia.id_ponto   = ?
+              AND ponto_dia.id_usuario = ?
+              AND ponto_dia.fim_ponto IS NOT NULL
+            LIMIT 1;
+        ");
+    } else {
+        $stmt = $conn->prepare("
+            SELECT 
+                TIME_TO_SEC(tempo_jornada.maximo_hora_extra)                          AS hora_extra,
+                TIME_TO_SEC(tempo_jornada.jornada)                                    AS segundos_jornada,
+                TIME_TO_SEC(ADDTIME(tempo_jornada.jornada, tempo_jornada.maximo_hora_extra)) AS segundos_maximos,
+                TIMESTAMPDIFF(SECOND, ponto_dia.inicio_ponto, NOW())                  AS segundos_trabalhados,
+                ponto_dia.inicio_ponto,
+                tempo_jornada.jornada AS jornada_formatada
+            FROM ponto_dia
+            JOIN grupo_setor  ON grupo_setor.id_usuario  = ponto_dia.id_usuario
+            JOIN setor        ON setor.id_setor           = grupo_setor.id_setor
+            JOIN tempo_jornada ON tempo_jornada.id_tempo  = setor.id_tempo
+            WHERE ponto_dia.id_ponto   = ?
+              AND ponto_dia.id_usuario = ?
+              AND ponto_dia.fim_ponto IS NULL
+            LIMIT 1;
+        ");
+    }
+
     $stmt->bind_param("ii", $id_ponto, $id_usuario);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($result->num_rows === 0) {
         $stmt->close();
         return [
-            'tipo' => 'erro',
+            'tipo'      => 'erro',
             'resultado' => 0,
-            'mensagem' => 'Erro ao buscar informações do ponto'
+            'mensagem'  => 'Erro ao buscar informações do ponto'
         ];
     }
-    
+
     $dados = $result->fetch_assoc();
     $stmt->close();
-    
-    
-    // Calcula pausas para descontar do tempo trabalhado
+
     $tempo_pausas = calcular_tempo_pausas($conn, $id_usuario, $id_ponto);
     $segundos_trabalhados_efetivos = $dados['segundos_trabalhados'] - $tempo_pausas;
 
     if (!empty($finalizar)) {
+        // Calcula a diferença em segundos entre o trabalhado e a jornada esperada
+        $diferenca_segundos = $segundos_trabalhados_efetivos - $dados['segundos_jornada'];
+
         return [
-            'tipo' => 'finalizar',
-            'resultado' => $dados['hora_extra'],
+            'tipo'               => 'finalizar',
+            // positivo = fez hora extra (em seg), 0 = bateu exato, negativo = faltou (em seg)
+            'resultado'          => $diferenca_segundos,
             'segundos_trabalhados' => $segundos_trabalhados_efetivos,
-            'segundos_jornada' => $dados['segundos_jornada'],
-            'segundos_maximos' => $dados['segundos_maximos'],
-            'mensagem' => "Tempo máximo excedido."
+            'segundos_jornada'   => $dados['segundos_jornada'],
+            'segundos_maximos'   => $dados['segundos_maximos'],
+            'mensagem'           => 'Ponto finalizado.'
         ];
     }
-    
-    // Verifica se excedeu o tempo máximo
+
     if ($segundos_trabalhados_efetivos >= $dados['segundos_maximos']) {
         return [
-            'tipo' => 'excedido',
-            'resultado' => $dados['hora_extra'],
+            'tipo'               => 'excedido',
+            'resultado'          => $dados['hora_extra'],
             'segundos_trabalhados' => $segundos_trabalhados_efetivos,
-            'segundos_jornada' => $dados['segundos_jornada'],
-            'segundos_maximos' => $dados['segundos_maximos'],
-            'mensagem' => "Tempo máximo excedido."
-            ];
+            'segundos_jornada'   => $dados['segundos_jornada'],
+            'segundos_maximos'   => $dados['segundos_maximos'],
+            'mensagem'           => 'Tempo máximo excedido.'
+        ];
     }
-            
-    // Verifica se está em hora extra
+
     if ($segundos_trabalhados_efetivos >= $dados['segundos_jornada']) {
-        $segundos_extra = $segundos_trabalhados_efetivos - $dados['segundos_jornada'];
-        $minutos_extra = round($segundos_extra / 60);
+        $segundos_extra    = $segundos_trabalhados_efetivos - $dados['segundos_jornada'];
+        $minutos_extra     = round($segundos_extra / 60);
         $segundos_restantes = $dados['hora_extra'] - $segundos_extra;
 
         return [
-            'tipo' => 'tempo_extra',
-            'resultado' => $minutos_extra,
+            'tipo'               => 'tempo_extra',
+            'resultado'          => $minutos_extra,
             'segundos_restantes' => $segundos_restantes,
             'segundos_trabalhados' => $segundos_trabalhados_efetivos,
-            'segundos_jornada' => $dados['segundos_jornada'],
-            'segundos_maximos' => $dados['segundos_maximos'],
-            'mensagem' => "Em hora extra: {$minutos_extra} minutos"
+            'segundos_jornada'   => $dados['segundos_jornada'],
+            'segundos_maximos'   => $dados['segundos_maximos'],
+            'mensagem'           => "Em hora extra: {$minutos_extra} minutos"
         ];
     }
-    
-    // Ainda falta tempo para completar a jornada
+
     $segundos_faltantes = $dados['segundos_jornada'] - $segundos_trabalhados_efetivos;
-    $minutos_faltantes = round($segundos_faltantes / 60);
-    
+    $minutos_faltantes  = round($segundos_faltantes / 60);
+
     return [
-        'tipo' => 'tempo_faltante',
-        'resultado' => -$minutos_faltantes, 
+        'tipo'               => 'tempo_faltante',
+        'resultado'          => -$minutos_faltantes,
         'segundos_trabalhados' => $segundos_trabalhados_efetivos,
-        'segundos_jornada' => $dados['segundos_jornada'],
-        'segundos_maximos' => $dados['segundos_maximos'],
+        'segundos_jornada'   => $dados['segundos_jornada'],
+        'segundos_maximos'   => $dados['segundos_maximos'],
         'segundos_faltantes' => "$segundos_faltantes"
     ];
 }

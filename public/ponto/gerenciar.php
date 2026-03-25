@@ -115,30 +115,13 @@ if (isset($_GET['aprovar'])) {
     $stmt->bind_param("i", $id);
     $stmt->execute();
     
-    // $coleta_tempo = $conn->prepare("
-    //     SELECT
-    //     TIMESTAMPDIFF(MINUTE, inicio_ponto, fim_ponto) as duracao
-    //     FROM ponto_dia
-    //     WHERE id_ponto = ?;
-    // ");
-
-    // $coleta_tempo->bind_param("i", $id);
-    // $coleta_tempo->execute();
-    // $resultado = $coleta_tempo->get_result();
-    // $resultado = $resultado->fetch_assoc()['duracao'];
-
     $user = $conn->query("
         SELECT id_usuario 
         FROM ponto_dia 
         WHERE id_ponto = $id
     ")->fetch_assoc();
 
-    // $dados = [
-        // "resultado" => $resultado,
-        // "mensagem" => "Ponto aprovado"
-    // ];
-
-    $resultado_tempo = verificar_tempo_por_ponto($conn, $id, $user['id_usuario']);
+    $resultado_tempo = verificar_tempo_por_ponto($conn, $id, $user['id_usuario'], "finalizar");
     verificar_tipo($conn, $user['id_usuario'], $resultado_tempo, "finalizar");
 
     criar_notificacao($conn, $user['id_usuario'], $id, "Seu ponto foi aprovado.");
@@ -222,6 +205,7 @@ while ($row = $result->fetch_assoc()) {
 
     if (!isset($pontos_agrupados[$id_ponto])) {
         $pontos_agrupados[$id_ponto] = [
+            'id_usuario'   => $row['id_usuario'],
             'data_ponto'   => $row['data_ponto'],
             'nome'         => $row['nome'],
             'inicio_ponto' => $row['inicio_ponto'],
@@ -328,7 +312,11 @@ while ($row = $result->fetch_assoc()) {
                                 <td><?= $r['status'] ?></td>
 
                                 <td>
-                                    <?php if ($r['status'] !== 'Aprovado' && $r['status'] !== 'Em Andamento' && $r['status'] !== 'Revisar'): ?>
+                                    <?php 
+                                    if ($r['status'] !== 'Aprovado'
+                                    && $r['status'] !== 'Em Andamento'
+                                    && $r['status'] !== 'Revisar'
+                                    && $r['id_usuario'] !== $_SESSION['id_usuario']): ?>
                                         <a class="btn-link btn-padrao" href="gerenciar.php?aprovar=<?= $r['id_ponto'] ?>">Aprovar</a>
                                     <?php endif; ?>
 
