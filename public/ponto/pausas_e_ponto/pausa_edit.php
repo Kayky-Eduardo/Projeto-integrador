@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao'])) {
                 $stmt->bind_param("siiii", $descricao, $tempo_min, $tempo_max, $limite_pausa_diario, $id_config);
                 
                 if ($stmt->execute()) {
-                    $setor_delete = "DELETE FROM grupo_setor2 WHERE id_config = ?";
+                    $setor_delete = "DELETE FROM grupo_setor_pausa WHERE id_config = ?";
                     $stmt_delete = $conn->prepare($setor_delete);
                     $stmt_delete->bind_param("i", $id_config);
                     $stmt_delete->execute();
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao'])) {
                     if (isset($_POST['setor']) && is_array($_POST['setor'])) {
                         foreach ($_POST['setor'] as $s) {
                             $id_setor = intval($s);
-                            $sql_setor = "INSERT INTO grupo_setor2 (id_setor, id_config) VALUES (?, ?)";
+                            $sql_setor = "INSERT INTO grupo_setor_pausa (id_setor, id_config) VALUES (?, ?)";
                             $stmt_setor = $conn->prepare($sql_setor);
                             $stmt_setor->bind_param("ii", $id_setor, $id_config);
                             $stmt_setor->execute();

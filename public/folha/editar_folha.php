@@ -174,6 +174,7 @@ $empresa = $sql_empresa->get_result()->fetch_assoc();
 <meta charset="UTF-8">
 <title>Editar Holerite <?= $mes; ?></title>
 <?php include "../../include/link.html"; ?>
+<?php include "../../include/link.html"; ?>
 <style>
 body { font-family: Arial; padding: 25px; }
 table { width: 100%; border-collapse: collapse; margin-top: 15px; }
