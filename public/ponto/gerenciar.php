@@ -138,8 +138,8 @@ if (isset($_GET['aprovar'])) {
         // "mensagem" => "Ponto aprovado"
     // ];
 
-    $resultado_tempo = verificar_tempo_por_ponto($conn, $id, $user['id_usuario'], "finalizar");
-    verificar_tipo($conn, $user['id_usuario'], $resultado_tempo);
+    $resultado_tempo = verificar_tempo_por_ponto($conn, $id, $user['id_usuario']);
+    verificar_tipo($conn, $user['id_usuario'], $resultado_tempo, "finalizar");
 
     criar_notificacao($conn, $user['id_usuario'], $id, "Seu ponto foi aprovado.");
     header("Location: gerenciar.php");

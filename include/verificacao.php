@@ -61,7 +61,6 @@ function verificar_tipo($conn, $id_usuario, $resultado_tempo, $tipo_dado = null)
     $mensagem = $resultado_tempo['mensagem'] ?? "";
 
     if ($tipo == "finalizar") {
-        fechar_pontos_pendentes($conn, $id_usuario);
         if ($tempo > 0) {
             adicionar_horas($conn, $id_usuario, $tempo);
         } else if ($tempo == 0) {
