@@ -1122,3 +1122,29 @@ footer a {
         min-width: 900px;
     }
 }
+
+/* ====================
+    8 - PNOTIFY
+==================== */
+.pn-mensagem {
+    margin-bottom: 14px;
+    font-size: 14px;
+}
+
+.pn-botoes {
+    display: flex;
+    gap: 8px;
+}
+
+.pn-btn {
+    border: none;
+    padding: 8px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.pn-btn-confirmar { background: #22c55e; }
+.pn-btn-cancelar  { background: #ef4444; }

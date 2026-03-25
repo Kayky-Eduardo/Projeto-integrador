@@ -426,39 +426,32 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function chamarPnotifyConfirm(titulo, mensagem, funcaoConfirmar, funcaoCancelar) {
-        const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_comum.mp3');
-        som_aviso.play();
-
-        PNotify.confirm({
+    function chamarPnotifyConfirm(titulo, mensagem, aoConfirmar, aoCancelar) { 
+        const notice = PNotify.notice({
             title: titulo,
-            text: mensagem,
-            icon: 'fas fa-question-circle',
+            text: `
+                <p class="pn-mensagem">${mensagem}</p>
+                <div class="pn-botoes">
+                    <button id="pn-confirmar" class="pn-btn pn-btn-confirmar">Confirmar</button>
+                    <button id="pn-cancelar" class="pn-btn pn-btn-cancelar">Cancelar</button>
+                </div>
+            `,
+            textTrusted: true,
             hide: false,
             closer: false,
-            sticker: false,
-            modules: {
-                Confirm: {
-                    confirm: true,
-                    buttons: [{
-                            text: 'Confirmar',
-                            primary: true,
-                            click: (notice) => {
-                                notice.close();
-                                if (typeof funcaoConfirmar === 'function') funcaoConfirmar();
-                            }
-                        },
-                        {
-                            text: 'Cancelar',
-                            click: (notice) => {
-                                notice.close();
-                                if (typeof funcaoCancelar === 'function') funcaoCancelar();
-                            }
-                        }
-                    ]
-                }
-            }
+            sticker: false
         });
+ 
+        setTimeout(() => {
+            document.getElementById('pn-confirmar')?.addEventListener('click', () => {
+                notice.close();
+                if (typeof aoConfirmar === 'function') aoConfirmar();
+            });
+            document.getElementById('pn-cancelar')?.addEventListener('click', () => {
+                notice.close();
+                if (typeof aoCancelar === 'function') aoCancelar();
+            });
+        }, 100);
     }
 
     function chamarPnotifyAlert(titulo, mensagem, milissegundos) {
