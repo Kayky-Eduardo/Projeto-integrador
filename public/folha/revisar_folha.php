@@ -1,9 +1,8 @@
 <?php
 // Conexão com banco de dados
+require_once "../../BD/conexao.php";
+require_once "../../include/funcoes/calculo_desconto_falta.php";
 session_start();
-include(__DIR__ . "/../../BD/conexao.php");
-require "../../include/verificacao.php";
-verificar_login($conn);
 
 // -----------------------------
 // 1. Recebe o mês (competência)
@@ -109,6 +108,8 @@ if (!$folha) {
     exit;
 }
 
+//função e executa o cálculo e atualização do desconto
+$desconto = calcularEAplicarDescontoFalta($conn, $id_usuario, $mes_comp, $user, $folha);
 
 // -----------------------------
 // 8. Eventos
@@ -147,16 +148,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     }
 }
 // CODIGUINHO DO DABI ↑
-// pegar valores de empresa
-$sql_empresa = $conn->prepare("
-    SELECT *
-    FROM empresas
-    WHERE id_empresa = 0
-");
-// $sql_empresa->bind_param("i", $id_usuario);
-$sql_empresa->execute();
-$empresa = $sql_empresa->get_result()->fetch_assoc();
-
 
 ?>
 
@@ -165,7 +156,7 @@ $empresa = $sql_empresa->get_result()->fetch_assoc();
 <head>
 <meta charset="UTF-8">
 <title>Holerite <?php echo $mes; ?></title>
-
+<?php include "../../include/link.html"; ?>
 <style>
 body { font-family: Arial; padding: 25px; }
 table { width: 100%; border-collapse: collapse; margin-top: 15px; }
@@ -183,16 +174,10 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 <h1>HOLERITE <?php echo date("m/Y", strtotime($mes_comp)); ?></h1>
 
 <table>
-    <tr class="titulo">
-        <td><b>Empresa</b></td>
-        <td><b><a href="criar_empresa.php">Editar</a></b></td>
-    </tr>
-    <tr><td>Nome:</td><td><?= isset($empresa["nome_fantasia"]) ? $empresa['nome_fantasia'] : 'Sem Nome'?></td></tr>
-    <tr><td>Endereço:</td><td>
-        <?= isset($empresa["uf"]) ? $empresa["uf"].' - '.$empresa['cidade']
-        .' - '.$empresa['bairro'].' - '. $empresa['numero'] : 'Sem endereço'?>
-    </td></tr>
-    <tr><td>CNPJ:</td><td><?= isset($empresa["cnpj"]) ? $empresa['cnpj'] : 'Sem CNPJ'?></td></tr>
+    <tr class="titulo"><td colspan="2">Empresa</td></tr>
+    <tr><td>Nome:</td><td>Sem nome</td></tr>
+    <tr><td>Endereço:</td><td>Sem endereço</td></tr>
+    <tr><td>CNPJ:</td><td>Sem CNPJ</td></tr>
 
     <tr class="titulo"><td colspan="2">Funcionário</td></tr>
     <tr><td>Nome:</td><td><?php echo $user["nome_usuario"]; ?></td></tr>
@@ -236,34 +221,7 @@ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script>
-    //CÓDIGO DAVI ↓↓↓↓↓
-    
-    // alterar para revisado
-    btnRevisar = document.querySelector('.btn-salvar');
-    btnRevisar.addEventListener('click', function(){
-        let resposta = confirm('Tem certeza que deseja marcar como revisado? Sua folha não poderá ser modificada depois');
-        const idUsuario = this.getAttribute('id');
-        if (resposta){
-            fetch('', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        acao: 'revisar',
-                        id_usuario: idUsuario
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.msg);
-                    if(data.status === 'sucesso') location.reload(); // Recarrega para ver a mudança
-                })
-                .catch(err => console.error("Erro na requisição:", err));
-        }
-    })
-    //CÓDIGO DAVI ↑↑↑↑↑
-
-</script>
+<script src="../../assets/js/script.js"></script>
 
 </body>
 </html>

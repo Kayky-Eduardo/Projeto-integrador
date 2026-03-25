@@ -173,7 +173,7 @@ $empresa = $sql_empresa->get_result()->fetch_assoc();
 <head>
 <meta charset="UTF-8">
 <title>Editar Holerite <?= $mes; ?></title>
-
+<?php include "../../include/link.html"; ?>
 <style>
 body { font-family: Arial; padding: 25px; }
 table { width: 100%; border-collapse: collapse; margin-top: 15px; }
@@ -189,7 +189,8 @@ input[type="text"], input[type="email"] {
 </head>
 
 <body>
-<a href="gerar_folhas_todos.php?$mes=<?= $mes ?>">voltar</a>
+    <a href="gerar_folhas_todos.php?$mes=<?= $mes ?>">voltar</a>
+
 
 <div id="holerite">
 
@@ -221,7 +222,7 @@ input[type="text"], input[type="email"] {
         <?php if (count($eventos) == 0): ?>
             <tr><td colspan="2">Nenhum evento cadastrado.</td></tr>
         <?php else: ?>
-            <?php foreach ($eventos as $e): ?><?= $e['valor'] ?>
+            <?php foreach ($eventos as $e): ?>
                     <tr>
                         <td><?= strtoupper($e["tipo"]) . " - " . $e["descricao"]; ?></td>
                         <td>R$ <input id="<?= $e["id_evento"] ?>" class="input-editar"
@@ -240,60 +241,7 @@ input[type="text"], input[type="email"] {
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<script>
-    //CÓDIGO DAVI ↓↓↓↓↓
-    // deletar
-    document.querySelectorAll('.btn-deletar').forEach(botao => {
-        botao.addEventListener('click', function() {
-            const idEvento = this.getAttribute('data-id');
-            const resposta = confirm("Tem certeza que deseja deletar este evento?");
-
-            if (resposta) {
-                fetch('', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        confirmado: true, 
-                        acao: 'deletar', 
-                        id_evento: idEvento 
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.status === 'sucesso') location.reload(); // Recarrega para ver a mudança
-                })
-                .catch(err => console.error("Erro na requisição:", err));
-            }  
-        });
-    });
-    
-    // editar
-    document.querySelectorAll('.input-editar').forEach(input => {
-        input.addEventListener('change', function(event){
-            const idEditar = this.getAttribute('id');
-            const valorNovo = event.target.value;
-            fetch('', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        acao: 'editar',
-                        valor: valorNovo,
-                        id_editar : idEditar
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.msg);
-                    if(data.status === 'sucesso') location.reload(); // Recarrega para ver a mudança
-                })
-                .catch(err => console.error("Erro na requisição:", err));
-        })
-        
-    });
-    //CÓDIGO DAVI ↑↑↑↑↑
-
-</script>
+<script src="../../assets/js/script.js"></script>
 
 </body>
 </html>
