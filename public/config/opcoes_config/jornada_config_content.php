@@ -21,12 +21,7 @@ unset($_SESSION['erros']);
         </article>
     <?php endif; ?>
 
-    <?php if (!empty($_SESSION['msg'])): ?>
-        <p><?= htmlspecialchars($_SESSION['msg']); ?></p>
-        <?php unset($_SESSION['msg']); ?>
-    <?php endif; ?>
-
-    <form class="form-linha form-config" method="POST">
+    <form class="form-config" method="POST">
         <section class="form-linha">
             <input type="hidden" name="acao_jornada" value="criar">
 

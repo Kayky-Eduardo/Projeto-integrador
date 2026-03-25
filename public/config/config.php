@@ -271,6 +271,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: config.php?pagina=setores");
         exit;
     }
+
+    // JORNADA POR SETOR
+    if (isset($_POST['setor']) && isset($_POST['set-setor-jornada'])) {
+        $id_setor = intval($_POST['setor']);
+        $id_tempo = intval($_POST['set-setor-jornada']);
+
+        if (!$id_setor || !$id_tempo) {
+            $_SESSION['erros'][] = 'Selecione setor e jornada.';
+        } else {
+            try {
+                $sql = "UPDATE setor SET id_tempo = ? WHERE id_setor = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("ii", $id_tempo, $id_setor);
+
+                if ($stmt->execute()) {
+                    $_SESSION['resposta_jornada'] = "Jornada atualizada com sucesso!";
+                } else {
+                    $_SESSION['erros'][] = "Erro ao atualizar jornada.";
+                }
+            } catch (mysqli_sql_exception $e) {
+                $_SESSION['erros'][] = "Erro no banco de dados.";
+            }
+        }
+
+        header("Location: config.php?pagina=jornada_setor");
+        exit;
+    }
 }
 
 if (isset($_POST['acao_setor_btn'])) {
@@ -447,6 +474,12 @@ if (isset($_POST['acao_cargo']) && $_POST['acao_cargo'] === 'editar') {
                         Cargos
                     </a>
                 </li>
+
+                <li>
+                    <a href="?pagina=jornada_setor" class="<?= $pagina == 'jornada_setor' ? 'ativo' : '' ?>">
+                        Jornadas por Setores
+                    </a>
+                </li>
             </ul>
         </aside>
 
@@ -472,6 +505,10 @@ if (isset($_POST['acao_cargo']) && $_POST['acao_cargo'] === 'editar') {
 
                 case 'cargos':
                     include(__DIR__ . "/opcoes_config/cargo_config_content.php");
+                    break;
+
+                case 'jornada_setor':
+                    include(__DIR__ . "/opcoes_config/set_jornada_setor.php");
                     break;
             }
             ?>
