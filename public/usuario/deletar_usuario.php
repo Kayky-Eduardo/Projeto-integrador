@@ -61,9 +61,15 @@ $stmt->execute();
 $stmt->close();
 
 /* EXCLUI USUÁRIO  */
-$stmt = $conn->prepare("DELETE FROM usuario WHERE id_usuario = ?");
-$stmt->bind_param("i", $id);
-$stmt->execute();
+try {
+    $stmt = $conn->prepare("DELETE FROM usuario WHERE id_usuario = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+} catch (mysqli_sql_exception $e) {
+    $_SESSION['erros'][] = "Não é possível excluir este usuário pois existem registros vinculados a ele.";
+    header("Location: editar.php?id=$id");
+    exit;
+}
 
 if ($stmt->affected_rows > 0) {
     header("Location: lista.php");

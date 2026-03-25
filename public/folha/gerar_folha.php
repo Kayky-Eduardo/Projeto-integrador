@@ -1,57 +1,45 @@
 <?php
-
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
-
 $nome_usuario = $_SESSION['nome_usuario'];
-
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="UTF-8">
-<title>Teste – Gerar Folha de Pagamento</title>
+    <meta charset="UTF-8">
+    <title>Gerar Folha de Pagamento</title>
+    <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
+
 <body>
+    <nav>
+        <?php include("../../include/navbar.php"); ?>
+    </nav>
 
-<div class="card">
-    <h2>Gerar Folha de Pagamento</h2>
-    <h2>Olá, <?php echo $nome_usuario; ?></h2>
-    <label>Mês:</label>
+    <main class="main-center">
+        <section class="pagina-padrao">
+            <h1 class="page-title">Visualizar Folha de Pagamento</h1>
 
-    <!-- Input do tipo month já valida mês/ano.
-         min = menor data permitida.
-         max = mês atual, impedindo seleção futura. -->
-    <input type="month" id="mes" min="2024-01" max="<?= date('Y-m'); ?>">
+            <section class="container ver-folha">
+                <h2>Olá, <?php echo $nome_usuario; ?></h2>
 
-    <!-- Botão para gerar PDF (abre em nova aba) -->
-    <button onclick="gerarPDF()">Gerar PDF</button>
-</div>
+                <form class="form" id="formFolha">
+                    <article>
+                        <label class="label" for="mes">Selecione o mês de referência:</label>
+                        <input class="input" type="month" id="mes" min="2024-01" max="<?= date('Y-m'); ?>" required>
+                    </article>
 
-<script>
+                    <button type="button" class="btn btn-padrao" id="btnGerarPDF">
+                        Ver Folha
+                    </button>
+                </form>
+            </section>
+        </section>
 
-// Função chamada ao clicar em "Gerar PDF"
-function gerarPDF() {
-
-    let mes = document.getElementById("mes").value;
-    let atual = new Date().toISOString().slice(0, 7);
-
-    // Mesmas validações da função gerar()
-    if (!mes || !/^\d{4}-\d{2}$/.test(mes)) {
-        alert("Selecione um mês válido no formato YYYY-MM");
-        return;
-    }
-
-    if (mes > atual) {
-        alert("Você não pode escolher um mês futuro.");
-        return;
-    }
-
-    // Abre o PHP que gera PDF em outra aba
-    window.open("../../api/api_gerar_pdf.php?mes=" + mes, "_blank");
-}
-
-</script>
-
+        <script src="../../assets/js/script.js"></script>
+    </main>
 </body>
+
 </html>

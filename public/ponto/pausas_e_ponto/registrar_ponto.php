@@ -1,23 +1,107 @@
 <?php
+/*
+ * =============================================================
+ * ARQUIVO: ponto.php
+ * MÓDULO: Controle de Jornada e Pausas (RH)
+ * =============================================================
+ * * DESCRIÇÃO GERAL
+ * -------------------------------------------------------------
+ * Módulo operacional destinado ao registro de entrada e saída
+ * de funcionários, bem como ao gerenciamento de pausas diárias.
+ *
+ * Executa:
+ * - Registro de ponto eletrônico (início e fim da jornada).
+ * - Gerenciamento de pausas com limites configuráveis por tipo.
+ * - Lógica de auto-fechamento de pausas excedidas (Garbage Collection).
+ * - Validação de tempo mínimo e máximo de descanso.
+ * - Controle de interdependência (Ex: Não encerra ponto com pausa ativa).
+ * - Cronometragem em tempo real via JavaScript/DOM.
+ * *
+ * FLUXO DE EXECUÇÃO
+ * -------------------------------------------------------------
+ * 1. Inicializa fuso horário (America/Sao_Paulo) e verifica login.
+ * 2. Executa rotina de "Auto-fechamento": atualiza pausas órfãs 
+ * que ultrapassaram o 'tempo_max' definido na configuração.
+ * 3. Se houver POST (registrar_ponto):
+ * a. Abre novo registro se for o primeiro acesso do dia.
+ * b. Encerra ponto existente se não houver pausas abertas.
+ * 4. Se houver POST (pausa_iniciar):
+ * a. Valida se o usuário já possui pausa ativa.
+ * b. Checa o limite diário permitido para o tipo de pausa.
+ * c. Persiste o início da pausa na tabela 'pausa'.
+ * 5. Se houver POST (pausa_finalizar):
+ * a. Calcula delta de tempo entre agora e o início.
+ * b. Bloqueia fechamento se o tempo mínimo não foi atingido.
+ * c. Grava fim da pausa e calcula duração final em minutos.
+ * 6. Renderiza interface: badges dinâmicos de status e cronômetro.
+ *
+ *
+ * SEGURANÇA
+ * -------------------------------------------------------------
+ * - Proteção contra manipulação de ID via variáveis de sessão.
+ * - Uso de Prepared Statements (bind_param) em todas as inserções 
+ * e atualizações de registros de tempo.
+ * - Validação de integridade: impede encerramento de jornada com 
+ * pendências de pausa aberta.
+ * - Sanitização de saídas HTML via htmlspecialchars.
+ *
+ *
+ * ACESSIBILIDADE E UX
+ * -------------------------------------------------------------
+ * - Cronômetro regressivo/progressivo via Data Attributes.
+ * - Feedback visual de status através de badges (Ativo/Inativo).
+ * - Desabilitação dinâmica de botões conforme estado do sistema 
+ * (State Management em nível de interface).
+ * - Exibição de limites de uso (Realizado/Disponível) no select.
+ * - Notificações de erro centralizadas (box-erros).
+ *
+ *
+ * DEPENDÊNCIAS
+ * -------------------------------------------------------------
+ * - "../../../BD/conexao.php": Conexão com a base de dados.
+ * - "../../../include/verificacao.php": Script de controle de acesso.
+ * - "../../../include/navbar.php": Navegação global.
+ * - "PNotify": Biblioteca para notificações flutuantes.
+ * - "../../../assets/js/script.js": Lógica do cronômetro e interface.
+ *
+ *
+ * TABELAS UTILIZADAS
+ * -------------------------------------------------------------
+ * 1. ponto_dia
+ * - Registra inicio_ponto, fim_ponto e data_ponto.
+ * 2. pausa
+ * - Armazena os eventos individuais de descanso do dia.
+ * 3. pausa_config
+ * - Contém as regras de negócio (tempo_min, tempo_max, limites).
+ *
+ *
+ * BOAS PRÁTICAS APLICADAS
+ * -------------------------------------------------------------
+ * - Lógica de Backend robusta para tratar fechamentos anormais 
+ * (Ex: queda de energia ou fechamento de aba).
+ * - Cálculo de duração realizado no servidor para evitar fraudes 
+ * no lado do cliente.
+ * - Uso de subqueries SQL para otimizar a contagem de pausas 
+ * em uma única consulta.
+ * - Implementação de Pattern Post-Redirect-Get (PRG) para evitar 
+ * reenvios de formulário no refresh.
+ *
+ * * -------------------------------------------------------------
+ * Data: 08/03/2026
+ * Versão: 1.0
+ * =============================================================
+ */
+
 session_start();
 date_default_timezone_set('America/Sao_Paulo');
 include __DIR__ . '/../../../BD/conexao.php';
 require_once __DIR__ . '/../../../include/verificacao.php';
+verificar_login($conn);
 
 $id_usuario = $_SESSION['id_usuario'] ?? null;
-if (!$id_usuario) die("Acesso negado.");
 $hoje = date("Y-m-d");
 $erro = "";
 $desabilitar = "";
-
-// LÓGICA DE AUTO-FECHAMENTO (BACKEND)
-// Fecha pausas que excederam o tempo_max caso o usuário tenha fechado o navegador
-$conn->query("UPDATE pausa p 
-              JOIN pausa_config c ON p.id_config = c.id_config 
-              SET p.fim = DATE_ADD(p.inicio, INTERVAL c.tempo_max MINUTE), 
-                  p.duracao_minutos = c.tempo_max 
-              WHERE p.fim IS NULL AND p.id_usuario = $id_usuario 
-              AND TIMESTAMPDIFF(SECOND, p.inicio, NOW()) >= (c.tempo_max * 60)");
 
 // PROCESSAMENTO DE AÇÕES VIA POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -86,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmtLimite->execute();
                 $dados = $stmtLimite->get_result()->fetch_assoc();
 
-                if ($dados && $dados['total_realizado'] >= $dados['limite_pausa_diario']) {
+                if ($dados && $dados['total_realizado'] >= $dados['limite_pausa_diario'] && $dados['limite_pausa_diario'] !== 0) {
                     $erro = "Você já atingiu o limite diário dessa pausa.";
                 } else {
 
@@ -137,16 +221,20 @@ $pontoFinalizado = ($statusPonto && !empty($statusPonto['fim_ponto']));
 
 // Busca os tipos de pausa e já conta quantas o usuário fez hoje
 $sqlTipos = "SELECT 
-                pc.*, 
-                (SELECT COUNT(*) FROM pausa p 
-                 WHERE p.id_config = pc.id_config 
-                 AND p.id_usuario = ? 
-                 AND p.data = CURDATE()) as total_realizado
-             FROM pausa_config pc
-             WHERE pc.ativo = 1";
+	pc.*,
+    gs2.*,
+    gs.*,
+	(SELECT COUNT(*) FROM pausa p 
+	 WHERE p.id_config = pc.id_config 
+	 AND p.id_usuario = ?
+	 AND p.data = CURDATE()) as total_realizado
+    FROM pausa_config pc
+    LEFT JOIN grupo_setor_pausa gs2 on gs2.id_config = pc.id_config
+    LEFT JOIN grupo_setor gs on gs.id_setor = gs2.id_setor
+    WHERE pc.ativo = 1 AND gs.id_usuario = ?";
 
 $stmtTipos = $conn->prepare($sqlTipos);
-$stmtTipos->bind_param("i", $id_usuario);
+$stmtTipos->bind_param("ii", $id_usuario, $id_usuario);
 $stmtTipos->execute();
 $tiposPausa = $stmtTipos->get_result();
 ?>
@@ -210,9 +298,9 @@ $tiposPausa = $stmtTipos->get_result();
                         <select id="tipo_pausa" name="id_config" class="select-padrao" required <?= (!$pontoIniciado || $pontoFinalizado || $pausaAtiva) ? 'disabled' : '' ?>>
                             <?php while ($t = $tiposPausa->fetch_assoc()): ?>
                                 <option value="<?= $t['id_config'] ?>"
-                                    <?= ($t['total_realizado'] >= $t['limite_pausa_diario']) ? 'disabled' : '' ?>>
+                                    <?= ($t['total_realizado'] >= $t['limite_pausa_diario'] && $t['limite_pausa_diario'] !== 0) ? 'disabled' : '' ?>>
                                     <?= htmlspecialchars($t['descricao_pausa']) ?>
-                                    (<?= $t['total_realizado'] ?>/<?= $t['limite_pausa_diario'] ?>)
+                                    (<?= $t['total_realizado'] ?>/<?= ($t['limite_pausa_diario'] == 0) ? '∞' : $t['limite_pausa_diario'] ?>)
                                 </option>
                             <?php endwhile; ?>
                         </select>

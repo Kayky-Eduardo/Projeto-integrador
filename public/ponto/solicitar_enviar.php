@@ -108,12 +108,30 @@ if ($tipo_ajuste === 'ponto') {
     $valor_antigo_raw = $busca_antigo->get_result()->fetch_assoc()[$campo_ponto];
 
     // Formata o valor antigo (DateTime ou NULL)
-    $valor_antigo = $valor_antigo_raw 
-        ? date('Y-m-d H:i:s', strtotime($valor_antigo_raw)) 
+    $valor_antigo = $valor_antigo_raw
+        ? date('Y-m-d H:i:s', strtotime($valor_antigo_raw))
         : null;
 
     // Monta o novo valor (DateTime)
     $valor_novo = $data . ' ' . $valor_novo_ponto . ':00';
+
+    $verifica = $conn->prepare("
+        SELECT COUNT(*) as total 
+        FROM ajustes_ponto 
+        WHERE id_usuario = ? 
+        AND id_ponto = ? 
+        AND motivo = ?
+        AND data_solicitacao > NOW() - INTERVAL 3 SECOND
+    ");
+
+    $verifica->bind_param("iis", $id_usuario, $id_ponto, $motivo);
+    $verifica->execute();
+
+    $result = $verifica->get_result()->fetch_assoc();
+
+    if ($result['total'] > 0) {
+        die("Solicitação duplicada detectada.");
+    }
 
     // 2. INSERIR SOLICITAÇÃO (Tabela: ajustes_ponto)
     $stmt = $conn->prepare("
@@ -126,14 +144,13 @@ if ($tipo_ajuste === 'ponto') {
         "iissss",
         $id_ponto,
         $id_usuario,
-        $campo_ponto, 
+        $campo_ponto,
         $valor_antigo,
         $valor_novo,
         $motivo
     );
-    
-    $ajuste_executado = $stmt->execute();
 
+    $ajuste_executado = $stmt->execute();
 }
 
 // ajuste de pausa caso seja selecionado ↓
@@ -144,7 +161,6 @@ elseif ($tipo_ajuste === 'pausa') {
     if (!in_array($campo_pausa, $camposPermitidosPausa)) {
         die("Campo de pausa inválido.");
     }
-    
     // 1. Validação de dados de pausa
     if ($id_pausa <= 0 || (empty($campo_pausa) && empty($pausa_nova))) {
         die("Selecione a pausa e preencha o novo início ou fim.");
@@ -168,24 +184,24 @@ elseif ($tipo_ajuste === 'pausa') {
     }
 
     // 3. Processar e Inserir Ajustes para INÍCIO e/ou FIM
-        $stmt_fim = $conn->prepare("
+    $stmt_fim = $conn->prepare("
             INSERT INTO ajustes_ponto 
                 (id_ponto, id_pausa, id_usuario, campo, valor_antigo, valor_novo, motivo, status, data_solicitacao)
             VALUES 
                 (?, ?, ?, ?, ?, ?, ?, 'Pendente', NOW())
         ");
-        $stmt_fim->bind_param(
-            "iiissss",
-            $id_ponto,
-            $id_pausa,
-            $id_usuario,
-            $campo_pausa,
-            $valor_antigo,
-            $valor_novo,
-            $motivo
-        );
-        // Usa OR lógico para manter a execução se o ajuste de início foi bem-sucedido
-        $ajuste_executado = $stmt_fim->execute() || $ajuste_executado;
+    $stmt_fim->bind_param(
+        "iiissss",
+        $id_ponto,
+        $id_pausa,
+        $id_usuario,
+        $campo_pausa,
+        $valor_antigo,
+        $valor_novo,
+        $motivo
+    );
+    // Usa OR lógico para manter a execução se o ajuste de início foi bem-sucedido
+    $ajuste_executado = $stmt_fim->execute() || $ajuste_executado;
 }
 
 /* =================

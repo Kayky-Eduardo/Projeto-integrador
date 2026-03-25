@@ -51,65 +51,39 @@ include(__DIR__ . "/../../BD/conexao.php");
 require __DIR__ . "/../../include/verificacao.php";
 verificar_login($conn);
 
-// ID do usuário logado
 $id_usuario = $_SESSION['id_usuario'];
 $nivel = $_SESSION['nivel'];
 
-// =======================
-// DEFINIR PÁGINA DE VOLTA
-// =======================
-// Usuário comum volta para histórico
-// RH volta para gerenciar
-$pagina_voltar = ($nivel >= 2) ? "../ponto/gerenciar.php" : "../ponto/historico.php";
 
-// ================
-// VALIDAR id_ponto
-// ================
-// Captura o ID do ponto passado pela URL
+/* VALIDAR id_ponto */
 $id_ponto = isset($_GET['id_ponto']) ? intval($_GET['id_ponto']) : 0;
 
-// Se o ID for inválido, bloqueia o acesso
 if ($id_ponto <= 0) {
     echo "<p>Registro inválido. <a href=\"$pagina_voltar\">Voltar</a></p>";
     exit;
 }
 
-// ==========================
-// BUSCAR O REGISTRO DO PONTO
-// ==========================
-// Funcionário só pode ver o seu próprio ponto
-// RH pode ver de qualquer usuário
-
-// Caso seja RH, busca pelo id_ponto apenas
-if ($nivel >= 2) {
-    $stmt = $conn->prepare("SELECT * FROM ponto_dia WHERE id_ponto = ?");
-    $stmt->bind_param("i", $id_ponto);
-} else {
-    // Funcionário só acessa pontos que pertencem a ele
-    $stmt = $conn->prepare("SELECT * FROM ponto_dia WHERE id_ponto = ? AND id_usuario = ?");
-    $stmt->bind_param("ii", $id_ponto, $id_usuario);
-}
-
-// Executa a consulta
+/* BUSCAR O REGISTRO DO PONTO */
+$stmt = $conn->prepare("SELECT * FROM ponto_dia WHERE id_ponto = ? AND id_usuario = ?");
+$stmt->bind_param("ii", $id_ponto, $id_usuario);
 $stmt->execute();
-
-// Obtém o resultado
 $res = $stmt->get_result();
-
-// Recupera os dados do ponto
 $reg = $res->fetch_assoc();
 
-// Se não encontrar, mostra erro de permissão ou inexistência
 if (!$reg) {
     echo "<p>Ponto não encontrado ou você não tem permissão. 
           <a href=\"$pagina_voltar\">Voltar</a></p>";
     exit;
 }
 
+<<<<<<< HEAD
 // -- Código Davi --
 // ==========================
 // BUSCAR AS PAUSAS DO PONTO
 // ==========================
+=======
+/* BUSCAR AS PAUSAS DO PONTO */
+>>>>>>> cc36c0ebe2ce93597b0389bd6ac41574ef8eb459
 $sql_pausas = "
     SELECT 
         ps.id_pausa, 
@@ -123,6 +97,7 @@ $sql_pausas = "
 ";
 
 $stmt_pausas = $conn->prepare($sql_pausas);
+<<<<<<< HEAD
 // Usa id_usuario e data do registro do ponto ($reg) já validado
 $stmt_pausas->bind_param("is", $reg['id_usuario'], $reg['data_ponto']);
 $stmt_pausas->execute();
@@ -130,6 +105,13 @@ $pausas = $stmt_pausas->get_result();
 
 // Armazena as pausas em um array para uso no formulário
 $pausas_do_dia = [];
+=======
+$stmt_pausas->bind_param("is", $reg['id_usuario'], $reg['data_ponto']);
+$stmt_pausas->execute();
+$pausas = $stmt_pausas->get_result();
+$pausas_do_dia = [];
+
+>>>>>>> cc36c0ebe2ce93597b0389bd6ac41574ef8eb459
 while ($pausa_row = $pausas->fetch_assoc()) {
     $pausas_do_dia[] = $pausa_row;
 }
@@ -179,7 +161,17 @@ while ($pausa_row = $pausas->fetch_assoc()) {
 
                         <article>
                             <label for="valor_novo_ponto" class="label">Novo horário:</label>
+<<<<<<< HEAD
                             <input type="time" name="valor_novo_ponto" id="valor_novo_ponto" class="input">
+=======
+                            <input
+                                type="time"
+                                name="valor_novo_ponto"
+                                id="valor_novo_ponto"
+                                class="input"
+                                data-inicio="<?= $reg['inicio_ponto'] ? date("H:i", strtotime($reg['inicio_ponto'])) : '' ?>"
+                                data-fim="<?= $reg['fim_ponto'] ? date("H:i", strtotime($reg['fim_ponto'])) : '' ?>">
+>>>>>>> cc36c0ebe2ce93597b0389bd6ac41574ef8eb459
                         </article>
                     </section>
 
@@ -226,6 +218,7 @@ while ($pausa_row = $pausas->fetch_assoc()) {
             </section>
     </main>
 
+<<<<<<< HEAD
     <script>
         function mostrarCamposAjuste() {
             const tipo = document.getElementById('tipo_ajuste').value;
@@ -369,6 +362,9 @@ while ($pausa_row = $pausas->fetch_assoc()) {
         });
 
     </script>
+=======
+    <script src="../../assets/js/script.js"></script>
+>>>>>>> cc36c0ebe2ce93597b0389bd6ac41574ef8eb459
 </body>
 
 </html>

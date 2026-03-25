@@ -23,7 +23,6 @@
     --cor-fundo-nav-hover: #334155;
     --cor-titulo-tabela: #f1f5f9;
 
-
     /* Bordas */
     --cor-borda-padrao: #cbd5e1;
     --cor-borda-erro: #fecaca;
@@ -161,7 +160,7 @@ nav a:focus {
 }
 
 .dropdown-menu.left {
-    left: 0;
+    right: 0;
 }
 
 .dropdown-menu .separador {
@@ -231,7 +230,7 @@ footer a {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 12px;
+    padding: 12px 20px;
     font-size: var(--tamanho-texto-padrao);
     font-weight: 500;
     border-radius: var(--raio-borda-padrao);
@@ -283,6 +282,7 @@ footer a {
 
 .btn-ativar {
     background-color: #2ecc71;
+    color: var(--cor-principal);
 }
 
 .btn-desativar {
@@ -298,6 +298,7 @@ footer a {
     background-color: var(--cor-borda-padrao);
     color: var(--cor-principal);
 }
+
 
 /* INPUT */
 .input {
@@ -355,7 +356,7 @@ footer a {
     background-color: var(--cor-fundo-card);
     border: 1px solid var(--cor-borda-padrao);
     border-radius: var(--raio-borda-padrao);
-    padding: 0.6rem 2rem 0.6rem 0.8rem;
+    padding: 12px;
     font-size: var(--tamanho-texto-padrao);
     color: var(--cor-principal);
     cursor: pointer;
@@ -443,12 +444,35 @@ footer a {
     background: #ef4444;
 }
 
+/* BADGE DE NOTIFICAÇÃO */
+.item-notificacao {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.badge-notificacao {
+    background: var(--cor-perigo);
+    color: white;
+
+    font-size: 0.7rem;
+    font-weight: bold;
+
+    padding: 2px 7px;
+    border-radius: 999px;
+
+    min-width: 18px;
+    text-align: center;
+}
+
 /* TABELA */
 .tabela-padrao {
     background-color: var(--cor-fundo-card);
     border: 1px solid var(--cor-borda-padrao);
     border-radius: var(--raio-borda-grande);
     padding: 16px;
+    overflow: auto;
 }
 
 .tabela-padrao h2 {
@@ -486,6 +510,13 @@ footer a {
     width: auto;
     padding: 8px 10px;
     font-size: 0.8rem;
+}
+
+.tabela-vazia {
+    text-align: center;
+    padding: 20px;
+    font-weight: 500;
+    color: var(--cor-texto-secundario, #777);
 }
 
 /* FILTROS */
@@ -943,7 +974,6 @@ footer a {
 .solicitar-ajuste article {
     font-size: var(--tamanho-titulo-pagina);
     color: var(--cor-principal);
-    text-align: center;
     display: flex;
     flex-direction: column;
     margin-top: 16px;
@@ -951,6 +981,77 @@ footer a {
 
 .solicitar-ajuste label {
     margin-bottom: 10px;
+}
+
+.solicitar-ajuste p {
+    text-align: center;
+}
+
+/* PÁGINA DE NOTIFICAÇÕES */
+/* Toggle Filtro */
+.toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--tamanho-texto-padrao);
+    font-weight: 600;
+    color: var(--cor-principal);
+    cursor: pointer;
+}
+
+.toggle input {
+    display: none;
+}
+
+.slider {
+    width: 42px;
+    height: 22px;
+    background: var(--cor-borda-padrao);
+    border-radius: 20px;
+    position: relative;
+    transition: background 0.2s;
+}
+
+.slider::before {
+    content: "";
+    width: 18px;
+    height: 18px;
+    background: white;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    border-radius: 50%;
+    transition: transform 0.2s;
+}
+
+.toggle input:checked + .slider {
+    background: var(--cor-destaque);
+}
+
+.toggle input:checked + .slider::before {
+    transform: translateX(20px);
+}
+
+.linha-acoes {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-content: center;
+}
+
+/* Notificação Não Lida */
+.nao-lida {
+    background: #f0f9ff;
+    font-weight: 600;
+    border-left: 4px solid var(--cor-destaque);
+}
+
+.nao-lida:hover {
+    background: #e0f2fe;
+}
+
+.lida {
+    font-weight: 600;
 }
 
 
@@ -1122,29 +1223,3 @@ footer a {
         min-width: 900px;
     }
 }
-
-/* ====================
-    8 - PNOTIFY
-==================== */
-.pn-mensagem {
-    margin-bottom: 14px;
-    font-size: 14px;
-}
-
-.pn-botoes {
-    display: flex;
-    gap: 8px;
-}
-
-.pn-btn {
-    border: none;
-    padding: 8px 18px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    color: #fff;
-}
-
-.pn-btn-confirmar { background: #22c55e; }
-.pn-btn-cancelar  { background: #ef4444; }
