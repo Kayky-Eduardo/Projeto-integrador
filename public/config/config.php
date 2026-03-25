@@ -306,6 +306,86 @@ if (isset($_POST['acao_setor_btn'])) {
         exit;
     }
 }
+
+// CARGOS
+if (isset($_POST['acao_cargo']) && $_POST['acao_cargo'] === 'criar') {
+    $nome = trim($_POST['nome_cargo'] ?? '');
+    $salario = floatval($_POST['salario'] ?? 0);
+    $nivel = intval($_POST['nivel'] ?? 0);
+
+    if ($nome === '' || !$salario || !$nivel) {
+        $_SESSION['erros'][] = 'Preencha todos os campos.';
+        $_SESSION['old_cargo'] = $_POST;
+    } else if ($_SESSION['nivel'] < $nivel) {
+        $_SESSION['erros'][] = 'Não é possível criar um cargo com nível maior que o seu.';
+        $_SESSION['old_cargo'] = $_POST;
+    } else {
+        try {
+            $check = $conn->prepare("SELECT id_cargo FROM cargo WHERE nome_cargo = ?");
+            $check->bind_param("s", $nome);
+            $check->execute();
+
+            if ($check->get_result()->num_rows > 0) {
+                $_SESSION['erros'][] = 'Já existe um cargo com este nome.';
+                $_SESSION['old_cargo'] = $_POST;
+            } else {
+                $sql = $conn->prepare("
+                    INSERT INTO cargo (nome_cargo, salario_bruto, nivel)
+                    VALUES (?, ?, ?)
+                ");
+                $sql->bind_param("sdi", $nome, $salario, $nivel);
+
+                if ($sql->execute()) {
+                    unset($_SESSION['old_cargo']);
+                } else {
+                    $_SESSION['erros'][] = 'Erro ao cadastrar cargo.';
+                    $_SESSION['old_cargo'] = $_POST;
+                }
+            }
+        } catch (mysqli_sql_exception $e) {
+            $_SESSION['erros'][] = 'Erro ao cadastrar cargo.';
+            $_SESSION['old_cargo'] = $_POST;
+        }
+    }
+
+    header("Location: config.php?pagina=cargos");
+    exit;
+}
+
+if (isset($_POST['acao_cargo_btn'])) {
+    $id_cargo = intval($_POST['id_cargo']);
+    $acao = $_POST['acao_cargo_btn'];
+
+    if ($acao === 'excluir') {
+        try {
+            $sql = "DELETE FROM cargo WHERE id_cargo = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $id_cargo);
+            $stmt->execute();
+        } catch (mysqli_sql_exception $e) {
+            if ($e->getCode() == 1451) {
+                $_SESSION['erros'][] = 'Não é possível excluir: existem usuários vinculados a este cargo.';
+            } else {
+                $_SESSION['erros'][] = 'Erro ao excluir cargo.';
+            }
+        }
+
+        header("Location: " . $_SERVER['REQUEST_URI']);
+        exit;
+    }
+
+    if ($acao === 'ativar' || $acao === 'desativar') {
+        $novo_estado = ($acao === 'ativar') ? 1 : 0;
+
+        $sql = "UPDATE cargo SET ativo = ? WHERE id_cargo = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ii", $novo_estado, $id_cargo);
+        $stmt->execute();
+
+        header("Location: " . $_SERVER['REQUEST_URI']);
+        exit;
+    }
+}
 ?>
 
 <!DOCTYPE html>
