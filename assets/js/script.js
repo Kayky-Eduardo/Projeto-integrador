@@ -414,13 +414,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // EDITAR FOLHA
     //CÓDIGO DAVI ↓↓↓↓↓
-    // deletar
+     // deletar
     document.querySelectorAll('.btn-deletar').forEach(botao => {
         botao.addEventListener('click', function() {
             const idEvento = this.getAttribute('data-id');
-            const resposta = confirm("Tem certeza que deseja deletar este evento?");
 
-            if (resposta) {
+            const confirmarExclusao = () => {
                 fetch('', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -432,12 +431,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 })
                 .then(res => res.json())
                 .then(data => {
-                    if(data.status === 'sucesso') chamarPnotifySuccess("Sucesso!", data.msg);// Recarrega para ver a mudança
+                    if(data.status === 'sucesso') {
+                        chamarPnotifySuccess("Sucesso!", data.msg);
+                    } else {
+                        chamarPnotifyAlert("Erro", data.msg);
+                    }
                 })
                 .catch(err => console.error("Erro na requisição:", err));
-            }  
+            };
+
+            const cancelarExclusao = () => {
+                chamarPnotifyAlert("Erro", "Exclusão Cancelada!");
+            };
+            chamarPnotifyConfirm("Confirmar", "Tem certeza que deseja deletar este evento?", confirmarExclusao(), cancelarExclusao());
+
         });
     });
+
     
     // editar
     document.querySelectorAll('.input-editar').forEach(input => {
@@ -558,5 +568,39 @@ document.addEventListener("DOMContentLoaded", () => {
         let mensagem = localStorage.getItem("aviso");
         chamarPnotifyAviso("Aviso", mensagem, 5000);
         localStorage.setItem("aviso_emitido", true);
+    }
+    function chamarPnotifyConfirm(titulo, mensagem, funcaoConfirmar, funcaoCancelar) {
+        const som_aviso = new Audio('/projeto-integrador/assets/som_notificacoes/notificacao_comum.mp3');
+        som_aviso.play();
+
+        PNotify.confirm({
+            title: titulo,
+            text: mensagem,
+            icon: 'fas fa-question-circle',
+            hide: false,
+            closer: false,
+            sticker: false,
+            modules: {
+                Confirm: {
+                    confirm: true,
+                    buttons: [{
+                            text: 'Confirmar',
+                            primary: true,
+                            click: (notice) => {
+                                notice.close();
+                                if (typeof funcaoConfirmar === 'function') funcaoConfirmar();
+                            }
+                        },
+                        {
+                            text: 'Cancelar',
+                            click: (notice) => {
+                                notice.close();
+                                if (typeof funcaoCancelar === 'function') funcaoCancelar();
+                            }
+                        }
+                    ]
+                }
+            }
+        });
     }
 })
