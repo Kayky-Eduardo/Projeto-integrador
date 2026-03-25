@@ -14,62 +14,63 @@ verificar_login($conn);
     <?php include "../../include/link.html" ?>
 
 </head>
-<header>
-    <?php include "../../include/navbar.php"; ?>
-</header>
-<body>
-    <dialog>
-        <div class="filtrar-relatorio-grafico">
-            <input type="date" id="data-filtro-relatorio-grafico">
-        </div>
-    </dialog>
-    
-    <section class="caixa-grafico">
-        <h2>Relatório diário</h2>
-        <article id="piechart_3d" style="width: 900px; height: 500px;"></article>
-    </section>
+<nav><?php include "../../include/navbar.php"; ?></nav>
 
-    <section class="caixa-grafico">
-        <h2>Taxa de presença</h2>
-        <article id="columnchart_material" style="width: 800px; height: 500px;"></article>
-    </section>
+<main class="main-center">
+    <section class="pagina-padrao">
+        <body>
+        <dialog>
+            <div class="filtrar-relatorio-grafico">
+                <input type="date" id="data-filtro-relatorio-grafico">
+            </div>
+        </dialog>
 
-    <section class="caixa-grafico">
-        <h2>Hora extra</h2>
-        <article id="columnchart_material2" style="width: 800px; height: 500px;"></article>
-    </section>
+        <section class="caixa-grafico">
+            <h2>Relatório diário</h2>
+            <article id="piechart_3d" style="width: 900px; height: 500px;"></article>
 
-    <section class="caixa-grafico">
-        <h2>Evolução de Presença</h2>
-    <article id="linechart_presenca" style="width: 900px; height: 500px;"></article>
-    </section>
+            <h2>Taxa de presença</h2>
+            <article id="columnchart_material" style="width: 800px; height: 500px;"></article>
+        </section>
 
-    <section id="resultado-caixa-grafico">
-        <table>
-            <thead>
-                <th>ID</th>
-                <th>Email</th>
-                <th>Entrada</th>
-                <th>Saida</th>
-                <th>Data</th>
-                <th>Tempo logado</th>
-            </thead>
-            <tbody id="resposta-tbody">
-                <tr>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                </tr>
-            </tbody>
-        </table>           
-    </section>
+        <section class="caixa-grafico">
+            <h2>Hora extra</h2>
+            <article id="columnchart_material2" style="width: 800px; height: 500px;"></article>
+        </section>
 
-    <section id="exibicao-hora-extra"></section>
+        <section class="caixa-grafico">
+            <h2>Evolução de Presença</h2>
+        <article id="linechart_presenca" style="width: 900px; height: 500px;"></article>
+        </section>
+
+        <section class="tabela-padrao" id="resultado-caixa-grafico">
+            <table>
+                <thead>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Entrada</th>
+                    <th>Saida</th>
+                    <th>Data</th>
+                    <th>Tempo logado</th>
+                </thead>
+                <tbody id="resposta-tbody">
+                    <tr>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>           
+        </section>
+
+        <section id="exibicao-hora-extra"></section>
+        </section>
     </section>
+</main>
     <script type="text/javascript">
         // Validar mais tarde
             let dadosDoGrafico = null;
