@@ -373,18 +373,30 @@ if (isset($_POST['acao_cargo_btn'])) {
         header("Location: " . $_SERVER['REQUEST_URI']);
         exit;
     }
+}
 
-    if ($acao === 'ativar' || $acao === 'desativar') {
-        $novo_estado = ($acao === 'ativar') ? 1 : 0;
+if (isset($_POST['acao_cargo']) && $_POST['acao_cargo'] === 'editar') {
+    $id = intval($_POST['id_cargo']);
+    $nome = trim($_POST['nome_cargo']);
+    $salario = floatval($_POST['salario']);
+    $nivel = intval($_POST['nivel']);
 
-        $sql = "UPDATE cargo SET ativo = ? WHERE id_cargo = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ii", $novo_estado, $id_cargo);
+    if ($nome === '' || !$salario || !$nivel) {
+        $_SESSION['erros'][] = 'Preencha todos os campos.';
+    } else if ($_SESSION['nivel'] < $nivel) {
+        $_SESSION['erros'][] = 'Não pode definir nível maior que o seu.';
+    } else {
+        $stmt = $conn->prepare("
+            UPDATE cargo 
+            SET nome_cargo = ?, salario_bruto = ?, nivel = ?
+            WHERE id_cargo = ?
+        ");
+        $stmt->bind_param("sdii", $nome, $salario, $nivel, $id);
         $stmt->execute();
-
-        header("Location: " . $_SERVER['REQUEST_URI']);
-        exit;
     }
+
+    header("Location: config.php?pagina=cargos");
+    exit;
 }
 ?>
 

@@ -921,35 +921,39 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    document.getElementById("salvar-edicao-setor").addEventListener("click", async () => {
-        const usuariosSelecionados = Array.from(
-            document.querySelectorAll('#editar-usuarios-setor input[type="checkbox"]:checked')
-        ).map(cb => parseInt(cb.value));
+    const btnSalvarSetor = document.getElementById("salvar-edicao-setor");
 
-        try {
-            const response = await fetch(`../../api/api_setores.php?acao=set_setor`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id_setor: parseInt(setorAtual),
-                    usuarios_selecionado: usuariosSelecionados,
-                    nome_setor: "temp",
-                    id_tempo: 1
-                })
-            });
+    if (btnSalvarSetor) {
+        btnSalvarSetor.addEventListener("click", async () => {
+            const usuariosSelecionados = Array.from(
+                document.querySelectorAll('#editar-usuarios-setor input[type="checkbox"]:checked')
+            ).map(cb => parseInt(cb.value));
 
-            const resultado = await response.json();
+            try {
+                const response = await fetch(`../../api/api_setores.php?acao=set_setor`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id_setor: parseInt(setorAtual),
+                        usuarios_selecionado: usuariosSelecionados,
+                        nome_setor: "temp",
+                        id_tempo: 1
+                    })
+                });
 
-            if (resultado.sucesso) {
-                location.reload();
-            } else {
-                alert("Erro: " + resultado.mensagem);
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    location.reload();
+                } else {
+                    alert("Erro: " + resultado.mensagem);
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao salvar");
             }
-        } catch (error) {
-            console.error(error);
-            alert("Erro ao salvar");
-        }
-    });
+        });
+    }
 
     const filtroSetor = document.getElementById("filtro-setor");
 
@@ -995,4 +999,26 @@ document.addEventListener("DOMContentLoaded", () => {
         filtroSetor.addEventListener("change", aplicarFiltroSetor);
         aplicarFiltroSetor();
     }
+
+    // CONFIGURAÇÃO - CARGOS
+    const botoes = document.querySelectorAll(".btn-editar-cargo");
+    const formCargo = document.getElementById("editar-cargo");
+
+    const inputId = document.getElementById("edit-id");
+    const inputNome = document.getElementById("edit-nome");
+    const inputSalario = document.getElementById("edit-salario");
+    const inputNivel = document.getElementById("edit-nivel");
+
+    botoes.forEach(btn => {
+        btn.addEventListener("click", () => {
+            formCargo.classList.remove("hidden");
+
+            inputId.value = btn.dataset.id;
+            inputNome.value = btn.dataset.nome;
+            inputSalario.value = btn.dataset.salario;
+            inputNivel.value = btn.dataset.nivel;
+
+            formCargo.scrollIntoView({ behavior: "smooth" });
+        });
+    });
 });

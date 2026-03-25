@@ -48,6 +48,36 @@ $max = $_SESSION['nivel'] >= 3 ? 3 : 2;
         </section>
     </form>
 
+    <section id="editar-cargo" class="hidden">
+        <section class="form-config">
+            <h1 class="page-title">Editar Cargo</h1>
+        </section>
+
+        <form class="form-config" method="POST">
+            <input type="hidden" name="acao_cargo" value="editar">
+            <input type="hidden" name="id_cargo" id="edit-id">
+
+            <section class="form-linha">
+                <article>
+                    <label class="label">Nome</label>
+                    <input class="input" type="text" name="nome_cargo" id="edit-nome" required>
+                </article>
+
+                <article>
+                    <label class="label">Salário</label>
+                    <input class="input" type="number" name="salario" id="edit-salario" required>
+                </article>
+
+                <article>
+                    <label class="label">Nível</label>
+                    <input class="input" type="number" name="nivel" id="edit-nivel" min="1" max="<?= $max ?>" required>
+                </article>
+            </section>
+
+            <button type="submit" class="btn btn-padrao">Salvar</button>
+        </form>
+    </section>
+
     <section class="tabela-padrao tabela-config">
         <table id="tabela-cargos">
             <thead>
@@ -55,7 +85,7 @@ $max = $_SESSION['nivel'] >= 3 ? 3 : 2;
                     <th>Nome</th>
                     <th>Salário Bruto</th>
                     <th>Nível</th>
-                    <th>Ação</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
 
@@ -67,37 +97,27 @@ $max = $_SESSION['nivel'] >= 3 ? 3 : 2;
                         <td><?= $row["nivel"] ?></td>
 
                         <td class="acoes-config">
-                            <?php if ($_SESSION['nivel'] >= $row['nivel']): ?>
-                                <form action="editar_cargo.php" method="GET" style="display:inline;">
-                                    <input type="hidden" name="id" value="<?= $row['id_cargo'] ?>">
-                                    <button class="btn btn-padrao" type="submit">Gerenciar</button>
-                                </form>
+                            <input type="hidden" name="id" value="<?= $row['id_cargo'] ?>">
+                            <button
+                                type="button"
+                                class="btn btn-padrao btn-editar-cargo"
+                                data-id="<?= $row['id_cargo'] ?>"
+                                data-nome="<?= htmlspecialchars($row['nome_cargo']) ?>"
+                                data-salario="<?= $row['salario_bruto'] ?>"
+                                data-nivel="<?= $row['nivel'] ?>">
+                                Gerenciar
+                            </button>
 
-                                <form method="POST" style="display:inline;">
-                                    <input type="hidden" name="id_cargo" value="<?= $row['id_cargo'] ?>">
+                            <form method="POST" style="display:inline;">
+                                <input type="hidden" name="id_cargo" value="<?= $row['id_cargo'] ?>">
 
-                                    <button
-                                        class="btn <?= $row['ativo'] ? 'btn-desativar' : 'btn-ativar' ?>"
-                                        name="acao_cargo_btn"
-                                        value="<?= $row['ativo'] ? 'desativar' : 'ativar' ?>">
-                                        <?= $row['ativo'] ? 'Desativar' : 'Ativar' ?>
-                                    </button>
-                                </form>
-
-                                <form method="POST" style="display:inline;">
-                                    <input type="hidden" name="id_cargo" value="<?= $row['id_cargo'] ?>">
-
-                                    <button
-                                        class="btn btn-excluir"
-                                        name="acao_cargo_btn"
-                                        value="excluir">
-                                        Excluir
-                                    </button>
-                                </form>
-
-                            <?php else: ?>
-                                <span class="text-muted">Sem permissão</span>
-                            <?php endif; ?>
+                                <button
+                                    class="btn btn-excluir"
+                                    name="acao_cargo_btn"
+                                    value="excluir">
+                                    Excluir
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 <?php endwhile; ?>

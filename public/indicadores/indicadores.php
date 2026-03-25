@@ -6,6 +6,7 @@ verificar_login($conn);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,214 +19,221 @@ verificar_login($conn);
 <header>
     <?php include "../../include/navbar.php"; ?>
 </header>
+
 <body>
-    <dialog>
-        <div class="filtrar-relatorio-grafico">
-            <input type="date" id="data-filtro-relatorio-grafico">
-        </div>
-    </dialog>
-    
-    <section class="caixa-grafico">
-        <h2>Relatório diário</h2>
-        <article id="piechart_3d" style="width: 900px; height: 500px;"></article>
-    </section>
+    <nav><?php include("../../include/navbar.php"); ?></nav>
 
-    <section class="caixa-grafico">
-        <h2>Taxa de presença</h2>
-        <article id="columnchart_material" style="width: 800px; height: 500px;"></article>
-    </section>
+    <main class="main-center">
+        <section class="pagina-padrao">
+            <dialog>
+                <div class="filtrar-relatorio-grafico">
+                    <input type="date" id="data-filtro-relatorio-grafico">
+                </div>
+            </dialog>
 
-    <section class="caixa-grafico">
-        <h2>Hora extra</h2>
-        <article id="columnchart_material2" style="width: 800px; height: 500px;"></article>
-    </section>
+            <section class="caixa-grafico">
+                <h2>Relatório diário</h2>
+                <article id="piechart_3d" style="width: 900px; height: 500px;"></article>
+            </section>
 
-    <section class="caixa-grafico">
-        <h2>Evolução de Presença</h2>
-    <article id="linechart_presenca" style="width: 900px; height: 500px;"></article>
-    </section>
+            <section class="caixa-grafico">
+                <h2>Taxa de presença</h2>
+                <article id="columnchart_material" style="width: 800px; height: 500px;"></article>
+            </section>
 
-    <section id="resultado-caixa-grafico">
-        <table>
-            <thead>
-                <th>ID</th>
-                <th>Email</th>
-                <th>Entrada</th>
-                <th>Saida</th>
-                <th>Data</th>
-                <th>Tempo logado</th>
-            </thead>
-            <tbody id="resposta-tbody">
-                <tr>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                </tr>
-            </tbody>
-        </table>
-        <!-- Perfil de usuario geral(com filtro), porém irei fazer um para o profissional ver o próprio -->
-        <hr>
-        <h3>Perfil de usuario(ADM)</h3>
-        <!--
+            <section class="caixa-grafico">
+                <h2>Hora extra</h2>
+                <article id="columnchart_material2" style="width: 800px; height: 500px;"></article>
+            </section>
+
+            <section class="caixa-grafico">
+                <h2>Evolução de Presença</h2>
+                <article id="linechart_presenca" style="width: 900px; height: 500px;"></article>
+            </section>
+
+            <section id="resultado-caixa-grafico">
+                <table>
+                    <thead>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Entrada</th>
+                        <th>Saida</th>
+                        <th>Data</th>
+                        <th>Tempo logado</th>
+                    </thead>
+                    <tbody id="resposta-tbody">
+                        <tr>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- Perfil de usuario geral(com filtro), porém irei fazer um para o profissional ver o próprio -->
+                <hr>
+                <h3>Perfil de usuario(ADM)</h3>
+                <!--
         select para mostrar os usuarios, o valor das options vai ser o id, e para o usuario vai aparecer
         o nome do usuário
          -->
-        <select id="filtro-usuarios">Usuarios</select>
-        <!-- ficar embaixo do filtro -->
-        <section>
-            <table>
-                <thead>
-                    <th>ID</th>
-                    <th>Email</th>
-                    <th>Inicio</th>
-                    <th>Saida</th>
-                    <th>Tempo trabalhado</th>
-                    <th>Tempo logado</th>
-                </thead>
-                <tbody id="filtro-usuarios-tabela">
-                    <tr>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                    </tr>
-                </tbody>
-            </table>
-    </section>
+                <select id="filtro-usuarios">Usuarios</select>
+                <!-- ficar embaixo do filtro -->
+                <section>
+                    <table>
+                        <thead>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Inicio</th>
+                            <th>Saida</th>
+                            <th>Tempo trabalhado</th>
+                            <th>Tempo logado</th>
+                        </thead>
+                        <tbody id="filtro-usuarios-tabela">
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
 
-    <section id="exibicao-hora-extra"></section>
-    </section>
-    <section class="container">        
-        <section class="formulario">
-            <article class="form-group">
-                <label for="usuarioId">ID do Usuário:</label>
-                <input type="number" id="usuarioId" value="1" min="1">
-            </article>
-            
-            <article class="form-group">
-                <label for="dataInicio">Data Início:</label>
-                <input type="date" id="dataInicio">
-            </article>
-            
-            <article class="form-group">
-                <label for="dataFim">Data Fim:</label>
-                <input type="date" id="dataFim">
-            </article>
-            
-            <button id="btnVerificar">
-                Verificar Jornada
-            </button>
-        </section>
-        
-        <span id="loading" class="loading" style="display: none;">
-            Carregando...
-        </span>
-        
-        <span id="error" class="error" style="display: none;"></span>
-        
-        <p id="resultado"></p>
-        <p id="detalhes"></p>
-    </section>
-    <script type="text/javascript">
-        // Validar mais tarde
-            let dadosDoGrafico = null;
-            async function carregar_dados() {
-                await fetch('../../api/api_relatorio_ponto.php')
-                .then((valoresJSON) => valoresJSON.json())
-                .then((valores) => {
-                    let contador = 0;
-                    for (let i=0; i<valores.length; i++) {
-                        if (valores[i] == 0) {
-                            contador++;
-                        }
-                    }
-                    if (contador == 4) {
-                    dadosDoGrafico = google.visualization.arrayToDataTable([
-                        ['Task', 'Hours per Day'],
-                        ['Sem pontos', 1],
-                    ]);    
-                    } else {
-                        // se algum campo ficar vazio é porque o resultado do campo é igual 0
-                        dadosDoGrafico = google.visualization.arrayToDataTable([
-                            ['status', 'Pessoas por Status'],
-                            ['Presentes', valores[0]],
-                            ['Ausentes',  valores[1]], 
-                            ['Pausa', valores[2]],
-                            ['Horario', valores[3]]
-                        ]);
-                    }
-                    drawChart();
-                })
-            }
+                <section id="exibicao-hora-extra"></section>
+            </section>
+            <section class="container">
+                <section class="formulario">
+                    <article class="form-group">
+                        <label for="usuarioId">ID do Usuário:</label>
+                        <input type="number" id="usuarioId" value="1" min="1">
+                    </article>
 
-            setInterval(carregar_dados, 5000);
-            
-            google.charts.load("current", {packages:['corechart', 'bar', 'line']});
-            google.charts.setOnLoadCallback(carregar_dados);
+                    <article class="form-group">
+                        <label for="dataInicio">Data Início:</label>
+                        <input type="date" id="dataInicio">
+                    </article>
 
-            // função para dar forma ao gráfico.
-            // fiz uma gambiarra para exibir os resultado na tabela
-            function drawChart() {
-                if (!dadosDoGrafico) {
-                    return
+                    <article class="form-group">
+                        <label for="dataFim">Data Fim:</label>
+                        <input type="date" id="dataFim">
+                    </article>
+
+                    <button id="btnVerificar">
+                        Verificar Jornada
+                    </button>
+                </section>
+
+                <span id="loading" class="loading" style="display: none;">
+                    Carregando...
+                </span>
+
+                <span id="error" class="error" style="display: none;"></span>
+
+                <p id="resultado"></p>
+                <p id="detalhes"></p>
+            </section>
+            <script type="text/javascript">
+                // Validar mais tarde
+                let dadosDoGrafico = null;
+                async function carregar_dados() {
+                    await fetch('../../api/api_relatorio_ponto.php')
+                        .then((valoresJSON) => valoresJSON.json())
+                        .then((valores) => {
+                            let contador = 0;
+                            for (let i = 0; i < valores.length; i++) {
+                                if (valores[i] == 0) {
+                                    contador++;
+                                }
+                            }
+                            if (contador == 4) {
+                                dadosDoGrafico = google.visualization.arrayToDataTable([
+                                    ['Task', 'Hours per Day'],
+                                    ['Sem pontos', 1],
+                                ]);
+                            } else {
+                                // se algum campo ficar vazio é porque o resultado do campo é igual 0
+                                dadosDoGrafico = google.visualization.arrayToDataTable([
+                                    ['status', 'Pessoas por Status'],
+                                    ['Presentes', valores[0]],
+                                    ['Ausentes', valores[1]],
+                                    ['Pausa', valores[2]],
+                                    ['Horario', valores[3]]
+                                ]);
+                            }
+                            drawChart();
+                        })
                 }
-                var options = {
-                title: 'Status Operador(diario)',
-                pieHole: 0.4,
-            };
-                var chart = new google.visualization.PieChart(document.getElementById('piechart_3d'));
-                // event listener
-                google.visualization.events.addListener(chart, 'select', () => {
-                    // pegando qual grafico foi clidado
-                    // retorna array
-                    const selecionado = chart.getSelection();
-                    
-                    if (selecionado.length > 0) {
-                        // o item selecionado é sempre uma linha (row).
-                        // cada fatia é uma row
-                        const itemSelecionado = selecionado[0];
-                        const indiceLinha = itemSelecionado.row;
-                        // pegando o nome do campo e valor atrelado
-                        const tipo = dadosDoGrafico.getValue(indiceLinha, 0);
-                        
-                        async function exibir_tipo(tipo) {
-                            window.location.replace('/projeto-integrador/public/indicadores/indicadores.php#resultado-caixa-grafico')
-                            // pegando a tabela
-                            const resultado_relatorio = document.getElementById('resposta-tbody')
-                            
-                            const resposta_api = await fetch(`../../api/api_relatorio_ponto.php?acao=${tipo}`)
-                            .then((respostaJSON) => respostaJSON.json())
-                            .then((resposta) => {
-                                // esvaziando a tabela
-                                resultado_relatorio.innerHTML = "";
 
-                                // exibindo o resultado
-                                resposta.forEach(r => {
-                                    let id = r.id_ponto ?? '-';
-                                    let entrada = r.inicio_ponto ?? '-';
-                                    let saida = r.fim_ponto ?? '-';
-                                    let data = r.data_ponto ?? '-';
-                                    let tempo_logado = '-';
+                setInterval(carregar_dados, 5000);
 
-                                    if (tipo === 'Pausa') {
-                                        entrada = r.inicio;
-                                        saida = r.fim ?? '-';
-                                    }
-                                    if (r.tempo_logado) {
-                                        const horas = Math.floor(r.tempo_logado / 60);
-                                        const minutos = r.tempo_logado % 60;
-                                        tempo_logado = horas > 0 ? `${horas}h ${minutos}min` : `${minutos}min`;
-                                    }
+                google.charts.load("current", {
+                    packages: ['corechart', 'bar', 'line']
+                });
+                google.charts.setOnLoadCallback(carregar_dados);
 
-                                    const tr = document.createElement("tr");
-                                    
-                                    tr.innerHTML = `
+                // função para dar forma ao gráfico.
+                // fiz uma gambiarra para exibir os resultado na tabela
+                function drawChart() {
+                    if (!dadosDoGrafico) {
+                        return
+                    }
+                    var options = {
+                        title: 'Status Operador(diario)',
+                        pieHole: 0.4,
+                    };
+                    var chart = new google.visualization.PieChart(document.getElementById('piechart_3d'));
+                    // event listener
+                    google.visualization.events.addListener(chart, 'select', () => {
+                        // pegando qual grafico foi clidado
+                        // retorna array
+                        const selecionado = chart.getSelection();
+
+                        if (selecionado.length > 0) {
+                            // o item selecionado é sempre uma linha (row).
+                            // cada fatia é uma row
+                            const itemSelecionado = selecionado[0];
+                            const indiceLinha = itemSelecionado.row;
+                            // pegando o nome do campo e valor atrelado
+                            const tipo = dadosDoGrafico.getValue(indiceLinha, 0);
+
+                            async function exibir_tipo(tipo) {
+                                window.location.replace('/projeto-integrador/public/indicadores/indicadores.php#resultado-caixa-grafico')
+                                // pegando a tabela
+                                const resultado_relatorio = document.getElementById('resposta-tbody')
+
+                                const resposta_api = await fetch(`../../api/api_relatorio_ponto.php?acao=${tipo}`)
+                                    .then((respostaJSON) => respostaJSON.json())
+                                    .then((resposta) => {
+                                        // esvaziando a tabela
+                                        resultado_relatorio.innerHTML = "";
+
+                                        // exibindo o resultado
+                                        resposta.forEach(r => {
+                                            let id = r.id_ponto ?? '-';
+                                            let entrada = r.inicio_ponto ?? '-';
+                                            let saida = r.fim_ponto ?? '-';
+                                            let data = r.data_ponto ?? '-';
+                                            let tempo_logado = '-';
+
+                                            if (tipo === 'Pausa') {
+                                                entrada = r.inicio;
+                                                saida = r.fim ?? '-';
+                                            }
+                                            if (r.tempo_logado) {
+                                                const horas = Math.floor(r.tempo_logado / 60);
+                                                const minutos = r.tempo_logado % 60;
+                                                tempo_logado = horas > 0 ? `${horas}h ${minutos}min` : `${minutos}min`;
+                                            }
+
+                                            const tr = document.createElement("tr");
+
+                                            tr.innerHTML = `
                                         <td>${id}</td>
                                         <td>${r.email_usuario}</td>
                                         <td>${entrada}</td>
@@ -233,55 +241,59 @@ verificar_login($conn);
                                         <td>${data}</td>
                                         <td>${tempo_logado}</td>
                                     `;
-                                    resultado_relatorio.appendChild(tr);
-                                    }); 
-                                })
+                                            resultado_relatorio.appendChild(tr);
+                                        });
+                                    })
+                            }
+                            exibir_tipo(tipo);
                         }
-                        exibir_tipo(tipo);
-                    }
-                })
-                chart.draw(dadosDoGrafico, options);
-            }
-            // coleta de dados horas extras usando o filtro para id_usuario
-            const select = document.getElementById("filtro-usuarios");
-            
-            function formatar_tempo(tempo) {
-                if (tempo != '-') {
-                    const hora = Math.floor(tempo / 60);
-                    const minutos = tempo % 60;
-                    return tempo = hora > 0 ? `${hora}h ${minutos}min` : `${minutos}min`;
-                } else {
-                    return "-"
+                    })
+                    chart.draw(dadosDoGrafico, options);
                 }
-            } 
+                // coleta de dados horas extras usando o filtro para id_usuario
+                const select = document.getElementById("filtro-usuarios");
 
-            async function filtrar_tabela_hora(id_usuario) {
-                const exibicao_tabela_hora = document.getElementById("filtro-usuarios-tabela");
-                await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_tabela_hora", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({id_usuario: id_usuario})
-                })
-                .then((response) => response.json())
-                .then((tabela_hora) => {
-
-                    exibicao_tabela_hora.innerHTML = "";
-        
-                    if(tabela_hora.length === 0){
-                        exibicao_tabela_hora.innerHTML = `<tr><td colspan="5">Nenhum registro encontrado</td></tr>`;
-                        return;
+                function formatar_tempo(tempo) {
+                    if (tempo != '-') {
+                        const hora = Math.floor(tempo / 60);
+                        const minutos = tempo % 60;
+                        return tempo = hora > 0 ? `${hora}h ${minutos}min` : `${minutos}min`;
+                    } else {
+                        return "-"
                     }
-        
-                    tabela_hora.forEach(h => {
-                        let id_ponto = h.id_ponto ?? '-';
-                        let email_login = h.email_login ?? '-';
-                        let entrada = h.inicio_ponto ?? '-';                
-                        let saida = h.fim_ponto ?? '-';
-                        let tempo_logado = h.tempo_logado ?? '-';
-                        let tempo_trabalhado = h.tempo_trabalhado ?? '-';
-        
-                        const tr = document.createElement("tr");
-                        tr.innerHTML = `
+                }
+
+                async function filtrar_tabela_hora(id_usuario) {
+                    const exibicao_tabela_hora = document.getElementById("filtro-usuarios-tabela");
+                    await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_tabela_hora", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                id_usuario: id_usuario
+                            })
+                        })
+                        .then((response) => response.json())
+                        .then((tabela_hora) => {
+
+                            exibicao_tabela_hora.innerHTML = "";
+
+                            if (tabela_hora.length === 0) {
+                                exibicao_tabela_hora.innerHTML = `<tr><td colspan="5">Nenhum registro encontrado</td></tr>`;
+                                return;
+                            }
+
+                            tabela_hora.forEach(h => {
+                                let id_ponto = h.id_ponto ?? '-';
+                                let email_login = h.email_login ?? '-';
+                                let entrada = h.inicio_ponto ?? '-';
+                                let saida = h.fim_ponto ?? '-';
+                                let tempo_logado = h.tempo_logado ?? '-';
+                                let tempo_trabalhado = h.tempo_trabalhado ?? '-';
+
+                                const tr = document.createElement("tr");
+                                tr.innerHTML = `
                             <td>${id_ponto}</td>
                             <td>${email_login}</td>
                             <td>${entrada}</td>
@@ -289,98 +301,101 @@ verificar_login($conn);
                             <td>${formatar_tempo(tempo_trabalhado)}</td>
                             <td>${formatar_tempo(tempo_logado)}</td>
                         `;
-                        exibicao_tabela_hora.appendChild(tr);
-                    });
-                })
-            }
+                                exibicao_tabela_hora.appendChild(tr);
+                            });
+                        })
+                }
 
-            async function exibicao_usuarios_option() {
-                select.innerHTML = `<option value="">Selecione um usuario</option>`
-                await fetch("../../api/api_relatorio_ponto.php?acao=usuarios")
-                .then((coleta_usuarios) => coleta_usuarios.json())
-                .then((resposta_usuarios) => {
-                    resposta_usuarios.forEach(u => {
-                        const tag_option = document.createElement("option");
-                        tag_option.value = u.id_usuario;
-                        tag_option.textContent = u.nome_usuario;
-                        select.appendChild(tag_option);
-                    })
+                async function exibicao_usuarios_option() {
+                    select.innerHTML = `<option value="">Selecione um usuario</option>`
+                    await fetch("../../api/api_relatorio_ponto.php?acao=usuarios")
+                        .then((coleta_usuarios) => coleta_usuarios.json())
+                        .then((resposta_usuarios) => {
+                            resposta_usuarios.forEach(u => {
+                                const tag_option = document.createElement("option");
+                                tag_option.value = u.id_usuario;
+                                tag_option.textContent = u.nome_usuario;
+                                select.appendChild(tag_option);
+                            })
+                        });
+                }
+
+                select.addEventListener("change", async function() {
+                    const exibicao_hora_extra = document.getElementById("exibicao-hora-extra");
+
+                    exibicao_hora_extra.innerHTML = "";
+
+                    const id_usuario = this.value;
+
+                    await fetch("../../api/api_relatorio_ponto.php?acao=get_horas", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                id_usuario
+                            })
+                        })
+                        .then((coleta_hora_extra) => coleta_hora_extra.json())
+                        .then((resposta) => {
+                            const tag_h1 = document.createElement("h1");
+                            const tag_h2 = document.createElement("h2");
+
+                            tag_h1.textContent = "Hora Extra";
+
+                            // Usa direto o valor retornado pela API
+                            tag_h2.textContent = resposta.dados.saldo_formatado ?? "00:00";
+
+                            exibicao_hora_extra.appendChild(tag_h1);
+                            exibicao_hora_extra.appendChild(tag_h2);
+
+                            filtrar_tabela_hora(id_usuario);
+                        });
+
                 });
-            }
-            
-            select.addEventListener("change", async function () {
-                const exibicao_hora_extra = document.getElementById("exibicao-hora-extra");
+                exibicao_usuarios_option();
 
-                exibicao_hora_extra.innerHTML = "";
+                async function verificar_jornada(usuarioId, dataInicio, dataFim) {
+                    try {
+                        const params = new URLSearchParams({
+                            usuario_id: usuarioId,
+                            data_inicio: dataInicio,
+                            data_fim: dataFim
+                        });
 
-                const id_usuario = this.value;
+                        const response = await fetch(`../../api/api_jornada.php?${params}`);
+                        const resultado = await response.json();
 
-                await fetch("../../api/api_relatorio_ponto.php?acao=get_horas",
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id_usuario })
-                })
-                .then((coleta_hora_extra) => coleta_hora_extra.json())
-                .then((resposta) => {
-                    const tag_h1 = document.createElement("h1");
-                    const tag_h2 = document.createElement("h2");
-        
-                    tag_h1.textContent = "Hora Extra";
-        
-                    // Usa direto o valor retornado pela API
-                    tag_h2.textContent = resposta.dados.saldo_formatado ?? "00:00";
-        
-                    exibicao_hora_extra.appendChild(tag_h1);
-                    exibicao_hora_extra.appendChild(tag_h2);
-        
-                    filtrar_tabela_hora(id_usuario);
-                });
+                        if (!resultado.sucesso) throw new Error(resultado.mensagem);
 
-            });
-            exibicao_usuarios_option();
+                        return resultado.dados;
 
-            async function verificar_jornada(usuarioId, dataInicio, dataFim) {
-                try {
-                    const params = new URLSearchParams({
-                        usuario_id: usuarioId,
-                        data_inicio: dataInicio,
-                        data_fim: dataFim
-                    });
-                    
-                    const response = await fetch(`../../api/api_jornada.php?${params}`);
-                    const resultado = await response.json();
+                    } catch (error) {
+                        console.log('Erro ao verificar jornada:', error);
+                        throw error;
+                    }
+                }
 
-                    if (!resultado.sucesso) throw new Error(resultado.mensagem);
-                    
-                    return resultado.dados;   
-            
-                } catch (error) {
-                console.log('Erro ao verificar jornada:', error);
-                throw error;
-            }
-        }
+                // Formata horas para exibição
+                function formatarHoras(horas) {
+                    return horas.toFixed(2).replace('.', ',') + 'h';
+                }
 
-        // Formata horas para exibição
-        function formatarHoras(horas) {
-            return horas.toFixed(2).replace('.', ',') + 'h';
-        }
+                function formatarPercentual(percentual) {
+                    return percentual.toFixed(2).replace('.', ',') + '%';
+                }
 
-        function formatarPercentual(percentual) {
-            return percentual.toFixed(2).replace('.', ',') + '%';
-        }
+                function exibir_resultado(resultado, elementoId) {
+                    const elemento = document.getElementById(elementoId);
 
-        function exibir_resultado(resultado, elementoId) {
-            const elemento = document.getElementById(elementoId);
-            
-            if (!elemento) {
-                console.log('Elemento não encontrado:', elementoId);
-                return;
-            }
-            
-            const simboloDiferenca = resultado.diferenca >= 0 ? '+' : '';
-            
-            elemento.innerHTML = `
+                    if (!elemento) {
+                        console.log('Elemento não encontrado:', elementoId);
+                        return;
+                    }
+
+                    const simboloDiferenca = resultado.diferenca >= 0 ? '+' : '';
+
+                    elemento.innerHTML = `
                 <section class="jornada-resultado">
                     <h3>Verificação de Jornada</h3>
                     <article class="jornada-info">
@@ -407,221 +422,257 @@ verificar_login($conn);
                     </section>
                 </section>
             `;
-        }
+                }
 
-        async function buscar_jornada() {
-            const usuarioId = document.getElementById('usuarioId').value;
-            const dataInicio = document.getElementById('dataInicio').value;
-            const dataFim = document.getElementById('dataFim').value;
-            
-            if (!usuarioId || !dataInicio || !dataFim) {
-                console.log('Preencha todos os campos!');
-                return;
-            }
-                document.getElementById('loading').style.display = 'block';
-                document.getElementById('error').style.display = 'none';
-                limpar_resultado();
-                
-            try {
-                const resultado = await verificar_jornada(usuarioId, dataInicio, dataFim);
-                
-                exibir_resultado(resultado, 'resultado');
-                
-            } catch (error) {
-                console.log('Erro ao buscar dados: ' + error.message);
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
-        }
-        
-        document.getElementById("btnVerificar").addEventListener("click", function () {
-            buscar_jornada();
-        })
-        
-        function limpar_resultado() {
-            document.getElementById('resultado').innerHTML = '';
-            document.getElementById('detalhes').innerHTML = '';
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputs = document.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        buscar_jornada();
-                    }
-                });
-            });
-        });
+                async function buscar_jornada() {
+                    const usuarioId = document.getElementById('usuarioId').value;
+                    const dataInicio = document.getElementById('dataInicio').value;
+                    const dataFim = document.getElementById('dataFim').value;
 
-        async function carregar_grafico_bar1() {
-            try {
-                const response = await fetch('../../api/api_jornada.php?acao=taxa_presenca_geral')
-                .then((response) => response.json())
-                .then((resultado) => {
-                    // Cabeçalho do gráfico
-                    const dadosGrafico = [
-                        [
-                            'Funcionário',  
-                            'Horas Trabalhadas', 
-                            'Horas Esperadas', 
-                            'Taxa de Presença (%)'
-                        ]
-                    ];
-
-                    if (!resultado.sucesso) {
-                        console.error('Erro ao buscar dados:', resultado.mensagem);
-                        dadosGrafico.push(['Sem dados', 0, 0, 0]);
+                    if (!usuarioId || !dataInicio || !dataFim) {
+                        console.log('Preencha todos os campos!');
                         return;
                     }
+                    document.getElementById('loading').style.display = 'block';
+                    document.getElementById('error').style.display = 'none';
+                    limpar_resultado();
 
-                    const usuarios = resultado.dados.usuarios;
-                    
-                    usuarios.forEach(usuario => {
-                        dadosGrafico.push([
-                            usuario.nome,
-                            parseFloat(usuario.horas_trabalhadas),
-                            parseFloat(usuario.horas_esperadas),
-                            parseFloat(usuario.taxa_presenca) // porcentagem
-                        ]);
-                    });            
-                    
-                    var data = google.visualization.arrayToDataTable(dadosGrafico);
-        
-                    var options = {
-                        title: 'Taxa de Presença — ' + resultado.dados.periodo.inicio + ' até ' + resultado.dados.periodo.fim,
-                        hAxis: { title: 'Funcionários' },
-                        vAxes: {
-                            0: { title: 'Horas' }, // esquerda
-                            1: { title: 'Taxa de Presença (%)' } // direita
-                        },
-                        seriesType: 'bars',
-                        series: { 2: { type: 'line', targetAxisIndex: 1 } },
-                        colors: ['#3b82f6', '#10b981', '#f43f5e'],
-                        legend: { position: 'bottom' }
-                    };
-        
-                    var chart = new google.visualization.ComboChart(
-                        document.getElementById('columnchart_material')
-                    );
-        
-                    chart.draw(data, options);
-                });            
-            } catch (error) {
-                console.error('Erro ao carregar gráfico:', error);
-            }
-        }
+                    try {
+                        const resultado = await verificar_jornada(usuarioId, dataInicio, dataFim);
 
-        google.charts.setOnLoadCallback(carregar_grafico_bar1);
+                        exibir_resultado(resultado, 'resultado');
 
-        async function carregar_grafico_bar2() {
-            try {
-                await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_usuario")
-                .then((response => response.json()))
-                .then((resultado) => {
-                    const dadosGrafico = [
-                        ['Funcionários', 'Saldo (Horas)', { role: 'style' }]
-                    ];
-
-                    if (!resultado.sucesso || !resultado.dados || resultado.dados.usuarios.length === 0) {
-                        // Fallback simbólico
-                        dadosGrafico.push(['Sem dados', 0, '#9ca3af']);
-                    } else {
-                        resultado.dados.usuarios.forEach(usuario => {
-                            const horas = parseFloat((usuario.saldo_horas).toFixed(0));
-                            const corBarra = horas < 0 ? '#f59e0b' : '#3b82f6';
-                            dadosGrafico.push([usuario.nome_usuario, horas, corBarra]);
-                        });
+                    } catch (error) {
+                        console.log('Erro ao buscar dados: ' + error.message);
+                    } finally {
+                        document.getElementById('loading').style.display = 'none';
                     }
+                }
 
-                    const periodoInicio = resultado.dados?.periodo?.inicio ?? '-';
-                    const periodoFim = resultado.dados?.periodo?.fim ?? '-';
-
-                    var data = google.visualization.arrayToDataTable(dadosGrafico);
-                    var options = {
-                        title: 'Banco de Horas - ' + periodoInicio + ' até ' + periodoFim,
-                        hAxis: { title: 'Funcionários' },
-                        vAxis: { title: 'Horas' }
-                    };
-
-                    var chart = new google.visualization.ColumnChart(document.getElementById('columnchart_material2'));
-                    chart.draw(data, options);
+                document.getElementById("btnVerificar").addEventListener("click", function() {
+                    buscar_jornada();
                 })
-            } catch (error) {
-                console.error('Erro ao carregar gráfico:', error);
-            }
-        }
 
-        google.charts.setOnLoadCallback(carregar_grafico_bar2);
+                function limpar_resultado() {
+                    document.getElementById('resultado').innerHTML = '';
+                    document.getElementById('detalhes').innerHTML = '';
+                }
 
-        function nome_do_mes(numero) {
-            const meses = [
-                "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-            ];
-
-            return meses[numero - 1];
-        }
-        
-        function formatarData(data, apenasDia = false) {
-            if (!data) return '';
-            const [ano, mes, dia] = data.split('-');
-            return apenasDia ? dia : `${dia}/${mes}`
-        };
-
-        async function carregar_grafico_linha() {
-            try {
-                await fetch('../../api/api_relatorio_ponto.php?acao=evolucao_presenca')
-                .then((response) => response.json())
-                .then((resultado) => {
-                    const dadosGrafico = [['Data', 'Presentes', 'Ausentes']];
-
-                    if (!resultado.sucesso || !resultado.dados.dados || resultado.dados.dados.length === 0) {
-                        dadosGrafico.push(['--', 0, 0]);
-
-                        const data = google.visualization.arrayToDataTable(dadosGrafico);
-                        const options = {
-                            title: 'Evolução de Presença - Sem dados no período',
-                            legend: { position: 'bottom' },
-                            colors: ['#10b981', '#ef4444'],
-                            hAxis: { title: 'Data' },
-                            vAxis: { title: 'Quantidade', minValue: 0, maxValue: 1 },
-                            pointSize: 4,
-                        };
-                        const chart = new google.visualization.AreaChart(document.getElementById('linechart_presenca'));
-                        chart.draw(data, options);
-                        return;
-                    }
-
-                    let primeiraData = formatarData(resultado.dados.primeira_data, true);
-                    let ultimaData = formatarData(resultado.dados.ultima_data, true);
-
-                    // Renomeado de 'dia' para 'diaPeriodo' para evitar conflito com o forEach abaixo
-                    const [ano, mes, diaPeriodo] = resultado.dados.periodo.fim.split('-');
-
-                    resultado.dados.dados.forEach(item => { // renomeado de 'dia' para 'item'
-                        dadosGrafico.push([formatarData(item.data), item.presentes, item.ausentes]);
+                document.addEventListener('DOMContentLoaded', function() {
+                    const inputs = document.querySelectorAll('input');
+                    inputs.forEach(input => {
+                        input.addEventListener('keypress', function(e) {
+                            if (e.key === 'Enter') {
+                                buscar_jornada();
+                            }
+                        });
                     });
-
-                    const data = google.visualization.arrayToDataTable(dadosGrafico);
-                    const options = {
-                        title: `Evolução de Presença - ${primeiraData} até ${ultimaData} no mês de ${nome_do_mes(mes)}`,
-                        legend: { position: 'bottom' },
-                        colors: ['#10b981', '#ef4444'],
-                        areaOpacity: 0.050,
-                        hAxis: { title: 'Data' },
-                        vAxis: { title: 'Quantidade' },
-                        pointSize: 4,
-                    };
-
-                    const chart = new google.visualization.AreaChart(document.getElementById('linechart_presenca'));
-                    chart.draw(data, options);
                 });
-            } catch (error) {
-                console.error('Erro ao carregar gráfico:', error);
-            }
-        }
-        google.charts.setOnLoadCallback(carregar_grafico_linha);
-        </script>
+
+                async function carregar_grafico_bar1() {
+                    try {
+                        const response = await fetch('../../api/api_jornada.php?acao=taxa_presenca_geral')
+                            .then((response) => response.json())
+                            .then((resultado) => {
+                                // Cabeçalho do gráfico
+                                const dadosGrafico = [
+                                    [
+                                        'Funcionário',
+                                        'Horas Trabalhadas',
+                                        'Horas Esperadas',
+                                        'Taxa de Presença (%)'
+                                    ]
+                                ];
+
+                                if (!resultado.sucesso) {
+                                    console.error('Erro ao buscar dados:', resultado.mensagem);
+                                    dadosGrafico.push(['Sem dados', 0, 0, 0]);
+                                    return;
+                                }
+
+                                const usuarios = resultado.dados.usuarios;
+
+                                usuarios.forEach(usuario => {
+                                    dadosGrafico.push([
+                                        usuario.nome,
+                                        parseFloat(usuario.horas_trabalhadas),
+                                        parseFloat(usuario.horas_esperadas),
+                                        parseFloat(usuario.taxa_presenca) // porcentagem
+                                    ]);
+                                });
+
+                                var data = google.visualization.arrayToDataTable(dadosGrafico);
+
+                                var options = {
+                                    title: 'Taxa de Presença — ' + resultado.dados.periodo.inicio + ' até ' + resultado.dados.periodo.fim,
+                                    hAxis: {
+                                        title: 'Funcionários'
+                                    },
+                                    vAxes: {
+                                        0: {
+                                            title: 'Horas'
+                                        }, // esquerda
+                                        1: {
+                                            title: 'Taxa de Presença (%)'
+                                        } // direita
+                                    },
+                                    seriesType: 'bars',
+                                    series: {
+                                        2: {
+                                            type: 'line',
+                                            targetAxisIndex: 1
+                                        }
+                                    },
+                                    colors: ['#3b82f6', '#10b981', '#f43f5e'],
+                                    legend: {
+                                        position: 'bottom'
+                                    }
+                                };
+
+                                var chart = new google.visualization.ComboChart(
+                                    document.getElementById('columnchart_material')
+                                );
+
+                                chart.draw(data, options);
+                            });
+                    } catch (error) {
+                        console.error('Erro ao carregar gráfico:', error);
+                    }
+                }
+
+                google.charts.setOnLoadCallback(carregar_grafico_bar1);
+
+                async function carregar_grafico_bar2() {
+                    try {
+                        await fetch("../../api/api_relatorio_ponto.php?acao=filtrar_usuario")
+                            .then((response => response.json()))
+                            .then((resultado) => {
+                                const dadosGrafico = [
+                                    ['Funcionários', 'Saldo (Horas)', {
+                                        role: 'style'
+                                    }]
+                                ];
+
+                                if (!resultado.sucesso || !resultado.dados || resultado.dados.usuarios.length === 0) {
+                                    // Fallback simbólico
+                                    dadosGrafico.push(['Sem dados', 0, '#9ca3af']);
+                                } else {
+                                    resultado.dados.usuarios.forEach(usuario => {
+                                        const horas = parseFloat((usuario.saldo_horas).toFixed(0));
+                                        const corBarra = horas < 0 ? '#f59e0b' : '#3b82f6';
+                                        dadosGrafico.push([usuario.nome_usuario, horas, corBarra]);
+                                    });
+                                }
+
+                                const periodoInicio = resultado.dados?.periodo?.inicio ?? '-';
+                                const periodoFim = resultado.dados?.periodo?.fim ?? '-';
+
+                                var data = google.visualization.arrayToDataTable(dadosGrafico);
+                                var options = {
+                                    title: 'Banco de Horas - ' + periodoInicio + ' até ' + periodoFim,
+                                    hAxis: {
+                                        title: 'Funcionários'
+                                    },
+                                    vAxis: {
+                                        title: 'Horas'
+                                    }
+                                };
+
+                                var chart = new google.visualization.ColumnChart(document.getElementById('columnchart_material2'));
+                                chart.draw(data, options);
+                            })
+                    } catch (error) {
+                        console.error('Erro ao carregar gráfico:', error);
+                    }
+                }
+
+                google.charts.setOnLoadCallback(carregar_grafico_bar2);
+
+                function nome_do_mes(numero) {
+                    const meses = [
+                        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+                    ];
+
+                    return meses[numero - 1];
+                }
+
+                function formatarData(data, apenasDia = false) {
+                    if (!data) return '';
+                    const [ano, mes, dia] = data.split('-');
+                    return apenasDia ? dia : `${dia}/${mes}`
+                };
+
+                async function carregar_grafico_linha() {
+                    try {
+                        await fetch('../../api/api_relatorio_ponto.php?acao=evolucao_presenca')
+                            .then((response) => response.json())
+                            .then((resultado) => {
+                                const dadosGrafico = [
+                                    ['Data', 'Presentes', 'Ausentes']
+                                ];
+
+                                if (!resultado.sucesso || !resultado.dados.dados || resultado.dados.dados.length === 0) {
+                                    dadosGrafico.push(['--', 0, 0]);
+
+                                    const data = google.visualization.arrayToDataTable(dadosGrafico);
+                                    const options = {
+                                        title: 'Evolução de Presença - Sem dados no período',
+                                        legend: {
+                                            position: 'bottom'
+                                        },
+                                        colors: ['#10b981', '#ef4444'],
+                                        hAxis: {
+                                            title: 'Data'
+                                        },
+                                        vAxis: {
+                                            title: 'Quantidade',
+                                            minValue: 0,
+                                            maxValue: 1
+                                        },
+                                        pointSize: 4,
+                                    };
+                                    const chart = new google.visualization.AreaChart(document.getElementById('linechart_presenca'));
+                                    chart.draw(data, options);
+                                    return;
+                                }
+
+                                let primeiraData = formatarData(resultado.dados.primeira_data, true);
+                                let ultimaData = formatarData(resultado.dados.ultima_data, true);
+
+                                // Renomeado de 'dia' para 'diaPeriodo' para evitar conflito com o forEach abaixo
+                                const [ano, mes, diaPeriodo] = resultado.dados.periodo.fim.split('-');
+
+                                resultado.dados.dados.forEach(item => { // renomeado de 'dia' para 'item'
+                                    dadosGrafico.push([formatarData(item.data), item.presentes, item.ausentes]);
+                                });
+
+                                const data = google.visualization.arrayToDataTable(dadosGrafico);
+                                const options = {
+                                    title: `Evolução de Presença - ${primeiraData} até ${ultimaData} no mês de ${nome_do_mes(mes)}`,
+                                    legend: {
+                                        position: 'bottom'
+                                    },
+                                    colors: ['#10b981', '#ef4444'],
+                                    areaOpacity: 0.050,
+                                    hAxis: {
+                                        title: 'Data'
+                                    },
+                                    vAxis: {
+                                        title: 'Quantidade'
+                                    },
+                                    pointSize: 4,
+                                };
+
+                                const chart = new google.visualization.AreaChart(document.getElementById('linechart_presenca'));
+                                chart.draw(data, options);
+                            });
+                    } catch (error) {
+                        console.error('Erro ao carregar gráfico:', error);
+                    }
+                }
+                google.charts.setOnLoadCallback(carregar_grafico_linha);
+            </script>
 </body>
+
 </html>
