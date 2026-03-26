@@ -161,6 +161,7 @@ elseif ($tipo_ajuste === 'pausa') {
     if (!in_array($campo_pausa, $camposPermitidosPausa)) {
         die("Campo de pausa inválido.");
     }
+
     // 1. Validação de dados de pausa
     if ($id_pausa <= 0 || (empty($campo_pausa) && empty($pausa_nova))) {
         die("Selecione a pausa e preencha o novo início ou fim.");

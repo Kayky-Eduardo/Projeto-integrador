@@ -221,7 +221,7 @@ $result = $stmt->get_result();
 <head>
     <meta charset="UTF-8">
     <title>Usuários | Sistema RH</title>
-    <?php include("../../include/link.html"); ?>
+    <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
 
 <body>

@@ -129,7 +129,7 @@ verificar_login($conn);
 <head>
     <meta charset="UTF-8">
     <title>Sistema de RH</title>
-    <?php include("../include/link.html"); ?>
+    <link rel="stylesheet" href="../assets/css/estilo.css">
 </head>
 
 <body>

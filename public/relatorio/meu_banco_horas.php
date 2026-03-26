@@ -130,7 +130,7 @@ if ($modoRelatorio && $ehRH) {
             <?php if (!$modoRelatorio): ?>
 
                 <!-- RESUMO -->
-                <section class="container bh-resumo" aria-label="Resumo do banco de horas">
+                <section class="bh-resumo" aria-label="Resumo do banco de horas">
                     <article>
                         <h2><?= $resumo['saldo_antigo'] ?? '00:00' ?></h2>
                         <p>Saldo anterior</p>

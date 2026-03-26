@@ -128,6 +128,7 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn)
         JOIN cargo c ON c.id_cargo = u.id_cargo
         WHERE u.id_usuario = ?
     ");
+
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
     $userData = $stmt->get_result()->fetch_assoc();
@@ -141,6 +142,7 @@ function gerarFolhaUsuario(array $usuario, string $mes_padrao, $conn)
 
     $total_proventos = 0;
     $total_descontos = 0;
+
     while ($evt = $resEventos->fetch_assoc()) {
         if ($evt["tipo"] === "provento") $total_proventos += floatval($evt["valor"]);
         else $total_descontos += floatval($evt["valor"]);

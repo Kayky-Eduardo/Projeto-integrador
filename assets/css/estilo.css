@@ -280,6 +280,12 @@ footer a {
     color: var(--cor-principal);
 }
 
+.btn-ativar,
+.btn-desativar {
+    min-width: 120px;
+    text-align: center;
+}
+
 .btn-ativar {
     background-color: #2ecc71;
     color: var(--cor-principal);
@@ -290,8 +296,20 @@ footer a {
     color: var(--cor-principal);
 }
 
+.btn-ativar:hover {
+    background-color: #27ae60;
+}
+
+.btn-desativar:hover {
+    background-color: #ea580c;
+}
+
 .btn-excluir {
     background-color: var(--cor-perigo);
+}
+
+.btn-excluir:hover {
+    background-color: #b91c1c;
 }
 
 .btn-voltar {
@@ -364,6 +382,8 @@ footer a {
     background-repeat: no-repeat;
     background-position: right 0.6rem center;
     background-size: 14px;
+    width: 100%;
+    padding-right: 30px;
 }
 
 /* FORMULÁRIO  */
@@ -720,10 +740,41 @@ footer a {
 }
 
 /* CONFIGURAÇÕES */
+.pagina-config {
+    width: 100%;
+    flex: 1;
+    min-width: 0;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+}
+
 .configuracoes {
     display: flex;
     gap: 1.5rem;
     width: 100%;
+    align-items: flex-start;
+}
+
+.configuracoes aside {
+    flex: 0 0 220px;
+}
+
+.tabela-config {
+    box-shadow: 1px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.acoes-config {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    justify-content: center;
+}
+
+.filtro-status-config {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
 }
 
 /* Menu lateral de configurações */
@@ -735,6 +786,7 @@ footer a {
     gap: 8px;
     background-color: var(--cor-principal);
     border-radius: var(--raio-borda-grande);
+    white-space: nowrap;
 }
 
 .menu-config a {
@@ -762,8 +814,119 @@ footer a {
     font-size: var(--tamanho-texto-padrao);
 }
 
-/* LISTA DE USUÁRIOS */
+/* EDIÇÃO DE CONFIGURAÇÕES */
+.edit-config {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+}
 
+.edit-config a {
+    text-decoration: none;
+}
+
+/* CONFIGURAÇÕES DA EMPRESA */
+.form-empresa {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+    gap: 20px;
+}
+
+/* VALOR (MODO VISUAL) */
+.info-valor {
+    padding: 10px 12px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #333;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+}
+
+/* LINHA DO BOTÃO */
+.btn-empresa-config {
+    margin-top: 10px;
+    align-items: center;
+}
+
+/* CONFIGURAÇÕES DE JORNADA */
+.box-config {
+    display: inline-block;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.box-config input {
+    display: none;
+}
+
+.box-config span {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #f0f0f0;
+    transition: 0.2s;
+    font-size: 14px;
+}
+
+.box-config span:hover {
+    background: #dcdcdc;
+}
+
+.box-config input:checked+span {
+    background: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
+
+.badge-dia {
+    display: inline-block;
+    background: var(--cor-texto-branco);
+    padding: 4px 8px;
+    margin: 2px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+/* CONFIGURAÇÕES DE PAUSA */
+.form-config {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    white-space: nowrap;
+}
+
+.form-config article {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+/* CONFIGURAÇÕES DE SETOR */
+.listas-setor {
+    display: flex;
+    gap: 20px;
+    margin-top: 15px;
+}
+
+.listas-setor > article {
+    flex: 1;
+    border: 1px solid #ccc;
+    padding: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 15px;    
+    border-radius: var(--raio-borda-padrao);
+}
+
+/* LISTA DE USUÁRIOS */
 /* Ações */
 .usuarios-acoes {
     display: flex;
@@ -1024,11 +1187,11 @@ footer a {
     transition: transform 0.2s;
 }
 
-.toggle input:checked + .slider {
+.toggle input:checked+.slider {
     background: var(--cor-destaque);
 }
 
-.toggle input:checked + .slider::before {
+.toggle input:checked+.slider::before {
     transform: translateX(20px);
 }
 
@@ -1052,6 +1215,46 @@ footer a {
 
 .lida {
     font-weight: 600;
+}
+
+/* PÁGINA DE VISUALIZAÇÃO DE FOLHA DE PAGAMENTO */
+.ver-folha {
+    width: 50%;
+    margin: 0 auto;
+    min-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ver-folha h2 {
+    font-size: var(--tamanho-titulo-padrao);
+}
+
+.ver-folha input,
+h2 {
+    text-align: center;
+}
+
+/* PÁGINA DE GERAÇÃO DE FOLHAS DE PAGAMENTO */
+.gerar-folhas {
+    width: 50%;
+    margin: 0 auto;
+    min-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.gerar-folhas h2 {
+    font-size: var(--tamanho-titulo-padrao);
+    text-align: center;
+}
+
+.gerar-folhas article {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 
@@ -1102,9 +1305,34 @@ footer a {
     display: none;
 }
 
+/* ====================
+    7 - PNOTIFY
+==================== */
+.pn-mensagem {
+    margin-bottom: 14px;
+    font-size: 14px;
+}
+
+.pn-botoes {
+    display: flex;
+    gap: 8px;
+}
+
+.pn-btn {
+    border: none;
+    padding: 8px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.pn-btn-confirmar { background: #22c55e; }
+.pn-btn-cancelar  { background: #ef4444; }
 
 /* =======================
-    7 - RESPONSIVIDADE
+    8 - RESPONSIVIDADE
 ======================= */
 
 @media (max-width: 1000px) {

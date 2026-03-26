@@ -120,6 +120,7 @@ $sql = "
         n.data_notificacao,   -- Data e hora
         n.lida,               -- Status (0 = não lida, 1 = lida)
         p.data_ponto,           -- Data do ponto relacionado
+        p.data_ponto,           -- Data do ponto relacionado
         p.id_ponto            -- ID do ponto
     FROM notificacoes_ponto n
     INNER JOIN ponto_dia p ON p.id_ponto = n.id_ponto

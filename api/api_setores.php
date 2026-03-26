@@ -41,6 +41,7 @@ try {
         }
 
         $resultado = get_pessoas_setor($conn, $input['id_setor']);
+
         $resposta = [
             'sucesso' => true,
             'dados' => $resultado
@@ -121,6 +122,7 @@ try {
 
     // Enviar resposta
     echo json_encode($resposta);
+
     // Fechar conexão
     if (isset($conn)) {
         $conn->close();
@@ -128,6 +130,7 @@ try {
 } catch (Exception $e) {
     // Em caso de erro, limpar buffer e enviar erro como JSON
     ob_clean();
+
     echo json_encode([
         'sucesso' => false,
         'mensagem' => $e->getMessage()

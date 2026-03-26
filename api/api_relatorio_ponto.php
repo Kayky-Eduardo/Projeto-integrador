@@ -28,17 +28,10 @@ if ($acao) {
             try {
                 $resultado = filtrar_usuario($conn, $input['id_usuario'] ?? null);
                 
-                if ($resultado['sucesso']) {
-                    echo json_encode([
-                        'sucesso' => true,
-                        'dados' => $resultado
-                    ]);
-                } else {
-                    echo json_encode([
-                        'sucesso' => false,
-                        'mensagem' => $resultado['mensagem']
-                    ]);
-                }
+                echo json_encode([
+                    'sucesso' => true,
+                    'dados' => $resultado
+                ]);
             } catch (Exception $e) {
                 echo json_encode([
                     'sucesso' => false,

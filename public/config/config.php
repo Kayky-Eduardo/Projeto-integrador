@@ -1,7 +1,7 @@
 <?php
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
-require_once "../../include/verificacao.php";
+require "../../include/verificacao.php";
 verificar_login($conn);
 $pagina = $_GET['pagina'] ?? 'empresa';
 $dias = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
@@ -513,7 +513,6 @@ if (isset($_POST['acao_cargo']) && $_POST['acao_cargo'] === 'editar') {
             }
             ?>
         </section>
-
     </main>
 
     <script src="../../assets/js/script.js"></script>
