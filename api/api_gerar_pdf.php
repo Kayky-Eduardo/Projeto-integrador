@@ -188,7 +188,22 @@ $empresa = $sql_empresa->fetch_assoc();
 
                         <tr>
                             <td>Nome:</td>
-                            <td><?= $empresa['razao_social'] ?? 'Não informado' ?></td>
+                            <td><?= $empresa["nome_fantasia"] ?? 'Sem Nome' ?></td>
+                        </tr>
+
+                        <tr>
+                            <td>Endereço:</td>
+
+                            <td>
+                                <?= isset($empresa["uf"])
+                                    ? "{$empresa["uf"]} - {$empresa["cidade"]} - {$empresa["bairro"]} - {$empresa["numero"]}"
+                                    : 'Sem endereço' ?>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>CNPJ:</td>
+                            <td><?= $empresa["cnpj"] ?? 'Sem CNPJ' ?></td>
                         </tr>
 
                         <tr class="titulo">

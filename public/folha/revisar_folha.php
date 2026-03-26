@@ -177,19 +177,22 @@ $empresa = $sql_empresa->fetch_assoc();
 
                         <tr>
                             <td>Nome:</td>
-                            <td><?= $empresa['razao_social'] ?? 'Não informado' ?></td>
+                            <td><?= $empresa["nome_fantasia"] ?? 'Sem Nome' ?></td>
+                        </tr>
+
+                        <tr>
+                            <td>Endereço:</td>
+
+                            <td>
+                                <?= isset($empresa["uf"])
+                                    ? "{$empresa["uf"]} - {$empresa["cidade"]} - {$empresa["bairro"]} - {$empresa["numero"]}"
+                                    : 'Sem endereço' ?>
+                            </td>
                         </tr>
 
                         <tr>
                             <td>CNPJ:</td>
-                            <td><?= $empresa['cnpj'] ?? '-' ?></td>
-                        </tr>
-
-                        <tr>
-                            <td>Cidade:</td>
-                            <td>
-                                <?= ($empresa['cidade'] ?? '-') . ' - ' . ($empresa['uf'] ?? '-') ?>
-                            </td>
+                            <td><?= $empresa["cnpj"] ?? 'Sem CNPJ' ?></td>
                         </tr>
 
                         <tr class="titulo">
@@ -215,23 +218,6 @@ $empresa = $sql_empresa->fetch_assoc();
                             <td>Admissão:</td>
                             <td><?= date("d/m/Y", strtotime($user["data_admissao"])) ?></td>
                         </tr>
-
-                        <tr class="titulo">
-                            <td colspan="2">Proventos e Descontos</td>
-                        </tr>
-
-                        <?php if (empty($eventos)): ?>
-                            <tr>
-                                <td colspan="2">Nenhum evento cadastrado.</td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($eventos as $e): ?>
-                                <tr>
-                                    <td><?= strtoupper($e["tipo"]) . " - " . $e["descricao"] ?></td>
-                                    <td>R$ <?= number_format($e["valor"], 2, ',', '.') ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
 
                         <tr class="titulo">
                             <td colspan="2">Resumo</td>
