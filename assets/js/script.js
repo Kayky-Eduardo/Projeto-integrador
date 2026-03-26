@@ -591,15 +591,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* PONTO / PAUSA – REGISTRO DE PONTO */
     if (document.getElementById("formPausa")) {
-        if (localStorage.getItem("aviso_sucesso") === "true") {
-            PNotify.success({
-                title: "Sucesso",
-                text: "Ação registrada com sucesso!",
-                delay: 3000
-            });
-
-            localStorage.removeItem("aviso_sucesso");
-        }
 
         const el = document.getElementById("cronometro");
         const statusMsg = document.getElementById("statusTempo");
@@ -630,23 +621,28 @@ document.addEventListener("DOMContentLoaded", () => {
                     btnFinalizar && (btnFinalizar.disabled = false);
                     statusMsg.textContent = "Tempo mínimo atingido.";
                     statusMsg.style.color = "green";
+                    
+                    localStorage.setItem("Aviso", "Tempo mínimo de pausa atingido");
+                    localStorage.setItem("aviso_emitido", false);
                 }
 
                 if (decorridoSegundos >= maxSegundos) {
-                    clearInterval(intervalId);
-                    document.getElementById("formPausa").submit();
+                    cronometro.style.color = "red";
+                    statusMsg.textContent = "Tempo máximo atingido.";
+                    statusMsg.style.color = "red";
+                    localStorage.setItem("aviso", "Tempo máximo de pausa atingido.")
                 }
 
                 if (segundosRestantes <= minSegundos && segundosRestantes > 0 && !avisoEmitido) {
                     let tempo = Math.round(segundosRestantes / 60);
                     if (tempo > 60) tempo = Math.round(tempo / 60);
 
-                    PNotify.notice({
-                        title: "Aviso de Tempo",
-                        text: `Faltam ${tempo} minutos para o limite da sua pausa!`,
-                        delay: 10000
-                    });
-
+                    chamarPnotifyAviso(
+                        "Aviso de Tempo",
+                        `Faltam ${tempo} minutos para o limite da sua pausa!`,
+                        100000
+                    );
+                    
                     avisoEmitido = true;
                 }
             }
@@ -657,7 +653,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (btnFinalizar) {
             btnFinalizar.addEventListener("click", () => {
-                localStorage.setItem("aviso_sucesso", "true");
+                chamarPnotifySuccess("Ação registrada!", "Sua ação foi registrada com sucesso!")
             });
         }
     }
