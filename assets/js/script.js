@@ -992,36 +992,36 @@ document.addEventListener("DOMContentLoaded", () => {
     // DELETAR
     document.querySelectorAll(".btn-deletar").forEach(btn => {
         btn.addEventListener("click", async () => {
-
             const id = btn.dataset.id;
+            chamarPnotifyConfirm("Confirmar!", "Certeza que deseja deletar?", async function(){
+                try {
+                    const response = await fetch(window.location.href, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            acao: "deletar",
+                            id_evento: id,
+                            confirmado: true
+                        })
+                    });
 
-            const confirmar = confirm("Tem certeza que deseja deletar este evento?");
-            if (!confirmar) return;
+                    const data = await response.json();
+                    alert(data.msg);
 
-            try {
-                const response = await fetch(window.location.href, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        acao: "deletar",
-                        id_evento: id,
-                        confirmado: true
-                    })
-                });
+                    if (data.status === "sucesso") {
+                        location.reload();
+                    }
 
-                const data = await response.json();
-                alert(data.msg);
-
-                if (data.status === "sucesso") {
-                    location.reload();
+                } catch (erro) {
+                    console.error("Erro:", erro);
+                    chamarPnotifyAlert("Erro!", "Erro ao deletar evento.");
                 }
+            }, ()=>{
+                chamarPnotifyAlert("Cancelado!", "Ação Cancelada!");
+            });
 
-            } catch (erro) {
-                console.error("Erro:", erro);
-                alert("Erro ao deletar evento.");
-            }
         });
     });
 

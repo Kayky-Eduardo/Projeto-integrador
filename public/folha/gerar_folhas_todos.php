@@ -263,6 +263,7 @@ $mes_formatado = $meses[$dt->format('F')] . ' de ' . $dt->format('Y');
     <meta charset="UTF-8">
     <title>Gerar Folhas de Pagamento</title>
     <link rel="stylesheet" href="../../assets/css/estilo.css">
+    <?php include "../../include/link.html"; ?>
 </head>
 
 <body>
