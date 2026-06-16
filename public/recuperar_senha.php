@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cpf = $_POST['cpf'];
 
         // Prepara a consulta
-        $stmt = $conn->prepare("SELECT senha_usuario FROM usuario WHERE email_usuario = ? AND cpf_usuario = ?");
+        $stmt = $conn->prepare("SELECT nome_usuario FROM usuario WHERE email_usuario = ? AND cpf_usuario = ?");
         $stmt->bind_param("ss", $email, $cpf);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -42,11 +42,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Verifica se encontrou o usuário
         if ($result->num_rows === 1) {
             $usuario = $result->fetch_assoc();
-            echo "<p style='color: green;'>Senha do usuário: <strong>{$usuario['senha_usuario']}</strong></p>";
+            echo "<p style='color: green;'>
+            
+            <form method='POST' action=''>
+                <strong>Perdeu a senha {$usuario['nome_usuario']}?</strong></p>
+
+                <label>Nova senha:</label>
+                <input type='password' name='nova-senha'></input>
+                <br>
+                <label>Confirme a nova senha:</label>
+                <input type='password' name='nova-senha-confirmacao'></input>
+                <br>
+                <button type='submit-senha'>Confirmar</button>
+            </form>
+
+            ";
         } else {
             echo "<p style='color: red;'>Nenhum usuário encontrado com esse e-mail e CPF.</p>";
         }
-
         $stmt->close();
     } else {
         echo "<p style='color: red;'>Preencha todos os campos.</p>";

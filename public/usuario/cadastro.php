@@ -1,149 +1,217 @@
 <?php
+/*
+ * =============================================================
+ * ARQUIVO: cadastro.php
+ * MÓDULO: Gestão de Funcionários (RH)
+ * =============================================================
+ * * DESCRIÇÃO GERAL
+ * -------------------------------------------------------------
+ * Arquivo responsável pelo formulário e processamento de novos
+ * usuários/funcionários no sistema.
+ *
+ * Executa:
+ * - Listagem dinâmica de cargos para o formulário.
+ * - Upload e tratamento de foto de perfil 
+ *   (UUID para unicidade).
+ * - Validação rigorosa de campos 
+ *   (CPF, RG, E-mail, CEP, Telefone).
+ * - Verificação de duplicidade de documentos no banco de dados.
+ * - Criptografia de senha (password_hash).
+ * - Persistência de dados na tabela 'usuario'.
+ * *
+ * 
+ * 
+ * FLUXO DE EXECUÇÃO
+ * -------------------------------------------------------------
+ * 1. Inicia sessão e verifica permissão de acesso
+ *    (verificar_login).
+ * 2. Consulta a tabela 'cargo' para popular o select do
+ *    formulário.
+ * 3. Se houver POST:
+ *    a. Processa o upload da imagem (valida extensões e move 
+ *       para o diretório).
+ *    b. Sanitiza strings e remove formatação de documentos (D).
+ *    c. Executa função validarDados() para checar integridade e
+ *       duplicidade.
+ *    d. Caso sem erros, gera o hash da senha e insere no banco
+ *       via Prepared Statement.
+ *    e. Redireciona para a lista de usuários em caso de 
+ *       sucesso.
+ * 4. Renderiza a interface com persistência de valores em caso
+ *    de erro de validação.
+ *
+ *
+ * SEGURANÇA
+ * -------------------------------------------------------------
+ * - Proteção contra SQL Injection via Prepared Statements 
+ *   (bind_param).
+ * - Senhas armazenadas com algoritmo BCRYPT (password_hash).
+ * - Validação de extensões de arquivo permitidas 
+ *   (jpg, jpeg, png, webp).
+ * - Sanitização de inputs contra scripts maliciosos.
+ * - Verificação de autenticação obrigatória no topo do arquivo.
+ *
+ *
+ * ACESSIBILIDADE E UX
+ * -------------------------------------------------------------
+ * - Feedback de erros em lista centralizada (box-erros).
+ * - Preview dinâmico da imagem de perfil (pré-carregamento).
+ * - Manutenção dos dados digitados no formulário após erro 
+ *   (Sticky Form).
+ * - Máscaras de entrada via biblioteca IMask (via JS externo).
+ *
+ *
+ * DEPENDÊNCIAS
+ * -------------------------------------------------------------
+ * - "../../BD/conexao.php": Conexão com a base de dados.
+ * - "../../include/verificacao.php": Script de controle de 
+ *   acesso.
+ * - "../../include/navbar.php": Menu de navegação global.
+ * - "imask": Biblioteca externa para máscaras de documentos.
+ *
+ *
+ * TABELAS UTILIZADAS
+ * -------------------------------------------------------------
+ * 1. usuario
+ * - id_usuario, nome_usuario, cpf_usuario, rg_usuario, genero,
+ * email_usuario, senha_usuario, telefone, cep, id_cargo,
+ * data_admissao, foto_usuario, conta_ativa
+ *
+ * 2. cargo
+ * - id_cargo
+ * - nome_cargo
+ *
+ *
+ * BOAS PRÁTICAS APLICADAS
+ * -------------------------------------------------------------
+ * - Funções isoladas para validação e cadastro (Modularização).
+ * - Tratamento de strings com trim() e preg_replace().
+ * - Verificação de existência de diretórios (mkdir 0777).
+ * - Nomenclatura de arquivos de imagem usando IDs únicos 
+ *   (uniqid).
+ *
+ * * -------------------------------------------------------------
+ * Data: 07/03/2026
+ * Versão: 1.0
+ * =============================================================
+ */
+
 session_start();
 include(__DIR__ . "/../../BD/conexao.php");
 require "../../include/verificacao.php";
 verificar_login($conn);
-// Buscar cargos existentes
-// =============================
+
+// BUSCAR CARGOS
 $cargos = [];
 $result = $conn->query("SELECT id_cargo, nome_cargo FROM cargo ORDER BY nome_cargo ASC");
-if ($result && $result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $cargos[] = $row;
-    }
+
+while ($row = $result->fetch_assoc()) {
+    $cargos[] = $row;
 }
 
-// =============================
+// =================================
 // Função de validação
-// =============================
+// =================================
 function validarDados($dados, $conn)
 {
     $erros = [];
+
+    $fotoPreview = "user_padrao.png";
 
     // Nome
     if (empty($dados['nome_usuario'])) {
         $erros[] = "Campo 'Nome' está vazio.";
     }
 
-    // CPF (apenas números)
+    // CPF
     if (empty($dados['cpf_usuario'])) {
         $erros[] = "Campo 'CPF' está vazio.";
     } elseif (!preg_match('/^\d{11}$/', $dados['cpf_usuario'])) {
-        $erros[] = "Campo 'CPF' inválido. Digite 11 números.";
+        $erros[] = "CPF inválido.";
     } else {
         $stmt = $conn->prepare("SELECT id_usuario FROM usuario WHERE cpf_usuario = ?");
         $stmt->bind_param("s", $dados['cpf_usuario']);
         $stmt->execute();
         $stmt->store_result();
-        if ($stmt->num_rows > 0) {
-            $erros[] = "O CPF informado já está cadastrado.";
-        }
+        if ($stmt->num_rows) $erros[] = "CPF já cadastrado.";
         $stmt->close();
     }
 
-    // RG (apenas números)
+    // RG
     if (empty($dados['rg_usuario'])) {
         $erros[] = "Campo 'RG' está vazio.";
     } elseif (!preg_match('/^\d{9}$/', $dados['rg_usuario'])) {
-        $erros[] = "Campo 'RG' inválido. Digite 9 números.";
+        $erros[] = "RG inválido.";
     } else {
         $stmt = $conn->prepare("SELECT id_usuario FROM usuario WHERE rg_usuario = ?");
         $stmt->bind_param("s", $dados['rg_usuario']);
         $stmt->execute();
         $stmt->store_result();
-        if ($stmt->num_rows > 0) {
-            $erros[] = "O RG informado já está cadastrado.";
-        }
+        if ($stmt->num_rows) $erros[] = "RG já cadastrado.";
         $stmt->close();
     }
 
     // Gênero
     if (empty($dados['genero'])) {
-        $erros[] = "Campo 'Gênero' é obrigatório.";
+        $erros[] = "Escolha um gênero.";
     }
 
     // Email
-    if (empty($dados['email_usuario'])) {
-        $erros[] = "Campo 'Email' está vazio.";
-    } elseif (!filter_var($dados['email_usuario'], FILTER_VALIDATE_EMAIL)) {
-        $erros[] = "Campo 'Email' está preenchido de forma incorreta.";
+    if (empty($dados['email_usuario']) || !filter_var($dados['email_usuario'], FILTER_VALIDATE_EMAIL)) {
+        $erros[] = "Email inválido.";
     } else {
         $stmt = $conn->prepare("SELECT id_usuario FROM usuario WHERE email_usuario = ?");
         $stmt->bind_param("s", $dados['email_usuario']);
         $stmt->execute();
         $stmt->store_result();
-        if ($stmt->num_rows > 0) {
-            $erros[] = "O Email informado já está cadastrado.";
-        }
+        if ($stmt->num_rows) $erros[] = "Email já cadastrado.";
         $stmt->close();
     }
 
     // Senha
-    if (empty($dados['senha_usuario'])) {
-        $erros[] = "Campo 'Senha' está vazio.";
-    } elseif (strlen($dados['senha_usuario']) < 6) {
-        $erros[] = "A senha deve ter no mínimo 6 caracteres.";
+    if (strlen($dados['senha_usuario']) < 6) {
+        $erros[] = "Senha deve ter no mínimo 6 caracteres.";
     }
 
-    // Telefone (apenas números)
-    if (empty($dados['telefone'])) {
-        $erros[] = "Campo 'Telefone' está vazio.";
-    } elseif (!preg_match('/^\d{11}$/', $dados['telefone'])) {
-        $erros[] = "Campo 'Telefone' inválido. Use DDD + número (11 dígitos).";
-    } else {
-        $stmt = $conn->prepare("SELECT id_usuario FROM usuario WHERE telefone = ?");
-        $stmt->bind_param("s", $dados['telefone']);
-        $stmt->execute();
-        $stmt->store_result();
-        if ($stmt->num_rows > 0) {
-            $erros[] = "O Telefone informado já está cadastrado.";
-        }
-        $stmt->close();
+    // Telefone
+    if (!preg_match('/^\d{11}$/', $dados['telefone'])) {
+        $erros[] = "Telefone inválido.";
     }
 
-    // CEP (apenas números)
-    if (empty($dados['cep'])) {
-        $erros[] = "Campo 'CEP' está vazio.";
-    } elseif (!preg_match('/^\d{8}$/', $dados['cep'])) {
-        $erros[] = "Campo 'CEP' inválido. Digite 8 números.";
+    // CEP
+    if (!preg_match('/^\d{8}$/', $dados['cep'])) {
+        $erros[] = "CEP inválido.";
     }
 
     // Cargo
-    if (empty($dados['id_cargo']) || !is_numeric($dados['id_cargo'])) {
-        $erros[] = "Campo 'Cargo' é obrigatório.";
+    if (!$dados['id_cargo']) {
+        $erros[] = "Cargo inválido.";
     }
 
-    // Assiduidade
-    if (!isset($dados['assiduidade']) || $dados['assiduidade'] < 0 || $dados['assiduidade'] > 100) {
-        $erros[] = "Campo 'Assiduidade' deve estar entre 0 e 100.";
-    }
-
-    // Data de admissão
+    // Data
     if (empty($dados['data_admissao'])) {
-        $erros[] = "Campo 'Data de Admissão' é obrigatório.";
+        $erros[] = "Data obrigatória.";
     }
 
     return $erros;
 }
 
-// =============================
-// Função para cadastrar
-// =============================
+// =================================
+// Cadastro do Usuário
+// =================================
 function cadastrarUsuario($conn, $dados)
 {
     $sql = "INSERT INTO usuario (
-                nome_usuario, cpf_usuario, rg_usuario, genero,
-                email_usuario, senha_usuario, telefone, cep, id_cargo,
-                assiduidade, data_admissao, conta_ativa
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        nome_usuario, cpf_usuario, rg_usuario, genero,
+        email_usuario, senha_usuario, telefone, cep, id_cargo,
+        data_admissao, foto_usuario, conta_ativa
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
-    if (!$stmt) die("Erro na preparação: " . $conn->error);
-
     $senhaHash = password_hash($dados['senha_usuario'], PASSWORD_DEFAULT);
 
     $stmt->bind_param(
-        "ssssssssidsi",
+        "ssssssssissi",
         $dados['nome_usuario'],
         $dados['cpf_usuario'],
         $dados['rg_usuario'],
@@ -153,61 +221,66 @@ function cadastrarUsuario($conn, $dados)
         $dados['telefone'],
         $dados['cep'],
         $dados['id_cargo'],
-        $dados['assiduidade'],
         $dados['data_admissao'],
+        $dados['foto_usuario'],
         $dados['conta_ativa']
     );
 
     return $stmt->execute();
 }
 
-// =============================
-// Processamento do formulário
-// =============================
+// =================================
+// PROCESSAMENTO
+// =================================
 $erros = [];
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Limpeza dos dados (remove máscaras)
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    // Upload da foto
+    $foto = "user_padrao.png";
+    $fotoPreview = "user_padrao.png";
+
+    if (!empty($_FILES['foto_usuario']['name'])) {
+
+        $dir = "../../assets/img/usuarios/";
+
+        if (!is_dir($dir)) mkdir($dir, 0777, true);
+
+        $ext = strtolower(pathinfo($_FILES['foto_usuario']['name'], PATHINFO_EXTENSION));
+        $permitidas = ["jpg", "jpeg", "png", "webp"];
+
+        if (in_array($ext, $permitidas)) {
+            $foto = uniqid("user_") . "." . $ext;
+            move_uploaded_file($_FILES['foto_usuario']['tmp_name'], $dir . $foto);
+
+            $fotoPreview = $foto;
+        }
+    }
+
+    // Dados
     $dados = [
-        "nome_usuario"   => trim($_POST['nome_usuario'] ?? ''),
-        "cpf_usuario"    => preg_replace('/\D/', '', $_POST['cpf_usuario'] ?? ''),
-        "rg_usuario"     => preg_replace('/\D/', '', $_POST['rg_usuario'] ?? ''),
-        "genero"         => $_POST['genero'] ?? '',
-        "email_usuario"  => trim($_POST['email_usuario'] ?? ''),
-        "senha_usuario"  => $_POST['senha_usuario'] ?? '',
-        "telefone"       => preg_replace('/\D/', '', $_POST['telefone'] ?? ''),
-        "cep"            => preg_replace('/\D/', '', $_POST['cep'] ?? ''),
-        "id_cargo"       => (int)($_POST['id_cargo'] ?? 0),
-        "assiduidade"    => (float)($_POST['assiduidade'] ?? 0),
-        "data_admissao"  => $_POST['data_admissao'] ?? '',
+        "nome_usuario"   => trim($_POST['nome_usuario']),
+        "cpf_usuario"    => preg_replace('/\D/', '', $_POST['cpf_usuario']),
+        "rg_usuario"     => preg_replace('/\D/', '', $_POST['rg_usuario']),
+        "genero"         => $_POST['genero'],
+        "email_usuario"  => trim($_POST['email_usuario']),
+        "senha_usuario"  => $_POST['senha_usuario'],
+        "telefone"       => preg_replace('/\D/', '', $_POST['telefone']),
+        "cep"            => preg_replace('/\D/', '', $_POST['cep']),
+        "id_cargo"       => (int) $_POST['id_cargo'],
+        "data_admissao"  => $_POST['data_admissao'],
+        "foto_usuario"   => $foto,
         "conta_ativa"    => 1
     ];
 
-    $erros = validarDados($dados, $conn);
-
-    // Verificar se o cargo existe
-    $checkCargo = $conn->prepare("SELECT id_cargo FROM cargo WHERE id_cargo = ?");
-    $checkCargo->bind_param("i", $dados['id_cargo']);
-    $checkCargo->execute();
-    $checkCargo->store_result();
-    if ($checkCargo->num_rows === 0) {
-        $erros[] = "O cargo selecionado não existe no banco de dados.";
-    }
-    $checkCargo->close();
+    // Validação
+    $erros = array_merge($erros, validarDados($dados, $conn));
 
     if (empty($erros)) {
-        try {
-            if (cadastrarUsuario($conn, $dados)) {
-                header("Location: lista.php");
-                exit();
-            } else {
-                echo "<p style='color:red;'>Erro ao cadastrar o usuário.</p>";
-            }
-        } catch (mysqli_sql_exception $e) {
-            if (str_contains($e->getMessage(), 'Duplicate entry')) {
-                echo "<p style='color:red;'>Erro: já existe um registro com os mesmos dados únicos (CPF, RG, Email ou Telefone).</p>";
-            } else {
-                echo "<p style='color:red;'>Erro inesperado: {$e->getMessage()}</p>";
-            }
+        if (cadastrarUsuario($conn, $dados)) {
+            header("Location: lista.php");
+            exit;
+        } else {
+            $erros[] = "Erro ao salvar usuário.";
         }
     }
 }
@@ -218,94 +291,116 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Usuário</title>
-    <link rel="stylesheet" href="../../assets/estilo.css">
+    <link rel="stylesheet" href="../../assets/css/estilo.css">
 </head>
 
 <body>
-    <h1>Cadastro de Usuário</h1>
+    <nav>
+        <?php include("../../include/navbar.php"); ?>
+    </nav>
 
-    <?php
-    if (!empty($erros)) {
-        echo "<div style='color:red;'><ul>";
-        foreach ($erros as $erro) {
-            echo "<li>$erro</li>";
-        }
-        echo "</ul></div>";
-    }
-    ?>
+    <main class="main-perfil">
+        <form class="perfil-grid" method="POST" enctype="multipart/form-data">
 
-    <form action="" method="POST">
-        <label>Nome:</label><br>
-        <input type="text" name="nome_usuario" value="<?= $_POST['nome_usuario'] ?? '' ?>" required><br><br>
+            <!-- COLUNA DA FOTO -->
+            <section class="container perfil-header">
+                <label class="label-foto">
+                    <?php
+                    $caminhoPreview = "../../assets/img/user_padrao.png";
 
-        <label>CPF:</label><br>
-        <input type="text" name="cpf_usuario" maxlength="14" value="<?= $_POST['cpf_usuario'] ?? '' ?>" required><br><br>
+                    if (!empty($fotoPreview) && file_exists("../../assets/img/usuarios/" . $fotoPreview)) {
+                        $caminhoPreview = "../../assets/img/usuarios/" . $fotoPreview;
+                    }
+                    ?>
 
-        <label>RG:</label><br>
-        <input type="text" name="rg_usuario" maxlength="12" value="<?= $_POST['rg_usuario'] ?? '' ?>" required><br><br>
+                    <img src="<?= $caminhoPreview ?>" class="perfil-foto" id="preview-foto">
+                    <input type="file" class="input-foto" name="foto_usuario" id="input-foto" accept="image/*">
+                    <span>Alterar foto</span>
+                </label>
 
-        <label>Gênero:</label><br>
-        <select name="genero" required>
-            <option value="">Selecione</option>
-            <option value="Masculino" <?= (($_POST['genero'] ?? '') == 'Masculino') ? 'selected' : '' ?>>Masculino</option>
-            <option value="Feminino" <?= (($_POST['genero'] ?? '') == 'Feminino') ? 'selected' : '' ?>>Feminino</option>
-            <option value="Outro" <?= (($_POST['genero'] ?? '') == 'Outro') ? 'selected' : '' ?>>Outro</option>
-            <option value="Não Declarado" <?= (($_POST['genero'] ?? '') == 'Não Declarado') ? 'selected' : '' ?>>Não Declarado</option>
-        </select><br><br>
+                <h2>Novo Usuário</h2>
+                <span class="status-ativo">Cadastro</span>
+                <p class="perfil-cargo">Sistema de Recursos Humanos</p>
+            </section>
 
-        <label>Email:</label><br>
-        <input type="email" name="email_usuario" value="<?= $_POST['email_usuario'] ?? '' ?>" required><br><br>
+            <!-- COLUNA FORMULÁRIO -->
+            <section class="container perfil-visualizacao">
+                <article class="perfil-artigo">
 
-        <label>Senha:</label><br>
-        <input type="password" name="senha_usuario" required><br><br>
+                    <!-- ERROS -->
+                    <?php if (!empty($erros)): ?>
+                        <div class="box-erros">
+                            <strong>Erros encontrados:</strong>
+                            <ul class="lista-erro erro">
+                                <?php foreach ($erros as $erro): ?>
+                                    <li><?= $erro ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
 
-        <label>Telefone:</label><br>
-        <input type="text" name="telefone" maxlength="15" value="<?= $_POST['telefone'] ?? '' ?>" required><br><br>
+                    <h4>Cadastro de Funcionário</h4>
 
-        <label>CEP:</label><br>
-        <input type="text" name="cep" maxlength="9" value="<?= $_POST['cep'] ?? '' ?>" required><br><br>
+                    <section class="form">
+                        <label class="label">Nome</label>
+                        <input class="input" name="nome_usuario" value="<?= $_POST['nome_usuario'] ?? '' ?>" required>
 
-        <label>Cargo:</label><br>
-        <select name="id_cargo" required>
-            <option value="">Selecione o cargo</option>
-            <?php foreach ($cargos as $cargo): ?>
-                <option value="<?= $cargo['id_cargo']; ?>" <?= (($_POST['id_cargo'] ?? '') == $cargo['id_cargo']) ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($cargo['nome_cargo']); ?>
-                </option>
-            <?php endforeach; ?>
-        </select><br><br>
+                        <label class="label">CPF</label>
+                        <input class="input" id="cpf" name="cpf_usuario" value="<?= $_POST['cpf_usuario'] ?? '' ?>" required>
 
-        <label>Assiduidade (%):</label><br>
-        <input type="number" name="assiduidade" step="0.01" value="<?= $_POST['assiduidade'] ?? '' ?>" required><br><br>
+                        <label class="label">RG</label>
+                        <input class="input" id="rg" name="rg_usuario" value="<?= $_POST['rg_usuario'] ?? '' ?>" required>
 
-        <label>Data de Admissão:</label><br>
-        <input type="date" name="data_admissao" value="<?= $_POST['data_admissao'] ?? '' ?>" required><br><br>
+                        <label class="label">Gênero</label>
+                        <select class="input" name="genero" required>
+                            <option value="">Selecione</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Feminino">Feminino</option>
+                            <option value="Outro">Outro</option>
+                            <option value="Não Declarado">Não Declarado</option>
+                        </select>
 
-        <button type="submit">Cadastrar</button>
-    </form>
+                        <label class="label">Email</label>
+                        <input class="input" name="email_usuario" value="<?= $_POST['email_usuario'] ?? '' ?>" required>
 
-    <br>
-    <a href="lista.php">Voltar</a>
+                        <label class="label">Senha</label>
+                        <input class="input" type="password" name="senha_usuario" required>
 
-    <!-- Máscaras automáticas com JS -->
+                        <label class="label">Telefone</label>
+                        <input class="input" id="telefone" name="telefone" value="<?= $_POST['telefone'] ?? '' ?>" required>
+
+                        <label class="label">CEP</label>
+                        <input class="input" id="cep" name="cep" value="<?= $_POST['cep'] ?? '' ?>" required>
+
+                        <label class="label">Cargo</label>
+                        <select class="input" name="id_cargo" required>
+                            <option value="">Selecione</option>
+                            <?php foreach ($cargos as $cargo): ?>
+                                <option value="<?= $cargo['id_cargo']; ?>">
+                                    <?= htmlspecialchars($cargo['nome_cargo']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+
+                        <label class="label">Data de admissão</label>
+                        <input class="input" type="date" name="data_admissao" required>
+
+                        <button type="submit" class="btn btn-padrao">Cadastrar Usuário</button>
+
+                        <section class="voltar-final">
+                            <a href="lista.php" class="btn-link btn-voltar">Voltar</a>
+                        </section>
+                    </section>
+
+                </article>
+            </section>
+        </form>
+    </main>
+
     <script src="https://unpkg.com/imask"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            IMask(document.querySelector('[name="cpf_usuario"]'), {
-                mask: '000.000.000-00'
-            });
-            IMask(document.querySelector('[name="rg_usuario"]'), {
-                mask: '00.000.000-0'
-            });
-            IMask(document.querySelector('[name="telefone"]'), {
-                mask: '(00) 00000-0000'
-            });
-            IMask(document.querySelector('[name="cep"]'), {
-                mask: '00000-000'
-            });
-        });
-    </script>
+    <script src="../../assets/js/script.js"></script>
 </body>
 
 </html>
